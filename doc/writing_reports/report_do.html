@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: #ffffff;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+      color: #000000;
+    }
+    h1 { font-size: 1.8em; color: #1e36ce; }
+    h2 { font-size: 1.5em; color: #1e36ce; }
+    h3 { color: #1e36ce; }
+    a { color: #1e36ce; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    pre { background: #ededed; color: #000; padding: 15px;}
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+
+<!-- ---------------------------- main content ------------------------>
+
+<p>
+
+<title>Experiments with Schemes for Exponential Decay</title>
+
+<center><h1>Experiments with Schemes for Exponential Decay</h1></center>  <! -- document title -->
+
+<! -- author(s) -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2] (<tt>hpl at simula.no</tt>)
+</center>
+
+
+<p>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Department of Informatics, University of Oslo.</b></center>
+
+
+<center><h4>August 20, 2012</h4></center> <!-- date -->
+<p>
+<b>Summary.</b> This report investigates the accuracy of three finite difference
+schemes for the ordinary differential equation \( u'=-au \) with the
+aid of numerical experiments. Numerical artifacts are in particular
+demonstrated.
+
+<p>
+
+<p>
+<h2>
+Table of contents</h2>
+
+<p>
+
+<p>
+<a href="#___sec0"> Mathematical problem </a><br>
+<a href="#___sec1"> Numerical solution method </a><br>
+<a href="#___sec2"> Implementation </a><br>
+<a href="#___sec3"> Numerical experiments </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec4"> The Backward Euler method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec5"> The Crank-Nicolson method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec6"> The Forward Euler method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec7"> Error vs \( \Delta t \) </a><br>
+
+<p>
+<p>
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- Section with multi-line equation. -->
+
+<p>
+
+<h2>Mathematical problem <a name="math:problem"></a>  <a name="___sec0"></a></h2>
+<p>
+
+<p>
+
+<p>
+We address the initial-value problem
+
+<p>
+$$
+\begin{align}
+u'(t) &= -au(t), \quad t \in (0,T], \label{ode}\\
+u(0)  &= I,                         \label{initial:value}
+\end{align}
+$$
+where \( a \), \( I \), and \( T \) are prescribed parameters, and \( u(t) \) is
+the unknown function to be estimated. This mathematical model
+is relevant for physical phenomena featuring exponential decay
+in time.
+
+<p>
+<!-- Section with single-line equation and a bullet list. -->
+
+<p>
+
+<h2>Numerical solution method <a name="numerical:problem"></a>  <a name="___sec1"></a></h2>
+<p>
+
+<p>
+
+<p>
+We introduce a mesh in time with points \( 0= t_0< t_1 \cdots < t_N=T \).
+For simplicity, we assume constant spacing \( \Delta t \) between the
+mesh points: \( \Delta t = t_{n}-t_{n-1} \), \( n=1,\ldots,N \). Let
+\( u^n \) be the numerical approximation to the exact solution at \( t_n \).
+
+<p>
+The \( \theta \)-rule is used to solve \eqref{ode} numerically:
+
+<p>
+$$
+u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n,
+$$
+for \( n=0,1,\ldots,N-1 \). This scheme corresponds to
+
+<p>
+
+<ul>
+  <li> The Forward Euler scheme when \( \theta=0 \)
+  <li> The Backward Euler scheme when \( \theta=1 \)
+  <li> The Crank-Nicolson scheme when \( \theta=1/2 \)
+<!-- Section with computer code taken from a part of -->
+<!-- a file. The fromto: f@t syntax copies from the -->
+<!-- regular expression f up to the line, but not -->
+<!-- including, the regular expression t. -->
+</ul>
+
+<h2>Implementation  <a name="___sec2"></a></h2>
+<p>
+The numerical method is implemented in a Python function:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">theta_rule</span>(I, a, T, dt, theta):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(T<span style="color: #666666">/</span><span style="color: #AA22FF">float</span>(dt)))  <span style="color: #008800; font-style: italic"># no of intervals</span>
+    u <span style="color: #666666">=</span> zeros(N<span style="color: #666666">+1</span>)
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, N<span style="color: #666666">+1</span>)
+
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u[n]
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+<!-- Section with figures. -->
+
+<p>
+
+<h2>Numerical experiments  <a name="___sec3"></a></h2>
+<p>
+
+<p>
+We define a set of numerical experiments where \( I \), \( a \), and \( T \) are
+fixed, while \( \Delta t \) and \( \theta \) are varied.
+In particular, \( I=1 \), \( a=2 \), \( \Delta t = 1.25, 0.75, 0.5, 0.1 \).
+
+<p>
+
+<p>
+
+<p>
+<!-- Subsection with inline figure (figure without caption). -->
+
+<p>
+
+<h3>The Backward Euler method  <a name="___sec4"></a></h3>
+<p>
+
+<p>
+<center><p><img src="BE.png" align="bottom" width=800></p></center>
+
+<p>
+
+<p>
+
+<p>
+<!-- Subsection with inline figure (figure without caption). -->
+
+<p>
+
+<h3>The Crank-Nicolson method  <a name="___sec5"></a></h3>
+<p>
+
+<p>
+<center><p><img src="CN.png" align="bottom" width=800></p></center>
+
+<p>
+
+<p>
+
+<p>
+<!-- Subsection with inline figure (figure without caption). -->
+
+<p>
+
+<h3>The Forward Euler method  <a name="___sec6"></a></h3>
+<p>
+
+<p>
+<center><p><img src="FE.png" align="bottom" width=800></p></center>
+
+<p>
+
+<p>
+
+<p>
+
+<h3>Error vs \( \Delta t \)  <a name="___sec7"></a></h3>
+<p>
+<!-- Exemplify referring to a figure with label and caption. -->
+
+<p>
+
+<p>
+How \( E \) varies with \( \Delta t \) for \( \theta=0,0.5,1 \)
+is shown in Figure <a href="fig:E">1</a>.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  Error versus time step. <a name="fig:E"></a> </p></center>
+<p><img src="error.png" align="bottom" width=400></p>
+</center>
+
+<!-- ---------------------------- end of main content ----------------->
+</body>
+</html>
+    
