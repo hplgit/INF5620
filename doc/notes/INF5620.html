@@ -1,0 +1,2473 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: #ffffff;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+      color: #000000;
+    }
+    h1 { font-size: 1.8em; color: #1e36ce; }
+    h2 { font-size: 1.5em; color: #1e36ce; }
+    h3 { color: #1e36ce; }
+    a { color: #1e36ce; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    pre { background: #ededed; color: #000; padding: 15px;}
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\mbox{\footnotesize e}}}
+\newcommand{\Aex}{A_{\mbox{\footnotesize e}}}
+\newcommand{\half}{\frac{1}{2}}
+$$
+
+
+
+<!-- ---------------------------- main content ------------------------>
+
+<title>Discretizing first-order ODEs by finite difference methods</title>
+
+<center><h1>Discretizing first-order ODEs by finite difference methods</h1></center>  <! -- document title -->
+
+<! -- author(s) -->
+
+<center>
+<b>Hans Petter Langtangen</b> 
+</center>
+
+
+<p>
+<!-- institution(s) -->
+
+
+
+<center><h4>Aug 23, 2012</h4></center> <!-- date -->
+<p>
+<b>WARNING: ULTRA-PRELIMINARY VERSION!</b>
+
+<p>
+
+<p>
+<h2>Table of contents</h2>
+
+<p>
+
+<p>
+<a href="#___sec0"> Finite difference methods for an ODE </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec1"> A decay problem </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec2"> The Forward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec3"> Step 1: Discretizing the domain </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec4"> Step 2: Fulfilling the equation at discrete time points </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec5"> Step 3: Replacing derivatives by finite differences </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec6"> Step 4: Formulating a recursive algorithm </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec7"> The Backward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec8"> The Crank-Nicolson scheme </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec9"> The unifying \( 	heta \)-rule </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec10"> Constant time step </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec11"> Operator notation for finite differences </a><br>
+<a href="#___sec12"> Implementation </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec13"> Mathematical problem </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec14"> Computer Language: Python </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec15"> Making a program </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec16"> Function for computing the numerical solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec17"> Integer division </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec18"> Doc strings </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec19"> Formatting of numbers </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec20"> Running the program </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec21"> Verifying the implementation </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec22"> Running a few algorithmic steps by hand </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec23"> Finding an exact discrete solution </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec24"> Computing the numerical error </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec25"> Plotting solutions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec26"> Plotting with SciTools </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec27"> Reading input from the command line </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec28"> Reading a sequence of command-line arguments </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec29"> Working with an argument parser </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec30"> Computing convergence rates </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec31"> Memory-saving implementation </a><br>
+
+<p>
+<p>
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+Finite difference methods for partial differential equations (PDEs)
+employ a range of concepts and tools that can be introduced and
+illustrated in the context of simple ordinary differential equation
+(ODE) examples.  By first working with ODEs, we keep the mathematical
+problems to be solved as simple as possible (but no simpler), thereby
+allowing full focus on understanding the concepts and tools that will
+be reused and futher extended when addressing finite difference
+methods for time-dependent PDEs. The
+forthcoming treatment of ODEs is therefore solely dominated by
+reasoning and methods that directly carry over to numerical
+methods for PDEs.
+
+<p>
+We study two model problems: an ODE for a decaying phenomena, which will
+be relevant for PDEs of diffusive nature, and an ODE for oscillating
+phenomena, which will be relevant for PDEs of wave nature.
+Both problems are linear with known analytical solutions such that we can
+easily assess the quality of various numerical methods and analyze
+their behavior.
+
+<p>
+
+<p>
+
+<p>
+
+<h2>Finite difference methods for an ODE <a name="sec:ode:d"></a>  <a name="___sec0"></a></h2>
+<p>
+
+<p>
+
+<p>
+The purpose of this module is to explain finite difference methods
+in detail for a simple ordinary differential equation (ODE).
+Emphasis is put on the reasoning when discretizing the problem,
+various ways of programming the methods, how to verify that
+the implementation is correct, experimental investigations of
+the numerical behavior of the methods, and theoretical analysis
+of the methods to explain the observations.
+
+<p>
+
+<h3>A decay problem <a name="decay:model"></a>  <a name="___sec1"></a></h3>
+<p>
+
+<p>
+Our model problem is perhaps the simplest ODE:
+
+<p>
+$$
+\begin{equation*}
+u'(t) = -au(t),
+\end{equation*}
+$$
+Here, \( a>0 \) is a constant and \( u'(t) \) means differentiation with respect
+to time \( t \). This type of equation arises in a number of widely different
+phenomena where some quantity \( u \) undergoes exponential
+reduction. Examples include radioactive decay, population decay,
+investment decay,
+cooling of an object,
+pressure decay in the atmosphere,
+and retarded motion in fluids (for some of these models, \( a \) can be
+negative as well).
+Studying numerical solution methods for this simple ODE
+gives imporant insight that can be reused for diffusion PDEs.
+
+<p>
+The analytical solution of the ODE is found by the method of
+separation of variables, resulting in
+
+<p>
+$$
+\begin{equation*} u(t) = Ce^{-at},\end{equation*}
+$$
+for any arbitrary constant \( C \).
+To formulate a mathematical problem for which there
+is a unique solution, we need a condition to fix the value of \( C \).
+This condition is known as the <em>initial condition</em> and stated as
+\( u(0)=I \). That is, we know the
+value \( I \) of \( u \) when the process starts at \( t=0 \). The exact solution
+is then \( u(t)=I\exp{(-at)} \).
+
+<p>
+We seek the solution \( u(t) \) of the ODE for \( t\in (0,T] \). The point \( t=0 \) is not
+included since we know \( u \) here and assume that the equation governs
+\( u \) for \( t>0 \). The complete ODE problem then reads: find \( u(t) \)
+such that
+
+<p>
+$$
+\begin{equation}
+u' = -au,\ t\in (0,T], \quad u(0)=I\thinspace .  \label{decay:problem}
+\end{equation}
+$$
+This is known as a <em>continuous problem</em> because the parameter \( t \)
+varies continuously from \( 0 \) to \( T \). For each \( t \) we have a corresponding
+\( u(t) \). There are hence infinitely many values of \( t \) and \( u(t) \).
+The purpose of a numerical method is to formulate a corresponding
+<em>discrete</em> problem whose solution is characterized by a finite number of values,
+which can be computed in a finite number of steps on a computer.
+
+<p>
+
+<p>
+
+<p>
+
+<h3>The Forward Euler scheme <a name="decay:sec:FE"></a>  <a name="___sec2"></a></h3>
+<p>
+
+<p>
+Solving an ODE like \eqref{decay:problem} by a finite difference method
+consists of the following four steps:
+
+<p>
+
+<ol>
+<li> discretizing the domain,
+<li> fulfilling the equation at discrete time points,
+<li> replacing derivatives by finite differences,
+<li> formulating a recursive algorithm.
+</ol>
+
+<h4>Step 1: Discretizing the domain  <a name="___sec3"></a></h4>
+<p>
+The time domain \( [0,T] \) is represented by a finite number of
+\( N+1 \) points
+
+<p>
+$$
+\begin{equation}
+0 = t_0 < t_1 < t_2 < \cdots < t_{N-1} < t_N = T\thinspace .
+\end{equation}
+$$
+The collection of points \( t_0,t_1,\ldots,t_N \) constitutes a <em>mesh</em>
+or <em>grid</em>. Often the mesh points will be uniformly spaced in
+the domain \( [0,T] \), which means that the spacing \( t_{n+1}-t_n \) is
+the same for all \( n \). This spacing is then often denoted by \( \Delta t \),
+in this case \( t_n=n\Delta t \).
+
+<p>
+We seek the solution \( u \) at the mesh points:
+\( u(t_n) \), \( n=1,2,\ldots,N \) (note that \( u^0 \) is already known as \( I \)).
+A notational short-form for \( u(t_n) \),
+which will be used extensively, is \( u^{n} \). More precisely, we let
+\( u^n \) be the <em>numerical approximation</em> to the exact solution
+at \( t=t_n \), \( u(t_n) \). When we need to clearly distinguish the numerical
+and the exact solution, we often place a subscript e on the exact
+solution, as in \( {\uex}(t_n) \). Figure <a href="decay:fdu:e">1</a> shows the
+\( t_n \) and \( u_n \) points for \( n=0,1,\ldots,N=7 \) as well as \( \uex(t) \)
+as the dashed line.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  Time mesh with discrete solution values. <a name="decay:fdu:e"></a> </p></center>
+<p><img src="figs-decay/fdm_u_ue.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+Since finite difference methods produce solutions at the mesh
+points only, it is an open question what the solution is between
+the mesh points. One can use methods for interpolation to
+compute the value of \( u \) between mesh points. The simplest
+(and most widely used) interpolation method is to assume that
+\( u \) varies linearly between the mesh points, see
+Figure <a href="decay:fdu:ei">2</a>. Given \( u^{n} \)
+and \( u^{n+1} \), the value of \( u \) at some \( t\in [t_{n}, t_{n+1}] \)
+is by linear interpolation
+
+<p>
+$$
+\begin{equation}
+u(t) \approx u^n + \frac{u^{n+1}-u^n}{t_{n+1}-t_n}(t - t_n)\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 2:  Linear interpolation between the discrete solution values (dashed curve is exact solution). <a name="decay:fdu:ei"></a> </p></center>
+<p><img src="figs-decay/fdm_u_uei.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+
+<h4>Step 2: Fulfilling the equation at discrete time points  <a name="___sec4"></a></h4>
+<p>
+The ODE is supposed to hold for all \( t\in (0,T] \), i.e., at an infinite
+number of points. Now we relax that requirement and require that
+the ODE is fulfilled at a finite set of discrete points in time.
+The mesh points \( t_1,t_2,\ldots,t_N \) are a natural choice of points.
+The original ODE is then reduced to  the following \( N \) equations:
+
+<p>
+$$
+\begin{equation}
+u'(t_n) = -au(t_n),\quad n=1,\ldots,N\thinspace .
+\label{decay:step2}
+\end{equation}
+$$
+
+<p>
+
+<h4>Step 3: Replacing derivatives by finite differences  <a name="___sec5"></a></h4>
+<p>
+The next and most essential step of the method is to replace the
+derivative \( u' \) by a finite difference approximation. Let us first
+try a one-sided difference approximation (see Figure <a href="decay:sketch:FE">3</a>),
+
+<p>
+$$
+\begin{equation}
+u'(t_n) \approx \frac{u^{n+1}-u^{n}}{t_{n+1}-t_n}\thinspace .
+\label{decay:FEdiff}
+\end{equation}
+$$
+Inserting this approximation in \eqref{decay:step2} results in
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n+1}-u^{n}}{t_{n+1}-t_n} = -au^{n},\quad n=0,1,\ldots,N-1\thinspace .
+\label{decay:step3}
+\end{equation}
+$$
+This equation is the discrete counterpart to the original ODE problem
+\eqref{decay:problem}, and often known as a <em>finite difference scheme</em>,
+which yields a straightforward way to compute the solution at
+the mesh points (\( u(t_n) \), \( n=1,2,\ldots,N \)) as shown next.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 3:  Illustration of a forward difference. <a name="decay:sketch:FE"></a> </p></center>
+<p><img src="figs-decay/fd_forward.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+
+<h4>Step 4: Formulating a recursive algorithm  <a name="___sec6"></a></h4>
+<p>
+
+<p>
+The final step is to identify the computational algorithm to be implemented
+in a program. The key observation here is to realize that
+\eqref{decay:step3} can be used to compute \( u^{n+1} \) if \( u^n \) is known.
+Starting with \( n=0 \), \( u^0 \) is known since \( u^0=u(0)=I \), and
+\eqref{decay:step3} gives an equation for \( u^1 \). Knowing \( u^1 \),
+\( u^2 \) can be found from \eqref{decay:step3}. In general, \( u^n \)
+in \eqref{decay:step3} can be assumed known, and then we can easily solve for
+the unknown \( u^{n+1} \):
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = u^n - a(t_{n+1} -t_n)u^n\thinspace .
+\label{decay:FE}
+\end{equation}
+$$
+We shall refer to \eqref{decay:FE} as the Forward Euler (FE) scheme
+for our model problem. From a mathematical point of view,
+equations of the form \eqref{decay:FE} are known as
+<em>difference equations</em> since they express how differences in
+\( u \), like \( u^{n+1}-u^n \), evolve with \( n \).
+The finite difference method can be viewed as a method for turning
+a differential equation into a difference equation.
+
+<p>
+Computation with \eqref{decay:FE} is straightforward:
+
+<p>
+$$
+\begin{align*}
+u_0 &= I,\\
+u_1 & = u^0 - a(t_{1} -t_0)u^0 = I(1-a(t_1-t_0)),\\
+u_2 & = u^1 - a(t_{2} -t_1)u^1 = I(1-a(t_1-t_0))(1 - a(t_2-t_1)),\\
+u^3 &= u^2 - a(t_{3} -t_2)u^2 = I(1-a(t_1-t_0))(1 - a(t_2-t_1))(1 - a(t_3-t_2)),
+\end{align*}
+$$
+and so on until we reach \( u^N \).
+In the case \( t_{n+1}-t_n \) is a constant, denoted by \( \Delta t \),
+we realize from the above calculations that
+
+<p>
+$$
+\begin{align*}
+u_0 &= I,\\
+u_1 & = I(1-a\Delta t),\\
+u_2 & = I(1-a\Delta t)^2,\\
+u^3 &= I(1-a\Delta t)^3,\\
+&\vdots\\
+u^N &= I(1-a\Delta t)^N\thinspace .
+\end{align*}
+$$
+This means that we have found a closed formula for \( u^n \), and there is
+no need to let a computer generate the sequence \( u^1, u^2, u^3, \ldots \).
+However, finding such a formula for \( u^n \) is possible only for a few very
+simple problems.
+
+<p>
+As the next sections will show, the scheme \eqref{decay:FE} is just one
+out of many alternative finite difference (and other) schemes for
+the model problem \eqref{decay:problem}.
+
+<p>
+
+<h3>The Backward Euler scheme <a name="decay:sec:BE"></a>  <a name="___sec7"></a></h3>
+<p>
+
+<p>
+There are many choices of difference approximations in step 3 of
+the finite difference method as presented in the previous section.
+Another alternative is
+
+<p>
+$$
+\begin{equation}
+u'(t_n) \approx \frac{u^{n}-u^{n-1}}{t_{n}-t_{n-1}}\thinspace .
+\label{decay:BEdiff}
+\end{equation}
+$$
+Since this difference is based on going backward in time (\( t_{n-1} \))
+for information, it is known as the Backward Euler difference.
+Figure <a href="decay:sketch:BE">5</a> explains the idea.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 4:  Illustration of a backward difference. <a name="decay:sketch:BE"></a> </p></center>
+<p><img src="figs-decay/fd_backward.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+Inserting \eqref{decay:BEdiff} in \eqref{decay:step2} yields
+the Backward Euler (BE) scheme:
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n}-u^{n-1}}{t_{n}-t_{n-1}} = -a u^n\thinspace .
+\label{decay:BE0}
+\end{equation}
+$$
+We assume, as explained under step 4 in the section <a href="#decay:sec:FE">The Forward Euler scheme</a>,
+that we have computed \( u^0, u^1, \ldots, u^{n-1} \) such that
+\eqref{decay:BE0} can be used to compute \( u^n \).
+For direct similarity with the Forward Euler scheme \eqref{decay:FE}
+we replace \( n \) by \( n+1 \) in \eqref{decay:BE0} and solve for the
+unknown value \( u^{n+1} \):
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = \frac{1}{1+ a(t_{n+1}-t_n)} u^n\thinspace .
+\label{decay:BE}
+\end{equation}
+$$
+
+<p>
+
+<h3>The Crank-Nicolson scheme <a name="decay:sec:CN"></a>  <a name="___sec8"></a></h3>
+<p>
+
+<p>
+The finite difference approximations used to derive the schemes
+\eqref{decay:FE} and \eqref{decay:BE} are both one-sided differences,
+known to be less accurate than central (or midpoint)
+differences. We shall now construct
+a central difference at \( t_{n+1/2}=\frac{1}{2} (t_n + t_{n+1}) \), or
+\( t_{n+1/2}=(n+\frac{1}{2})\Delta t \) if the mesh spacing is uniform in time.
+The approximation reads
+
+<p>
+$$
+\begin{equation}
+u'(t_{n+\frac{1}{2}}) \approx \frac{u^{n+1}-u^n}{t_{n+1}-t_n}\thinspace .
+\label{decay:CNdiff}
+\end{equation}
+$$
+Note that the fraction on the right-hand side is the same as for the
+Forward Euler approximation \eqref{decay:FEdiff} and
+the Backward Euler approximation \eqref{decay:BEdiff} (with
+\( n \) replaced by \( n+1 \)). The accuracy of this fraction as an approximation
+to the derivative of \( u \) depends on <em>where</em> we seek the derivative:
+in the center of the interval \( [t_{n+1},t_n] \) or at the end points.
+
+<p>
+With the formula \eqref{decay:CNdiff}, where \( u' \) is evaluated at
+\( t_{n+1/2} \), it is natural to demand the
+ODE to be fulfilled at the time points between the mesh points:
+
+<p>
+$$
+\begin{equation}
+u'(t_{n+\frac{1}{2}}) = -au(t_{n+\frac{1}{2}}),\quad n=0,\ldots,N-1\thinspace .
+\label{decay:step2m}
+\end{equation}
+$$
+Using \eqref{decay:CNdiff} in \eqref{decay:step2m} results in
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n+1}-u^n}{t_{n+1}-t_n} = -au^{n+\frac{1}{2}},
+\label{decay:CN0}
+\end{equation}
+$$
+where \( u^{n+\frac{1}{2}} \) is a short form for \( u(t_{n+\frac{1}{2}}) \).
+The problem is that we aim to compute \( u^n \) for integer \( n \), implying that
+\( u^{n+\frac{1}{2}} \) is not a quantity computed by our method. It must be
+expressed by the quantities that we actually produce, i.e., \( u \) at the
+mesh points. One possibility is to approximate \( u^{n+\frac{1}{2}} \)
+as an average of the \( u \) values at the neighboring mesh points:
+
+<p>
+$$
+\begin{equation}
+u^{n+\frac{1}{2}} \approx \frac{1}{2} (u^n + u^{n+1})\thinspace .
+\label{decay:uhalfavg}
+\end{equation}
+$$
+Using \eqref{decay:uhalfavg} in \eqref{decay:CN0} results in
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n+1}-u^n}{t_{n+1}-t_n} = -a\frac{1}{2} (u^n + u^{n+1})\thinspace .
+\label{decay:CN1}
+\end{equation}
+$$
+Figure <a href="decay:sketch:BE">5</a> sketches the geometric interpretation of
+such a centered difference.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 5:  Illustration of a centered difference. <a name="decay:sketch:BE"></a> </p></center>
+<p><img src="figs-decay/fd_backward.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+We assume that \( u^n \) is already computed so that \( u^{n+1} \) is the
+unknown, which we can solve for:
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = \frac{1-\frac{1}{2} a(t_{n+1}-t_n)}{1 + \frac{1}{2} a(t_{n+1}-t_n)}u^n\thinspace .
+\label{decay:CN}
+\end{equation}
+$$
+The finite difference scheme \eqref{decay:CN} is known as
+the midpoint scheme or the Crank-Nicolson (CN) scheme. We shall use the latter
+name.
+
+<p>
+
+<p>
+
+<h3>The unifying \( \theta \)-rule <a name="decay:sec:theta"></a>  <a name="___sec9"></a></h3>
+<p>
+
+<p>
+
+<p>
+Let us reconsider the derivation of the Forward Euler, Backward Euler,
+and Crank-Nicolson schemes. In all the mentioned schemes we replace \( u' \) by the
+fraction
+
+<p>
+$$
+\begin{equation*} \frac{u^{n+1}-u^{n}}{t_{n+1}-t_n},\end{equation*}
+$$
+and the difference between the methods lies in which point this
+fraction approximates the derivative; i.e., in which point we
+sample the ODE. So far this has been the
+end points or the midpoint of \( [t_n,t_{n+1}] \). However, we may choose any point
+\( \tilde t \in [t_n,t_{n+1}] \).
+The difficulty
+is that evaluating the right-hand side \( -au \) at an arbitrary point
+faces the same problem as in
+the section <a href="#decay:sec:CN">The Crank-Nicolson scheme</a>: the point value must be expressed
+by the discrete \( u \) quantities that we compute by the scheme, i.e.,
+\( u^n \) and \( u^{n+1} \). Following the averaging idea from
+the section <a href="#decay:sec:CN">The Crank-Nicolson scheme</a>,
+the value of \( u \) at an arbitrary point \( \tilde t \) can be
+calculated as a <em>weighted average</em>, which generalizes the arithmetic average
+\( \frac{1}{2}u^n + \frac{1}{2}u^{n+1} \).
+If we express \( \tilde t \) as a weighted average
+$$ t_{n+\theta} = \theta t_{n+1} + (1-\theta) t_{n},$$
+where \( \theta\in [0,1] \) is the weighting factor, we can write
+
+<p>
+$$
+\begin{equation}
+u(\tilde t) = u(\theta t_{n+1} + (1-\theta) t_{n}) \approx
+\theta u^{n+1} + (1-\theta) u^{n}\thinspace .
+\label{decay:thetaavg}
+\end{equation}
+$$
+
+<p>
+We can now let the ODE hold at the point
+\( \tilde t\in [t_n,t_{n+1}] \), approximate \( u' \) by the fraction
+\( (u^{n+1}-u^{n})/(t_{n+1}-t_n) \), and approximate the right-hand
+side \( -au \) by the weighted average \eqref{decay:thetaavg}.
+The result is
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n+1}-u^{n}}{t_{n+1}-t_n} = -a (\theta u^{n+1} + (1-\theta) u^{n})
+\label{decay:th0}
+\thinspace .
+\end{equation}
+$$
+This is a generalized scheme for our model problem:
+\( \theta =0 \) gives the Forward Euler scheme, \( \theta =1 \) gives the
+Backward Euler scheme, and \( \theta =1/2 \) gives the Crank-Nicolson
+scheme. In addition, we may choose any other value of \( \theta \) in \( [0,1] \).
+
+<p>
+As before, \( u^n \) is considered known and \( u^{n+1} \) unknown, so
+we solve for the latter:
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = \frac{1 - (1-\theta) a(t_{n+1}-t_n)}{1 + \theta a(t_{n+1}-t_n)}\thinspace .
+\label{decay:th}
+\end{equation}
+$$
+This scheme is known as the \( \theta \)-rule, or alternatively written as
+the "theta-rule".
+
+<p>
+
+<h3>Constant time step  <a name="___sec10"></a></h3>
+<p>
+All schemes up to now have been formulated for a general non-uniform
+mesh in time: \( t_0,t_1,\ldots,t_N \). Non-uniform meshes are highly relevant
+since one can use many points in regions where \( u \) varies rapidly, and
+save points in regions where \( u \) is slowly varying. This is the key idea
+of <em>adaptive</em> methods where the spacing of the mesh points
+are determined as the computations proceed.
+
+<p>
+However, a uniformly distributed set of mesh points is very common and
+sufficient for many applications. It therefore makes sense to
+present the finite difference schemes for a uniform point distribution
+\( t_n=n\Delta t \), where \( \Delta t \) is the constant spacing between
+the mesh points, also referred to as the <em>time step</em>.
+The resulting formulas look simpler and are perhaps more
+well known:
+
+<p>
+$$
+\begin{align}
+u^{n+1} &= (1 - a\Delta t )u^n  \quad (\hbox{FE})
+\label{decay:FE:u}\\
+u^{n+1} &= \frac{1}{1+ a\Delta t} u^n  \quad (\hbox{BE})
+\label{decay:BE:u}\\
+u^{n+1} &= \frac{1-\frac{1}{2} a\Delta t}{1 + \frac{1}{2} a\Delta t} u^n \quad \quad (\hbox{CN})
+\label{decay:CN:u}\\
+u^{n+1} &= \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n \quad (\theta-\hbox{rule})
+\label{decay:th:u}
+\end{align}
+$$
+
+<p>
+Not surprisingly, we present alternative schemes
+because they have different pros and cons, both for the simple ODE
+in question (which can easily be solved as accurately as desired), and for
+more advanced differential equation problems.
+
+<p>
+
+<h3>Operator notation for finite differences <a name="decay:sec:fdop"></a>  <a name="___sec11"></a></h3>
+<p>
+
+<p>
+
+<p>
+Finite difference formulas can be tedious to write and read,
+especially for differential equations with many terms and many
+derivatives. To save space and help the reader of the scheme to quickly
+see the nature of the difference approximations, we introduce a
+compact notation:
+
+<p>
+$$
+\begin{align}
+[D_tu]^n &= \frac{u^{n+\frac{1}{2}} - u^{n-\frac{1}{2}}}{\Delta t}
+\approx \frac{d}{dt} u(t_n) \label{fd:D:c}\\
+[D_t^-u]^n &= \frac{u^{n} - u^{n-1}}{\Delta t}
+\approx \frac{d}{dt} u(t_n) \label{fd:D:b}\\
+[D_t^+u]^n &= \frac{u^{n+1} - u^{n}}{\Delta t}
+\approx \frac{d}{dt} u(t_n) \label{fd:D:f}
+\end{align}
+$$
+The notation consists of an operator that approximates
+differentiation with respect to an independent variable, here \( t \).
+The operator is built of the symbol \( D \), with the variable as subscript
+and a superscript \( {}^- \) for a backward difference and \( {}^+ \) for a forward
+difference. No superscript implies a central difference.
+We place square brackets around the operator and the function it operates
+on and specify the mesh point, where the operator is acting, by
+a superscript.
+
+<p>
+An averaging operator is also convenient to have:
+
+<p>
+$$
+\begin{equation}
+[\overline{u}^{t}]^n = \frac{1}{2} (u^{n-\frac{1}{2}} + u^{n+\frac{1}{2}} )
+\approx u(t_n) \label{fd:mean:a}
+\end{equation}
+$$
+The superscript \( t \) indicates that the average is taken along the time
+coordinate. The common average \( (u^n + u^{n+1})/2 \) can now be
+expressed as \( [\overline{u}^{t}]^{n+1/2} \).
+
+<p>
+
+<p>
+The Backward Euler finite difference approximation to \( u'=-au \) can be written
+as follows utilizing the compact notation:
+
+<p>
+$$
+\begin{equation*}
+[D_t^-u]^n = -au^n \thinspace .
+\end{equation*}
+$$
+In difference equations we often place the square brackets around
+the whole equation, to indicate at which mesh point the equation applies,
+since each term is supposed to be approximated at the same point:
+
+<p>
+$$
+\begin{equation}
+[D_t^- u  = -au]^n \thinspace .
+\end{equation}
+$$
+The Forward Euler scheme takes the form
+
+<p>
+$$
+\begin{equation}
+[D_t^+ u  = -au]^n,
+\end{equation}
+$$
+while the Crank-Nicolson scheme is written as
+
+<p>
+$$
+\begin{equation}
+[D_t u = -a\overline{u}^t]^{n+\frac{1}{2}}\thinspace .
+\label{fd:compact:ex:CN}
+\end{equation}
+$$
+Just apply \eqref{fd:D:c} and \eqref{fd:mean:a} and write out the
+expressions to see that \eqref{fd:compact:ex:CN} is indeed the
+Crank-Nicolson scheme.
+
+<p>
+
+<p>
+The \( \theta \)-rule can be specified by
+
+<p>
+$$
+\begin{equation}
+[\bar D_t u = -a\overline{u}^{t,\theta}]^{n+\theta},
+\label{decay:fd1:op:theta}
+\end{equation}
+$$
+if we define a new time difference and a <em>weighted averaging operator</em>:
+
+<p>
+$$
+\begin{equation}
+[\bar D_t u]^{n+\theta} = \frac{u^{n+1}-u^n}{t^{n+1}-t^n},
+\label{decay:fd1:Du:theta}
+\end{equation}
+\begin{equation}
+[\overline{u}^{t,\theta}]^{n+\theta} = (1-\theta)u^{n} + \theta u^{n+1}
+\approx u(t_{n+\theta}),
+\label{decay:fd1:wmean:a}
+\end{equation}
+$$
+where \( \theta\in [0,1] \). Note that for \( \theta =1/2 \) we recover
+the standard centered difference and the standard arithmetic average.
+The idea in \eqref{decay:fd1:op:theta} is to sample the equation at
+\( t_{n+\theta} \), use a skew difference at that
+point \( [\bar D_t u]^{n+\theta} \), and a shifted mean value.
+An alternative notation is
+$$ [D_t u]^{n+1/2} = \theta [-au]^{n+1} + (1-\theta)[-au]^{n}\thinspace .$$
+
+<p>
+Looking at the various examples above and comparing them with the
+underlying differential equations, we see immediately which difference
+approximations that have been used and at which point they
+apply. Therefore, the compact notation efficiently communicates the
+reasoning behind turning a differential equation into a difference
+equation.
+
+<p>
+
+<p>
+
+<p>
+
+<h2>Implementation <a name="decay:impl1"></a>  <a name="___sec12"></a></h2>
+<p>
+
+<p>
+The purpose now is to make a computer program for solving
+$$
+u'(t) = -au(t),\quad t\in (0,T], \quad u(0)=I,
+$$
+and display the solution on the screen, preferably together with the
+exact solution. We shall also be concerned with how we can test
+that the implementation is correct.
+
+<p>
+All programs referred to in this section are found in the
+<a href="https://github.com/hplgit/INF5620/tree/master/src/decay"><tt>src/decay</tt></a> directory.
+
+<p>
+
+<h4>Mathematical problem  <a name="___sec13"></a></h4>
+<p>
+We want to explore the Forward Euler scheme, the
+Backward Euler, and the Crank-Nicolson schemes applied to our model problem.
+From an implementational points of view, it is advantageous to
+implement the \( \theta \)-rule
+$$
+u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n,
+$$
+since it can generate the three other schemes by various of
+choices of \( \theta \): \( \theta=0 \) for Forward Euler, \( \theta =1 \) for
+Backward Euler, and \( \theta =1/2 \) for Crank-Nicolson.
+Given \( a \), \( u^0=I \), \( T \), and \( \Delta t \),
+our task is to use the \( \theta \)-rule to
+compute \( u^1, u^2,\ldots,u^N \), where \( t_N=N\Delta t \), and
+\( N \) the closest integer to \( T/\Delta t \).
+
+<p>
+
+<h4>Computer Language: Python  <a name="___sec14"></a></h4>
+<p>
+Any programming language can be used to generate the \( u^{n+1} \) values from
+the formula above. However, in this document we shall mainly make use of
+Python of several reasons:
+
+<p>
+
+<ul>
+  <li> Python has a very clean, readable syntax (often known as
+    "executable pseudo-code").
+  <li> Python code is very similar to MATLAB code (and MATLAB has a
+    particularly widespread use for scientific computing).
+  <li> Python is similar to, but much simpler to work with and
+    results in more reliable code than C++.
+  <li> Python is a full-fledged, very powerful programming language.
+  <li> Python has a rich set of modules for scientific computing, and its
+    popularity in scientific computing is rapidly growing.
+  <li> Python was made for being combined with compiled languages
+    (C, C++, Fortran) to reuse existing numerical software and to
+    reach high computational performance of new implementations.
+  <li> Python has extensive support for administrative task
+    needed when doing large-scale computational investigations.
+  <li> Python has extensive support for graphics (visualization,
+    user interfaces, web applications).
+  <li> FEniCS, a very powerful tool for solving PDEs by
+    the finite element method, is most human-efficient to operate
+    from Python.
+</ul>
+
+Learning Python is easy. Many newcomers to the language will probably
+learn enough from the examples to perform their own computer
+experiements. The examples start with simple Python code and gradually
+make use of more powerful constructs as we proceed. As long as it is
+not inconvenient for the problem at hand, our Python code is made as
+close as possible to MATLAB code for easy transition between the two
+languages.
+
+<p>
+
+<h3>Making a program <a name="decay:py1"></a>  <a name="___sec15"></a></h3>
+<p>
+
+<p>
+We choose to have an array <tt>u</tt> for storing the \( u^n \) values, \( n=0,1,\ldots,N \).
+The algorithmic steps are
+
+<p>
+
+<ol>
+ <li> initialize \( u^0 \)
+ <li> for \( t=t_n \), \( n=1,2,\ldots,N \): compute \( u_n \) using
+    the \( \theta \)-rule formula
+</ol>
+
+<h4>Function for computing the numerical solution  <a name="___sec16"></a></h4>
+<p>
+The following Python function takes the input data of the problem
+(\( I \), \( a \), \( T \), \( \Delta t \), \( \theta \)) as arguments and returns two arrays with
+the solution \( u^0,\ldots,u^N \) and the mesh points \( t_0,\ldots,t_N \),
+respectively:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">theta_rule</span>(I, a, T, dt, theta):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(T<span style="color: #666666">/</span>dt)            <span style="color: #008800; font-style: italic"># no of time intervals</span>
+    T <span style="color: #666666">=</span> N<span style="color: #666666">*</span>dt                 <span style="color: #008800; font-style: italic"># adjust T to fit time step dt</span>
+    u <span style="color: #666666">=</span> zeros(N<span style="color: #666666">+1</span>)           <span style="color: #008800; font-style: italic"># array of u[n] values</span>
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, N<span style="color: #666666">+1</span>)  <span style="color: #008800; font-style: italic"># time mesh</span>
+
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I                 <span style="color: #008800; font-style: italic"># assign initial condition</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, N):    <span style="color: #008800; font-style: italic"># n=0,1,...,N-1</span>
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u[n]
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+The <tt>numpy</tt> library contains a lot of functions for array computing. Most
+of the function names are similar to what is found
+in the the alternative scientific computing language MATLAB. Here
+we make use of
+
+<p>
+
+<ul>
+ <li> <tt>zeros(N+1)</tt> for creating an array of a size <tt>N+1</tt>
+   and initializing the elements to zero
+ <li> <tt>linspace(0, T, N+1)</tt> for creating an array with <tt>N+1</tt> coordinates uniformly
+   distributed between <tt>0</tt> and <tt>T</tt>
+</ul>
+
+The <tt>for</tt> loop deserves a comment, especially for newcomers to Python.
+The construction <tt>range(0, N, s)</tt> generates all integers from <tt>0</tt> to <tt>N</tt>
+in steps of <tt>s</tt>, <em>but not including</em> <tt>N</tt>. Omitting <tt>s</tt> means <tt>s=1</tt>.
+For example, <tt>range(0, 6, 3)</tt>
+gives <tt>0</tt> and <tt>3</tt>, while <tt>range(0, N)</tt> generates <tt>0</tt>, <tt>1</tt>, ..., <tt>N-1</tt>.
+In our loop, <tt>n</tt> takes on the values generated by <tt>range(0, N)</tt>,
+implying the following assignments <tt>u[n+1]</tt>: <tt>u[1]</tt>, <tt>u[2]</tt>, ...,
+<tt>u[N]</tt>, which is what we want since <tt>u</tt> has length <tt>N+1</tt>.
+The first index in Python arrays or lists is <em>always</em> <tt>0</tt> and the
+last is then <tt>len(u)-1</tt>.
+
+<p>
+To compute with the <tt>theta_rule</tt> function, we need to <em>call</em> it. Here
+is a sample call:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> theta_rule(I<span style="color: #666666">=1</span>, a<span style="color: #666666">=2</span>, T<span style="color: #666666">=8</span>, dt<span style="color: #666666">=0.8</span>, theta<span style="color: #666666">=1</span>)
+</pre></div>
+<p>
+
+<p>
+
+<h4>Integer division  <a name="___sec17"></a></h4>
+<p>
+The shown implementation of the <tt>theta_rule</tt> may face problems and
+wrong results if <tt>T</tt>, <tt>a</tt>, <tt>dt</tt>, and <tt>theta</tt> are given as integers,
+see Exercises ref{decay:exer:intdiv} and ref{decay:exer:decay1err}.
+The problem is related to <em>integer division</em> in Python (as well as
+in Fortran, C, and C++): <tt>1/2</tt> becomes <tt>0</tt>,
+while <tt>1.0/2</tt>, <tt>1/2.0</tt>, or <tt>1.0/2.0</tt> all become are <tt>0.5</tt>. It is enough
+that at least the nominator or the denominator is a real number
+(i.e., a <tt>float</tt> object)
+to ensure correct mathematical division. Inserting
+a conversion <tt>dt = float(dt)</tt>
+guarantees that <tt>dt</tt> is
+<tt>float</tt> and avoids problems in Exercise refref{decay:exer:decay1err}.
+
+<p>
+Another problem with computing \( N=T/\Delta t \) is that we should
+round \( N \) to the nearest integer. With <tt>N = int(T/dt)</tt> the <tt>int</tt>
+operation picks the largest integer smaller than <tt>T/dt</tt>. Correct
+rounding is obtained by
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(T<span style="color: #666666">/</span>dt))
+</pre></div>
+<p>
+The complete version of our improved, safer <tt>theta_rule</tt> function then becomes
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">theta_rule</span>(I, a, T, dt, theta):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
+    dt <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(dt)           <span style="color: #008800; font-style: italic"># avoid integer division</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(T<span style="color: #666666">/</span>dt))     <span style="color: #008800; font-style: italic"># no of time intervals</span>
+    T <span style="color: #666666">=</span> N<span style="color: #666666">*</span>dt                 <span style="color: #008800; font-style: italic"># adjust T to fit time step dt</span>
+    u <span style="color: #666666">=</span> zeros(N<span style="color: #666666">+1</span>)           <span style="color: #008800; font-style: italic"># array of u[n] values</span>
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, N<span style="color: #666666">+1</span>)  <span style="color: #008800; font-style: italic"># time mesh</span>
+
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I                 <span style="color: #008800; font-style: italic"># assign initial condition</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, N):    <span style="color: #008800; font-style: italic"># n=0,1,...,N-1</span>
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u[n]
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+
+<p>
+
+<h4>Doc strings  <a name="___sec18"></a></h4>
+<p>
+
+<p>
+Right below the header line in the <tt>theta_rule</tt> function there is a
+Python string enclosed in triple double quotes <tt>"""</tt>.
+The purpose of this string object is to document what the function
+does and what the arguments are. In this case the necessary
+documentation do not span more than one line, but with triple double
+quoted strings the text may span several lines:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">theta_rule</span>(I, a, T, dt, theta):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Solve</span>
+
+<span style="color: #BB4444; font-style: italic">        u&#39;(t) = -a*u(t),</span>
+
+<span style="color: #BB4444; font-style: italic">    with initial condition u(0)=I, for t in the time interval</span>
+<span style="color: #BB4444; font-style: italic">    (0,T]. The time interval is divided into time steps of</span>
+<span style="color: #BB4444; font-style: italic">    length dt.</span>
+
+<span style="color: #BB4444; font-style: italic">    theta=1 corresponds to the Backward Euler scheme, theta=0</span>
+<span style="color: #BB4444; font-style: italic">    to the Forward Euler scheme, and theta=0.5 to the Crank-</span>
+<span style="color: #BB4444; font-style: italic">    Nicolson method.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    <span style="color: #666666">...</span>
+</pre></div>
+<p>
+Such documentation strings appearing right after the header of
+a function are called <em>doc strings</em>. There are tools that can automatically
+extract the definition of functions and the contents of doc strings
+and then produce nicely formatted documentation.
+
+<p>
+It is strongly recommended to equip any function whose purpose
+is not obvious with a doc string. Nevertheless, the forthcoming
+text deviates from this rule if the function is explained in the text.
+
+<p>
+
+<p>
+
+<h4>Formatting of numbers  <a name="___sec19"></a></h4>
+<p>
+Having computed the discrete solution <tt>u</tt>, it is natural to look at
+the numbers:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Write out a table of t and u values:</span>
+<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #AA22FF">len</span>(t)):
+    <span style="color: #AA22FF; font-weight: bold">print</span> t[i], u[i]
+</pre></div>
+<p>
+The convenient <tt>print</tt> statement gives unfortunately quite ugly output
+because the <tt>t</tt> and <tt>u</tt> values are not aligned in nicely formatted columns.
+To fix this problem, we recommend to use the <em>printf format</em>, supported most
+programming languages with inheritage from C,
+or Python's recent <em>format string syntax</em>.
+
+<p>
+Writing <tt>t[i]</tt> and <tt>u[i]</tt> in two nicely formatted columns is done like
+this with the printf format:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;t=</span><span style="color: #BB6688; font-weight: bold">%6.3f</span><span style="color: #BB4444"> u=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (t[i], u[i])
+</pre></div>
+<p>
+The percentage signs signify "slots" in the
+text where the variables listed at the end of the statement are
+inserted. For each "slot" one must specify a format for how the
+variable is going to appear in the string: <tt>s</tt> for pure text,
+<tt>d</tt> for an integer, <tt>g</tt> for a real number written as compactly as possible,
+<tt>9.3E</tt> for scientific notation with three decimals in a field of
+with 12 (e.g., <tt>-1.351E-2</tt>), or <tt>.2f</tt> for a standard decimal notation,
+here with two decimals, formatted with minimum width. The printf syntax provides
+a quick way of formatting tabular output of numbers with full control of
+the layout.
+
+<p>
+The corresponding format string syntax looks like
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;t={t:6.3f} u={u:g}&#39;</span><span style="color: #666666">.</span>format(t<span style="color: #666666">=</span>t[i], u<span style="color: #666666">=</span>u[i])
+</pre></div>
+<p>
+As seen, this format allows logical names in the "slots" where
+<tt>t[i]</tt> and <tt>u[i]</tt> are to be inserted. The "slots" are surrounded
+by curly braces, and the logical name is followed by a colon and
+then the printf-like specification of how to format real numbers,
+integers, or strings.
+
+<p>
+
+<h4>Running the program  <a name="___sec20"></a></h4>
+<p>
+The function and main program shown above must be placed in a file,
+say with name <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay1.py"><tt>decay1.py</tt></a>.  Make sure you
+write the code with a suitable text editor (Gedit, Emacs, Vim,
+Notepad++, or similar).  The program is run by executing the file this
+way:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay1.py
+</pre></div>
+<p>
+The text <tt>Terminal></tt> just signifies the prompt that one has in
+a Unix/Linux or DOS terminal window.
+
+<p>
+We strongly recommend to run Python programs within the IPython shell.
+First start IPython by typing
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; ipython
+</pre></div>
+<p>
+in a terminal window.
+The program is run by the command
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">In [<span style="color: #666666">1</span>]: run decay1<span style="color: #666666">.</span>py
+</pre></div>
+<p>
+The advantage of running programs in IPython are many: previous commands
+are easily recalled, <tt>%pdb</tt> turns on debugging so that
+variables can be examined if the program
+aborts due to an exception, output of commands are stored in variables,
+programs and statements can be profiled,
+any operating system command can be executed, modules can be loaded
+automatically and other customizations can be performed when starting
+IPython -- to mention some of the most
+useful featuers.
+
+<p>
+Although running programs in IPython is strongly recommended, most
+execution examples in the forthcoming text simply use a minimal
+text like <tt>Terminal> python programname</tt>.
+
+<p>
+<!-- Explain running programs in IPython -->
+<!-- Prompt: maybe just something with Unix to promote virtual Ubuntu -->
+
+<p>
+
+<h3>Verifying the implementation  <a name="___sec21"></a></h3>
+<p>
+Since it is easy to make mistakes while implementating numerical
+algorithms, we should believe in the printed \( u \) values before
+we have a done a more thorough test. Many will think of comparing
+the computed solution with the exact solution can prove that
+the implementation is correct, but there is a difference between
+the computed solution and the exact formula \( Ie^{-at} \). We do not
+know what this difference is. The challenging question is whether
+we have the mathematically correct difference or if we have another,
+maybe small, difference that is due to both an approximation error
+and an error in the implementation.
+
+<p>
+The purpose of <em>verifying</em> a program is to bring evidence for the
+fact that there are no errors in the implementation. To avoid
+mixing necessary approximation errors and undesired
+implementation errors, we should
+try to make tests where we have some exact computation of the
+discrete solution or parts of it.
+
+<p>
+
+<h4>Running a few algorithmic steps by hand  <a name="___sec22"></a></h4>
+<p>
+The simplest approach to produce a correct reference for the discrete
+solution \( u \) of finite difference equations is is to compute a few
+steps with the algorithm by hand. Then we can compare the hand
+calculations with the discrete solution produced by the program.
+
+<p>
+With the present test example we could use a calculator and
+compute \( u^1 \), \( u^2 \), and \( u^3 \). However, the chosen values of \( I \) and \( \theta \)
+given in the execution example above are not good: 0 and 1 can easily
+simplify formulas too much for test purposes. For example, with
+\( \theta =1 \) the nominator if the formula for \( u^n \) will be the same for
+all \( a \) and \( \Delta t \) values. We therefore choose more
+"arbitrary" values, say \( \theta =0.8 \) and \( I=0.1 \). Hand calculations
+with the aid of a calculator gives
+
+<p>
+$$ A\equiv \frac{1 - (1-\theta) a\Delta t}{1 + \theta a \Delta t} = 0.298245614035$$
+$$
+\begin{align*}
+u^1 &= AI=0.0298245614035,\\
+u^2 &= Au^1= 0.00889504462912,\\
+u^3 &=Au^2= 0.00265290804728
+\end{align*}
+$$
+
+<p>
+Instead of doing this by hand, we may write the formulas in Python and
+let Python do the calculations:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">verify_three_steps</span>():
+    <span style="color: #008800; font-style: italic"># Three manual steps</span>
+    theta <span style="color: #666666">=</span> <span style="color: #666666">0.8</span>; a <span style="color: #666666">=</span> <span style="color: #666666">2</span>; I <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>; dt <span style="color: #666666">=</span> <span style="color: #666666">0.8</span>
+    factor <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)
+    u1 <span style="color: #666666">=</span> factor<span style="color: #666666">*</span>I
+    u2 <span style="color: #666666">=</span> factor<span style="color: #666666">*</span>u1
+    u3 <span style="color: #666666">=</span> factor<span style="color: #666666">*</span>u2
+
+    N <span style="color: #666666">=</span> <span style="color: #666666">3</span>  <span style="color: #008800; font-style: italic"># number of time steps</span>
+    u, t <span style="color: #666666">=</span> theta_rule(I<span style="color: #666666">=</span>I, a<span style="color: #666666">=</span>a, T<span style="color: #666666">=</span>N<span style="color: #666666">*</span>dt, dt<span style="color: #666666">=</span>dt, theta<span style="color: #666666">=</span>theta)
+
+    <span style="color: #AA22FF; font-weight: bold">print</span> u[<span style="color: #666666">1</span>:]  <span style="color: #008800; font-style: italic"># u[1], u[2], ...</span>
+    <span style="color: #AA22FF; font-weight: bold">print</span> u1, u2, u3
+</pre></div>
+<p>
+
+<p>
+Visual inspection of the printed output is tedious and errorprone. What
+we really want to test is whether the difference between the "hand calculations"
+<tt>u1</tt>, <tt>u2</tt>, and <tt>u3</tt> and the general numerical solution in the <tt>u</tt> array
+is within the machine precision. The last two print statements in the
+above <tt>verify_three_steps</tt> function should therefore be replaced by
+an automated comparison:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">verify_three_steps</span>():
+    <span style="color: #666666">...</span>
+
+    tol <span style="color: #666666">=</span> <span style="color: #666666">1E-15</span>  <span style="color: #008800; font-style: italic"># tolerance for comparing floats</span>
+    difference <span style="color: #666666">=</span> <span style="color: #AA22FF">abs</span>(u1<span style="color: #666666">-</span>u[<span style="color: #666666">1</span>]) <span style="color: #666666">+</span> <span style="color: #AA22FF">abs</span>(u2<span style="color: #666666">-</span>u[<span style="color: #666666">2</span>]) <span style="color: #666666">+</span> <span style="color: #AA22FF">abs</span>(u3<span style="color: #666666">-</span>u[<span style="color: #666666">3</span>])
+    success <span style="color: #666666">=</span> difference <span style="color: #666666">&lt;=</span> tol
+    <span style="color: #AA22FF; font-weight: bold">return</span> success
+</pre></div>
+<p>
+
+<p>
+We also put the main program, where a complete numerical simulation
+of a case is carried out, in a separate function, <tt>main</tt>, since this makes
+it easier to run the verify function and real simulations as desired. The
+<tt>main</tt> function is then
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">main</span>():
+    u, t <span style="color: #666666">=</span> theta_rule(I<span style="color: #666666">=1</span>, a<span style="color: #666666">=2</span>, T<span style="color: #666666">=8</span>, dt<span style="color: #666666">=0.8</span>, theta<span style="color: #666666">=1</span>)
+    <span style="color: #008800; font-style: italic"># Write out a table of t and u values:</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #AA22FF">len</span>(t)):
+        <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;t=</span><span style="color: #BB6688; font-weight: bold">%6.3f</span><span style="color: #BB4444"> u=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (t[i], u[i])
+        <span style="color: #008800; font-style: italic"># or print &#39;t={t:6.3f} u={u:g}&#39;.format(t=t[i], u=u[i])</span>
+</pre></div>
+<p>
+
+<p>
+The main program in the file may now first run the test (<tt>verify_three_steps()</tt>)
+and then go on with the real simulation (<tt>main()</tt>) only if the test is passed:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">if</span> verify_three_steps():
+    main()
+<span style="color: #AA22FF; font-weight: bold">else</span>:
+    <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;Bug in the implementation!&#39;</span>
+</pre></div>
+<p>
+
+<p>
+Since the verification test is always done, future errors introduced
+accidentally in the program have a good chance of being detected.  It
+is extremely important that verification test can always be easily
+executed.  There are test frameworks and corresponding programming
+rules that allow us to request running through a suite of test cases,
+but in this very early stage of Python programming we just implement
+and run the verification in our own code so that every detail is
+visible and understood.
+
+<p>
+The complete program including the <tt>verify_three_steps*</tt> functions is
+found in the file <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay2.py"><tt>decay2.py</tt></a>.  A problem
+with the <tt>verify_three_steps</tt> function is that one often ends up
+copying expressions from the implementation that is to be
+tested. Buggy expressions are then tested against the same buggy
+expressions. A much safer approach is described next.
+
+<p>
+
+<h4>Finding an exact discrete solution  <a name="___sec23"></a></h4>
+<p>
+Sometimes it is possible to find an <em>exact discrete solution</em>. That
+is, we have a formula for \( u^n \) that fulfilles the discrete finite
+difference equations. The implementation can then be verified against
+the exact discrete solution. This is usually the best technique for
+verification.
+
+<p>
+<!-- Not so limited, will later guess that linear functions and MMS can -->
+<!-- be used in the discrete eqs as well! -->
+
+<p>
+Define
+$$ A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a \Delta t}\ thinspace . $$
+Manual computations with the \( \theta \)-rule results in
+$$
+\begin{align*}
+u^0 &= I,\\
+u^1 &= Au^0 = AI,\\
+u^2 &= Au^1 = A^2I,\\
+&\vdots\\
+u^n &= A^nu^{n-1} = A^nI thinspace .
+\end{align*}
+$$
+We have then established the exact discrete solution as
+$$
+\begin{equation}
+u^n = IA^n
+\label{decay:un:exact}
+thinspace .
+\end{equation}
+$$
+Note that \( n \) has different meaning on the left- and right-hand side
+of this equation. On the left, \( n \) is a superscript reflecting a counter
+of mesh points, while on the right, \( n \) is a power reflecting exponentiation.
+
+<p>
+Comparison of the exact discrete solution and the computed
+solution is done in the following function:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">verify_exact_discrete_solution</span>():
+
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">exact_discrete_solution</span>(n, I, a, theta, dt):
+        factor <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)
+        <span style="color: #AA22FF; font-weight: bold">return</span> I<span style="color: #666666">*</span>factor<span style="color: #666666">**</span>n
+
+    theta <span style="color: #666666">=</span> <span style="color: #666666">0.8</span>; a <span style="color: #666666">=</span> <span style="color: #666666">2</span>; I <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>; dt <span style="color: #666666">=</span> <span style="color: #666666">0.8</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #666666">8/</span>dt)  <span style="color: #008800; font-style: italic"># no of steps</span>
+    u, t <span style="color: #666666">=</span> theta_rule(I<span style="color: #666666">=</span>I, a<span style="color: #666666">=</span>a, T<span style="color: #666666">=</span>N<span style="color: #666666">*</span>dt, dt<span style="color: #666666">=</span>dt, theta<span style="color: #666666">=</span>theta)
+    u_de <span style="color: #666666">=</span> array([exact_discrete_solution(n, I, a, theta, dt)
+                  <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N<span style="color: #666666">+1</span>)])
+    difference <span style="color: #666666">=</span> <span style="color: #AA22FF">abs</span>(u_de <span style="color: #666666">-</span> u)<span style="color: #666666">.</span>max()  <span style="color: #008800; font-style: italic"># max deviation</span>
+    tol <span style="color: #666666">=</span> <span style="color: #666666">1E-15</span>  <span style="color: #008800; font-style: italic"># tolerance for comparing floats</span>
+    success <span style="color: #666666">=</span> difference <span style="color: #666666">&lt;=</span> tol
+    <span style="color: #AA22FF; font-weight: bold">return</span> success
+</pre></div>
+<p>
+Note that one can define a function inside another function (but such
+a function is invisible outside the function in which it is defined).
+The complete program is found in the file <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay3.py"><tt>decay3.py</tt></a>.
+
+<p>
+
+<p>
+
+<h3>Computing the numerical error <a name="decay:computing:error"></a>  <a name="___sec24"></a></h3>
+<p>
+
+<p>
+Now that we have evidence for a correct implementation, we are
+in a position to compare the computed \( u^n \) values in the <tt>u</tt>
+array with the exact \( u \) values at the mesh points. The purpose
+is not to check that the program is correct, but to study the
+error in the numerical solution.
+
+<p>
+Let us first make a function for the analytical solution \( \uex(t)=Ie^{-at} \)
+of the model problem:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">exact_solution</span>(t, I, a):
+    <span style="color: #AA22FF; font-weight: bold">return</span> I<span style="color: #666666">*</span>exp(<span style="color: #666666">-</span>a<span style="color: #666666">*</span>t)
+</pre></div>
+<p>
+
+<p>
+A natural way to compare the exact and discrete solutions is to
+calculate their difference at the mesh points:
+
+<p>
+$$
+\begin{equation}
+e_n = \uex(t_n) - u_n,\quad n=0,1,\ldots,Nthinspace .
+\end{equation}
+$$
+These numbers are conveniently computed by
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> theta_rule(I, a, T, dt, theta)  <span style="color: #008800; font-style: italic"># Numerical solution</span>
+u_e <span style="color: #666666">=</span> exact_solution(t, I, a)
+e <span style="color: #666666">=</span> u_e <span style="color: #666666">-</span> u
+</pre></div>
+<p>
+The last two statements make use of array arithmetics: <tt>t</tt> is an
+array of mesh points that we pass to <tt>exact_solution</tt>. This function
+evaluates <tt>-a*t</tt>, which is a scalar times an array, meaning that
+the scalar is multiplied with each array element.
+The result is an array, let us call it <tt>tmp1</tt>. Then
+<tt>exp(tmp1)</tt> means applying the exponential function to each element in
+<tt>tmp</tt>, resulting an array, say <tt>tmp2</tt>. Finally, <tt>I*tmp2</tt> is computed
+(scalar times array) and <tt>u_e</tt> refers to this array returned from
+<tt>exact_solution</tt>. The expression <tt>u_e - u</tt> is the difference between
+two arrays, resulting in a new array referred to by <tt>e</tt>.
+
+<p>
+The array <tt>e</tt> is the current problem's disctete <em>error function</em>. Very
+often we want to work with just one number reflecting the size of the
+error. A common choice is to integrate \( e_n^2 \) over the mesh and take
+the square root.  Assuming the exact and discrete solution to vary
+linearly between the mesh points, the integral is given exactly by the
+Trapezoidal rule:
+
+<p>
+$$ \hat E^2 = \Delta t\left(\frac{1}{2}e_0^2 + \frac{1}{2}e_N^2
++ \sum_{n=1}^{N-1} e_n^2\right) $$
+A common approximation of this expression, for convenience, is
+
+<p>
+$$ \hat E^2 \approx E^2 = \Delta t\sum_{n=0}^{N} e_n^2 $$
+The error in this approximation is not much of a concern: it means that
+the error measure is not exactly the Trapezoidal rule of an integral, but
+a slightly different measure. We could equally well have chosen other
+error messages, but the choice is not important as long as we use the
+same error measure consistently when investigating the error.
+
+<p>
+The error measure \( \hat E \) or \( E \) is referred to as the
+\( L_2 \) norm of the discrete error function.
+The formula for \( E \) will be frequently used:
+$$
+\begin{equation}
+E = \sqrt{\sum_{n=0}^N e_n^2}
+\label{decay:E}
+\end{equation}
+$$
+The corresponding Python code, using array arithmetics, reads
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">E <span style="color: #666666">=</span> sqrt(dt<span style="color: #666666">*</span><span style="color: #AA22FF">sum</span>(e<span style="color: #666666">**2</span>))
+</pre></div>
+<p>
+The <tt>sum</tt> function comes from <tt>numpy</tt> and computes the sum of the elements
+of an array. Also the <tt>sqrt</tt> function is from <tt>numpy</tt> and computes the
+square root of each element in the array argument.
+
+<p>
+Instead of doing array computing we can compute with
+one element at a time:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">m <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(u)     <span style="color: #008800; font-style: italic"># length of u array (alt: u.size)</span>
+u_e <span style="color: #666666">=</span> zeros(m)
+t <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(m):
+    u_e[i] <span style="color: #666666">=</span> exact_solution(t, a, I)
+    t <span style="color: #666666">=</span> t <span style="color: #666666">+</span> dt
+e <span style="color: #666666">=</span> zeros(m)
+<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(m):
+    e[i] <span style="color: #666666">=</span> u_e[i] <span style="color: #666666">-</span> u[i]
+s <span style="color: #666666">=</span> <span style="color: #666666">0</span>  <span style="color: #008800; font-style: italic"># summation variable</span>
+<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(m):
+    s <span style="color: #666666">=</span> s <span style="color: #666666">+</span> e[i]<span style="color: #666666">**2</span>
+error <span style="color: #666666">=</span> sqrt(dt<span style="color: #666666">*</span>s)
+</pre></div>
+<p>
+Such element-wise computing, often called <em>scalar</em> computing, takes
+more code, is less readable, and runs much slower than array computing.
+
+<p>
+
+<p>
+
+<h3>Plotting solutions  <a name="___sec25"></a></h3>
+<p>
+Having the <tt>t</tt> and <tt>u</tt> arrays, the approximate solution <tt>u</tt> is visualized
+by <tt>plot(t, u)</tt>:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">matplotlib.pyplot</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+plot(t, u)
+show()
+</pre></div>
+<p>
+It will be illustrative to also plot \( \uex(t) \) for comparison. Doing a
+<tt>plot(t, u_e)</tt> is not exactly what we want: the <tt>plot</tt> function draws
+straight lines between the discrete points <tt>(t[n], u_e[n])</tt> while
+\( \uex(t) \) varies as an exponential function between the mesh points.
+The technique for showing the "exact" variation of \( \uex(t) \) between
+the mesh points is to introduce a very fine mesh for \( \uex(t) \):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Plot the error using a very fine mesh</span>
+t_e <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, <span style="color: #666666">1001</span>)
+u_e <span style="color: #666666">=</span> exact_solution(t_e, I, a)
+plot(t,   u,   <span style="color: #BB4444">&#39;r-&#39;</span>)            <span style="color: #008800; font-style: italic"># red  line for u</span>
+plot(t_e, u_e, <span style="color: #BB4444">&#39;b-&#39;</span>)            <span style="color: #008800; font-style: italic"># blue line for u_e</span>
+</pre></div>
+<p>
+
+<p>
+With more than one curve in the plot we need to associate each curve
+with a legend. We also want appropriate names on the axis, a title,
+and a file containing the plot as an image for inclusion in reports.
+The Matplotlib package (<tt>matplotlib.pyplot</tt>) contains functions for
+this purpose. The names of the functions are similar to the plotting
+functions known from MATLAB.  A complete plot session then becomes
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">matplotlib.pyplot</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+
+figure()                          <span style="color: #008800; font-style: italic"># create new plot</span>
+t_e <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, <span style="color: #666666">1001</span>)        <span style="color: #008800; font-style: italic"># very fine mesh for</span>
+u_e <span style="color: #666666">=</span> exact_solution(t_e, I, a)
+plot(t,   u,   <span style="color: #BB4444">&#39;ro&#39;</span>)              <span style="color: #008800; font-style: italic"># red circles for u</span>
+plot(t_e, u_e, <span style="color: #BB4444">&#39;b-&#39;</span>)              <span style="color: #008800; font-style: italic"># blue line for u_e</span>
+legend([<span style="color: #BB4444">&#39;numerical&#39;</span>, <span style="color: #BB4444">&#39;exact&#39;</span>])
+xlabel(<span style="color: #BB4444">&#39;t&#39;</span>)
+ylabel(<span style="color: #BB4444">&#39;u&#39;</span>)
+title(<span style="color: #BB4444">&#39;Method: theta-rule, theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">, dt=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (theta, dt))
+savefig(<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">_</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">.png&#39;</span> <span style="color: #666666">%</span> (theta, dt))
+show()
+</pre></div>
+<p>
+Note that <tt>savefig</tt> here creates a PNG file whose name reflects the
+values of \( \theta \) and \( \Delta t \) so that we can easily distinguish
+files from different runs with \( \theta \) and \( \Delta t \).
+
+<p>
+A bit more sophisticated and easy-to-read filename can be generated
+by mapping the \( \theta \) value to acronyms for the three common
+schemes: FE (Forward Euler, \( \theta=0 \)), BE (Backward Euler, \( \theta=1 \)),
+CN (Crank-Nicolson, \( \theta=0.5 \)). A Python dictionary is ideal for such
+a mapping from numbers to strings:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">theta2name <span style="color: #666666">=</span> {<span style="color: #666666">0</span>: <span style="color: #BB4444">&#39;FE&#39;</span>, <span style="color: #666666">1</span>: <span style="color: #BB4444">&#39;BE&#39;</span>, <span style="color: #666666">0.5</span>: <span style="color: #BB4444">&#39;CN&#39;</span>}
+savefig(<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">_</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">.png&#39;</span> <span style="color: #666666">%</span> (theta2name[theta], dt))
+</pre></div>
+<p>
+
+<p>
+Let us wrap up the computation of the error measure and all the
+plotting statements in a function <tt>explore</tt>. This function
+can be called for various \( \theta \) and \( \Delta t \) values
+to see how the error varies with the method and the mesh resolution:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">explore</span>(I, a, T, dt, theta<span style="color: #666666">=0.5</span>, makeplot<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Run a case with the theta_rule, compute error measure,</span>
+<span style="color: #BB4444; font-style: italic">    and plot the numerical and exact solutions (if makeplot=True).</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    u, t <span style="color: #666666">=</span> theta_rule(I, a, T, dt, theta)  <span style="color: #008800; font-style: italic"># Numerical solution</span>
+    u_e <span style="color: #666666">=</span> exact_solution(t, I, a)
+    e <span style="color: #666666">=</span> u_e <span style="color: #666666">-</span> u
+    E <span style="color: #666666">=</span> sqrt(dt<span style="color: #666666">*</span><span style="color: #AA22FF">sum</span>(e<span style="color: #666666">**2</span>))
+    <span style="color: #AA22FF; font-weight: bold">if</span> makeplot:
+        figure()                         <span style="color: #008800; font-style: italic"># create new plot</span>
+        t_e <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, <span style="color: #666666">1001</span>)       <span style="color: #008800; font-style: italic"># very fine mesh for u_e</span>
+        u_e <span style="color: #666666">=</span> exact_solution(t_e, I, a)
+        plot(t,   u,   <span style="color: #BB4444">&#39;ro&#39;</span>)             <span style="color: #008800; font-style: italic"># red circles for u</span>
+        plot(t_e, u_e, <span style="color: #BB4444">&#39;b-&#39;</span>)             <span style="color: #008800; font-style: italic"># blue line for u_e</span>
+        legend([<span style="color: #BB4444">&#39;numerical&#39;</span>, <span style="color: #BB4444">&#39;exact&#39;</span>])
+        xlabel(<span style="color: #BB4444">&#39;t&#39;</span>)
+        ylabel(<span style="color: #BB4444">&#39;u&#39;</span>)
+        title(<span style="color: #BB4444">&#39;Method: theta-rule, theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">, dt=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (theta, dt))
+        theta2name <span style="color: #666666">=</span> {<span style="color: #666666">0</span>: <span style="color: #BB4444">&#39;FE&#39;</span>, <span style="color: #666666">1</span>: <span style="color: #BB4444">&#39;BE&#39;</span>, <span style="color: #666666">0.5</span>: <span style="color: #BB4444">&#39;CN&#39;</span>}
+        savefig(<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">_</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">.png&#39;</span> <span style="color: #666666">%</span> (theta2name[theta], dt))
+        show()
+    <span style="color: #AA22FF; font-weight: bold">return</span> E
+
+I <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+a <span style="color: #666666">=</span> <span style="color: #666666">2</span>
+T <span style="color: #666666">=</span> <span style="color: #666666">5</span>
+<span style="color: #AA22FF; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">0</span>, <span style="color: #666666">0.5</span>, <span style="color: #666666">1</span>:
+    <span style="color: #AA22FF; font-weight: bold">for</span> dt <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">0.4</span>, <span style="color: #666666">0.04</span>:
+        E <span style="color: #666666">=</span> explore(I, a, T, dt, theta, makeplot<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>)
+        <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%3.1f</span><span style="color: #BB4444"> </span><span style="color: #BB6688; font-weight: bold">%6.2f</span><span style="color: #BB4444">: </span><span style="color: #BB6688; font-weight: bold">%12.3E</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (theta, dt, E)
+</pre></div>
+<p>
+
+<p>
+The <tt>figure()</tt> call is key here, without it a new <tt>plot</tt> command will
+just earse the last plot instead of creating a new plot in a separate window.
+The complete code resides in the file <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay4.py"><tt>decay4.py</tt></a>.
+Running this program results in
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay4.py
+0.0   0.40:    2.105E-01
+0.0   0.04:    1.449E-02
+0.5   0.40:    3.362E-02
+0.5   0.04:    1.887E-04
+1.0   0.40:    1.030E-01
+1.0   0.04:    1.382E-02
+</pre></div>
+<p>
+We observe that reducing \( \Delta t \) by a factor of 10 increases the
+accuracy for all three methods (\( \theta \) values). We also see that
+the combination of \( \theta=0.5 \) and a small time step \( \Delta t =0.04 \)
+gives a much more accurate solution, and that \( \theta=0 \) and \( \theta=0 \)
+with \( \Delta t = 0.4 \) result in the least accurate solutions.
+
+<p>
+Figure <a href="decay:fig:FE1">6</a> demonstrates that the numerical solution for
+\( \Delta t=0.4 \) clearly lies below the exact curve, but that the
+accuracy improves considerably by using 1/10 of this time step.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 6:  The Forward Euler scheme for two values of \( \Delta t \). <a name="decay:fig:FE1"></a> </p></center>
+<p><img src="figs-decay/FE1.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+Mounting two PNG files, as done in the figure, is easily done by the
+<a href="http://www.imagemagick.org/script/montage.php"><tt>montage</tt></a> program
+from the ImageMagick suite:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; montage -background white -geometry 100% -tile 2x1 <span style="color: #BB6622; font-weight: bold">\</span>
+          FE_0.4.png FE_0.04.png FE1.png
+</pre></div>
+<p>
+The <tt>-geometry</tt> argument is used to specify the size of the image, and here
+we preserve the individual sizes of the images. The <tt>-tile HxV</tt> option
+specifies <tt>H</tt> images in the horizontal direction and <tt>V</tt> images in
+the vertical direction. A series of image files to be combined are then listed,
+with the name of the resulting combined image, here <tt>FE1.png</tt> at the end.
+
+<p>
+
+<p>
+The behavior of the two other schemes are shown in Figures <a href="decay:fig:BE1">7</a>
+and <a href="decay:fig:CN1">8</a>. Crank-Nicolson is obviously the most accurate
+scheme from a visual point of view.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 7:  The Backward Euler scheme for two values of \( \Delta t \). <a name="decay:fig:BE1"></a> </p></center>
+<p><img src="figs-decay/BE1.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 8:  The Crank-Nicolson scheme for two values of \( \Delta t \). <a name="decay:fig:CN1"></a> </p></center>
+<p><img src="figs-decay/CN1.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+
+<h3>Plotting with SciTools  <a name="___sec26"></a></h3>
+<p>
+The <a href="http://code.google.com/p/scitools">SciTools package</a> provides a
+plotting interface, called Easyviz (<tt>scitools.easyviz</tt>), to many different plotting
+packages, including Matplotlib. The syntax is very similar to
+that of Matplotlib and MATLAB. In fact, the plotting commands
+shown above look the same in SciTool's Easyviz interface,
+apart from the import statement, which reads
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">scitools.std</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+</pre></div>
+<p>
+This import also performs a <tt>from numpy import *</tt> (and more) so that
+array functionality becomes available as well.
+
+<p>
+With Easyviz one can merge several plotting commands into one,
+using keyword arguments:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">plot(t,   u,   <span style="color: #BB4444">&#39;ro&#39;</span>,             <span style="color: #008800; font-style: italic"># red circles for u</span>
+     t_e, u_e, <span style="color: #BB4444">&#39;b-&#39;</span>,             <span style="color: #008800; font-style: italic"># blue line for u_e</span>
+     legend<span style="color: #666666">=</span>[<span style="color: #BB4444">&#39;numerical&#39;</span>, <span style="color: #BB4444">&#39;exact&#39;</span>],
+     xlabel<span style="color: #666666">=</span><span style="color: #BB4444">&#39;t&#39;</span>,
+     ylabel<span style="color: #666666">=</span><span style="color: #BB4444">&#39;u&#39;</span>,
+     title<span style="color: #666666">=</span><span style="color: #BB4444">&#39;Method: theta-rule, theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">, dt=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (theta, dt),
+     savefig<span style="color: #666666">=</span><span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">_</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">.png&#39;</span> <span style="color: #666666">%</span> (theta2name[theta], dt),
+     show<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>)
+</pre></div>
+<p>
+The <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay5.py"><tt>decay5.py</tt></a> file
+contains such a demo.
+
+<p>
+By default, Easyviz employs Matplotlib for plotting, but <a href="http://www.gnuplot.info/">Gnuplot</a> and <a href="http://plasma-gate.weizmann.ac.il/Grace/">Grace</a> are viable alternatives:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay5.py --SCITOOLS_easyviz_backend gnuplot
+Terminal&gt; python decay5.py --SCITOOLS_easyviz_backend grace
+</pre></div>
+<p>
+All the plot windows are launched with the need to kill one before
+the next one pops up (as is the case with Matplotlib) and one can
+press the key 'q' anywhere in a plot window to kill it.
+Another advantage of Gnuplot is the automatic choice of sensible
+and distinguishable line types in black-and-white plot files.
+This is particularly handy when making plot files in the PostScript
+format (<tt>savefig('myplot.eps')</tt>).
+
+<p>
+The default backend for Easyviz (together with numerous
+other features) can be set in a configuration file
+
+<p>
+Regarding functionality for annotating plots with title, labels on the
+axis, legends, etc., we refer to the documentation of Matplotlib and
+SciTools for more detailed information on the syntax. The hope is that
+the programming syntax explained so far suffices for understanding the
+code and learning more from a combination of the forthcoming examples
+and other resources such as books and web pages.
+
+<p>
+
+<h3>Reading input from the command line  <a name="___sec27"></a></h3>
+<p>
+It is good programming practice to let programs read input from the user
+rather than require the user to edit the source code when changing parameters.
+Reading input from the command line is a simple and flexible way of interacting
+with the user. Python stores all the command-line arguments in
+the list <tt>sys.argv</tt>. There are, in principle, two ways of programming with
+command-line arguments in Python:
+
+<p>
+
+<ul>
+ <li> Decide upon a sequence of parameters on the command line and read
+   their values directly from the <tt>sys.argv[1:]</tt> (<tt>sys.argv[0]</tt> is the
+   program name).
+ <li> Introduce default values for parameters, use option-value pairs on
+   the command line to override the default values, and use the
+   <tt>argparse.ArgumentParser</tt> tool to interact with the command line.
+</ul>
+
+Both strategies will be illustrated next.
+
+<p>
+
+<h4>Reading a sequence of command-line arguments  <a name="___sec28"></a></h4>
+<p>
+The <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay4.py"><tt>decay4.py</tt></a> program needs
+the following input data:
+
+<p>
+
+<ol>
+<li> \( I \)
+<li> \( a \)
+<li> \( T \)
+<li> an option to turn the plot on or off (<tt>makeplot</tt>)
+<li> a list of \( \Delta t \) values
+</ol>
+
+The simplest way of reading this input from the command line is to say
+that the first four command-line arguments correspond to the first
+four points in the list above, in that order, and that the rest of the
+command-line arguments are the \( \Delta t \) values.  The input given for
+<tt>makeplot</tt> can be a string among <tt>'on'</tt>, <tt>'off'</tt>, <tt>'True'</tt>, and
+<tt>'False'</tt>. The code for reading this input can be put in a function:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sys</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">read_command_line</span>():
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">len</span>(sys<span style="color: #666666">.</span>argv) <span style="color: #666666">&lt;</span> <span style="color: #666666">6</span>:
+        <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;Usage: </span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444"> I a T on/off dt1 dt2 dt3 ...&#39;</span> <span style="color: #666666">%</span> \ 
+              sys<span style="color: #666666">.</span>argv[<span style="color: #666666">0</span>]; sys<span style="color: #666666">.</span>exit(<span style="color: #666666">1</span>)  <span style="color: #008800; font-style: italic"># abort</span>
+
+    I <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">1</span>])
+    a <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">2</span>])
+    T <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(sys<span style="color: #666666">.</span>argv[<span style="color: #666666">3</span>])
+    makeplot <span style="color: #666666">=</span> sys<span style="color: #666666">.</span>argv[<span style="color: #666666">4</span>] <span style="color: #AA22FF; font-weight: bold">in</span> (<span style="color: #BB4444">&#39;on&#39;</span>, <span style="color: #BB4444">&#39;True&#39;</span>)
+    dt_values <span style="color: #666666">=</span> [<span style="color: #AA22FF">float</span>(arg) <span style="color: #AA22FF; font-weight: bold">for</span> arg <span style="color: #AA22FF; font-weight: bold">in</span> sys<span style="color: #666666">.</span>argv[<span style="color: #666666">5</span>:]]
+
+    <span style="color: #AA22FF; font-weight: bold">return</span> I, a, T, makeplot, dt_values
+</pre></div>
+<p>
+First note that everything on the command line ends up in a string in
+the list <tt>sys.argv</tt>.
+Then note that the value of <tt>makeplot</tt> is determined from a boolean expression,
+which becomes <tt>True</tt> if the command-line argument is either <tt>'on'</tt> or
+<tt>'True'</tt>, and <tt>False</tt> otherwise. Also note how easy it is to build the
+list of \( \Delta t \) value: we simply run through
+the rest of the list, <tt>sys.argv[5:]</tt>, convert each command-line argument
+to <tt>float</tt>, and collect these <tt>float</tt> objects in a list, using the
+compact and convenient <em>list comprehension</em> syntax in Python.
+
+<p>
+The loops over \( \theta \) and \( \Delta t \) values can be coded in a <tt>main</tt> function:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">main</span>():
+    I, a, T, makeplot, dt_values <span style="color: #666666">=</span> read_command_line()
+    <span style="color: #AA22FF; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">0</span>, <span style="color: #666666">0.5</span>, <span style="color: #666666">1</span>:
+        <span style="color: #AA22FF; font-weight: bold">for</span> dt <span style="color: #AA22FF; font-weight: bold">in</span> dt_values:
+            E <span style="color: #666666">=</span> explore(I, a, T, dt, theta, makeplot)
+            <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%3.1f</span><span style="color: #BB4444"> </span><span style="color: #BB6688; font-weight: bold">%6.2f</span><span style="color: #BB4444">: </span><span style="color: #BB6688; font-weight: bold">%12.3E</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (theta, dt, E)
+</pre></div>
+<p>
+
+<p>
+The complete program can be found in <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay6.py"><tt>decay6.py</tt></a>.
+
+<p>
+
+<h4>Working with an argument parser  <a name="___sec29"></a></h4>
+<p>
+Python's <tt>ArgumentParser</tt> tool in in the <tt>argparse</tt> module makes it
+easy to create a professional command-line interface to any
+program. The <a href="http://docs.python.org/library/argparse.html">documentation of `ArgumentParser`</a> demonstrates its
+versatile applications, so we shall here just list an example
+containing the most used features.  On the command line we want to
+specify option value pairs for \( I \), \( a \), and \( T \), e.g., <tt>--a 3.5 --I 2
+--T 2</tt>. Including <tt>--makeplot</tt> turns the plot on and excluding this
+option turns the plot off.  The \( \Delta t \) values can be given as
+<tt>--dt 1 0.5 0.25 0.1 0.01</tt>.  Each parameter must have a sensible
+default value so that we specify the option on the command line only
+when the default value is not suitable.
+
+<p>
+We introduce a function for defining the mentioned command-line options:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">define_command_line_options</span>():
+    <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">argparse</span>
+    parser <span style="color: #666666">=</span> argparse<span style="color: #666666">.</span>ArgumentParser()
+    parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--I&#39;</span>, <span style="color: #BB4444">&#39;--initial_condition&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>,
+                        default<span style="color: #666666">=1.0</span>, help<span style="color: #666666">=</span><span style="color: #BB4444">&#39;initial condition, u(0)&#39;</span>,
+                        metavar<span style="color: #666666">=</span><span style="color: #BB4444">&#39;I&#39;</span>)
+    parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--a&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>,
+                        default<span style="color: #666666">=1.0</span>, help<span style="color: #666666">=</span><span style="color: #BB4444">&#39;coefficient in ODE&#39;</span>,
+                        metavar<span style="color: #666666">=</span><span style="color: #BB4444">&#39;a&#39;</span>)
+    parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--T&#39;</span>, <span style="color: #BB4444">&#39;--stop_time&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>,
+                        default<span style="color: #666666">=1.0</span>, help<span style="color: #666666">=</span><span style="color: #BB4444">&#39;end time of simulation&#39;</span>,
+                        metavar<span style="color: #666666">=</span><span style="color: #BB4444">&#39;T&#39;</span>)
+    parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--makeplot&#39;</span>, action<span style="color: #666666">=</span><span style="color: #BB4444">&#39;store_true&#39;</span>,
+                        help<span style="color: #666666">=</span><span style="color: #BB4444">&#39;display plot or not&#39;</span>)
+    parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--dt&#39;</span>, <span style="color: #BB4444">&#39;--time_step_values&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>,
+                        default<span style="color: #666666">=</span>[<span style="color: #666666">1.0</span>], help<span style="color: #666666">=</span><span style="color: #BB4444">&#39;time step values&#39;</span>,
+                        metavar<span style="color: #666666">=</span><span style="color: #BB4444">&#39;dt&#39;</span>, nargs<span style="color: #666666">=</span><span style="color: #BB4444">&#39;+&#39;</span>, dest<span style="color: #666666">=</span><span style="color: #BB4444">&#39;dt_values&#39;</span>)
+    <span style="color: #AA22FF; font-weight: bold">return</span> parser
+</pre></div>
+<p>
+
+<p>
+Each command-line option is defined through the <tt>parser.add_argument</tt>
+method. Alternative options, like the short <tt>--I</tt> and the more
+explaning <tt>--initial_condition</tt> can be defined. Other arguments
+are <tt>type</tt> for the Python object type, a default value, and a help
+string, which gets printed if the command-line argument <tt>-h</tt> or <tt>--help</tt> is
+included. The <tt>metavar</tt> argument specifies the value associated with
+the option when the help string is printed. For example, the option for
+\( I \) has this help output:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay7.py -h
+  ...
+  --I I, --initial_condition I
+                        initial condition, u<span style="color: #666666">(</span>0<span style="color: #666666">)</span>
+  ...
+</pre></div>
+<p>
+The structure of this explanation is
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">  --I metavar, --initial_condition metavar
+                        help-string
+</pre></div>
+<p>
+
+<p>
+The <tt>--makeplot</tt> option is a
+pure flag without any value,
+implying a true value if the flag is present and otherwise
+a false value. The <tt>action='store_true'</tt> makes an option such a flag.
+Finally, the <tt>--dt</tt> option demonstrates how to allow for more
+than one value (separated by blanks) through the <tt>nargs='+'</tt>
+keyword argument.
+After the command line is parsed, we get an object
+where the values of the options are stored as attributes. The attribute
+name is specified by the <tt>dist</tt> keyword argument, which for the
+<tt>--dt</tt> option reads <tt>dt_values</tt>. The code below demonstrates how to
+read the command line and extract the values for each option:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">read_command_line</span>():
+    parser <span style="color: #666666">=</span> define_command_line_options()
+    args <span style="color: #666666">=</span> parser<span style="color: #666666">.</span>parse_args()
+    <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;I={}, a={}, T={}, makeplot={}, dt_values={}&#39;</span><span style="color: #666666">.</span>format(
+        args<span style="color: #666666">.</span>I, args<span style="color: #666666">.</span>a, args<span style="color: #666666">.</span>T, args<span style="color: #666666">.</span>makeplot, args<span style="color: #666666">.</span>dt_values)
+    <span style="color: #AA22FF; font-weight: bold">return</span> args<span style="color: #666666">.</span>I, args<span style="color: #666666">.</span>a, args<span style="color: #666666">.</span>T, args<span style="color: #666666">.</span>makeplot, args<span style="color: #666666">.</span>dt_values
+</pre></div>
+<p>
+
+<p>
+The <tt>main</tt> function remains the same as in the <tt>decay6.py</tt> code based
+on reading from <tt>sys.argv</tt> directly. A complete program using the
+demo above of <tt>ArgumentParser</tt> appears in the file <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay7.py"><tt>decay7.py</tt></a>.
+
+<p>
+
+<p>
+
+<h3>Computing convergence rates <a name="decay:convergence:rate"></a>  <a name="___sec30"></a></h3>
+<p>
+
+<p>
+
+<p>
+We normally expect that the error \( E \) in the numerical solution is reduced
+if the mesh size \( \Delta t \). More specifically, many numerical methods
+obey a power-law relation between \( E \) and \( \Delta t \), if the latter is
+sufficiently small:
+
+<p>
+$$
+\begin{equation}
+E = C\Delta t^r,
+\label{decay:E:dt}
+\end{equation}
+$$
+where \( C \) and \( r \) are (usually unknown) constants independent of \( \Delta t \).
+The parameter \( r \) is known as the <em>convergence rate</em>. For example,
+if the convergence rate is 2, halving \( \Delta t \) reduces the error by
+a factor of \( E \). Diminishing \( \Delta t \) then has a greater impact on
+the error compared with methods that have \( r=1 \). For a given value of \( r \),
+we refer to the method as of \( r \)-th order. First- and second-order
+methods are most common in scientific computing.
+
+<p>
+There are two ways of estimating \( C \) and \( r \) based on a set of
+\( m \) simulations with corresponding pairs \( (\Delta t_i, E_i) \), \( i=0,\ldots,m-1 \),
+and \( \Delta t_{i} < \Delta t_{i-1} \) (i.e., decreasing cell size).
+
+<p>
+
+<ol>
+ <li> Take the logarithm of ref{decay:E:dt}, \( \ln E = r\ln \Delta t + \ln C \),
+    and fit a straight line to the data points \( (\Delta t_i, E_i) \),
+    \( i=0,\ldots,m-1 \).
+ <li> Consider two consecutive experiments, \( (\Delta t_i, E_i) \) and
+    \( (\Delta t_{i-1}, E_{i-1}) \). Dividing the equation
+    \( E_{i-1}=C\Delta t_{i-1}^r \) by \( E_{i}=C\Delta t_{i}^r \) and solving
+    for \( r \) yields
+</ol>
+
+$$
+\begin{equation}
+r_{i-1} = \frac{\ln (E_{i-1}/E_i)}{\ln (\Delta t_{i-1}/\Delta t_i)}
+\label{decay:conv:rate}
+\end{equation}
+$$
+for \( i=1,=ldots,m-1 \).
+
+<p>
+The disadvantage of method 1 is that ref{decay:E:dt} might not be valid
+for the coarsest meshes (largest \( \Delta t \) values), and fitting a line
+to all the data points is then misleading. However, we usually have no
+idea of which \( \Delta t \) values to exclude. Method 2 computes
+convergence rates for pairs of experiments and allows us to see
+if the sequence \( r_i \) converges to some value as \( i\rightarrow m-1 \).
+The final \( r_{m-1} \) can then be taken as the convergence rate.
+If the coarsest meshes have a differing rate, the corresponding
+time steps are probably too large for ref{decay:E:dt} to be valid.
+(We say that the those time steps are not in the asymptotic range.)
+
+<p>
+It is straightforward to extend the <tt>main</tt> function in the program
+<tt>decay7.py</tt> with statements for computing \( r_0, r_1, \ldots, r_{m-2} \):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">math</span> <span style="color: #AA22FF; font-weight: bold">import</span> log
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">main</span>():
+    I, a, T, makeplot, dt_values <span style="color: #666666">=</span> read_command_line()
+    r <span style="color: #666666">=</span> {}
+    <span style="color: #AA22FF; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">0</span>, <span style="color: #666666">0.5</span>, <span style="color: #666666">1</span>:
+        E_values <span style="color: #666666">=</span> []
+        <span style="color: #AA22FF; font-weight: bold">for</span> dt <span style="color: #AA22FF; font-weight: bold">in</span> dt_values:
+            E <span style="color: #666666">=</span> explore(I, a, T, dt, theta, makeplot<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>)
+            E_values<span style="color: #666666">.</span>append(E)
+
+        <span style="color: #008800; font-style: italic"># Compute convergence rates</span>
+        m <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(dt_values)
+        r[theta] <span style="color: #666666">=</span> [log(E_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>E_values[i])<span style="color: #666666">/</span>
+                    log(dt_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>dt_values[i])
+                    <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, m, <span style="color: #666666">1</span>)]
+
+    <span style="color: #AA22FF; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> r:
+        <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BB4444">Pairwise convergence rates for theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">:&#39;</span> <span style="color: #666666">%</span> theta
+        <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39; &#39;</span><span style="color: #666666">.</span>join([<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%.2f</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> r_ <span style="color: #AA22FF; font-weight: bold">for</span> r_ <span style="color: #AA22FF; font-weight: bold">in</span> r[theta]])
+    <span style="color: #AA22FF; font-weight: bold">return</span> r
+</pre></div>
+<p>
+The program is called <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay8.py"><tt>decay8.py</tt></a>.
+
+<p>
+The <tt>r</tt> object is a <em>dictionary of lists</em>. The keys in this
+dictionary are the \( \theta \) values. For example,
+<tt>r[1]</tt> holds the a list of the \( r_i \) values corresponding to
+\( \theta=1 \). In the loop <tt>for theta in r</tt>, the loop variable <tt>theta</tt>
+takes on the values of the keys in the dictionary <tt>r</tt> (in an
+undetermined ordering). We could simply do a <tt>print r[theta]</tt>
+inside the loop, but this would typically yield output of
+the convergence rates with 16 decimals:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">[1.331919482274763, 1.1488178494691532, 1.0657737105411782,  ...]
+</pre></div>
+<p>
+
+<p>
+Instead, we format each number with 2 decimals, using a list
+comprehension to turn the list of numbers, <tt>r[method]</tt>, into
+a list of formatted strings. Then we join these strings
+with a space in between to get a sequence of rates on one line
+in the terminal window. In general, <tt>d.join(list)</tt> joins the
+strings in the list <tt>list</tt> to one string, with <tt>d</tt>
+as delimiter between <tt>list[0]</tt>, <tt>list[1]</tt>, etc.
+
+<p>
+Here is an example on the outcome of the convergence rate computations:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay8.py --dt 0.5 0.25 0.1 0.05 0.025 0.01
+...
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>0:
+1.33 1.15 1.07 1.03 1.02
+
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>0.5:
+2.14 2.07 2.03 2.01 2.01
+
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>1:
+0.98 0.99 0.99 1.00 1.00
+</pre></div>
+<p>
+The Forward and Backward Euler methods seem to have an \( r \) value which
+stabilizes at 1, while the Crank-Nicolson seems to be a second-order
+method with \( r=2 \).
+
+<p>
+
+<p>
+Very often, we have some theory that predicts what \( r \) is for a numerica
+method. It can be shown that in case of the \( \theta \)-rule, \( r=2 \) for
+\( \theta =0.5 \) and \( r=1 \) otherwise. The computed estimates of \( r \) are
+in very good agreement with these theoretical values. The strong
+practical application of computing convergence rates is for
+verification: wrong convergence rates point to errors in the code,
+and correct convergence rates brings evidence that the implementation
+is correct. Experience shows bugs in the code easily destroys the
+expected convergence rate.
+
+<p>
+Let us experiment with bugs and see the implication on the convergence
+rate. We may, for instance, forget to multiply by <tt>a</tt> in the denominator
+in the updating formula for <tt>u[n+1]</tt>:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt)<span style="color: #666666">*</span>u[n]
+</pre></div>
+<p>
+Running the same <tt>decay8.py</tt> command as above gives the expected
+convergence rates (!). Why? The reason is that we just specified
+the \( \Delta t \) values are relied on default values for other
+parameters. The default value of \( a \) is 1. Forgetting the factor
+<tt>a</tt> has then no effect. This example shows how importance it is to
+avoid parameters that are 1 or 0 when verifying implementations.
+Running the code with \( a=2.1 \) and \( I=0.1 \) yields
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay8.py --a 2.1 --I 0.1  <span style="color: #BB6622; font-weight: bold">\</span>
+          --dt 0.5 0.25 0.1 0.05 0.025 0.01
+...
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>0:
+1.49 1.18 1.07 1.04 1.02
+
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>0.5:
+-1.42 -0.22 -0.07 -0.03 -0.01
+
+Pairwise convergence rates <span style="color: #AA22FF; font-weight: bold">for </span><span style="color: #B8860B">theta</span><span style="color: #666666">=</span>1:
+0.21 0.12 0.06 0.03 0.01
+</pre></div>
+<p>
+This time we see that the expected convergence rates for the Crank-Nicolson and
+Backward Euler methods are not obtained, while \( r=1 \) for the Forward Euler
+method. The reason for correct rate in the latter case is that \( \theta=0 \)
+and the wrong <tt>theta*dt</tt> term in the denominator vanishes anyway.
+
+<p>
+The error
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> ((<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u[n]
+</pre></div>
+<p>
+manifests itself through wrong rates \( r\approx 0 \) for all three methods.
+About the same results arise from an erroneous initial condition, <tt>u[0] = 1</tt>,
+or wrong loop limits, <tt>range(1,N)</tt>. It seems that in this simple
+problem, most bugs we can think of are detected by the convergence rate
+test.
+
+<p>
+A <tt>verify_convergence_rate</tt> function could compute the dictionary of
+list via <tt>main</tt> and check if the final rate estimates (\( r_{m-2} \))
+are sufficiently close to the expected ones. A tolerance of 0.1
+seems appropriate:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">verify_convergence_rate</span>():
+    r <span style="color: #666666">=</span> main()
+    tol <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>
+    expected_rates <span style="color: #666666">=</span> {<span style="color: #666666">0</span>: <span style="color: #666666">1</span>, <span style="color: #666666">1</span>: <span style="color: #666666">1</span>, <span style="color: #666666">0.5</span>: <span style="color: #666666">2</span>}
+    <span style="color: #AA22FF; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> r:
+        r_final <span style="color: #666666">=</span> r[theta][<span style="color: #666666">-1</span>]
+        diff <span style="color: #666666">=</span> <span style="color: #AA22FF">abs</span>(expected_rates[theta] <span style="color: #666666">-</span> r_final)
+        <span style="color: #AA22FF; font-weight: bold">if</span> diff <span style="color: #666666">&gt;</span> tol:
+            <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #AA22FF">False</span>
+    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #AA22FF">True</span>  <span style="color: #008800; font-style: italic"># all tests passed</span>
+</pre></div>
+<p>
+Note that <tt>r[theta]</tt> is a list and the last element in any list
+can be extracted by the index <tt>-1</tt>.
+
+<p>
+
+<p>
+
+<p>
+
+<h3>Memory-saving implementation  <a name="___sec31"></a></h3>
+<p>
+The memory storage requirements of our implementations so far consists
+mainly of the <tt>u</tt> and <tt>t</tt> arrays, both of length \( N+1 \), plus some other
+temporary arrays that Python needs for intermediate results if we do
+array arithmetics in our program (e.g., <tt>I*exp(-a*t)</tt> needs to store
+<tt>a*t</tt> before <tt>-</tt> can be applied to it and then <tt>exp</tt>).  The
+extremely modest storage requirements of simple ODE problems put no
+restrictions on the formulations of the algorithm and implementation.
+Nevertheless, when the methods for ODEs used here are applied to
+three-dimensional partial differential equation (PDE) problems,
+memory storage requirements
+suddenly become an issue.
+
+<p>
+The PDE counterpart to our model problem
+\( u'=-a \) is a diffusion equation \( u_t = a\nabla^2 u \) posed on a
+space-time domain. The discrete representation of this domain may in
+3D be a spatial mesh of \( M^3 \) points and a time mesh of \( N \) points. A
+typical desired value for \( M \) is 100 in many applications, and be may
+\( 1000 \).  Storing all the computed \( u \) values, like we have done in the
+programs so far, demands storage of some arrays of size \( M^3N \), giving
+a factor of \( M^3 \) larger storage demands compared to our ODE
+programs. Each real number in the array for \( u \) requires 8 bytes of
+storage, resulting in a demand for 8 Gb of memory for only one array.
+Then there are needs for good ideas on how to lower the storage
+requirements. Fortunately, we can almost always get rid of the \( M^3 \)
+factor. Below we explain how this is done, and the technique is almost
+always applied in implementations of PDE problems.
+
+<p>
+<!-- Fortunately, the methods we use to solve ODEs -->
+<!-- and PDEs were mostly developed in a time where the size of a computer's -->
+<!-- memory was very small compared to today's standards, and researchers -->
+<!-- were therefore forced to always minimize the memory usage. As a result of -->
+<!-- these circumstances, there is still a very strong focus on reducing -->
+<!-- memory requirements in scientific computing algorithms. -->
+
+<p>
+Let us critically evaluate how much we really need to store in the
+computer's memory in our implementation of the \( \theta \) method. To
+compute a new \( u^{n+1} \), all we need is \( u^n \). This imples that the
+previous \( u^{n-1},u^{n-2},\dots,u^0 \) values do not need to be stored
+in an array, although this is convenient for plotting and data
+analysis in the program.  Instead of the <tt>u</tt> array we can work with
+two variables from real real numbers, <tt>u</tt> and <tt>u_1</tt>, representing
+\( u^{n+1} \) and \( u^n \) in the algorithm, respectively.  At each time
+level, we update <tt>u</tt> from <tt>u_1</tt> and then set <tt>u_1 = u</tt> so that the
+computed \( u^{n+1} \) value becomes the "previous" value \( u^n \) at the
+next time level. The downside is that we cannot plot the solution
+after simulation is done since only the last two numbers are
+available.  The remedy is to store computed values in a file and use
+the file for visualizing the solution later.
+
+<p>
+We have implemented this memory saving idea in the file <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay9.py"><tt>decay9.py</tt></a>, which is a
+merge of the <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay4.py"><tt>decay4.py</tt></a> and
+<a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay7.py"><tt>decay7.py</tt></a>
+programs, using module prefixes <tt>np</tt> for <tt>numpy</tt> and <tt>plt</tt> for
+<tt>matplotlib.pyplot</tt>.
+
+<p>
+The following function implements
+the algorithm without using arrays and stores the solution
+in a file:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">theta_rule_minmem</span>(I, a, T, dt, theta, filename<span style="color: #666666">=</span><span style="color: #BB4444">&#39;sol.dat&#39;</span>):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.</span>
+<span style="color: #BB4444; font-style: italic">    Minimum use of memory. The solution is store on file</span>
+<span style="color: #BB4444; font-style: italic">    (with name filename) for later plotting.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    dt <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(dt)        <span style="color: #008800; font-style: italic"># avoid integer division</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(T<span style="color: #666666">/</span>dt))  <span style="color: #008800; font-style: italic"># no of intervals</span>
+
+    outfile <span style="color: #666666">=</span> <span style="color: #AA22FF">open</span>(filename, <span style="color: #BB4444">&#39;w&#39;</span>)
+    <span style="color: #008800; font-style: italic"># u: time level n+1, u_1: time level n</span>
+    t <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    u_1 <span style="color: #666666">=</span> I
+    outfile<span style="color: #666666">.</span>write(<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB4444">  </span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (t, u_1))
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, N<span style="color: #666666">+1</span>):
+        u <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u_1
+        u_1 <span style="color: #666666">=</span> u
+        t <span style="color: #666666">+=</span> dt
+        outfile<span style="color: #666666">.</span>write(<span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB4444">  </span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (t, u))
+    outfile<span style="color: #666666">.</span>close()
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+This code snippet serves as a quick introduction on how to perform
+file writing in Python.
+
+<p>
+Reading the data in the file into arrays <tt>t</tt> and <tt>u</tt> are done by the
+function
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">read_file</span>(filename<span style="color: #666666">=</span><span style="color: #BB4444">&#39;sol.dat&#39;</span>):
+    infile <span style="color: #666666">=</span> <span style="color: #AA22FF">open</span>(filename, <span style="color: #BB4444">&#39;r&#39;</span>)
+    u <span style="color: #666666">=</span> [];  t <span style="color: #666666">=</span> []
+    <span style="color: #AA22FF; font-weight: bold">for</span> line <span style="color: #AA22FF; font-weight: bold">in</span> infile:
+        words <span style="color: #666666">=</span> line<span style="color: #666666">.</span>split()
+        <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">len</span>(words) <span style="color: #666666">!=</span> <span style="color: #666666">2</span>:
+            <span style="color: #AA22FF; font-weight: bold">print</span> <span style="color: #BB4444">&#39;Found more than two numbers on a line!&#39;</span>, words
+            sys<span style="color: #666666">.</span>exit(<span style="color: #666666">1</span>)  <span style="color: #008800; font-style: italic"># abort</span>
+        t<span style="color: #666666">.</span>append(<span style="color: #AA22FF">float</span>(words[<span style="color: #666666">0</span>]))
+        u<span style="color: #666666">.</span>append(<span style="color: #AA22FF">float</span>(words[<span style="color: #666666">1</span>]))
+    <span style="color: #AA22FF; font-weight: bold">return</span> np<span style="color: #666666">.</span>array(t), np<span style="color: #666666">.</span>array(u)
+</pre></div>
+<p>
+
+<p>
+Such a file with numbers in rows and columns is very common, and <tt>numpy</tt>
+has a function <tt>loadtxt</tt> which loads the data into a two-dimensional
+array, say <tt>data</tt>. The number in row <tt>i</tt> and column <tt>j</tt> is then <tt>data[i,j]</tt>.
+The whole column number <tt>j</tt> can be extracted by <tt>data[:,j]</tt>.
+A version of <tt>read_file</tt> using <tt>np.loadtxt</tt> reads
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">read_file_numpy</span>(filename<span style="color: #666666">=</span><span style="color: #BB4444">&#39;sol.dat&#39;</span>):
+    data <span style="color: #666666">=</span> np<span style="color: #666666">.</span>loadtxt(filename)
+    t <span style="color: #666666">=</span> data[:,<span style="color: #666666">0</span>]
+    u <span style="color: #666666">=</span> data[:,<span style="color: #666666">1</span>]
+    <span style="color: #AA22FF; font-weight: bold">return</span> t, u
+</pre></div>
+<p>
+
+<p>
+The present counterpart to the <tt>explore</tt> function from
+<a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay4.py"><tt>decay4.py</tt></a> must run
+<tt>theta_rule_minmem</tt> and then load data from file before we can compute
+the error measure and make the plot:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">explore</span>(I, a, T, dt, theta<span style="color: #666666">=0.5</span>, makeplot<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
+    filename <span style="color: #666666">=</span> <span style="color: #BB4444">&#39;u.dat&#39;</span>
+    u, t <span style="color: #666666">=</span> theta_rule_minmem(I, a, T, dt, theta, filename)
+
+    t, u <span style="color: #666666">=</span> read_file(filename)
+    u_e <span style="color: #666666">=</span> exact_solution(t, I, a)
+    e <span style="color: #666666">=</span> u_e <span style="color: #666666">-</span> u
+    E <span style="color: #666666">=</span> np<span style="color: #666666">.</span>sqrt(dt<span style="color: #666666">*</span>np<span style="color: #666666">.</span>sum(e<span style="color: #666666">**2</span>))
+    <span style="color: #AA22FF; font-weight: bold">if</span> makeplot:
+        plt<span style="color: #666666">.</span>figure()
+        <span style="color: #666666">...</span>
+</pre></div>
+<p>
+
+<p>
+The <a href="https://github.com/hplgit/INF5620/blob/master/src/decay/decay9.py"><tt>decay9.py</tt></a> also includes
+command-line options <tt>--I</tt>, <tt>--a</tt>, <tt>--T</tt>, <tt>--dt</tt>, <tt>--theta</tt>, and
+<tt>--makeplot</tt> for controlling input parameters and <em>making a single run</em>.
+For example,
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay9.py --T 10 --theta 1 --dt 2
+<span style="color: #B8860B">I</span><span style="color: #666666">=</span>1.0, <span style="color: #B8860B">a</span><span style="color: #666666">=</span>1.0, <span style="color: #B8860B">T</span><span style="color: #666666">=</span>10.0, <span style="color: #B8860B">makeplot</span><span style="color: #666666">=</span>True, <span style="color: #B8860B">theta</span><span style="color: #666666">=</span>1.0, <span style="color: #B8860B">dt</span><span style="color: #666666">=</span>2.0
+<span style="color: #B8860B">theta</span><span style="color: #666666">=</span>1.0 <span style="color: #B8860B">dt</span><span style="color: #666666">=</span>2 <span style="color: #B8860B">Error</span><span style="color: #666666">=</span>3.136E-01
+</pre></div>
+<p>
+
+<p>
+
+<p>
+
+<!-- ---------------------------- end of main content ----------------->
+</body>
+</html>
+    
+
