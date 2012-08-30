@@ -7,12 +7,14 @@ def theta_rule(I, a, b, T, dt, theta):
     for t in (0,T] with steps of dt.
     a and b are Python functions of t.
     """
-    N = int(round(T/float(dt)))  # no of intervals
-    u = zeros(N+1)
-    t = linspace(0, T, N+1)
+    dt = float(dt)           # avoid integer division
+    N = int(round(T/dt))     # no of time intervals
+    T = N*dt                 # adjust T to fit time step dt
+    u = zeros(N+1)           # array of u[n] values
+    t = linspace(0, T, N+1)  # time mesh
 
-    u[0] = I
-    for n in range(0, N):
+    u[0] = I                 # assign initial condition
+    for n in range(0, N):    # n=0,1,...,N-1
         u[n+1] = ((1 - dt*(1-theta)*a(t[n]))*u[n] + \
                   dt*(theta*b(t[n+1]) + (1-theta)*b(t[n])))/\
                   (1 + dt*theta*a(t[n+1]))

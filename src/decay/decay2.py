@@ -2,44 +2,30 @@ from numpy import *
 
 def theta_rule(I, a, T, dt, theta):
     """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
-    N = int(round(T/float(dt)))  # no of intervals
-    u = zeros(N+1)
-    t = linspace(0, T, N+1)
+    dt = float(dt)           # avoid integer division
+    N = int(round(T/dt))     # no of time intervals
+    T = N*dt                 # adjust T to fit time step dt
+    u = zeros(N+1)           # array of u[n] values
+    t = linspace(0, T, N+1)  # time mesh
 
-    u[0] = I
-    for n in range(0, N):
+    u[0] = I                 # assign initial condition
+    for n in range(0, N):    # n=0,1,...,N-1
         u[n+1] = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)*u[n]
     return u, t
 
 def verify_three_steps():
-    # Three manual steps
+    """Compare three steps with known manual computations."""
     theta = 0.8; a = 2; I = 0.1; dt = 0.8
-    factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
-    u1 = factor*I
-    u2 = factor*u1
-    u3 = factor*u2
-
-    N = 3  # number of time steps
-    u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
-
-    print u[1:]  # u[1], u[2], ...
-    print u1, u2, u3
-
-# Better version:
-
-def verify_three_steps():
-    # Three manual steps
-    theta = 0.8; a = 2; I = 0.1; dt = 0.8
-    factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
-    u1 = factor*I
-    u2 = factor*u1
-    u3 = factor*u2
+    u_by_hand = array([I,
+                       0.0298245614035,
+                       0.00889504462912,
+                       0.00265290804728])
 
     N = 3  # number of time steps
     u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
 
     tol = 1E-15  # tolerance for comparing floats
-    difference = abs(u1-u[1]) + abs(u2-u[2]) + abs(u3-u[3])
+    difference = abs(u - u_by_hand).max()
     success = difference <= tol
     return success
 

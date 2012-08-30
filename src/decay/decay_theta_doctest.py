@@ -21,12 +21,14 @@ def theta_rule(I, a, T, dt, theta):
     t=3.5, u=0.01049960113002
     t=4.0, u=0.00565363137770
     """
-    N = int(round(T/float(dt)))  # no of intervals
-    u = np.zeros(N+1)
-    t = np.linspace(0, T, N+1)
+    dt = float(dt)              # avoid integer division
+    N = int(round(T/dt))        # no of time intervals
+    T = N*dt                    # adjust T to fit time step dt
+    u = np.zeros(N+1)           # array of u[n] values
+    t = np.linspace(0, T, N+1)  # time mesh
 
-    u[0] = I
-    for n in range(0, N):
+    u[0] = I                    # assign initial condition
+    for n in range(0, N):       # n=0,1,...,N-1
         u[n+1] = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)*u[n]
     return u, t
 
