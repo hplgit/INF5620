@@ -26,8 +26,8 @@ def non_physical_behavior(I, a, T, dt, theta):
     st.grid('on')
     st.title('theta=%g' % theta)
     st.xlabel('a'); st.ylabel('dt')
-    st.savefig('oscillator_region_theta_%s.png' % theta)
-    st.savefig('oscillator_region_theta_%s.eps' % theta)
+    st.savefig('osc_region_theta_%s.png' % theta)
+    st.savefig('osc_region_theta_%s.eps' % theta)
 
 non_physical_behavior(
     I=1,

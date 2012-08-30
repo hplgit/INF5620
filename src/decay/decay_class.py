@@ -5,12 +5,12 @@ class Problem:
         self.T, self.I, self.a = 10, 1, 1
 
 class Solver:
-    def __init__(self, problem):
+    def __init__(self, problem, dt=0.1, theta=0.5):
         self.problem = problem
-        self.dt, self.theta = 0.1, 0.5
+        self.dt, self.theta = float(dt), theta
 
     def solve(self):
-        N = int(round(problem.T/float(self.dt)))
+        N = int(round(problem.T/self.dt))
         self.t = np.linspace(0, problem.T, N+1)
 
         ...

@@ -7,7 +7,8 @@ def theta_rule_minmem(I, a, T, dt, theta, filename='sol.dat'):
     Minimum use of memory. The solution is store on file
     (with name filename) for later plotting.
     """
-    N = int(round(T/float(dt)))  # no of intervals
+    dt = float(dt)        # avoid integer division
+    N = int(round(T/dt))  # no of intervals
 
     outfile = open(filename, 'w')
     # u: time level n+1, u_1: time level n

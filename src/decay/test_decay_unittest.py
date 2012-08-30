@@ -3,6 +3,10 @@ import sys
 import decay_theta_unittest as decay
 import numpy as np
 
+def exact_discrete_solution(n, I, a, theta, dt):
+    factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
+    return I*factor**n
+
 class TestDecay(unittest.TestCase):
 
     def setUp(self):
@@ -14,10 +18,6 @@ class TestDecay(unittest.TestCase):
         Compare result from theta_rule against
         formula for the discrete solution.
         """
-        def exact_discrete_solution(n, I, a, theta, dt):
-            factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
-            return I*factor**n
-
         theta = 0.8; a = 2; I = 0.1; dt = 0.8
         N = int(8/dt)  # no of steps
         u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt,
@@ -57,6 +57,16 @@ class TestDecay(unittest.TestCase):
             diff = np.abs(u - precomputed[theta]).max()
             self.assertAlmostEqual(diff, 0, places=8,
                                    msg='theta=%s' % theta)
+
+    def test_potential_integer_division():
+        """Choose variables that can trigger integer division."""
+        theta = 1; a = 1; I = 1; dt = 2
+        N = 4
+        u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+        u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
+                         for n in range(N+1)])
+        diff = np.abs(u_de - u).max()
+        self.assertAlmostEqual(diff, 0, delta=1E-14)
 
     def test_convergence_rates(self):
         """Compare empirical convergence rates to exact ones."""
