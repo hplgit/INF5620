@@ -1,3 +1,5 @@
+"""Plot of amplification factors for the theta scheme."""
+
 from numpy import linspace, exp
 #from matplotlib.pyplot import *
 from scitools.std import *
@@ -8,23 +10,13 @@ def A_exact(p):
 def A(p, theta):
     return (1-(1-theta)*p)/(1+theta*p)
 
-def A_leapfrog(p):
-    LF = - p + sqrt(p**2 + 1)
-    # unstable leapfrog mode:
-    #LF2 = - p - sqrt(p**2 + 1)
-    return LF
-
 def amplification_factor(names):
     curves = {}
     p = linspace(0, 3, 101)
     curves['exact'] = A_exact(p)
     name2theta = dict(FE=0, BE=1, CN=0.5)
     for name in names:
-        if name in name2theta:
-            curves[name] = A(p, name2theta[name])
-        elif name == 'LF':
-            curves[name] = A_leapfrog(p)
-    for name in names:
+        curves[name] = A(p, name2theta[name])
         plot(p, curves[name])
         hold('on')
     plot([p[0], p[-1]], [0, 0], '--')  # A=0 line

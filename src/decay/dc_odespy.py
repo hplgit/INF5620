@@ -9,7 +9,7 @@ def f(u, t):
 I = 1; a = 2; T = 6
 dt = float(sys.argv[1]) if len(sys.argv) >= 2 else 0.75
 N = int(round(T/dt))
-t = np.linspace(0, N*dt, N+1)
+t_mesh = np.linspace(0, N*dt, N+1)
 
 solvers = [odespy.RK2(f),
            odespy.RK3(f),
@@ -20,7 +20,7 @@ solvers = [odespy.RK2(f),
 legends = []
 for solver in solvers:
     solver.set_initial_condition(I)
-    u, t = solver.solve(t)
+    u, t = solver.solve(t_mesh)
 
     plt.plot(t, u)
     plt.hold('on')
