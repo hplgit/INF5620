@@ -1,4 +1,4 @@
-from decay_theta import theta_rule
+from dc_mod import theta_rule
 import numpy as np
 import scitools.std as st
 

@@ -1,6 +1,6 @@
 import unittest
 import sys
-import decay_theta_unittest as decay
+import dc_mod_unittest as decay
 import numpy as np
 
 def exact_discrete_solution(n, I, a, theta, dt):
@@ -50,11 +50,11 @@ class TestDecay(unittest.TestCase):
                   0.12207031,  0.07629395,  0.04768372,  0.02980232,
                   0.01862645]),
             }
-        # Compare to 8 decimal places
         for theta in 0, 0.5, 1:
             u, t = decay.theta_rule(I=0.8, a=1.2, T=4, dt=0.5,
                                     theta=theta)
             diff = np.abs(u - precomputed[theta]).max()
+            # Compare to 8 decimal places
             self.assertAlmostEqual(diff, 0, places=8,
                                    msg='theta=%s' % theta)
 
@@ -85,12 +85,13 @@ class TestDecay(unittest.TestCase):
         scratchfile.close()
         sys.stdout = stdout  # restore standard output
 
-        # Compare to 1 decimal place
         expected_rates = {0: 1, 1: 1, 0.5: 2}
         for theta in r:
             r_final = r[theta][-1]
-            self.assertAlmostEqual(expected_rates[theta], r_final,
-                                   places=1, msg='theta=%s' % theta)
+            # Compare to 1 decimal place
+            self.assertAlmostEqual(
+                expected_rates[theta], r_final, places=1,
+                msg='theta=%s' % theta)
 
 if __name__ == '__main__':
     unittest.main()

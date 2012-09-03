@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def theta_rule_minmem(I, a, T, dt, theta, filename='sol.dat'):
+def theta_rule_memsave(I, a, T, dt, theta, filename='sol.dat'):
     """
     Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
     Minimum use of memory. The solution is store on file
@@ -46,12 +46,12 @@ def exact_solution(t, I, a):
 
 def explore(I, a, T, dt, theta=0.5, makeplot=True):
     """
-    Run a case with the theta_rule_minmem, load t and u data
+    Run a case with the theta_rule_memsave, load t and u data
     from file into arrays, compute error measure,
     and plot the numerical and exact solutions (if makeplot=True).
     """
     filename = 'u.dat'
-    u, t = theta_rule_minmem(I, a, T, dt, theta, filename)
+    u, t = theta_rule_memsave(I, a, T, dt, theta, filename)
 
     t, u = read_file(filename)
     u_e = exact_solution(t, I, a)

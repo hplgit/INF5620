@@ -71,7 +71,7 @@ from math import log
 
 def main():
     I, a, T, makeplot, dt_values = read_command_line()
-    r = {}
+    r = {}  # estimated convergence rates
     for theta in 0, 0.5, 1:
         E_values = []
         for dt in dt_values:
