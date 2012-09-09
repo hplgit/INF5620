@@ -6,7 +6,7 @@ Discretizing first-order ODEs by finite difference methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Sep 7, 2012
+:Date: Sep 9, 2012
 
 Note: **VERY PRELIMINARY VERSION!**
 
@@ -35,7 +35,6 @@ phenomena, which will be relevant for PDEs of wave nature.
 Both problems are linear with known analytical solutions such that we can
 easily assess the quality of various numerical methods and analyze
 their behavior.
-
 
 
 .. _decay:basics:
@@ -172,7 +171,7 @@ as the dashed line.
 .. _decay:fdu:e:
 
 .. figure:: fig-decay/fdm_u_ue.png
-   :width: 400
+   :width: 600
 
    *Time mesh with discrete solution values*
 
@@ -198,7 +197,7 @@ is by linear interpolation
 .. _decay:fdu:ei:
 
 .. figure:: fig-decay/fdm_u_uei.png
-   :width: 400
+   :width: 600
 
    *Linear interpolation between the discrete solution values (dashed curve is exact solution)*
 
@@ -256,7 +255,7 @@ the mesh points (:math:`u(t_n)`, :math:`n=1,2,\ldots,N`) as shown next.
 .. _decay:sketch:FE:
 
 .. figure:: fig-decay/fd_forward.png
-   :width: 400
+   :width: 600
 
    *Illustration of a forward difference*
 
@@ -356,7 +355,7 @@ Figure :ref:`decay:sketch:BE` explains the idea.
 .. _decay:sketch:BE:
 
 .. figure:: fig-decay/fd_backward.png
-   :width: 400
+   :width: 600
 
    *Illustration of a backward difference*
 
@@ -481,7 +480,7 @@ such a centered difference.
 .. _decay:sketch:BE:
 
 .. figure:: fig-decay/fd_backward.png
-   :width: 400
+   :width: 600
 
    *Illustration of a centered difference*
 
@@ -644,27 +643,50 @@ Finite difference formulas can be tedious to write and read,
 especially for differential equations with many terms and many
 derivatives. To save space and help the reader of the scheme to quickly
 see the nature of the difference approximations, we introduce a
-compact notation:
+compact notation. A forward difference approximation is denoted
+by the :math:`D_t^+` operator:
 
 
 .. math::
+   :label: fd:D:f
         
-        [D_tu]^n &= \frac{u^{n+\frac{1}{2}} - u^{n-\frac{1}{2}}}{\Delta t}
-        \approx \frac{d}{dt} u(t_n) \\
-        [D_t^-u]^n &= \frac{u^{n} - u^{n-1}}{\Delta t}
-        \approx \frac{d}{dt} u(t_n) \\
-        [D_t^+u]^n &= \frac{u^{n+1} - u^{n}}{\Delta t}
+        [D_t^+u]^n = \frac{u^{n+1} - u^{n}}{\Delta t}
         \approx \frac{d}{dt} u(t_n) 
+        \thinspace .
         
 
 The notation consists of an operator that approximates
 differentiation with respect to an independent variable, here :math:`t`.
 The operator is built of the symbol :math:`D`, with the variable as subscript
-and a superscript :math:`{}^-` for a backward difference and :math:`{}^+` for a forward
-difference. No superscript implies a central difference.
+and a superscript denoting the type of difference. The superscript :math:`{}^+`
+indicates a forward difference.
 We place square brackets around the operator and the function it operates
 on and specify the mesh point, where the operator is acting, by
 a superscript.
+
+The corresponding operator notation for a centered difference and
+a backward difference reads
+
+
+.. math::
+   :label: fd:D:c
+        
+        [D_tu]^n = \frac{u^{n+\frac{1}{2}} - u^{n-\frac{1}{2}}}{\Delta t}
+        \approx \frac{d}{dt} u(t_n), 
+        
+
+and
+
+.. math::
+   :label: fd:D:b
+        
+        [D_t^-u]^n = \frac{u^{n} - u^{n-1}}{\Delta t}
+        \approx \frac{d}{dt} u(t_n) 
+        \thinspace .
+        
+
+Note that the superscript :math:`{}^-` denotes the backward
+difference, while no superscript implies a central difference.
 
 An averaging operator is also convenient to have:
 
@@ -718,7 +740,7 @@ while the Crank-Nicolson scheme is written as
         
         
 
-Just apply (:ref:`fd:D:c`) and :eq:`fd:mean:a` and write out the
+Just apply :eq:`fd:D:c` and :eq:`fd:mean:a` and write out the
 expressions to see that :eq:`fd:compact:ex:CN` is indeed the
 Crank-Nicolson scheme.
 
@@ -5928,6 +5950,10 @@ with subclasses specifying lists :math:`c_0,\ldots,c_m` for the various methods.
 The subclasses also need extra lists for methods needed to start
 schemes with :math:`m>0`.
 Verify the implementation by testing with a linear solution (:math:`u_{\small\mbox{e}}(t)=ct+d`).
+
+test
+====
+
 Filename: ``decay_schemes_oo.py``.
 
 .. --- end of exercise
@@ -6160,7 +6186,7 @@ With :math:`u(t)=e^{-at}`, we get :math:`t_{1/2}=a^{-1}\ln 2` or :math:`a=\ln 2/
 
 
 
-Newton's Law of Cooling
+Newton's law of cooling
 -----------------------
 
 .. http://web.bham.ac.uk/winterhs/Newton.htm
@@ -6710,12 +6736,15 @@ the section :ref:`decay:app:atm`:
 
 
 Extend the program from :ref:`decay:app:exer:drag:prog` to
-handle three coupled differential equations, solved by the
-Crank-Nicolson method. Make sure :math:`A` and :math:`C_D` can be changed
-at some time :math:`t_p`, e.g., the time it takes to reach the terminal
-velocity in free fall. Make nose tests of this program based on
-the same verification cases as outlined in
-:ref:`decay:app:exer:drag:prog`.
+handle three coupled differential equations. With the Crank-Nicolson
+method, one must solve a :math:`3\times 3` system of equations at each time
+level, since :math:`p` depends on :math:`z`, which depends on :math:`v`, which depends
+on :math:`\varrho`, which depends on :math:`p`.  Switching to the Forward Euler
+method avoids the need to solve coupled equations (but demands smaller
+:math:`\Delta t` for accuracy). Make sure :math:`A` and :math:`C_D` can be changed at
+some time :math:`t_p`, e.g., the time it takes to reach the terminal
+velocity in free fall. Make nose tests of this program based on the
+same verification cases as outlined in :ref:`decay:app:exer:drag:prog`.
 
 Use the program to simulate a jump from :math:`z=5000` m to the ground :math:`z=0`.
 Filename: ``parachute_jumper2.py``.
@@ -6740,7 +6769,214 @@ water, and we seek to model its motion upwards.  The buoyancy force
 small. Set :math:`A=\pi a^2` with :math:`a=11` cm, the mass of the ball is 0.43
 kg, the density of water is :math:`1000\hbox{ kg/m}^3`, and :math:`C_D` is 0.2.
 Start with :math:`v_0=0` and see how the ball rises.
+
+.. Put these first...
+
 Filename: ``rising_ball.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _decay:app:exer:radio:C14:
+
+Exercise 29: Radioactive decay of Carbon-14
+-------------------------------------------
+
+The `Carbon-14 <http://en.wikipedia.org/wiki/Carbon-14>`_ isotope,
+whose radioactive decay is used extensively in dating organic material
+that is tens of thousands of years old, has a half-life of :math:`5,730`
+years.  Determine the age of an organic material that contains 8.4\%
+of its initial amount of Carbon-14.  Use a time unit of 1 year in the
+computations.  The uncertainty in the half time of Carbon-14 is :math:`\pm
+40` years.  What is the corresponding uncertainty in the estimate of
+the age?  (Use simulations, not the exact solution.)
+Filename: ``carbon14.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _decay:app:exer:radio:twosubst:
+
+Exercise 30: Radioactive decay of Carbon-14
+-------------------------------------------
+
+Consider two radioactive substances A and B. The nuclei in substance A
+decay to form nuclei of type B with a half-life :math:`A_{1/2}`, while
+substance B decay to form type A nuclei with a half-life :math:`B_{1/2}`.
+Letting :math:`u_A` and :math:`u_B` be the fractions of the initial amount of
+material in substance A and B, respectively, the following system of
+ODEs governs the evolution of :math:`u_A(t)` and :math:`u_B(t)`:
+
+.. math::
+        
+        u_A' &= \ln 2 u_B/B_{1/2} - \ln 2 u_A/A_{1/2},\\
+        u_B' &= \ln 2 u_A/A_{1/2} - \ln 2 u_B/B_{1/2},
+        
+
+with :math:`u_A(0)=u_B(0)=1`.
+
+Make a simulation program that solves for :math:`u_A(t)` and :math:`u_B(t)`.
+Verify the implementation by computing analytically
+the limiting values of
+:math:`u_A` and :math:`u_B` as :math:`t\rightarrow \infty` (assume :math:`u_A',u_B'\rightarrow 0`)
+and comparing these with those obtained numerically.
+
+Run the program for the case of :math:`A_{1/2}=10` minutes and :math:`B_{1/2}=50` minutes.
+Use a time unit of 1 minute. Plot :math:`u_A` and :math:`u_B` versus time in the same
+plot.
+Filename: ``radioactive_decay_2subst.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _decay:app:exer:cooling:pizza:
+
+Exercise 31: Determine time of murder from body temperature
+-----------------------------------------------------------
+
+A detective measures the temperature of a dead body to be
+26.7 C at 2 pm. One our later
+the temperature is 25.8 C. The question is when
+death occured.
+
+Assume that Newton's law of cooling :eq:`decay:Newton:cooling`
+is an appropriate mathematical
+model for the evolution of the temperature in the body.
+First, determine :math:`k` in :eq:`decay:Newton:cooling` by
+formulating a Forward Euler approximation with one time step
+from time 2 am to time 3 am, where knowning the two temperatures
+allows for finding :math:`k`. Thereafter, simulate the temperature evolution
+from the time of murder, taken as :math:`t=0`, when :math:`T=37\hbox{ C}`,
+until the temperature
+reaches 26.7 C. The corresponding time allows for answering when
+deach occured.
+
+.. http://www.biology.arizona.edu/BioMath/tutorials/Applications/Cooling.html
+
+Filename: ``detective.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _decay:app:exer:signum:
+
+Exercise 32: Compute the signum function by solving an ODE
+----------------------------------------------------------
+
+Consider the ODE problem
+
+.. math::
+        
+        y'(x) = \left\lbrace\begin{array}{ll}
+        -1, & x < 0,\\
+        1, & x \geq 0
+        \end{array}\right.\quad x\in (-1, 1],
+        \quad y(1-)=1
+        \thinspace .
+        
+
+The solution is :math:`y(x)=|x|`.
+
+Using a mesh :math:`x_0=-1`, :math:`x_1=0`, and :math:`x_2=1`, calculate by hand
+:math:`y_1` and :math:`y_2` from the Forward Euler, Backward Euler, Crank-Nicolson,
+and Leapfrog methods. Use all of the former three methods for computing
+the :math:`y_1` value to be used in the Leapfrog calculation of :math:`y_2`.
+Thereafter, visualize how these schemes perform for a uniformly partitioned
+mesh with :math:`N=10` and :math:`N=11` points.
+Filename: ``signum.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _decay:app:exer:interest:
+
+Exercise 33: Simulate growth of a fortune with random interest rate
+-------------------------------------------------------------------
+
+The goal of this exercise is to compute the value of a fortune subject
+to inflation and a random interest rate.
+Suppose that the inflation is constant at :math:`i` percent per year and that the
+annual interest rate, :math:`p`, changes randomly at each time step,
+starting at some value :math:`p_0` at :math:`t=0`.
+The random change is from a value :math:`p^n` at :math:`t=t_n` to
+:math:`p_n +0.5` with probability 0.25 and :math:`p_n -0.5` with probability 0.25.
+No change occurs with probability 0.5.
+Use a time step of one month, :math:`p_0=i`, initial fortune scaled to 1,
+and simulate 1000 scenarios of
+length 20 years. Compute the mean evolution of the money and the
+standard deviation. Plot these two curves along with the :math:`p^n-i` curve.
+Filename: ``random_interest.py``.
+
+*Hint 1.* The following code snippet computes :math:`p^{n+1}`:
+
+.. code-block:: python
+
+        import random
+        
+        def new_interest_rate(p_n, increment=0.5):
+            r = random.random()  # uniformly distr. random number in [0,1)
+            if 0 <= r < 0.25:
+                p_np1 = p_n + increment
+            elif 0.25 <= r < 0.5:
+                p_np1 = p_n - increment
+            else:
+                p_np1 = p_n
+            return p_np1
+
+
+*Hint 2.* If :math:`u_i(t)` is the value of the fortune in experiment number :math:`i`,
+:math:`i=0,\ldots,N-1`,
+the mean evolution of the fortune is
+
+.. math::
+         \bar u(t)= \frac{1}{N}\sum_{i=0}^{N-1} u_i(t),
+        
+
+and the standard deviation
+
+.. math::
+         s(t) = \sqrt{\frac{1}{N-1}\left(- (\bar u(t))^2 +
+                        \sum_{i=0}^{N-1} (u_i(t))^2\right)}
+        \thinspace .
+        
+
+Suppose :math:`u_i(t)` is stored in an array ``u``.
+The mean and the standard deviation of the fortune
+is most efficiently computed by
+using to accumulation arrays, ``sum_u`` and ``sum_u2``, and
+performing ``sum_u += u`` and ``sum_u2 += u**2`` after every experiment.
+This technique avoids storing all the :math:`u_i(t)` time series for
+computing the statistics.
 
 .. --- end of exercise
 
