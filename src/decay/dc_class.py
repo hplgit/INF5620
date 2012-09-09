@@ -47,8 +47,8 @@ class Solver:
         self.dt, self.theta = args.dt, args.theta
 
     def solve(self):
-        from dc_mod import theta_rule
-        self.u, self.t = theta_rule(
+        from dc_mod import solver
+        self.u, self.t = solver(
             self.problem.I, self.problem.a, self.problem.T,
             self.dt, self.theta)
 

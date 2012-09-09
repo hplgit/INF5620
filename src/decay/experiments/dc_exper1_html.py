@@ -117,7 +117,7 @@ equation. This scheme corresponds to
 
 The numerical method is implemented in a Python function:
 <pre>
-def theta_rule(I, a, T, dt, theta):
+def solver(I, a, T, dt, theta):
     """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
     N = int(round(T/float(dt)))  # no of intervals
     u = zeros(N+1)

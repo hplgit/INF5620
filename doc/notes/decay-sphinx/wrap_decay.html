@@ -565,7 +565,7 @@ the solution <span class="math">\(u^0,\ldots,u^N\)</span> and the mesh points <s
 respectively:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>            <span class="c"># no of time intervals</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">N</span><span class="o">*</span><span class="n">dt</span>                 <span class="c"># adjust T to fit time step dt</span>
@@ -600,15 +600,15 @@ implying the following assignments <tt class="docutils literal"><span class="pre
 <tt class="docutils literal"><span class="pre">u[N]</span></tt>, which is what we want since <tt class="docutils literal"><span class="pre">u</span></tt> has length <tt class="docutils literal"><span class="pre">N+1</span></tt>.
 The first index in Python arrays or lists is <em>always</em> <tt class="docutils literal"><span class="pre">0</span></tt> and the
 last is then <tt class="docutils literal"><span class="pre">len(u)-1</span></tt>.</p>
-<p>To compute with the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function, we need to <em>call</em> it. Here
+<p>To compute with the <tt class="docutils literal"><span class="pre">solver</span></tt> function, we need to <em>call</em> it. Here
 is a sample call:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="integer-division">
 <h3>Integer division<a class="headerlink" href="#integer-division" title="Permalink to this headline">¶</a></h3>
-<p>The shown implementation of the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> may face problems and
+<p>The shown implementation of the <tt class="docutils literal"><span class="pre">solver</span></tt> may face problems and
 wrong results if <tt class="docutils literal"><span class="pre">T</span></tt>, <tt class="docutils literal"><span class="pre">a</span></tt>, <tt class="docutils literal"><span class="pre">dt</span></tt>, and <tt class="docutils literal"><span class="pre">theta</span></tt> are given as integers,
 see <a class="reference internal" href="#decay-exer-intdiv"><em>Exercise 1: Experiment with integer division</em></a> and <a class="reference internal" href="#decay-exer-decay1err"><em>Exercise 2: Experiment with wrong computations</em></a>.
 The problem is related to <em>integer division</em> in Python (as well as
@@ -627,10 +627,10 @@ rounding is obtained by</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The complete version of our improved, safer <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function then becomes</p>
+<p>The complete version of our improved, safer <tt class="docutils literal"><span class="pre">solver</span></tt> function then becomes</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>           <span class="c"># avoid integer division</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>     <span class="c"># no of time intervals</span>
@@ -647,13 +647,13 @@ rounding is obtained by</p>
 </div>
 <div class="section" id="doc-strings">
 <h3>Doc strings<a class="headerlink" href="#doc-strings" title="Permalink to this headline">¶</a></h3>
-<p id="index-13">Right below the header line in the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function there is a
+<p id="index-13">Right below the header line in the <tt class="docutils literal"><span class="pre">solver</span></tt> function there is a
 Python string enclosed in triple double quotes <tt class="docutils literal"><span class="pre">&quot;&quot;&quot;</span></tt>.
 The purpose of this string object is to document what the function
 does and what the arguments are. In this case the necessary
 documentation do not span more than one line, but with triple double
 quoted strings the text may span several lines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve</span>
 
@@ -789,7 +789,7 @@ with the aid of a calculator gives</p>
 u^2 &amp;= Au^1= 0.00889504462912,\\
 u^3 &amp;=Au^2= 0.00265290804728\end{split}\]</div>
 <p>Comparison of these manual calculations with the result of the
-<tt class="docutils literal"><span class="pre">theta_rule</span></tt> function is carried out in the function</p>
+<tt class="docutils literal"><span class="pre">solver</span></tt> function is carried out in the function</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">verify_three_steps</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Compare three steps with known manual computations.&quot;&quot;&quot;</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.8</span>
@@ -799,7 +799,7 @@ u^3 &amp;=Au^2= 0.00265290804728\end{split}\]</div>
                        <span class="mf">0.00265290804728</span><span class="p">])</span>
 
     <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># number of time steps</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
 
     <span class="n">tol</span> <span class="o">=</span> <span class="mf">1E-15</span>  <span class="c"># tolerance for comparing floats</span>
     <span class="n">difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_by_hand</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -807,10 +807,10 @@ u^3 &amp;=Au^2= 0.00265290804728\end{split}\]</div>
     <span class="k">return</span> <span class="n">success</span>
 </pre></div>
 </div>
-<p>The main program, where we call the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function and print <tt class="docutils literal"><span class="pre">u</span></tt>,
+<p>The main program, where we call the <tt class="docutils literal"><span class="pre">solver</span></tt> function and print <tt class="docutils literal"><span class="pre">u</span></tt>,
 is now put in a separate function <tt class="docutils literal"><span class="pre">main</span></tt>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="c"># Write out a table of t and u values:</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)):</span>
         <span class="k">print</span> <span class="s">&#39;t=</span><span class="si">%6.3f</span><span class="s"> u=</span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -871,7 +871,7 @@ solution is done in the following function:</p>
 
     <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.8</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">8</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>  <span class="c"># no of steps</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">u_de</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">exact_discrete_solution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
                   <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
     <span class="n">difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">u_de</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  <span class="c"># max deviation</span>
@@ -902,7 +902,7 @@ calculate their difference at the mesh points:</p>
 <div class="math">
 \[e_n = u_{\small\mbox{e}}(t_n) - u^n,\quad n=0,1,\ldots,N \thinspace .\]</div>
 <p>These numbers are conveniently computed by</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>  <span class="c"># Numerical solution</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>  <span class="c"># Numerical solution</span>
 <span class="n">u_e</span> <span class="o">=</span> <span class="n">exact_solution</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
 <span class="n">e</span> <span class="o">=</span> <span class="n">u_e</span> <span class="o">-</span> <span class="n">u</span>
 </pre></div>
@@ -1027,10 +1027,10 @@ can be called for various <span class="math">\(\theta\)</span> and <span class="
 to see how the error varies with the method and the mesh resolution:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">explore</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">makeplot</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Run a case with the theta_rule, compute error measure,</span>
+<span class="sd">    Run a case with the solver, compute error measure,</span>
 <span class="sd">    and plot the numerical and exact solutions (if makeplot=True).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>  <span class="c"># Numerical solution</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>  <span class="c"># Numerical solution</span>
     <span class="n">u_e</span> <span class="o">=</span> <span class="n">exact_solution</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">u_e</span> <span class="o">-</span> <span class="n">u</span>
     <span class="n">E</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
@@ -1533,7 +1533,7 @@ programs, using module prefixes <tt class="docutils literal"><span class="pre">n
 <tt class="docutils literal"><span class="pre">matplotlib.pyplot</span></tt>.</p>
 <p>The following function implements the ideas above regarding minimizing
 memory usage and storing the solution on file:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">theta_rule_memsave</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&#39;sol.dat&#39;</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver_memsave</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&#39;sol.dat&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.</span>
 <span class="sd">    Minimum use of memory. The solution is store on file</span>
@@ -1586,11 +1586,11 @@ A version of <tt class="docutils literal"><span class="pre">read_file</span></tt
 </div>
 <p>The present counterpart to the <tt class="docutils literal"><span class="pre">explore</span></tt> function from
 <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_plot_mpl.py">dc_plot_mpl.py</a> must run
-<tt class="docutils literal"><span class="pre">theta_rule_minmem</span></tt> and then load data from file before we can compute
+<tt class="docutils literal"><span class="pre">solver_memsave</span></tt> and then load data from file before we can compute
 the error measure and make the plot:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">explore</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">makeplot</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;u.dat&#39;</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule_minmem</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver_memsave</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
     <span class="n">t</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">read_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="n">u_e</span> <span class="o">=</span> <span class="n">exact_solution</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
@@ -1628,10 +1628,10 @@ to the exponential decay model:</p>
 <div class="section" id="making-a-module">
 <h2>Making a module<a class="headerlink" href="#making-a-module" title="Permalink to this headline">¶</a></h2>
 <p id="index-28">The previous sections has outlined numerous different programs, all of
-them having their own copy of the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function.  Such copies
+them having their own copy of the <tt class="docutils literal"><span class="pre">solver</span></tt> function.  Such copies
 of the same piece of code is against the important <em>Don&#8217;t Repeat
 Yourself</em> (DRY) principle in programming.  If we want to change the
-<tt class="docutils literal"><span class="pre">theta_rule</span></tt> function there should be one and only one place where the
+<tt class="docutils literal"><span class="pre">solver</span></tt> function there should be one and only one place where the
 change needs to be performed.</p>
 <p>To clean up the repetitive code snippets scattered among the
 <tt class="docutils literal"><span class="pre">dc_*.py</span></tt> files, we start by collecting the
@@ -1640,7 +1640,7 @@ now called <a class="reference external" href="http://github.hplgit.com/INF5620/
 The following functions are copied to this file:</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">theta_rule</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">solver</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">verify_three_steps</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">verify_discrete_solution</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">explore</span></tt></li>
@@ -1657,7 +1657,7 @@ file, with complete versions of the modified functions, looks as follows:</p>
 <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="o">...</span>
 
 <span class="k">def</span> <span class="nf">verify_three_steps</span><span class="p">():</span>
@@ -1701,8 +1701,8 @@ file, with complete versions of the modified functions, looks as follows:</p>
 </div>
 <p>This <tt class="docutils literal"><span class="pre">dc_mod.py</span></tt> file is already a module such that we can import
 desired in functions in other programs. For example,</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">decay_theta</span> <span class="kn">import</span> <span class="n">theta_rule</span>
-<span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">decay_theta</span> <span class="kn">import</span> <span class="n">solver</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p id="index-29">However, it should also be possible to both use <tt class="docutils literal"><span class="pre">dc_mod.py</span></tt> as
@@ -1820,14 +1820,14 @@ document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
 we can see the output resulting from function calls. For example,
-we can in the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function include an example on calling
+we can in the <tt class="docutils literal"><span class="pre">solver</span></tt> function include an example on calling
 this function and printing the computed <tt class="docutils literal"><span class="pre">u</span></tt> and <tt class="docutils literal"><span class="pre">t</span></tt> arrays:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.</span>
 
 
-<span class="sd">    &gt;&gt;&gt; u, t = theta_rule(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)</span>
+<span class="sd">    &gt;&gt;&gt; u, t = solver(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)</span>
 <span class="sd">    &gt;&gt;&gt; for t_n, u_n in zip(t, u):</span>
 <span class="sd">    ...     print &#39;t=%.1f, u=%.14f&#39; % (t_n, u_n)</span>
 <span class="sd">    t=0.0, u=0.80000000000000</span>
@@ -1878,7 +1878,7 @@ If any test fails, the problem is reported, e.g.,</p>
 <span class="go">    t=2.0, u=0.06725254717972</span>
 <span class="go">********************************************************</span>
 <span class="go">1 items had failures:</span>
-<span class="go">   1 of   2 in dc_mod_doctest.theta_rule</span>
+<span class="go">   1 of   2 in dc_mod_doctest.solver</span>
 <span class="go">***Test Failed*** 1 failures.</span>
 </pre></div>
 </div>
@@ -1895,7 +1895,7 @@ how a function is used and 2) test that the function works.</p>
 <p>Here is an example on a doctest in the <tt class="docutils literal"><span class="pre">explore</span></tt> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">explore</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">makeplot</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Run a case with the theta_rule, compute error measure,</span>
+<span class="sd">    Run a case with the solver, compute error measure,</span>
 <span class="sd">    and plot the numerical and exact solutions (if makeplot=True).</span>
 
 <span class="sd">    &gt;&gt;&gt; for theta in 0, 0.5, 1:</span>
@@ -1920,9 +1920,9 @@ the terminal window.</p>
 <span class="target" id="index-33"></span><span class="target" id="index-34"></span><p id="index-35">The unit testing technique consists of identifying small units
 of code, usually functions (or classes), and write one or more tests for
 each unit. One test should, ideally, not depend on the outcome of
-other tests. For example, the doctest in function <tt class="docutils literal"><span class="pre">theta_rule</span></tt> is a
+other tests. For example, the doctest in function <tt class="docutils literal"><span class="pre">solver</span></tt> is a
 unit test, and the doctest in function <tt class="docutils literal"><span class="pre">explore</span></tt> as well, but the
-latter depends on a working <tt class="docutils literal"><span class="pre">theta_rule</span></tt>. Putting the error computation
+latter depends on a working <tt class="docutils literal"><span class="pre">solver</span></tt>. Putting the error computation
 and plotting in <tt class="docutils literal"><span class="pre">explore</span></tt> in two separate functions would allow
 independent unit tests. In this way, the design of unit tests impacts
 the design of functions. The recommended practice is actually to
@@ -2003,26 +2003,28 @@ verified reference values.</li>
 </div></blockquote>
 <p>These tests follow very closely the code in the previously shown
 <tt class="docutils literal"><span class="pre">verify*</span></tt> functions. We start with comparing <span class="math">\(u^n\)</span>, as computed by
-the function <tt class="docutils literal"><span class="pre">theta_rule</span></tt>, to the formula
+the function <tt class="docutils literal"><span class="pre">solver</span></tt>, to the formula
 for the exact discrete solution:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nose.tools</span> <span class="kn">as</span> <span class="nn">nt</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">dc_mod_unittest</span> <span class="kn">as</span> <span class="nn">decay</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">dc_mod_unittest</span> <span class="kn">as</span> <span class="nn">dc_mod</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">exact_discrete_solution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return exact discrete solution of the theta scheme.&quot;&quot;&quot;</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>  <span class="c"># avoid integer division</span>
     <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">theta</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="n">a</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">I</span><span class="o">*</span><span class="n">factor</span><span class="o">**</span><span class="n">n</span>
 
 <span class="k">def</span> <span class="nf">test_against_discrete_solution</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compare result from theta_rule against</span>
+<span class="sd">    Compare result from solver against</span>
 <span class="sd">    formula for the discrete solution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.8</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">8</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>  <span class="c"># no of steps</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">dc_mod</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">u_de</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exact_discrete_solution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
                      <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_de</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -2036,11 +2038,11 @@ for the number of decimal places to enter the comparison.</p>
 <p>When we at some point have carefully verified the implementation, we may
 store correctly computed numbers in the test program or in files for
 use in future tests. Here is an example on how the outcome from the
-<tt class="docutils literal"><span class="pre">theta_rule</span></tt> function can be compared to what is considered to be
+<tt class="docutils literal"><span class="pre">solver</span></tt> function can be compared to what is considered to be
 correct results:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_theta_rule</span><span class="p">():</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_solver</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compare result from theta_rule against</span>
+<span class="sd">    Compare result from solver against</span>
 <span class="sd">    precomputed arrays for theta=0, 0.5, 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">I</span><span class="o">=</span><span class="mf">0.8</span><span class="p">;</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.2</span><span class="p">;</span> <span class="n">T</span><span class="o">=</span><span class="mi">4</span><span class="p">;</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.5</span>  <span class="c"># fixed parameters</span>
@@ -2063,7 +2065,7 @@ correct results:</p>
               <span class="mf">0.01862645</span><span class="p">]),</span>
         <span class="p">}</span>
     <span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">dc_mod</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">precomputed</span><span class="p">[</span><span class="n">theta</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="c"># Compare to 8 decimal places</span>
         <span class="n">nt</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
@@ -2087,13 +2089,13 @@ divisions. For example, with</p>
 </div>
 <p>evaluate to 1 and 3, respectively, and the fraction <tt class="docutils literal"><span class="pre">1/3</span></tt> will
 call up integer division and consequently lead to <tt class="docutils literal"><span class="pre">u[n+1]=0</span></tt>.
-We construct a unit test to make sure <tt class="docutils literal"><span class="pre">theta_rule</span></tt> is smart
+We construct a unit test to make sure <tt class="docutils literal"><span class="pre">solver</span></tt> is smart
 enough to avoid this problem:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_potential_integer_division</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Choose variables that can trigger integer division.&quot;&quot;&quot;</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">I</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">N</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">dc_mod</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">u_de</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exact_discrete_solution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
                      <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_de</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -2107,12 +2109,12 @@ enough to avoid this problem:</p>
     <span class="c"># Set command-line arguments directly in sys.argv</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="s">&#39;--I 0.8 --a 2.1 --T 5 &#39;</span>\
                    <span class="s">&#39;--dt 0.4 0.2 0.1 0.05 0.025&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-    <span class="c"># Suppress output from decay.main()</span>
+    <span class="c"># Suppress output from dc_mod.main()</span>
     <span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>  <span class="c"># save standard output for later use</span>
     <span class="n">scratchfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;.tmp&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>  <span class="c"># fake standard output</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">scratchfile</span>
 
-    <span class="n">r</span> <span class="o">=</span> <span class="n">decay</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">dc_mod</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
         <span class="n">nt</span><span class="o">.</span><span class="n">assert_true</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">theta</span><span class="p">])</span>  <span class="c"># check for non-empty list</span>
 
@@ -2200,7 +2202,7 @@ slightly different syntax.</p>
         <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_de</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1E-14</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">test_theta_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="o">...</span>
         <span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
             <span class="o">...</span>
@@ -2226,13 +2228,13 @@ slightly different syntax.</p>
 <div class="section" id="implementing-simple-problem-and-solver-classes">
 <h2>Implementing simple problem and solver classes<a class="headerlink" href="#implementing-simple-problem-and-solver-classes" title="Permalink to this headline">¶</a></h2>
 <p>The <span class="math">\(\theta\)</span>-rule was compactly and conveniently implemented in
-a function <tt class="docutils literal"><span class="pre">theta_rule</span></tt>. In more complicated problems it might
+a function <tt class="docutils literal"><span class="pre">solver</span></tt>. In more complicated problems it might
 be beneficial to use classes and introduce a class <tt class="docutils literal"><span class="pre">Problem</span></tt> to
 hold the definition of the physical problem, a class <tt class="docutils literal"><span class="pre">Solver</span></tt>
 to hold the data and methods needed to numerically solve the problem,
 and a class <tt class="docutils literal"><span class="pre">Visualizer</span></tt> to make plots.
 This idea will now be illustrated, resulting in code that represents
-an alternative to the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> and <tt class="docutils literal"><span class="pre">explore</span></tt> functions found
+an alternative to the <tt class="docutils literal"><span class="pre">solver</span></tt> and <tt class="docutils literal"><span class="pre">explore</span></tt> functions found
 in the <tt class="docutils literal"><span class="pre">dc_mod</span></tt> module.</p>
 <p>Explaining the details of class programming in Python
 is considered beyond the scope of this text.
@@ -2339,8 +2341,8 @@ reading <span class="math">\(\Delta t\)</span> and <span class="math">\(\theta\)
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">theta</span>
 
     <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">dc_mod</span> <span class="kn">import</span> <span class="n">theta_rule</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span>
+        <span class="kn">from</span> <span class="nn">dc_mod</span> <span class="kn">import</span> <span class="n">solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">I</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
 
@@ -2522,9 +2524,9 @@ the <tt class="docutils literal"><span class="pre">decay_class.py</span></tt> fi
                          <span class="n">theta</span><span class="o">=</span><span class="s">&#39;time discretization parameter&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c">#from dc_mod import theta_rule</span>
-        <span class="kn">from</span> <span class="nn">decay_theta</span> <span class="kn">import</span> <span class="n">theta_rule</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span>
+        <span class="c">#from dc_mod import solver</span>
+        <span class="kn">from</span> <span class="nn">decay_theta</span> <span class="kn">import</span> <span class="n">solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;I&#39;</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">),</span>
@@ -2810,7 +2812,7 @@ browser. An extended version of the <tt class="docutils literal"><span class="pr
 section, called <a class="reference external" href="http://github.hplgit.com/INF5620/src/decay/experiments/dc_exper1_html.py">dc_exper1_html.py</a>,
 adds code at the end for creating an HTML file with a summary, a
 section on the mathematical problem, a section on the numerical
-method, a section on the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function implementing the
+method, a section on the <tt class="docutils literal"><span class="pre">solver</span></tt> function implementing the
 method, and a section with subsections containing figures that shows
 the results of experiments where <span class="math">\(\Delta t\)</span> is varied for
 <span class="math">\(\theta=0,0.5,1\)</span>. The mentioned
@@ -2961,9 +2963,9 @@ some are (mathematically) unexpected:</p>
 </div>
 <div class="section" id="exercise-2-experiment-with-wrong-computations">
 <span id="decay-exer-decay1err"></span><h2>Exercise 2: Experiment with wrong computations<a class="headerlink" href="#exercise-2-experiment-with-wrong-computations" title="Permalink to this headline">¶</a></h2>
-<p>Consider the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function in the <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_v1.py">dc_v1.py</a>
+<p>Consider the <tt class="docutils literal"><span class="pre">solver</span></tt> function in the <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_v1.py">dc_v1.py</a>
 and the following call:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The output becomes</p>
@@ -2985,7 +2987,7 @@ Filename: <tt class="docutils literal"><span class="pre">dc_v1_err.py</span></tt
 <p>Implement a specialized Python function <tt class="docutils literal"><span class="pre">ForwardEuler</span></tt> that solves
 the problem <span class="math">\(u'=-au\)</span>, <span class="math">\(u(0)=I\)</span>, using the Forward Euler method.
 Do not reimplement the solution algorithm, but let the <tt class="docutils literal"><span class="pre">ForwardEuler</span></tt>
-function call the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function. Import this latter function
+function call the <tt class="docutils literal"><span class="pre">solver</span></tt> function. Import this latter function
 from the module <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_mod.py">dc_mod</a>.
 Also make similar functions <tt class="docutils literal"><span class="pre">BackwardEuler</span></tt> and <tt class="docutils literal"><span class="pre">CrankNicolson</span></tt>.
 Filename: <tt class="docutils literal"><span class="pre">decay_FE_BE_CN.py</span></tt>.</p>
@@ -3001,7 +3003,7 @@ Filename: <tt class="docutils literal"><span class="pre">decay_plot_error.py</sp
 </div>
 <div class="section" id="exercise-5-compare-methods-for-a-give-time-mesh">
 <span id="decay-exer-plot-dtconst"></span><h2>Exercise 5: Compare methods for a give time mesh<a class="headerlink" href="#exercise-5-compare-methods-for-a-give-time-mesh" title="Permalink to this headline">¶</a></h2>
-<p>Make a program that imports the <tt class="docutils literal"><span class="pre">theta_rule</span></tt> function from the
+<p>Make a program that imports the <tt class="docutils literal"><span class="pre">solver</span></tt> function from the
 <tt class="docutils literal"><span class="pre">dc_mod</span></tt> module and offers a function <tt class="docutils literal"><span class="pre">compare(dt,</span> <span class="pre">I,</span> <span class="pre">a)</span></tt> for
 comparing, in a plot, the methods corresponding to <span class="math">\(\theta=0,0.5,1\)</span>
 and the exact solution.  This plot shows the accuracy of the metods
@@ -3200,7 +3202,7 @@ contour line <span class="math">\(B_{ij}=0.5\)</span> dividing the oscillatory a
 regions. The file <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_osc_regions.py">dc_osc_regions.py</a> contains all nuts and
 bolts to produce the <span class="math">\(B=0.5\)</span> line in Figures <a class="reference internal" href="#decay-analysis-b-fe"><em>Forward Euler scheme</em></a>
 and {decay:analysis:B:CN} (the oscillatory region is above the line):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dc_mod</span> <span class="kn">import</span> <span class="n">theta_rule</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dc_mod</span> <span class="kn">import</span> <span class="n">solver</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scitools.std</span> <span class="kn">as</span> <span class="nn">st</span>
 
@@ -3215,7 +3217,7 @@ and {decay:analysis:B:CN} (the oscillatory region is above the line):</p>
     <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>         <span class="c"># results</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dt</span><span class="p">)):</span>
-            <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">theta</span><span class="p">)</span>
+            <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">theta</span><span class="p">)</span>
             <span class="c"># Does u have the right monotone decay properties?</span>
             <span class="n">correct_qualitative_behavior</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)):</span>
@@ -3684,7 +3686,7 @@ We solve for <span class="math">\(u^{n+1}\)</span>:</p>
 \thinspace .\]</div>
 <p>A suitable implementation where <span class="math">\(a(t)\)</span> and <span class="math">\(b(t)\)</span> are given as
 Python function is given next.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve u&#39;=-a(t)*u + b(t), u(0)=I,</span>
 <span class="sd">    for t in (0,T] with steps of dt.</span>
@@ -3736,7 +3738,7 @@ differential equation to get</p>
     <span class="n">theta</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">I</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span> <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
     <span class="n">T</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>  <span class="c"># no of steps</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">u_e</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">exact_solution</span><span class="p">(</span><span class="n">tn</span><span class="p">)</span> <span class="k">for</span> <span class="n">tn</span> <span class="ow">in</span> <span class="n">t</span><span class="p">])</span>
     <span class="n">difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">u_e</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  <span class="c"># max deviation</span>
     <span class="n">tol</span> <span class="o">=</span> <span class="mf">1E-15</span>  <span class="c"># tolerance for comparing floats</span>

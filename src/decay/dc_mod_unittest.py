@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import sys
 from math import log
 
-def theta_rule(I, a, T, dt, theta):
+def solver(I, a, T, dt, theta):
     """
     Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
 
 
-    >>> u, t = theta_rule(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)
+    >>> u, t = solver(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)
     >>> for t_n, u_n in zip(t, u):
     ...     print 't=%.1f, u=%.14f' % (t_n, u_n)
     t=0.0, u=0.80000000000000
@@ -38,7 +38,7 @@ def exact_solution(t, I, a):
 
 def explore(I, a, T, dt, theta=0.5, makeplot=True):
     """
-    Run a case with the theta_rule, compute error measure,
+    Run a case with the solver, compute error measure,
     and plot the numerical and exact solutions (if makeplot=True).
 
     >>> for theta in 0, 0.5, 1:
@@ -50,7 +50,7 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
     2.4183893110E-03
     6.5013039886E-02
     """
-    u, t = theta_rule(I, a, T, dt, theta)  # Numerical solution
+    u, t = solver(I, a, T, dt, theta)  # Numerical solution
     u_e = exact_solution(t, I, a)
     e = u_e - u
     E = np.sqrt(dt*np.sum(e**2))

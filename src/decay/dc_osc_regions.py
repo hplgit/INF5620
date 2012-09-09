@@ -1,4 +1,4 @@
-from dc_mod import theta_rule
+from dc_mod import solver
 import numpy as np
 import scitools.std as st
 
@@ -13,7 +13,7 @@ def non_physical_behavior(I, a, T, dt, theta):
     B = np.zeros((len(a), len(dt)))         # results
     for i in range(len(a)):
         for j in range(len(dt)):
-            u, t = theta_rule(I, a[i], T, dt[j], theta)
+            u, t = solver(I, a[i], T, dt[j], theta)
             # Does u have the right monotone decay properties?
             correct_qualitative_behavior = True
             for n in range(1, len(u)):

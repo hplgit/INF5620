@@ -892,7 +892,7 @@ respectively:
 
         from numpy import *
         
-        def theta_rule(I, a, T, dt, theta):
+        def solver(I, a, T, dt, theta):
             """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
             N = int(T/dt)            # no of time intervals
             T = N*dt                 # adjust T to fit time step dt
@@ -927,18 +927,18 @@ implying the following assignments ``u[n+1]``: ``u[1]``, ``u[2]``, ...,
 The first index in Python arrays or lists is *always* ``0`` and the
 last is then ``len(u)-1``.
 
-To compute with the ``theta_rule`` function, we need to *call* it. Here
+To compute with the ``solver`` function, we need to *call* it. Here
 is a sample call:
 
 .. code-block:: python
 
-        u, t = theta_rule(I=1, a=2, T=8, dt=0.8, theta=1)
+        u, t = solver(I=1, a=2, T=8, dt=0.8, theta=1)
 
 
 Integer division
 ~~~~~~~~~~~~~~~~
 
-The shown implementation of the ``theta_rule`` may face problems and
+The shown implementation of the ``solver`` may face problems and
 wrong results if ``T``, ``a``, ``dt``, and ``theta`` are given as integers,
 see :ref:`decay:exer:intdiv` and :ref:`decay:exer:decay1err`.
 The problem is related to *integer division* in Python (as well as
@@ -960,14 +960,14 @@ rounding is obtained by
 
         N = int(round(T/dt))
 
-The complete version of our improved, safer ``theta_rule`` function then becomes
+The complete version of our improved, safer ``solver`` function then becomes
 
 
 .. code-block:: python
 
         from numpy import *
         
-        def theta_rule(I, a, T, dt, theta):
+        def solver(I, a, T, dt, theta):
             """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
             dt = float(dt)           # avoid integer division
             N = int(round(T/dt))     # no of time intervals
@@ -989,7 +989,7 @@ Doc strings
 .. index:: doc strings
 
 
-Right below the header line in the ``theta_rule`` function there is a
+Right below the header line in the ``solver`` function there is a
 Python string enclosed in triple double quotes ``"""``.
 The purpose of this string object is to document what the function
 does and what the arguments are. In this case the necessary
@@ -999,7 +999,7 @@ quoted strings the text may span several lines:
 
 .. code-block:: python
 
-        def theta_rule(I, a, T, dt, theta):
+        def solver(I, a, T, dt, theta):
             """
             Solve
         
@@ -1177,7 +1177,7 @@ with the aid of a calculator gives
 
 
 Comparison of these manual calculations with the result of the
-``theta_rule`` function is carried out in the function
+``solver`` function is carried out in the function
 
 
 .. code-block:: python
@@ -1191,7 +1191,7 @@ Comparison of these manual calculations with the result of the
                                0.00265290804728])
         
             N = 3  # number of time steps
-            u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+            u, t = solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
         
             tol = 1E-15  # tolerance for comparing floats
             difference = abs(u - u_by_hand).max()
@@ -1199,14 +1199,14 @@ Comparison of these manual calculations with the result of the
             return success
 
 
-The main program, where we call the ``theta_rule`` function and print ``u``,
+The main program, where we call the ``solver`` function and print ``u``,
 is now put in a separate function ``main``:
 
 
 .. code-block:: python
 
         def main():
-            u, t = theta_rule(I=1, a=2, T=8, dt=0.8, theta=1)
+            u, t = solver(I=1, a=2, T=8, dt=0.8, theta=1)
             # Write out a table of t and u values:
             for i in range(len(t)):
                 print 't=%6.3f u=%g' % (t[i], u[i])
@@ -1298,7 +1298,7 @@ solution is done in the following function:
         
             theta = 0.8; a = 2; I = 0.1; dt = 0.8
             N = int(8/dt)  # no of steps
-            u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+            u, t = solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
             u_de = array([exact_discrete_solution(n, I, a, theta, dt)
                           for n in range(N+1)])
             difference = abs(u_de - u).max()  # max deviation
@@ -1345,7 +1345,7 @@ These numbers are conveniently computed by
 
 .. code-block:: python
 
-        u, t = theta_rule(I, a, T, dt, theta)  # Numerical solution
+        u, t = solver(I, a, T, dt, theta)  # Numerical solution
         u_e = exact_solution(t, I, a)
         e = u_e - u
 
@@ -1510,10 +1510,10 @@ to see how the error varies with the method and the mesh resolution:
 
         def explore(I, a, T, dt, theta=0.5, makeplot=True):
             """
-            Run a case with the theta_rule, compute error measure,
+            Run a case with the solver, compute error measure,
             and plot the numerical and exact solutions (if makeplot=True).
             """
-            u, t = theta_rule(I, a, T, dt, theta)  # Numerical solution
+            u, t = solver(I, a, T, dt, theta)  # Numerical solution
             u_e = exact_solution(t, I, a)
             e = u_e - u
             E = sqrt(dt*sum(e**2))
@@ -2202,7 +2202,7 @@ memory usage and storing the solution on file:
 
 .. code-block:: python
 
-        def theta_rule_memsave(I, a, T, dt, theta, filename='sol.dat'):
+        def solver_memsave(I, a, T, dt, theta, filename='sol.dat'):
             """
             Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
             Minimum use of memory. The solution is store on file
@@ -2262,7 +2262,7 @@ A version of ``read_file`` using ``np.loadtxt`` reads
 
 The present counterpart to the ``explore`` function from
 `dc_plot_mpl.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_plot_mpl.py>`_ must run
-``theta_rule_minmem`` and then load data from file before we can compute
+``solver_memsave`` and then load data from file before we can compute
 the error measure and make the plot:
 
 
@@ -2270,7 +2270,7 @@ the error measure and make the plot:
 
         def explore(I, a, T, dt, theta=0.5, makeplot=True):
             filename = 'u.dat'
-            u, t = theta_rule_minmem(I, a, T, dt, theta, filename)
+            u, t = solver_memsave(I, a, T, dt, theta, filename)
         
             t, u = read_file(filename)
             u_e = exact_solution(t, I, a)
@@ -2319,10 +2319,10 @@ Making a module
 
 
 The previous sections has outlined numerous different programs, all of
-them having their own copy of the ``theta_rule`` function.  Such copies
+them having their own copy of the ``solver`` function.  Such copies
 of the same piece of code is against the important *Don't Repeat
 Yourself* (DRY) principle in programming.  If we want to change the
-``theta_rule`` function there should be one and only one place where the
+``solver`` function there should be one and only one place where the
 change needs to be performed.
 
 To clean up the repetitive code snippets scattered among the
@@ -2331,7 +2331,7 @@ various functions we want to keep for the future in one file,
 now called `dc_mod.py <http://github.hplgit.com/INF5620/src/decay/dc_mod.py>`_.
 The following functions are copied to this file:
 
- * ``theta_rule``
+ * ``solver``
 
  * ``verify_three_steps``
 
@@ -2358,7 +2358,7 @@ file, with complete versions of the modified functions, looks as follows:
         from matplotlib.pyplot import *
         import sys
         
-        def theta_rule(I, a, T, dt, theta):
+        def solver(I, a, T, dt, theta):
             ...
         
         def verify_three_steps():
@@ -2406,8 +2406,8 @@ desired in functions in other programs. For example,
 
 .. code-block:: python
 
-        from decay_theta import theta_rule
-        u, t = theta_rule(I=1.0, a=3.0, T=3, dt=0.01, theta=0.5)
+        from decay_theta import solver
+        u, t = solver(I=1.0, a=3.0, T=3, dt=0.01, theta=0.5)
 
 
 
@@ -2569,18 +2569,18 @@ document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
 we can see the output resulting from function calls. For example,
-we can in the ``theta_rule`` function include an example on calling
+we can in the ``solver`` function include an example on calling
 this function and printing the computed ``u`` and ``t`` arrays:
 
 
 .. code-block:: python
 
-        def theta_rule(I, a, T, dt, theta):
+        def solver(I, a, T, dt, theta):
             """
             Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
         
         
-            >>> u, t = theta_rule(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)
+            >>> u, t = solver(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)
             >>> for t_n, u_n in zip(t, u):
             ...     print 't=%.1f, u=%.14f' % (t_n, u_n)
             t=0.0, u=0.80000000000000
@@ -2638,7 +2638,7 @@ If any test fails, the problem is reported, e.g.,
             t=2.0, u=0.06725254717972
         ********************************************************
         1 items had failures:
-           1 of   2 in dc_mod_doctest.theta_rule
+           1 of   2 in dc_mod_doctest.solver
         ***Test Failed*** 1 failures.
 
 
@@ -2661,7 +2661,7 @@ Here is an example on a doctest in the ``explore`` function:
 
         def explore(I, a, T, dt, theta=0.5, makeplot=True):
             """
-            Run a case with the theta_rule, compute error measure,
+            Run a case with the solver, compute error measure,
             and plot the numerical and exact solutions (if makeplot=True).
         
             >>> for theta in 0, 0.5, 1:
@@ -2698,9 +2698,9 @@ Unit testing with nose
 The unit testing technique consists of identifying small units
 of code, usually functions (or classes), and write one or more tests for
 each unit. One test should, ideally, not depend on the outcome of
-other tests. For example, the doctest in function ``theta_rule`` is a
+other tests. For example, the doctest in function ``solver`` is a
 unit test, and the doctest in function ``explore`` as well, but the
-latter depends on a working ``theta_rule``. Putting the error computation
+latter depends on a working ``solver``. Putting the error computation
 and plotting in ``explore`` in two separate functions would allow
 independent unit tests. In this way, the design of unit tests impacts
 the design of functions. The recommended practice is actually to
@@ -2803,30 +2803,32 @@ We design three unit tests:
 
 These tests follow very closely the code in the previously shown
 ``verify*`` functions. We start with comparing :math:`u^n`, as computed by
-the function ``theta_rule``, to the formula
+the function ``solver``, to the formula
 for the exact discrete solution:
 
 
 .. code-block:: python
 
         import nose.tools as nt
-        import sys
-        import dc_mod_unittest as decay
+        import sys, os
+        sys.path.insert(0, os.pardir)
+        import dc_mod_unittest as dc_mod
         import numpy as np
         
         def exact_discrete_solution(n, I, a, theta, dt):
             """Return exact discrete solution of the theta scheme."""
+            dt = float(dt)  # avoid integer division
             factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
             return I*factor**n
         
         def test_against_discrete_solution():
             """
-            Compare result from theta_rule against
+            Compare result from solver against
             formula for the discrete solution.
             """
             theta = 0.8; a = 2; I = 0.1; dt = 0.8
             N = int(8/dt)  # no of steps
-            u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+            u, t = dc_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
             u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
                              for n in range(N+1)])
             diff = np.abs(u_de - u).max()
@@ -2841,15 +2843,15 @@ for the number of decimal places to enter the comparison.
 When we at some point have carefully verified the implementation, we may
 store correctly computed numbers in the test program or in files for
 use in future tests. Here is an example on how the outcome from the
-``theta_rule`` function can be compared to what is considered to be
+``solver`` function can be compared to what is considered to be
 correct results:
 
 
 .. code-block:: python
 
-        def test_theta_rule():
+        def test_solver():
             """
-            Compare result from theta_rule against
+            Compare result from solver against
             precomputed arrays for theta=0, 0.5, 1.
             """
             I=0.8; a=1.2; T=4; dt=0.5  # fixed parameters
@@ -2872,7 +2874,7 @@ correct results:
                       0.01862645]),
                 }
             for theta in 0, 0.5, 1:
-                u, t = decay.theta_rule(I, a, T, dt, theta=theta)
+                u, t = dc_mod.solver(I, a, T, dt, theta=theta)
                 diff = np.abs(u - precomputed[theta]).max()
                 # Compare to 8 decimal places
                 nt.assert_almost_equal(diff, 0, places=8,
@@ -2900,7 +2902,7 @@ the nominator and denominator in the updating expression,
 
 evaluate to 1 and 3, respectively, and the fraction ``1/3`` will
 call up integer division and consequently lead to ``u[n+1]=0``.
-We construct a unit test to make sure ``theta_rule`` is smart
+We construct a unit test to make sure ``solver`` is smart
 enough to avoid this problem:
 
 
@@ -2910,7 +2912,7 @@ enough to avoid this problem:
             """Choose variables that can trigger integer division."""
             theta = 1; a = 1; I = 1; dt = 2
             N = 4
-            u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+            u, t = dc_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
             u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
                              for n in range(N+1)])
             diff = np.abs(u_de - u).max()
@@ -2928,12 +2930,12 @@ The final test is to see if :math:`\theta=0,1` has convergence rate 1 and
             # Set command-line arguments directly in sys.argv
             sys.argv[1:] = '--I 0.8 --a 2.1 --T 5 '\ 
                            '--dt 0.4 0.2 0.1 0.05 0.025'.split()
-            # Suppress output from decay.main()
+            # Suppress output from dc_mod.main()
             stdout = sys.stdout  # save standard output for later use
             scratchfile = open('.tmp', 'w')  # fake standard output
             sys.stdout = scratchfile
         
-            r = decay.main()
+            r = dc_mod.main()
             for theta in r:
                 nt.assert_true(r[theta])  # check for non-empty list
         
@@ -3050,7 +3052,7 @@ slightly different syntax.
                 diff = np.abs(u_de - u).max()
                 self.assertAlmostEqual(diff, 0, delta=1E-14)
         
-            def test_theta_rule(self):
+            def test_solver(self):
                 ...
                 for theta in 0, 0.5, 1:
                     ...
@@ -3080,13 +3082,13 @@ Implementing simple problem and solver classes
 ----------------------------------------------
 
 The :math:`\theta`-rule was compactly and conveniently implemented in
-a function ``theta_rule``. In more complicated problems it might
+a function ``solver``. In more complicated problems it might
 be beneficial to use classes and introduce a class ``Problem`` to
 hold the definition of the physical problem, a class ``Solver``
 to hold the data and methods needed to numerically solve the problem,
 and a class ``Visualizer`` to make plots.
 This idea will now be illustrated, resulting in code that represents
-an alternative to the ``theta_rule`` and ``explore`` functions found
+an alternative to the ``solver`` and ``explore`` functions found
 in the ``dc_mod`` module.
 
 Explaining the details of class programming in Python
@@ -3219,8 +3221,8 @@ reading :math:`\Delta t` and :math:`\theta` from the command line:
                 self.dt, self.theta = args.dt, args.theta
         
             def solve(self):
-                from dc_mod import theta_rule
-                self.u, self.t = theta_rule(
+                from dc_mod import solver
+                self.u, self.t = solver(
                     self.problem.I, self.problem.a, self.problem.T,
                     self.dt, self.theta)
         
@@ -3438,9 +3440,9 @@ the ``decay_class.py`` file:
                                  theta='time discretization parameter')
         
             def solve(self):
-                #from dc_mod import theta_rule
-                from decay_theta import theta_rule
-                self.u, self.t = theta_rule(
+                #from dc_mod import solver
+                from decay_theta import solver
+                self.u, self.t = solver(
                     self.problem.get('I'),
                     self.problem.get('a'),
                     self.problem.get('T'),
@@ -3821,7 +3823,7 @@ browser. An extended version of the ``dc_exper1.py`` from the last
 section, called `dc_exper1_html.py <http://github.hplgit.com/INF5620/src/decay/experiments/dc_exper1_html.py>`_,
 adds code at the end for creating an HTML file with a summary, a
 section on the mathematical problem, a section on the numerical
-method, a section on the ``theta_rule`` function implementing the
+method, a section on the ``solver`` function implementing the
 method, and a section with subsections containing figures that shows
 the results of experiments where :math:`\Delta t` is varied for
 :math:`\theta=0,0.5,1`. The mentioned
@@ -4025,12 +4027,12 @@ Filename: ``pyproblems.txt``.
 Exercise 2: Experiment with wrong computations
 ----------------------------------------------
 
-Consider the ``theta_rule`` function in the `dc_v1.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_v1.py>`_
+Consider the ``solver`` function in the `dc_v1.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_v1.py>`_
 and the following call:
 
 .. code-block:: python
 
-        u, t = theta_rule(I=1, a=1, T=7, dt=2, theta=1)
+        u, t = solver(I=1, a=1, T=7, dt=2, theta=1)
 
 The output becomes
 
@@ -4065,7 +4067,7 @@ Exercise 3: Implement specialized functions
 Implement a specialized Python function ``ForwardEuler`` that solves
 the problem :math:`u'=-au`, :math:`u(0)=I`, using the Forward Euler method.
 Do not reimplement the solution algorithm, but let the ``ForwardEuler``
-function call the ``theta_rule`` function. Import this latter function
+function call the ``solver`` function. Import this latter function
 from the module `dc_mod <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_mod.py>`_.
 Also make similar functions ``BackwardEuler`` and ``CrankNicolson``.
 Filename: ``decay_FE_BE_CN.py``.
@@ -4105,7 +4107,7 @@ Filename: ``decay_plot_error.py``.
 Exercise 5: Compare methods for a give time mesh
 ------------------------------------------------
 
-Make a program that imports the ``theta_rule`` function from the
+Make a program that imports the ``solver`` function from the
 ``dc_mod`` module and offers a function ``compare(dt, I, a)`` for
 comparing, in a plot, the methods corresponding to :math:`\theta=0,0.5,1`
 and the exact solution.  This plot shows the accuracy of the metods
@@ -4429,7 +4431,7 @@ and {decay:analysis:B:CN} (the oscillatory region is above the line):
 
 .. code-block:: python
 
-        from dc_mod import theta_rule
+        from dc_mod import solver
         import numpy as np
         import scitools.std as st
         
@@ -4444,7 +4446,7 @@ and {decay:analysis:B:CN} (the oscillatory region is above the line):
             B = np.zeros((len(a), len(dt)))         # results
             for i in range(len(a)):
                 for j in range(len(dt)):
-                    u, t = theta_rule(I, a[i], T, dt[j], theta)
+                    u, t = solver(I, a[i], T, dt[j], theta)
                     # Does u have the right monotone decay properties?
                     correct_qualitative_behavior = True
                     for n in range(1, len(u)):
@@ -5167,7 +5169,7 @@ Python function is given next.
 
 .. code-block:: python
 
-        def theta_rule(I, a, b, T, dt, theta):
+        def solver(I, a, b, T, dt, theta):
             """
             Solve u'=-a(t)*u + b(t), u(0)=I,
             for t in (0,T] with steps of dt.
@@ -5228,7 +5230,7 @@ A relevant implementation of the test is
             theta = 0; I = 0.1; dt = 0.1; c = -0.5
             T = 4
             N = int(T/dt)  # no of steps
-            u, t = theta_rule(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
+            u, t = solver(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
             u_e = array([exact_solution(tn) for tn in t])
             difference = abs(u_e - u).max()  # max deviation
             tol = 1E-15  # tolerance for comparing floats

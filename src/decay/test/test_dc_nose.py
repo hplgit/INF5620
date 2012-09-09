@@ -1,29 +1,31 @@
 import nose.tools as nt
-import sys
-import dc_mod_unittest as decay
+import sys, os
+sys.path.insert(0, os.pardir)
+import dc_mod_unittest as dc_mod
 import numpy as np
 
 def exact_discrete_solution(n, I, a, theta, dt):
     """Return exact discrete solution of the theta scheme."""
+    dt = float(dt)  # avoid integer division
     factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
     return I*factor**n
 
 def test_against_discrete_solution():
     """
-    Compare result from theta_rule against
+    Compare result from solver against
     formula for the discrete solution.
     """
     theta = 0.8; a = 2; I = 0.1; dt = 0.8
     N = int(8/dt)  # no of steps
-    u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+    u, t = dc_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
     u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
                      for n in range(N+1)])
     diff = np.abs(u_de - u).max()
     nt.assert_almost_equal(diff, 0, delta=1E-14)
 
-def test_theta_rule():
+def test_solver():
     """
-    Compare result from theta_rule against
+    Compare result from solver against
     precomputed arrays for theta=0, 0.5, 1.
     """
     I=0.8; a=1.2; T=4; dt=0.5  # fixed parameters
@@ -46,7 +48,7 @@ def test_theta_rule():
               0.01862645]),
         }
     for theta in 0, 0.5, 1:
-        u, t = decay.theta_rule(I, a, T, dt, theta=theta)
+        u, t = dc_mod.solver(I, a, T, dt, theta=theta)
         diff = np.abs(u - precomputed[theta]).max()
         # Compare to 8 decimal places
         nt.assert_almost_equal(diff, 0, places=8,
@@ -56,7 +58,7 @@ def test_potential_integer_division():
     """Choose variables that can trigger integer division."""
     theta = 1; a = 1; I = 1; dt = 2
     N = 4
-    u, t = decay.theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+    u, t = dc_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
     u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
                      for n in range(N+1)])
     diff = np.abs(u_de - u).max()
@@ -67,12 +69,12 @@ def test_convergence_rates():
     # Set command-line arguments directly in sys.argv
     sys.argv[1:] = '--I 0.8 --a 2.1 --T 5 '\
                    '--dt 0.4 0.2 0.1 0.05 0.025'.split()
-    # Suppress output from decay.main()
+    # Suppress output from dc_mod.main()
     stdout = sys.stdout  # save standard output for later use
     scratchfile = open('.tmp', 'w')  # fake standard output
     sys.stdout = scratchfile
 
-    r = decay.main()
+    r = dc_mod.main()
     for theta in r:
         nt.assert_true(r[theta])  # check for non-empty list
 

@@ -1,6 +1,6 @@
 from scitools.std import *
 
-def theta_rule(I, a, T, dt, theta):
+def solver(I, a, T, dt, theta):
     """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
     dt = float(dt)           # avoid integer division
     N = int(round(T/dt))     # no of time intervals
@@ -18,10 +18,10 @@ def exact_solution(t, I, a):
 
 def explore(I, a, T, dt, theta=0.5, makeplot=True):
     """
-    Run a case with the theta_rule, compute error measure,
+    Run a case with the solver, compute error measure,
     and plot the numerical and exact solutions (if makeplot=True).
     """
-    u, t = theta_rule(I, a, T, dt, theta)  # Numerical solution
+    u, t = solver(I, a, T, dt, theta)  # Numerical solution
     u_e = exact_solution(t, I, a)
     e = u_e - u
     E = sqrt(dt*sum(e**2))
