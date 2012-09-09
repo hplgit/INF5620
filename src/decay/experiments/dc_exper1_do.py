@@ -153,7 +153,7 @@ for $n=0,1,\ldots,N-1$. This scheme corresponds to
 
 The numerical method is implemented in a Python function:
 
-@@@CODE ../dc_mod.py  fromto: def theta_rule@def verify_three
+@@@CODE ../dc_mod.py  fromto: def solver@def verify_three
 
 # Purpose: section with figures.
 

@@ -1,7 +1,7 @@
 from numpy import *
 from matplotlib.pyplot import *
 
-def theta_rule(I, a, b, T, dt, theta):
+def solver(I, a, b, T, dt, theta):
     """
     Solve u'=-a(t)*u + b(t), u(0)=I,
     for t in (0,T] with steps of dt.
@@ -33,7 +33,7 @@ def verify_linear_solution():
     theta = 0; I = 0.1; dt = 0.1; c = -0.5
     T = 4
     N = int(T/dt)  # no of steps
-    u, t = theta_rule(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
+    u, t = solver(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
     u_e = array([exact_solution(tn) for tn in t])
     difference = abs(u_e - u).max()  # max deviation
     tol = 1E-15  # tolerance for comparing floats

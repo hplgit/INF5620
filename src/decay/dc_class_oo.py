@@ -94,9 +94,9 @@ class Solver(Parameters):
                          theta='time discretization parameter')
 
     def solve(self):
-        #from dc_mod import theta_rule
-        from decay_theta import theta_rule
-        self.u, self.t = theta_rule(
+        #from dc_mod import solver
+        from decay_theta import solver
+        self.u, self.t = solver(
             self.problem.get('I'),
             self.problem.get('a'),
             self.problem.get('T'),

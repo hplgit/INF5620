@@ -1,6 +1,6 @@
 from numpy import *
 
-def theta_rule(I, a, T, dt, theta):
+def solver(I, a, T, dt, theta):
     """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
     dt = float(dt)           # avoid integer division
     N = int(round(T/dt))     # no of time intervals
@@ -21,7 +21,7 @@ def verify_exact_discrete_solution():
 
     theta = 0.8; a = 2; I = 0.1; dt = 0.8
     N = int(8/dt)  # no of steps
-    u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+    u, t = solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
     u_de = array([exact_discrete_solution(n, I, a, theta, dt)
                   for n in range(N+1)])
     difference = abs(u_de - u).max()  # max deviation
@@ -31,7 +31,7 @@ def verify_exact_discrete_solution():
 
 
 def main():
-    u, t = theta_rule(I=1, a=2, T=8, dt=0.8, theta=1)
+    u, t = solver(I=1, a=2, T=8, dt=0.8, theta=1)
     # Write out a table of t and u values:
     for i in range(len(t)):
         print 't=%6.3f u=%g' % (t[i], u[i])

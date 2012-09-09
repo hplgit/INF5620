@@ -2,7 +2,7 @@ from numpy import *
 from matplotlib.pyplot import *
 import sys
 
-def theta_rule(I, a, T, dt, theta):
+def solver(I, a, T, dt, theta):
     """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
     dt = float(dt)           # avoid integer division
     N = int(round(T/dt))     # no of time intervals
@@ -24,7 +24,7 @@ def verify_three_steps():
     u3 = factor*u2
 
     N = 3  # number of time steps
-    u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+    u, t = solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
 
     tol = 1E-15  # tolerance for comparing floats
     difference = abs(u1-u[1]) + abs(u2-u[2]) + abs(u3-u[3])
@@ -39,7 +39,7 @@ def verify_exact_discrete_solution():
 
     theta = 0.8; a = 2; I = 0.1; dt = 0.8
     N = int(8/dt)  # no of steps
-    u, t = theta_rule(I=I, a=a, T=N*dt, dt=dt, theta=theta)
+    u, t = solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
     u_de = array([exact_discrete_solution(n, I, a, theta, dt)
                   for n in range(N+1)])
     difference = abs(u_de - u).max()  # max deviation
@@ -52,10 +52,10 @@ def exact_solution(t, I, a):
 
 def explore(I, a, T, dt, theta=0.5, makeplot=True):
     """
-    Run a case with the theta_rule, compute error measure,
+    Run a case with the solver, compute error measure,
     and plot the numerical and exact solutions (if makeplot=True).
     """
-    u, t = theta_rule(I, a, T, dt, theta)  # Numerical solution
+    u, t = solver(I, a, T, dt, theta)  # Numerical solution
     u_e = exact_solution(t, I, a)
     e = u_e - u
     E = sqrt(dt*sum(e**2))
