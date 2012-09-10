@@ -6,7 +6,7 @@ Discretizing first-order ODEs by finite difference methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Sep 9, 2012
+:Date: Sep 10, 2012
 
 Note: **VERY PRELIMINARY VERSION!**
 
@@ -134,7 +134,7 @@ consists of the following four steps:
 4. formulating a recursive algorithm.
 
 .. index::
-   pair: mesh; finite differences
+   single: mesh; finite differences
 
 
 
@@ -361,7 +361,8 @@ Figure :ref:`decay:sketch:BE` explains the idea.
 
 
 
-.. index:: backward scheme, 1-step
+.. index::
+   single: backward scheme, 1-step
 
 
 .. index:: Backward Euler scheme
@@ -553,7 +554,7 @@ where :math:`\theta\in [0,1]` is the weighting factor, we can write
 
 
 
-.. index:: :math:`\theta`-rule
+.. index:: theta-rule
 
 
 We can now let the ODE hold at the point
@@ -636,7 +637,8 @@ Compact operator notation for finite differences
 
 .. index:: finite difference operator notation
 
-.. index:: operator notation, finite differences
+.. index::
+   single: operator notation, finite differences
 
 
 Finite difference formulas can be tedious to write and read,
@@ -2551,7 +2553,7 @@ Doctests
 
 
 .. index::
-   pair: software testing; doctests
+   single: software testing; doctests
 
 
 We have emphasized how important it is to be able to run tests in the
@@ -2685,14 +2687,14 @@ Unit testing with nose
 ----------------------
 
 
-.. index:: nose testing
+.. index:: nose (testing)
 
 
 .. index:: unit testing
 
 
 .. index::
-   pair: software testing; nose
+   single: software testing; nose
 
 
 The unit testing technique consists of identifying small units
@@ -2978,7 +2980,7 @@ Classical unit testing with unittest
 
 
 .. index::
-   pair: software testing; unittest
+   single: software testing; unittest
 
 
 The classical way of implementing unit tests derives from the JUnit
@@ -5104,6 +5106,8 @@ various versions are written as
 
 
 
+.. _decay:source:
+
 Extension to a source term
 --------------------------
 
@@ -5141,8 +5145,13 @@ particularly clear if we write up the schemes in the operator notation:
         
 
 
-Implementation
-~~~~~~~~~~~~~~
+.. _decay:general:
+
+Implementation of the generalized model problem
+-----------------------------------------------
+
+Deriving the :math:`\theta`-rule formula
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Writing out the latter :math:`\theta`-rule, using (:ref:`decay:fd1:Du:theta`)
 and (:ref:`decay:fd1:wmean:a`), we get
@@ -5162,6 +5171,9 @@ We solve for :math:`u^{n+1}`:
         \thinspace .
         
 
+
+The Python code
+~~~~~~~~~~~~~~~
 
 A suitable implementation where :math:`a(t)` and :math:`b(t)` are given as
 Python function is given next.
@@ -5190,8 +5202,73 @@ Python function is given next.
 
 This function is found in the file `dc_vc.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_vc.py>`_.
 
-Verification
-~~~~~~~~~~~~
+Implementations of variable coefficients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``solver`` function shown above demands the arguments ``a`` and ``b`` to
+be implemented as functions of ``t``, say
+
+
+.. code-block:: python
+
+        def a(t):
+            return a_0 if t < tp else k*a_0
+        
+        def b(t):
+            return 1
+
+Here, ``a(t)`` has three parameters ``a0``, ``tp``, and ``k``,
+which must be global variables.
+A better implementation is to represent ``a`` by a class where the
+parameters are attributes and a special method ``__call__`` evaluates :math:`a(t)`:
+
+.. code-block:: python
+
+        class A:
+            def __init__(self, a0=1, k=2):
+                self.a0, self.k = a0, k
+        
+            def __call__(self, t):
+                return self.a0 if t < self.tp else self.k*self.a0
+
+
+
+.. index:: lambda functions
+
+
+For quick tests it is cumbersome to write a complete function or a class.
+The *lambda function* construction in Python is then convenient. For example,
+
+.. code-block:: python
+
+        a = lambda t: a_0 if t < tp else k*a_0
+
+is equivalent to the ``def a(t):`` definition above. In general,
+
+.. code-block:: python
+
+        f = lambda arg1, arg2, ...: expressin
+
+is equivalent to
+
+.. code-block:: python
+
+        def f(arg1, arg2, ...):
+            return expression
+
+One can use lambda functions directly in calls. Say we want to
+solve :math:`u'=-u+1`, :math:`u(0)=1`:
+
+.. code-block:: python
+
+        u, t = solver(1, lambda t: 1, lambda t: 1, T, dt, theta)
+
+A lambda function can appear anywhere where a variable can appear.
+
+.. _decay:MMS:
+
+Verification via manufactured solutions
+---------------------------------------
 
 One common method for verifying implementations of differential equation
 solvers is to choose :math:`u_{\small\mbox{e}}(t)` as a linear function, adjust variable
@@ -5212,7 +5289,22 @@ Any function :math:`u_{\small\mbox{e}}(t)` is the correct solution if we choose
 .. math::
          b(t) = c + a(t)u_{\small\mbox{e}}(t) \thinspace . 
 
-A relevant implementation of the test is
+
+
+.. index:: method of manufactured solutions
+
+
+.. index:: MMS (method of manufactured solutions)
+
+
+The method of *choosing* some function as the exact solution :math:`u_{\small\mbox{e}}` and
+then adjust parameters and functions in the differential equation to
+make the chosen solution fulfill the equation, is a powerful technique
+for generating exact solutions and is known as the *method of manufactured
+solutions*, often abbreviated MMS.
+
+The following function offers an implementation of the verification
+test based on a linear :math:`u_{\small\mbox{e}}(t)`:
 
 
 .. code-block:: python
@@ -5291,6 +5383,10 @@ unknowns.
 General first-order ODEs
 ========================
 
+We now turn the attention to general, nonlinear ODEs and systems of such ODEs.
+Many schemes that are occasionally reused for PDEs are listed. We also
+demonstrate a Python interface to a range of different software for
+general first-order ODE systems.
 
 Generic form
 ------------
@@ -5575,7 +5671,10 @@ Next we list some well-known methods for :math:`u'=f(u,t)`, valid both for
 a single ODE (scalar :math:`u`) and systems of ODEs (vector :math:`u`).
 
 
-.. index:: backward scheme, 2-step
+.. index::
+   single: backward scheme, 2-step
+
+.. index:: BDF2 scheme
 
 
 Implicit 2-step backward scheme
@@ -5598,9 +5697,16 @@ The resulting scheme for :math:`u'=f(u,t)` reads
         
         
 
-The scheme is implicit and requires solution of nonlinear equations when
-:math:`f` is nonlinear in :math:`u`.
-The standard 1st-order Backward Euler method or the Crank-Nicolson scheme
+Higher-order versions of the scheme :eq:`decay:fd2:bw:2step` can
+be constructed by including more time levels. These schemes are known
+as the Backward Differentiation Formulas (BDF), and the particular
+version :eq:`decay:fd2:bw:2step` is often referred to as BDF2.
+The family of BDF schemes are available in the solvers ``odespy.Vode``,
+``odespy.Lsode``, ``odespy.Lsoda``, and ``odespy.lsoda_scipy``.
+
+Note that the scheme :eq:`decay:fd2:bw:2step` is implicit and requires
+solution of nonlinear equations when :math:`f` is nonlinear in :math:`u`.  The
+standard 1st-order Backward Euler method or the Crank-Nicolson scheme
 can be used for the first step.
 
 
@@ -5636,10 +5742,39 @@ Observe that :eq:`decay:fd2:leapfrog` is an explicit scheme, and that
 a nonlinear :math:`f` (in :math:`u`) is trivial to handle.
 
 
+.. index::
+   single: Leapfrog scheme, filtered
+
+
+The filtered Leapfrog scheme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unfortunately, the Leapfrog scheme :eq:`decay:fd2:leapfrog`
+will develop growing oscillations with time (see :ref:`decay:fd2:exer:leapfrog1`, {decay:fd2:exer:leapfrog2}, and
+{decay:fd2:exer:leapfrog3}). A remedy for such undesired oscillations
+is to introduce a *filtering technique*. First, a standard Leapfrog
+step is taken, according to :eq:`decay:fd2:leapfrog`, and then
+the previous :math:`u^n` value is adjusted according to
+
+.. math::
+   :label: decay:fd2:leapfrog:filtered
+        
+        u^n\ \leftarrow\ u^n + \gamma (u^{n-1} - 2u^n + u^{n+1})
+        
+        \thinspace .
+        
+
+The :math:`\gamma`-terms will effectively damp oscillations in the solution,
+especially those with short wavelength (point-to-point oscillations in
+particular). A common choice of :math:`\gamma` is 0.6 (a value used in the
+famous NCAR Climate Model).
+
+
 .. index:: Heun's method
 
 
-.. index:: Runge-Kutta, 2nd-order scheme
+.. index::
+   single: Runge-Kutta, 2nd-order scheme
 
 
 2nd-order Runge-Kutta scheme
@@ -5666,7 +5801,8 @@ The scheme is explicit, and the error is expected to behave as :math:`\Delta t^2
 
 
 
-.. index:: Adams-Bashforth scheme, 2nd order
+.. index::
+   single: Adams-Bashforth scheme, 2nd order
 
 
 2nd-order Adams-Bashforth scheme
@@ -5690,7 +5826,8 @@ As the name implies, the scheme is of order :math:`\Delta t^2`.
 
 
 
-.. index:: Adams-Bashforth scheme, 3rd order
+.. index::
+   single: Adams-Bashforth scheme, 3rd order
 
 
 3rd-order Adams-Bashforth scheme
@@ -5713,7 +5850,8 @@ The numerical error is of order :math:`\Delta t^3`, and the scheme needs
 some method for computing :math:`u^1` and :math:`u^2`.
 
 
-.. index:: Runge-Kutta, 4th-order scheme
+.. index::
+   single: Runge-Kutta, 4th-order scheme
 
 
 .. === 2nd-order Runge-Kutta scheme ===
@@ -5728,18 +5866,23 @@ Exercises
 .. --- begin exercise
 
 
+.. _decay:fd2:exer:bw2:
+
 Exercise 14: Implement the 2-step backward scheme
 -------------------------------------------------
 
 Implement the 2-step backward method :eq:`decay:fd2:bw:2step`
 for the model :math:`u'(t) = -a(t)u(t) + b(t)`, :math:`u(0)=I`.
 Allow the first step to be computed by either the Backward Euler
-scheme or the Crank-Nicolson scheme.
+scheme or the Crank-Nicolson scheme. Verify the implementing by choosing
+:math:`a(t)` and :math:`b(t)` such that the exact solution is linear in :math:`t`
+(see the section :ref:`decay:MMS`).
 
-Run a test case where :math:`a` constant
-and :math:`b=0` and determine if the choice of a first-order scheme
-(Backward Euler) has any impact on the overall accuracy of
-this scheme, which is expected to be of second order in :math:`\Delta t`.
+Compute convergence rates (see the section :ref:`decay:convergence:rate`) in
+a test case :math:`a=\hbox{const}` and :math:`b=0`, and determine if the choice of
+a first-order scheme (Backward Euler) has any impact on the overall
+accuracy of this scheme, which is expected to be of second order in
+:math:`\Delta t`.
 Filename: ``dc_backward2step.py``.
 
 .. --- end of exercise
@@ -5761,10 +5904,15 @@ for the model :math:`u'(t) = -a(t)u(t) + b(t)`,
 :math:`u(0)=I`. Since the Leapfrog scheme is explicit in time, it is most
 convenient to use the explicit Forward Euler scheme for computing :math:`u^1`.
 
-Determine if the choice of a first-order scheme (Forward Euler) for
+Verify the implementation by choosing :math:`a(t)` and :math:`b(t)` such that
+the exact solution is linear in :math:`t` (see the section :ref:`decay:MMS`).
+Also run the case :math:`u'=-u + 1`, :math:`u(0)=0`, and compare the numerical
+and exact solutions in a plot (:math:`u_{\small\mbox{e}}(t)=1-e^{-t}` for this case).
+
+Compute convergence rates (see the section :ref:`decay:convergence:rate`)
+to determine if the choice of a first-order scheme (Forward Euler) for
 the first time step has any impact on the overall accuracy of the
-Leapfrog scheme, which is expected to be of second order in :math:`\Delta t`
-(see :ref:`decay:fd2:exer:leapfrog1`).
+Leapfrog scheme, which is expected to be of second order in :math:`\Delta t`.
 Filename: ``dc_leapfrog.py``.
 
 .. --- end of exercise
@@ -5827,7 +5975,8 @@ Exercise 18: Implement the 2nd-order Adams-Bashforth scheme
 Implement the 2nd-order Adams-Bashforth method :eq:`decay:fd2:AB2`
 for the decay problem :math:`u'=-a(t)u + b(t)`, :math:`u(0)=I`, :math:`t\in (0, T]`.
 Use the Forward Euler method for the first step such that the overall
-scheme is explicit.
+scheme is explicit. Verify the implementation and compare the
+method to the Crank-Nicolson[[[
 Filename: ``dc_AdamBashforth2.py``.
 
 .. --- end of exercise
@@ -5909,8 +6058,8 @@ Filename: ``dc_class2.py``.
 
 .. _decay:exer:dc_class3:
 
-Exercise 21: Generalize a advanced class implementation
--------------------------------------------------------
+Exercise 21: Generalize an advanced class implementation
+--------------------------------------------------------
 
 Solve :ref:`decay:exer:dc_class2` by utilizing the
 class implementations in

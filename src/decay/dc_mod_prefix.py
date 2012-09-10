@@ -72,7 +72,7 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
         plt.figure()                     # create new plot
         t_e = np.linspace(0, T, 1001)    # very fine mesh for u_e
         u_e = exact_solution(t_e, I, a)
-        plt.plot(t,   u,   'ro')         # red circles for u
+        plt.plot(t,   u,   'r--o')       # red dashes w/circles
         plt.plot(t_e, u_e, 'b-')         # blue line for u_e
         plt.legend(['numerical', 'exact'])
         plt.xlabel('t')
