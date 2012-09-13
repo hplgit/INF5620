@@ -4428,28 +4428,14 @@ Explain what happens in the following computations, where
 some are (mathematically) unexpected:
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; dt = 1
-&gt;&gt;&gt; T = 5
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; dt = 3
+&gt;&gt;&gt; T = 8
 &gt;&gt;&gt; N = T/dt
 &gt;&gt;&gt; N
-5
-&gt;&gt;&gt; type(N)
-&lt;type &#39;int&#39;&gt;
-&gt;&gt;&gt; from numpy import linspace
-&gt;&gt;&gt; linspace(0, 1, 2)
-array([ 0.,  1.])
-&gt;&gt;&gt; linspace(0, 1, 2.4)
-array([ 0.,  1.])
-&gt;&gt;&gt; linspace(0, 1, 2.9)
-array([ 0.,  1.])
-&gt;&gt;&gt; theta = 1
-&gt;&gt;&gt; a = 1
+2
+&gt;&gt;&gt; theta = 1; a = 1
 &gt;&gt;&gt; (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
 0
-&gt;&gt;&gt; (1 - (1-theta)*a*dt)
-1
-&gt;&gt;&gt; (1 + theta*dt*a)
-2
 </pre></div>
 <p>
 Filename: <tt>pyproblems.txt</tt>.
@@ -4519,7 +4505,7 @@ Do not reimplement the solution algorithm, but let the <tt>ForwardEuler</tt>
 function call the <tt>solver</tt> function. Import this latter function
 from the module <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_mod.py"><tt>dc_mod</tt></a>.
 Also make similar functions <tt>BackwardEuler</tt> and <tt>CrankNicolson</tt>.
-Filename: <tt>decay_FE_BE_CN.py</tt>.
+Filename: <tt>dc_FE_BE_CN.py</tt>.
 
 <p>
 <!-- --- end of exercise -->
@@ -5133,21 +5119,22 @@ polynomials, term by term.
 
 <p>
 Calculating the Taylor series for \( \Aex \) is easily done by hand, but
-the three versions of \( A \) for \( theta=0,1,\frac{1}{2} \) lead to more
+the three versions of \( A \) for \( \theta=0,1,\frac{1}{2} \) lead to more
 cumbersome calculations.
 Nowadays, analytical computations can benefit greatly by
-symbolic computer algebra system. The Python package <tt>sympy</tt>
+symbolic computer algebra software. The Python package <tt>sympy</tt>
 represents a powerful computer algebra system, not as sophisticated as
 the famous Maple and Mathematica systems, but free and
 very easy to integrate with our numerical computations in Python.
 
 <p>
-When using <tt>sympy</tt>, it is convenient to enter the interactive
-Python mode where we can write expressions and statements and immediately
-see the results.  Here is a simple example. We strongly recommend
-to use IPython for interactive sessions, although our typesetting will
-apply the prompt <tt>>>></tt> (associated with the primitive Python shell that
-results from writing <tt>python</tt> in a terminal window).
+When using <tt>sympy</tt>, it is convenient to enter the interactive Python
+mode where we can write expressions and statements and immediately see
+the results.  Here is a simple example. We strongly recommend to use
+<tt>isympy</tt> (or <tt>ipython</tt>) for such interactive sessions, although our
+typesetting will apply the different prompt <tt>>>></tt> (associated with the
+primitive Python shell that results from writing <tt>python</tt> in a
+terminal window).
 
 <p>
 Let us enter <tt>sympy</tt> in a Python shell and show how
@@ -5178,7 +5165,7 @@ enter the formula as symbols:
 </pre></div>
 <p>
 To work with the factor for the Backward Euler scheme we
-can substitute a value for <tt>theta</tt>, here 1:
+can substitute the value 1 for <tt>theta</tt>:
 <p>
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; A.subs(theta, 1)
@@ -5200,8 +5187,7 @@ The Taylor series of the amplification factor for the Crank-Nicolson
 scheme can be computed as
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; half = Rational(1,2)
-&gt;&gt;&gt; A.subs(theta, half).series(p, 4)
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; A.subs(theta, half).series(p, 4)
 1 + (1/2)*p**2 - p - 1/4*p**3 + O(p**4)
 </pre></div>
 <p>
@@ -5244,7 +5230,7 @@ the error in amplification factor at a time level will be reduced
 by a factor of 4 in the Forward and Backward Euler schemes, and by
 a factor of 8 in the Crank-Nicolson scheme. That is, as we
 reduce \( \Delta t \) to obtain more accurate results, the Crank-Nicolson
-scheme can be efficiently reduce the error than the other schemes.
+scheme reduces the error more efficiently than the other schemes.
 
 <p>
 
@@ -5273,7 +5259,7 @@ ratio \( A/\Aex \), or the error \( 1-A/\Aex \) in this ratio:
 </pre></div>
 <p>
 The leading-order terms have the same powers as
-in the same as in the analysis of \( A-\Aex \).
+in the analysis of \( A-\Aex \).
 
 <p>
 
@@ -5282,7 +5268,8 @@ in the same as in the analysis of \( A-\Aex \).
 The error in the amplification factor reflects the error when
 progressing from time level \( t_n \) to \( t_{n-1} \).
 To investigate the real error at a point, known as the <em>global error</em>,
-we look at \( u^n-\uex(t_n) \) for some \( n \):
+we look at \( u^n-\uex(t_n) \) for some \( n \) and Taylor expand the
+mathematical expressions as functions of \( p=a\Delta t \):
 <p>
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; n = Symbol(&#39;n&#39;)
@@ -5299,15 +5286,14 @@ we look at \( u^n-\uex(t_n) \) for some \( n \):
 (1/12)*n*p**3 + O(p**4)
 </pre></div>
 <p>
-For a fixed time \( t \),
-the parameter \( n \) in these expressions increases as \( p\rightarrow 0 \)
-since \( t=n\Delta t \). That is,
-\( n=t/\Delta t = at/\Delta t \), and
-the leading-order error terms therefore become
-\( \frac{1}{2}at\Delta t \) for the Forward and Backward Euler scheme,
-and \( \frac{1}{12}at\Delta t^2 \) for the Crank-Nicolson scheme.
-The global error is therefore of second order in \( \Delta t \) for
-the latter scheme and first order for the former schemes.
+For a fixed time \( t \), the parameter \( n \) in these expressions increases
+as \( p\rightarrow 0 \) since \( t=n\Delta t \). That is, \( n=t/\Delta t \), and
+the leading-order error terms therefore become \( \frac{1}{2}na^2\Delta
+t^2 = \frac{1}{2}ta^2t\Delta t \) for the Forward and Backward Euler
+scheme, and \( \frac{1}{12}na^3\Delta t^3 = \frac{1}{12}ta^3\Delta t^2 \)
+for the Crank-Nicolson scheme.  The global error is therefore of
+second order in \( \Delta t \) for the latter scheme and first order for
+the former schemes.
 
 <p>
 
@@ -5404,9 +5390,12 @@ the section <a href="#decay:computing:error">Computing the numerical error</a>.
 <p>
 Integrated error measures sum up the contributions from each mesh point,
 so we must expect the global error to be larger than
-the local error. Roughly speaking, if \( |\uex(t_n) - u^n|\sim p^r \), we have
-$$ E \approx \sqrt{\Delta t\sum_{i=0}^N p^{2r}}\approx a\Delta t^{r-1/2},$$
-because \( \sum_{i=0}^Np^{2r}= p^{2r}\sum_{i=0}^N 1\sim p^{2r}\frac{1}{2}N^2 \), \( N=T/Delta t \), and \( p=a\Delta t \).
+the local error. Roughly speaking, if \( |\uex(t_n) - u^n|\sim ta^{r+1}\Delta t^r \), we have
+$$ E \approx \sqrt{\Delta t\sum_{i=0}^N i^2a^{2(r+1)}\Delta t^{2r+1}} =
+\sqrt{a^{2(r+1)}\Delta t^{2r+2} \sum_i i^2} \approx
+a^{r+1}\Delta t^{r+1} N^{3/2} = a^{r+1}\Delta t^{r-1/2} T^{3/2} ,$$
+since \( t=i\Delta t \), \( \sum_{i=0}^N i^2\approx \frac{1}{3}N^3 \), and
+\( N=T/Delta t \).
 
 <p>
 
