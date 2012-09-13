@@ -38,6 +38,8 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
              title='theta=%g, dt=%g' %
              (theta, dt),
              savefig='%s_%g.png' % (theta2name[theta], dt),
+             savefig='%s_%g.pdf' % (theta2name[theta], dt),
+             savefig='%s_%g.eps' % (theta2name[theta], dt),
              show=True)
     return E
 

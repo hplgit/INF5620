@@ -56,7 +56,7 @@ class TestDecay(unittest.TestCase):
             u, t = dc_mod.solver(I=0.8, a=1.2, T=4, dt=0.5,
                                  theta=theta)
             diff = np.abs(u - precomputed[theta]).max()
-            # Compare to 8 decimal places
+            # Precomputed numbers are known to 8 decimal places
             self.assertAlmostEqual(diff, 0, places=8,
                                    msg='theta=%s' % theta)
 

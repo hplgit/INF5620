@@ -1,0 +1,1549 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin:5;
+      padding:0;
+      border:0;	/* Remove the border around the viewport in old versions of IE */
+      width:100%;
+      background: #fdf6e3;
+      min-width:600px;	/* Minimum width of layout - remove if not required */
+      font-family: Verdana, Helvetica, Arial, sans-serif;
+      font-size: 1.0em;
+      line-height: 1.3em;
+      color: #657b83;
+    }
+    a { color: #657b83; text-decoration:none; }
+    a:hover { color: #b58900; background: #eee8d5; text-decoration:none; }
+    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; }
+    h2 { font-variant: small-caps; }
+    pre {
+      background: #fdf6e3;
+      -webkit-box-shadow: inset 0 0 2px #000000;
+      -moz-box-shadow: inset 0 0 2px #000000;
+      box-shadow: inset 0 0 2px #000000;
+      color: #586e75;
+      margin-left: 0px;
+      font-family: 'Droid Sans Mono', monospace;
+      padding: 2px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
+    }
+    tt { font-family: "Courier New", Courier; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p { text-indent: 0px; }
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+$$
+
+
+
+<!-- ------------------- main content ------------------------>
+
+<title>A Vibration Problem</title>
+
+<center><h1>A Vibration Problem</h1></center>  <! -- document title -->
+
+<! -- author(s) -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2]
+</center>
+
+
+<p>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Department of Informatics, University of Oslo</b></center>
+
+
+<center><h4>Sep 13, 2012</h4></center> <!-- date -->
+<p>
+Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
+
+<p>
+
+<p>
+<h2>Table of contents</h2>
+
+<p>
+
+<p>
+<a href="#___sec0"> A simple vibration problem </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model1:fdm"> A centered finite difference scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec2"> The discretization </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec3"> Computing the first step </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec4"> The computational algorithm </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec5"> Operator notation </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec6"> Computing \( u' \) </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec7"> Implementation </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec8"> Verification </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec9"> Manual calculation </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec10"> Testing very simple solutions </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec11"> Checking convergence rates </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model1:longseries"> Long-time simulations </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec13"> Using a moving plot window </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec14"> Using a line-by-line ascii plotter </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model1:analysis"> Analysis of the numerical scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec16"> Deriving an exact numerical solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec17"> Exact discrete solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec18"> Stability </a><br>
+<a href="#vib:model2"> Alternative schemes based on 1st-order equations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec20"> Standard methods for 1st-order ODE systems </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec21"> The Forward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec22"> The Backward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec23"> The Crank-Nicolson scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec24"> Comparison of schemes </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model2:EulerCromer"> The Euler-Cromer method </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec26"> Forward-backward discretization </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec27"> Equivalence with the scheme for the second-order ODE </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model2:staggered"> A method utilizing a staggered mesh </a><br>
+<a href="#___sec29"> Exercises </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:exer:phaseerr"> Exercise 1: Investigate phase errors </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:exer:w:adjust"> Exercise 2: Improve the accuracy by adjusting the frequency </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:exer:step4b:alt"> Exercise 3: Use a Taylor polynomial to compute \( u^1 \) </a><br>
+
+<p>
+<p>
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- Externaldocuments: ../decay/main_decay -->
+
+<p>
+Vibration problems lead to differential equations with solutions that
+oscillates in time, typically in a damped or undamped sinusoidal
+fashion.  Such solutions put certain demands on the numerical methods
+compared to, e.g., solutions with exponential, non-oscillating decay.
+Both the frequency and amplitude of the oscillations need to be
+accurately handled by the numerical schemes. Most of the reasoning and
+specific building blocks introduced in the fortcoming text can be
+reused to construct sound methods for partial differential equations
+of wave nature in multiple spatial dimensions.
+
+<p>
+
+<p>
+
+<p>
+
+<h2>A simple vibration problem  <a name="___sec0"></a></h2>
+<p>
+
+<p>
+Our first model problem for vibrations takes the form
+
+<p>
+$$
+\begin{equation}
+u''t) + \omega^2u = 0,\quad u(0)=I,\ u'(0)=0,\ t\in (0,T]
+\thinspace .
+\label{vib:model1}
+\end{equation}
+$$
+Here, \( \omega \) and \( I \) are given constants.
+The exact solution of \eqref{vib:model1} is
+
+<p>
+$$
+\begin{equation}
+u(t) = I\cos (\omega t)
+\thinspace .
+\label{vib:model1:uex}
+\end{equation}
+$$
+That is, \( u \) oscillates with constant amplitude \( I \) and
+(angular) frequency \( \omega \).
+The corresponding period of oscillations (e.g., the time between two
+neighboring peaks in the cosine function) is \( P=2\pi/\omega \).
+The number of periods per second
+is \( f=\omega/(2\pi) \) and measured in the unit Hz.
+Both \( f \) and \( \omega \) are referred to as frequency. The latter
+is not measured in Hz, but in radians per second.
+
+<p>
+In vibrating mechanical systems modeled by \eqref{vib:model1}, \( u(t) \)
+very often represents a position or a displacement of a particular
+point in the system. The derivative \( u'(t) \) then has the
+interpretation of the point's velocity, and \( u''(t) \) is the associated
+acceleration.  We remark that the model \eqref{vib:model1} is not only
+applicable to vibrating mechanical systems, but also to oscillations
+in electrical circuits.
+
+<p>
+
+<h3>A centered finite difference scheme <a name="vib:model1:fdm"></a></h3>
+<p>
+
+<p>
+To formulate a finite difference method for the model
+problem  \eqref{vib:model1} we follow the <a href="http://hplgit.github.com/INF5620/doc/notes/decay-sphinx/main_decay.html#the-forward-euler-scheme">four steps</a> in <a href="#Langtangen:deq:decay">[1]</a>.
+
+<p>
+
+<h4>The discretization  <a name="___sec2"></a></h4>
+<p>
+First, the domain is discretized by
+introducing a uniformly partitioned time mesh in the present problem.
+The points in the mesh are hence \( t_n=n\Delta t \), \( n=0,1,\ldots,N \),
+where \( \Delta t = T/N \) is the constant length of the time steps.
+Second, the ODE is to be satisfied at each mesh point:
+
+<p>
+$$
+\begin{equation}
+u''(t_n) + \omega^2u(t_n) = 0,\quad n=1,\ldots,N
+\thinspace .
+\label{vib:model1:step2}
+\end{equation}
+$$
+
+<p>
+Third, the derivative \( u''(t_n) \) is to be replaced by a finite
+difference approximation. A common second-order accurate approximation
+to the second-order derivative is
+
+<p>
+$$
+\begin{equation}
+u''(t_n) \approx \frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
+\thinspace .
+\label{vib:model1:step3}
+\end{equation}
+$$
+Inserting \eqref{vib:model1:step3} in \eqref{vib:model1:step2}
+yields
+
+<p>
+$$
+\begin{equation}
+\frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2} = -\omega^2 u^n
+\thinspace .
+\label{vib:model1:step4a}
+\end{equation}
+$$
+
+<p>
+Fourth, to formulate the computational algorithm, we assume that we
+have already computed \( u^{n-1} \) and \( u^n \) such that \( u^{n-1} \) is the
+unknown value, which we can readily solve for:
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = 2u^n - u^{n-1} - \omega^2 u^n
+\thinspace .
+\label{vib:model1:step4}
+\end{equation}
+$$
+The computational algorithm is simply to apply \eqref{vib:model1:step4}
+successively for \( n=1,2,\ldots,N-1 \). This numerical scheme sometimes
+goes under the name Stormer's method or <a href="http://en.wikipedia.org/wiki/Velocity_Verlet">Verlet integration</a>.
+
+<p>
+
+<h4>Computing the first step  <a name="___sec3"></a></h4>
+<p>
+We observe that \eqref{vib:model1:step4} cannot be used for \( n=0 \) since
+the computation of \( u^1 \) then involves the undefined value \( u^{-1} \)
+at \( t=-\Delta t \). Also, we have not used the "other" initial
+condition \( u'(0)=0 \). This condition can be combined with \eqref{vib:model1:step4}
+for \( n=1 \) to yield a value for \( u^1 \). We may use central difference
+approximation to \( u'(0) \) of the type
+
+<p>
+$$
+\begin{equation}
+\frac{u^1-u^{-1}}{2\Delta t} = 0\quad\Rightarrow\quad u^{-1} = u^1
+\thinspace .
+\end{equation}
+$$
+Using this relation in \eqref{vib:model1:step4} for \( n=0 \), we get
+
+<p>
+$$
+\begin{equation*} u^1 = 2u^0 - u^{1} - \Delta t^2 \omega^2 u^0,\end{equation*}
+$$
+which reduces to
+
+<p>
+$$
+\begin{equation}
+u^1 = u^0 - \half \Delta t^2 \omega^2 u^0
+\thinspace .
+\label{vib:model1:step4b}
+\end{equation}
+$$
+<a href="#vib:exer:step4b:alt">Exercise 3: Use a Taylor polynomial to compute $u^1$</a> asks you to perform an alternative derivation
+and also to generalize the initial condition to \( u'(0)=V\neq 0 \).
+
+<p>
+
+<h4>The computational algorithm  <a name="___sec4"></a></h4>
+<p>
+The steps for solving \eqref{vib:model1} becomes
+
+<p>
+
+<ol>
+ <li> \( u^0=I \)
+ <li> compute \( u^1 \) from \eqref{vib:model1:step4b}
+ <li> for \( n=1,2,\ldots,N-1 \):
+
+<ol>
+   <li> compute \( u^{n+1} \) from \eqref{vib:model1:step4}
+</ol>
+
+</ol>
+
+The algorithm is more precisely expressed directly in Python:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">t = linspace(0, T, N+1)  # mesh points in time
+dt = t[1] - t[0]         # constant time step.
+u = zeros(N+1)           # solution
+
+u[0] = I
+u[1] = u[0] - 0.5*dt**2*w**2*u[0]
+for n in range(1,N):
+    u[n+1] = 2*u[n] - u[n-1] - dt**2*w**2*u[n]
+</pre></div>
+<p>
+We remark that <tt>w</tt> is used as symbol in the code for \( \omega \).
+The reason is that this author prefers <tt>w</tt> for readability
+and comparison with the mathematical \( \omega \) instead of
+the full word <tt>omega</tt> as variable name.
+
+<p>
+
+<h4>Operator notation  <a name="___sec5"></a></h4>
+<p>
+We may write the scheme using the compact difference notation
+(see 
+<a href="http://hplgit.github.com/INF5620/doc/notes/decay-sphinx/main_decay.html#compact-operator-notation-for-finite-differences">examples</a> in <a href="#Langtangen:deq:decay). The difference (ref{vib:model1:step3">[2]</a>) has the operator
+notation \( [D_tD_t u]^n \) such that we can write:
+
+<p>
+$$
+\begin{equation}
+[D_tD_t u  + \omega^2 u = 0]^n
+\thinspace .
+\label{vib:model1:step4:op}
+\end{equation}
+$$
+Note that \( [D_tD_t u]^n \) means applying a central difference with step \( \Delta t/2 \) twice:
+
+<p>
+$$ [D_t(D_t u)]^n = \frac{[D_t u]^{n+1/2} - [D_t u]^{n-1/2}}{\Delta t}$$
+which is written out as
+$$
+\frac{1}{\Delta t}\left(\frac{u^{n+1}-u^n}{\Delta t} - \frac{u^{n}-u^{n-1}}{\Delta t}\right) = \frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
+\thinspace .
+$$
+
+<p>
+The discretization of initial conditions can in the operator notation
+be expressed as
+$$
+\begin{equation}
+[u = I]^0,\quad [D_{2t} u = 0]^0,
+\end{equation}
+$$
+where the operator \( [D_{2t} u]^n \) is defined as
+$$
+\begin{equation}
+[D_{2t} u]^n = \frac{u^{n+1} - u^{n-1}}{2\Delta t}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h4>Computing \( u' \)  <a name="___sec6"></a></h4>
+<p>
+In mechanical vibration applications one is often interested in
+computing the velocity \( u'(t) \) after \( u(t) \) has been computed.
+This can be done by a central difference,
+
+<p>
+$$
+\begin{equation}
+u'(t_n) \approx \frac{u^{n+1}-u^{n-1}}{2\Delta t} = [D_{2t}u]^n
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<p>
+
+<h3>Implementation  <a name="___sec7"></a></h3>
+<p>
+The algorithm from the previous section is readily translated to
+a complete Python function for computing (returning)
+\( u^0,u^1,\ldots,n^N \) and \( t_0,t_1,\ldots,t_N \), given the
+input \( I \), \( \omega \), \( \Delta t \), and \( T \):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">matplotlib.pyplot</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(I, w, dt, T):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Solve u&#39;&#39; + w**2*u = 0 for t in (0,T], u(0)=I and u&#39;(0)=0,</span>
+<span style="color: #BB4444; font-style: italic">    by a central finite difference method with time step dt.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    dt <span style="color: #666666">=</span> <span style="color: #AA22FF">float</span>(dt)
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(T<span style="color: #666666">/</span>dt))
+    u <span style="color: #666666">=</span> zeros(N<span style="color: #666666">+1</span>)
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, N<span style="color: #666666">*</span>dt, N<span style="color: #666666">+1</span>)
+
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
+    u[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>] <span style="color: #666666">-</span> <span style="color: #666666">0.5*</span>dt<span style="color: #666666">**2*</span>w<span style="color: #666666">**2*</span>u[<span style="color: #666666">0</span>]
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>,N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> <span style="color: #666666">2*</span>u[n] <span style="color: #666666">-</span> u[n<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> dt<span style="color: #666666">**2*</span>w<span style="color: #666666">**2*</span>u[n]
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+A function for plotting the numerical and the exact solution is also
+convenient to have:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">exact_solution</span>(t, I, w):
+    <span style="color: #AA22FF; font-weight: bold">return</span> I<span style="color: #666666">*</span>cos(w<span style="color: #666666">*</span>t)
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">visualize</span>(u, t, I, w):
+    plot(t, u, <span style="color: #BB4444">&#39;r--o&#39;</span>)
+    t_fine <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, t[<span style="color: #666666">-1</span>], <span style="color: #666666">1001</span>)  <span style="color: #008800; font-style: italic"># very fine mesh for u_e</span>
+    u_e <span style="color: #666666">=</span> exact_solution(t_fine, I, w)
+    hold(<span style="color: #BB4444">&#39;on&#39;</span>)
+    plot(t_fine, u_e, <span style="color: #BB4444">&#39;b-&#39;</span>)
+    legend([<span style="color: #BB4444">&#39;numerical&#39;</span>, <span style="color: #BB4444">&#39;exact&#39;</span>], loc<span style="color: #666666">=</span><span style="color: #BB4444">&#39;upper left&#39;</span>)
+    xlabel(<span style="color: #BB4444">&#39;t&#39;</span>)
+    ylabel(<span style="color: #BB4444">&#39;u&#39;</span>)
+    dt <span style="color: #666666">=</span> t[<span style="color: #666666">1</span>] <span style="color: #666666">-</span> t[<span style="color: #666666">0</span>]
+    title(<span style="color: #BB4444">&#39;dt=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> dt)
+    umin <span style="color: #666666">=</span> <span style="color: #666666">-1.2*</span>I;  umax <span style="color: #666666">=</span> <span style="color: #666666">-</span>umin
+    axis([t[<span style="color: #666666">0</span>], t[<span style="color: #666666">-1</span>], umin, umax])
+    savefig(<span style="color: #BB4444">&#39;vib1.png&#39;</span>)
+    savefig(<span style="color: #BB4444">&#39;vib1.pdf&#39;</span>)
+    savefig(<span style="color: #BB4444">&#39;vib1.eps&#39;</span>)
+    show()
+</pre></div>
+<p>
+A corresponding main program calling these functions for a simulation
+of a given number of periods (<tt>num_periods</tt>) may take the form
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">I <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+w <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi
+dt <span style="color: #666666">=</span> <span style="color: #666666">0.05</span>
+num_periods <span style="color: #666666">=</span> <span style="color: #666666">5</span>
+P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi<span style="color: #666666">/</span>w    <span style="color: #008800; font-style: italic">#  one period</span>
+T <span style="color: #666666">=</span> P<span style="color: #666666">*</span>num_periods
+u, t <span style="color: #666666">=</span> solver(I, w, dt, T)
+visualize(u, t, I, w, dt)
+</pre></div>
+<p>
+
+<p>
+Adjusting some of the input parameters on the command line can be
+handy. Here is a code segment using the <tt>ArgumentParser</tt> tool in
+the <tt>argparse</tt> module to define option value (<tt>--option value</tt>)
+pairs on the command line:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">argparse</span>
+parser <span style="color: #666666">=</span> argparse<span style="color: #666666">.</span>ArgumentParser()
+parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--I&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>, default<span style="color: #666666">=1.0</span>)
+parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--w&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>, default<span style="color: #666666">=2*</span>pi)
+parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--dt&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">float</span>, default<span style="color: #666666">=0.05</span>)
+parser<span style="color: #666666">.</span>add_argument(<span style="color: #BB4444">&#39;--num_periods&#39;</span>, <span style="color: #AA22FF">type</span><span style="color: #666666">=</span><span style="color: #AA22FF">int</span>, default<span style="color: #666666">=5</span>)
+a <span style="color: #666666">=</span> parser<span style="color: #666666">.</span>parse_args()
+I, w, dt, num_periods <span style="color: #666666">=</span> a<span style="color: #666666">.</span>I, a<span style="color: #666666">.</span>w, a<span style="color: #666666">.</span>dt, a<span style="color: #666666">.</span>num_periods
+</pre></div>
+<p>
+
+<p>
+
+<h3>Verification  <a name="___sec8"></a></h3>
+<p>
+
+<h4>Manual calculation  <a name="___sec9"></a></h4>
+<p>
+The simplest type of verification, which is also instructive for understanding
+the algorithm, is to compute \( u^1 \) and \( u^2 \) with the aid of a calculator
+and make a function for comparing these results with those from the <tt>solver</tt>
+function. We refer to the <tt>test_three_steps</tt> function in
+the file <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_undamped.py"><tt>vb_undamped.py</tt></a>
+for details.
+
+<p>
+
+<h4>Testing very simple solutions  <a name="___sec10"></a></h4>
+<p>
+Constructing test problems where the exact solution is constant or linear
+helps initial debugging and verification as one expects any reasonable
+numerical method to reproduce such solutions to machine precision.
+We would, however, need a source term \( f(t) \) in the equation,
+\( u'' +\omega^2 u = f(t) \), to have a constant solution more complicated
+than the not so useful \( u=0 \).
+
+<p>
+
+<h4>Checking convergence rates  <a name="___sec11"></a></h4>
+<p>
+Empirical computation of convergence rates, as explained
+in for an <a href="http://hplgit.github.com/INF5620/doc/notes/decay-sphinx/main_decay.html#computing-convergence-rates">ODE model</a>, yields a good method for
+verification. The function below
+
+<p>
+
+<ul>
+ <li> performs \( m \) simulations with halved time steps: \( 2^{-k}\Delta t \), \( k=0,\ldots,m-1 \),
+ <li> computes the \( L_2 \) norm of the error,
+   \( E=\sqrt{\Delta t_i\sum_{n=0}^{N-1}(u^n-\uex(t_n))^2} \) in each case,
+ <li> estimates the rates \( r_i \) from two consecutive
+   experiments \( (\Delta t_{i-1}, E_{i-1}) \) and \( (\Delta t_{i}, E_{i}) \),
+   assuming \( E_i=C\Delta t_i^{r_i} \) and \( E_{i-1}=C\Delta t_{i-1}^{r_i} \):
+</ul>
+
+The implementational details goes as follows:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">convergence_rates</span>(m, num_periods<span style="color: #666666">=8</span>):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Return m-1 empirical estimates of the convergence rate</span>
+<span style="color: #BB4444; font-style: italic">    based on m simulations, where the time step is halved</span>
+<span style="color: #BB4444; font-style: italic">    for each simulation.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    w <span style="color: #666666">=</span> <span style="color: #666666">0.35</span>; I <span style="color: #666666">=</span> <span style="color: #666666">0.3</span>
+    dt <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi<span style="color: #666666">/</span>w<span style="color: #666666">/30</span>  <span style="color: #008800; font-style: italic"># 30 time step per period 2*pi/w</span>
+    T <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi<span style="color: #666666">/</span>w<span style="color: #666666">*</span>num_periods
+    dt_values <span style="color: #666666">=</span> []
+    E_values <span style="color: #666666">=</span> []
+    <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(m):
+        u, t <span style="color: #666666">=</span> solver(I, w, dt, T)
+        u_e <span style="color: #666666">=</span> exact_solution(t, I, w)
+        E <span style="color: #666666">=</span> sqrt(dt<span style="color: #666666">*</span><span style="color: #AA22FF">sum</span>((u_e<span style="color: #666666">-</span>u)<span style="color: #666666">**2</span>))
+        dt_values<span style="color: #666666">.</span>append(dt)
+        E_values<span style="color: #666666">.</span>append(E)
+        dt <span style="color: #666666">=</span> dt<span style="color: #666666">/2</span>
+
+    r <span style="color: #666666">=</span> [log(E_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>E_values[i])<span style="color: #666666">/</span>
+         log(dt_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>dt_values[i])
+         <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, m, <span style="color: #666666">1</span>)]
+    <span style="color: #AA22FF; font-weight: bold">return</span> r
+</pre></div>
+<p>
+The return <tt>r</tt> list has its values equal to 2.00, which is in
+excellent agreement with what is
+expected from the second-order finite difference approximation \( [D_tD_tu]^n \).
+The final <tt>r[-1]</tt> value is a good candidate for a unit test:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_convergence_rates</span>():
+    r <span style="color: #666666">=</span> convergence_rates(m<span style="color: #666666">=5</span>, num_periods<span style="color: #666666">=8</span>)
+    <span style="color: #008800; font-style: italic"># Accept rate to 1 decimal place</span>
+    nt<span style="color: #666666">.</span>assert_almost_equal(r[<span style="color: #666666">-1</span>], <span style="color: #666666">2.0</span>, places<span style="color: #666666">=1</span>)
+</pre></div>
+<p>
+The complete code appears in <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_undamped.py"><tt>vb_undamped.py</tt></a>.
+
+<p>
+
+<h3>Long-time simulations <a name="vib:model1:longseries"></a></h3>
+<p>
+
+<p>
+Figure <a href="#vib:model1:2dt">1</a> shows a comparison of the exact and numerical
+solution for \( \Delta t=0.1, 0.05 \) and \( w=2\pi \).
+From the plot we make the following observations:
+
+<p>
+
+<ul>
+ <li> The numerical solution seems to have right amplitude.
+ <li> There is a phase error which is reduced by reducing the time step.
+ <li> The total phase error grows with time.
+</ul>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  Effect of halving the time step. <a name="vib:model1:2dt"></a> </p></center>
+<p><img src="fig-vib/vib_phase_err1.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<h4>Using a moving plot window  <a name="___sec13"></a></h4>
+<p>
+In vibration problems it is often of interest to investigate the system's
+behavior over long time intervals. Errors in the phase may then show
+up as crucial. Let us investigate long
+time series by introducing a moving plot window that can move along with
+the \( p \) most recently computed periods of the solution. The
+<a href="http://code.google.com/p/scitools">SciTools</a> package contains
+a convenient tool for this: <tt>MovingPlotWindow</tt>. Typing
+<tt>pydoc scitools.MovingPlotWindow</tt> shows a demo and description of usage.
+The function below illustrates the usage and is invoked in the
+<tt>vb_undamped.py</tt> code if the number of periods in the simulation exceeds
+10:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">visualize_front</span>(u, t, I, w, savefig<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Visualize u and the exact solution vs t, using a</span>
+<span style="color: #BB4444; font-style: italic">    moving plot window and continuous drawing of the</span>
+<span style="color: #BB4444; font-style: italic">    curves as they evolve in time.</span>
+<span style="color: #BB4444; font-style: italic">    Makes it easy to plot very long time series.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">scitools.std</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">st</span>
+    <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">scitools.MovingPlotWindow</span> <span style="color: #AA22FF; font-weight: bold">import</span> MovingPlotWindow
+
+    P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi<span style="color: #666666">/</span>w  <span style="color: #008800; font-style: italic"># one period</span>
+    umin <span style="color: #666666">=</span> <span style="color: #666666">-1.2*</span>I;  umax <span style="color: #666666">=</span> <span style="color: #666666">-</span>umin
+    plot_manager <span style="color: #666666">=</span> MovingPlotWindow(
+        window_width<span style="color: #666666">=8*</span>P,
+        dt<span style="color: #666666">=</span>t[<span style="color: #666666">1</span>]<span style="color: #666666">-</span>t[<span style="color: #666666">0</span>],
+        yaxis<span style="color: #666666">=</span>[umin, umax],
+        mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;continuous drawing&#39;</span>)
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>,<span style="color: #AA22FF">len</span>(u)):
+        <span style="color: #AA22FF; font-weight: bold">if</span> plot_manager<span style="color: #666666">.</span>plot(n):
+            s <span style="color: #666666">=</span> plot_manager<span style="color: #666666">.</span>first_index_in_plot
+            st<span style="color: #666666">.</span>plot(t[s:n<span style="color: #666666">+1</span>], u[s:n<span style="color: #666666">+1</span>], <span style="color: #BB4444">&#39;r-1&#39;</span>,
+                    t[s:n<span style="color: #666666">+1</span>], I<span style="color: #666666">*</span>cos(w<span style="color: #666666">*</span>t)[s:n<span style="color: #666666">+1</span>], <span style="color: #BB4444">&#39;b-1&#39;</span>,
+                    title<span style="color: #666666">=</span><span style="color: #BB4444">&#39;t=</span><span style="color: #BB6688; font-weight: bold">%6.3f</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> t[n],
+                    axis<span style="color: #666666">=</span>plot_manager<span style="color: #666666">.</span>axis(),
+                    show<span style="color: #666666">=</span><span style="color: #AA22FF; font-weight: bold">not</span> savefig) <span style="color: #008800; font-style: italic"># drop window if savefig</span>
+            <span style="color: #AA22FF; font-weight: bold">if</span> savefig:
+                st<span style="color: #666666">.</span>savefig(<span style="color: #BB4444">&#39;tmp_vib</span><span style="color: #BB6688; font-weight: bold">%04d</span><span style="color: #BB4444">.png&#39;</span> <span style="color: #666666">%</span> n)
+        plot_manager<span style="color: #666666">.</span>update(n)
+</pre></div>
+<p>
+
+<p>
+Running
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python vb_undamped.py --dt 0.05 --num_periods 40
+</pre></div>
+<p>
+makes the simulation last for 40 periods of the cosine function.
+With the moving plot window we can follow the numerical and exact
+solution as time progresses, and we see from this demo that
+the phase error is small in the beginning, but then becomes more
+prominent with time. Running <tt>vb_undamped.py</tt> with \( \Delta t=0.1 \)
+clearly shows that the phase errors become significant even earlier
+in the time series and destroys the solution.
+
+<p>
+The <tt>visualize_font</tt> function stores all the plots in
+files with names <tt>tmp_vib0000.png</tt>, <tt>tmp_vib0001.png</tt>, <tt>tmp_vib0002.png</tt>,
+and so on. From these files we may make a movie. This is particularly
+easy and convenient with the <tt>scitools movie</tt> command. The simplest
+movie format is a web page where the PNG files can be displayed consecutively.
+The generation of such a web page goes like
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; scitools movie <span style="color: #B8860B">output_file</span><span style="color: #666666">=</span>vib.html <span style="color: #B8860B">fps</span><span style="color: #666666">=</span>4 tmp_vib*.png
+</pre></div>
+<p>
+The <tt>fps</tt> argument controls the speed of the movie ("frames per second").
+To ensure that the individual plot frames are shown in correct order,
+it is important to number the files with zero-padded numbers
+(0000, 0001, 0002, etc.). The printf format <tt>%04d</tt> specifies an
+integer in a field of width 4, padded with zeros from the left.
+A simple Unix wildcard file specification like <tt>tmp_vib*.png</tt>
+will then list the frames in the right order. (If the numbers in the
+filenames were not zero-padded, <tt>tmp_vib11.png</tt> would appear
+before <tt>tmp_vib2.png</tt>!)
+
+<p>
+To watch the movie, load the movie file <tt>vib.html</tt> into some browser, e.g.,
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; google-chrome vib.html  <span style="color: #008800; font-style: italic"># invoke web page</span>
+</pre></div>
+<p>
+Clicking on <tt>Start movie</tt> to see the result. Moving this movie to
+some other place requires moving <tt>vib.html</tt> <em>and all the PNG files</em>
+<tt>tmp_vib*.png</tt>:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; mkdir vib_dt0.1
+Terminal&gt; mv tmp_vib*.png vib_dt0.1
+Terminal mv vib.html vib_dt0.1/index.html
+</pre></div>
+<p>
+
+<p>
+The <tt>scitools movie</tt> command can make movies in different formats,
+depending upon what software that is installed on the computer.
+If you have the <tt>convert</tt> program from the ImageMagick suite, an
+animated GIF file can be made by
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; scitools movie <span style="color: #B8860B">encoder</span><span style="color: #666666">=</span>convert <span style="color: #B8860B">output_file</span><span style="color: #666666">=</span>vib.gif <span style="color: #BB6622; font-weight: bold">\</span>
+          <span style="color: #B8860B">fps</span><span style="color: #666666">=</span>4 tmp_vib*.png
+</pre></div>
+<p>
+One can alternatively use <tt>convert</tt> directly:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; convert -delay 25 tmp_vib*.png tmp_vib.gif
+</pre></div>
+<p>
+However, in this particular example with \( \Delta t=0.05 \) and 40 periods,
+making an animated GIF file out of
+the large number of PNG files is a very heavy process and not feasible.
+
+<p>
+
+<h4>Using a line-by-line ascii plotter  <a name="___sec14"></a></h4>
+<p>
+Plotting functions vertically, line by line, in the terminal window
+using ascii characters only is a simple, fast, and convenient
+visualization technique for long time series (the time arrow points
+downward). The tool
+<tt>scitools.avplotter.Plotter</tt> makes it easy to create such plots:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">visualize_front_ascii</span>(u, t, I, w, fps<span style="color: #666666">=10</span>):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Plot u and the exact solution vs t line by line in a</span>
+<span style="color: #BB4444; font-style: italic">    terminal window (only using ascii characters).</span>
+<span style="color: #BB4444; font-style: italic">    Makes it easy to plot very long time series.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">scitools.avplotter</span> <span style="color: #AA22FF; font-weight: bold">import</span> Plotter
+    <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">time</span>
+    P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>pi<span style="color: #666666">/</span>w
+    umin <span style="color: #666666">=</span> <span style="color: #666666">-1.2*</span>I;  umax <span style="color: #666666">=</span> <span style="color: #666666">-</span>umin
+
+    p <span style="color: #666666">=</span> Plotter(ymin<span style="color: #666666">=</span>umin, ymax<span style="color: #666666">=</span>umax, width<span style="color: #666666">=60</span>, symbols<span style="color: #666666">=</span><span style="color: #BB4444">&#39;+o&#39;</span>)
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #AA22FF">len</span>(u)):
+        <span style="color: #AA22FF; font-weight: bold">print</span> p<span style="color: #666666">.</span>plot(t[n], u[n], I<span style="color: #666666">*</span>cos(w<span style="color: #666666">*</span>t[n])), \ 
+              <span style="color: #BB4444">&#39;</span><span style="color: #BB6688; font-weight: bold">%.1f</span><span style="color: #BB4444">&#39;</span> <span style="color: #666666">%</span> (t[n]<span style="color: #666666">/</span>P)
+        time<span style="color: #666666">.</span>sleep(<span style="color: #666666">1/</span><span style="color: #AA22FF">float</span>(fps))
+</pre></div>
+<p>
+The call <tt>p.plot</tt> returns a line of text, with the \( t \) axis marked and
+a symbol <tt>+</tt> for the first function (<tt>u</tt>) and <tt>o</tt> for the second
+function (the exact solution). Here we append this text
+a time counter reflecting how many periods the current time point
+corresponds to. A typical output (\( \omega =2\pi \), \( \Delta t=0.05 \))
+looks like this:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">                              |                       o+      14.0
+                              |                      + o      14.0
+                              |                  +    o       14.1
+                              |             +     o           14.1
+                              |     +        o                14.2
+                             +|       o                       14.2
+                     +        |                               14.2
+              +       o       |                               14.3
+         +     o              |                               14.4
+      +   o                   |                               14.4
+     +o                       |                               14.5
+     o +                      |                               14.5
+      o    +                  |                               14.6
+          o      +            |                               14.6
+               o        +     |                               14.7
+                      o       | +                             14.7
+                              |        +                      14.8
+                              |       o       +               14.8
+                              |              o     +          14.9
+                              |                   o   +       14.9
+                              |                       o+      15.0
+</pre></div>
+<p>
+
+<p>
+
+<p>
+
+<h3>Analysis of the numerical scheme <a name="vib:model1:analysis"></a></h3>
+<p>
+
+<p>
+
+<h4>Deriving an exact numerical solution  <a name="___sec16"></a></h4>
+<p>
+After having seen the phase error grow with time in the previous
+section, we shall now quantify this error through mathematical analysis.  The
+key tool in the analysis will be to establish an exact solution of the
+discrete equations.  The difference equation \eqref{vib:model1:step4}
+has constant coefficients and is homogeneous. The solution is then of
+the form \( u^n=A^n \), where \( A \) is some number to be determined. Since
+we have oscillating functions as solutions, the algebra will be
+considerably simplified if we write \( A=\exp{(i\tilde\omega \Delta t)} \),
+which means
+$$
+A^n = \exp{(\tilde\omega \Delta t\, n)}=\exp{(\tilde\omega t)} =
+\cos (\tilde\omega t) + i\sin(\tilde \omega t)
+\thinspace .
+$$
+The physically relevant numerical solution can
+be taken as the real part of this complex expression.
+With the rewrite \( A=\exp{(i\tilde\omega\Delta t)} \), the numerical frequency
+\( \tilde\omega \) is the quantity to determine.
+
+<p>
+Calculations now give
+$$
+\begin{align*}
+[D_tD_t u]^n &= \frac{\exp{(i\tilde\omega(t+\Delta t))} - 2\exp{(i\tilde\omega t)} + \exp{(i\tilde\omega(t-\Delta t))}}{\Delta t^2}\\
+&= \exp{(i\tilde\omega t)}\frac{1}{\Delta t^2}\left(\exp{(i\tilde\omega(\Delta t))} + \exp{(i\tilde\omega(-\Delta t))} - 2\right)\\
+&= \exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cosh(i\tilde\omega\Delta t) -1 \right)\\
+&= \exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cos(\tilde\omega\Delta t) -1 \right)\\
+&= -\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
+\end{align*}
+$$
+The last line follows from the relation
+\( \cos x - 1 = -2\sin^2(x/2) \) (try <tt>cos(x)-1</tt> in
+<a href="http://www.wolframalpha.com">wolframalpha.com</a> to see the formula).
+The scheme \eqref{vib:model1:step4}
+with \( u^n=\exp{(i\omega\tilde\Delta t\, n)} \) inserted gives
+
+<p>
+$$
+\begin{equation}
+-\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
++ \omega^2 \exp{(i\tilde\omega t)} = 0,
+\end{equation}
+$$
+which after dividing by \( \exp{(i\tilde\omega t)} \) results in
+$$
+\begin{equation}
+\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2}) = \omega^2
+\thinspace .
+\end{equation}
+$$
+The first step in solving for the unknown \( \tilde\omega \) is
+$$ \sin^2(\frac{\tilde\omega\Delta t}{2}) = \left(\frac{\omega\Delta t}{2}\right)^2
+\thinspace .
+$$
+Then, taking the square root, applying the inverse sine function, and
+multiplying by \( 2/\Delta t \), results in
+$$
+\begin{equation}
+\tilde\omega = \pm \frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+\thinspace .
+\label{vib:model1:tildeomega}
+\end{equation}
+$$
+
+<p>
+The first observation of \eqref{vib:model1:tildeomega} tells that
+there is a phase error since the numerical frequency \( \tilde\omega \)
+never equals the exact frequency \( \omega \). But how good is
+the approximation \eqref{vib:model1:tildeomega}? Taylor series expansion
+for small \( \Delta t \) may give an expression that is easier to understand:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; from sympy import *
+&gt;&gt;&gt; dt, w = symbols(&#39;dt w&#39;)
+&gt;&gt;&gt; w_tilde = asin(w*dt/2).series(dt, 0, 4)*2/dt
+&gt;&gt;&gt; print w_tilde
+(dt*w + dt**3*w**3/24 + O(dt**4))/dt
+</pre></div>
+<p>
+This means that
+$$
+\begin{equation}
+\tilde\omega = \omega\left( 1 + \frac{1}{24}\omega^2\Delta t^2\right) + {\cal O}(\Delta t^3)
+\thinspace .
+\label{vib:model1:tildeomega:series}
+\end{equation}
+$$
+That is, the error in the numerical frequency is of second-order in
+\( \Delta t \).
+We see that \( \tilde\omega > \omega \) since the term \( \omega^3\Delta t^2/24 >0 \)
+and this is by far the biggest term in the series expansion for small
+\( \omega\Delta t \). A numerical frequency that is too large gives an oscillating
+curve that oscillates too fast and therefore "lags behind" the exact
+oscillations, a feature that can be seen in the plots.
+
+<p>
+Figure <a href="#vib:model1:tildeomega:plot">2</a> plots the discrete frequency
+\eqref{vib:model1:tildeomega}
+and its approximation \eqref{vib:model1:tildeomega:series} for \( w=1 \), based
+on the program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_plot_freq.py"><tt>vb_plot_freq.py</tt></a>).
+Although \( \tilde\omega \) is a function of \( \Delta t \) in
+ref\eqref{vib:model1:tildeomega:series},
+it is instructive to replace \( \Delta t \) by the number of time steps
+per period in the solution, because \( \omega\Delta t \) is the key
+parameter in the problem and this parameter reflects how many time
+steps we have per period. The plot shows
+that at least 25-30 points per period are necessary for reasonable
+accuracy, but this depends on the length of the simulation (\( T \)) as
+the total phase error due to the frequency error grows linearly with time
+(see <a href="#vib:exer:phaseerr">Exercise 1: Investigate phase errors</a>).
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 2:  Exact discrete frequency and its second-order series expansion. <a name="vib:model1:tildeomega:plot"></a> </p></center>
+<p><img src="fig-vib/discrete_freq.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+
+<h4>Exact discrete solution  <a name="___sec17"></a></h4>
+<p>
+More important than the \( \tilde\omega = w + {\cal O}(\Delta t^2) \)
+result is the fact that we have an exact discrete solution of
+the problem:
+$$
+\begin{equation}
+u^n = I\cos\left(\tilde\omega n\Delta t\right),\quad
+\tilde\omega = \frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+\thinspace .
+\label{vib:model1:un:exact}
+\end{equation}
+$$
+Such an exact discrete solution is ideal for verification purposes
+(and you are encouraged to make a test based on \eqref{vib:model1:un:exact}
+in ref{vib:exer:nosetests}).
+
+<p>
+
+<h4>Stability  <a name="___sec18"></a></h4>
+<p>
+Looking at \eqref{vib:model1:un:exact}, it appears that the numerical
+solution has constant and correct amplitude, but an error in the
+frequency (phase error). However, a constant amplitude demands
+that \( \tilde\omega \) is a real number. A complex \( \tilde\omega \) is
+indeed possible if the argument \( x \) of \( \sin^{-1}(x) \) has magnitude
+larger than unity: \( |x|>1 \) (type <tt>asin(x)</tt> in <a href="http://www.wolframalpha.com">wolframalpha.com</a> to see basic properties of \( \sin^{-1} (x) \)).
+A complex \( \tilde\omega \) can be written \( \tilde\omega = \tilde\omega_r +
+i\tilde\omega_i \). Since \( \sin^{-1}(x) \) has a <em>negative</em> imaginary part for
+\( x>1 \), it means that
+\( \exp{(i\omega\tilde t)}=\exp{(-\tilde\omega_i t)}\exp{(i\tilde\omega_r t)} \)
+will lead to exponential growth in time because \( \tilde\omega_i <0 \) and hence
+\( -\tilde\omega_i t > 0 \).
+
+<p>
+
+<p>
+We do not tolerate growth in the amplitude and we therefore
+have a <em>stability criterion</em>
+$$
+\begin{equation}
+\frac{\omega\Delta t}{2} \leq 1\quad\Rightarrow\quad
+\Delta t \leq \frac{2}{\omega}
+\thinspace .
+\end{equation}
+$$
+With \( \omega =2\pi \), \( \Delta t > \pi^{-1} = 0.3183098861837907 \) will give
+growing solutions. Figure <a href="#vib:model1:dt:unstable">3</a>
+displays what happens when \( \Delta t =0.3184 \),
+which is slightly above the critical value: \( \Delta t =\pi^{-1} + 9.01\cdot
+10^{-5} \).
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 3:  Growing, unstable solution because of a time step slightly beyond the stability limit. <a name="vib:model1:dt:unstable"></a> </p></center>
+<p><img src="fig-vib/vib_unstable.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+From the analysis we can draw three important conclusions:
+
+<p>
+
+<ol>
+<li> The key parameter in the formulas is \( p=\omega\Delta t \).
+   The period of oscillations is \( P=2\pi/\omega \), and the
+   number of time steps per period is \( N_P=P/\Delta t \).
+   Therefore, \( p=\omega\Delta t = 2\pi N_P \), showing that the
+   critical parameter is the number of time steps per period.
+   The smallest possible \( N_P \) is 2, showing that \( p\in (0,\pi] \).
+<li> Provided \( p\leq 2 \), the amplitude if the numerical solution is
+   constant.
+<li> The numerical solution exhibits a relative phase error
+   \( \tilde\omega/\omega \approx 1 + \frac{1}{24}p^2 \).
+   This error leads to wrongly displaced peaks of the numerical
+   solution, and the error in peak location grows linearly with time.
+</ol>
+
+<h2>Alternative schemes based on 1st-order equations <a name="vib:model2"></a></h2>
+<p>
+
+<p>
+A standard technique for solving second-order ODEs is
+to rewrite them as a system of first-order ODEs and then apply the
+vast collection of methods for first-order ODE systems.
+Given the second-order ODE problem
+$$ u'' + \omega^2 u = 0,\quad u(0)=I,\ u'(0)=0,$$
+we introduce the auxiliary variable \( v=u' \) and express the ODE problem
+in terms of first-order derivatives of \( u \) and \( v \):
+
+<p>
+$$
+\begin{align}
+u' &= v,
+\label{vib:model2:ueq}\\
+v' &= -\omega^2 u
+\label{vib:model2:veq}
+\thinspace .
+\end{align}
+$$
+The initial conditions become \( u(0)=I \) and \( v(0)=0 \).
+
+<p>
+
+<h3>Standard methods for 1st-order ODE systems  <a name="___sec20"></a></h3>
+<p>
+
+<h4>The Forward Euler scheme  <a name="___sec21"></a></h4>
+<p>
+A Forward Euler approximation to our \( 2\times 2 \) system of ODEs
+\eqref{vib:model2:ueq}-\eqref{vib:model2:veq}
+becomes
+
+<p>
+$$ [D_t^+ u = v]^n,$$
+
+<p>
+$$ [D_t^+ v = -\omega^2 u]^n,$$
+or written out,
+
+<p>
+$$
+\begin{align}
+u^{n+1} &= u^n + \Delta t v^n,\\
+v^{n+1} &= v^n -\Delta t \omega^2 u^n
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>The Backward Euler scheme  <a name="___sec22"></a></h4>
+<p>
+A Backward Euler approximation the ODE system is equally easy to
+write up in the operator notation:
+
+<p>
+$$ [D_t^- u = v]^{n+1},$$
+
+<p>
+$$ [D_t^- v = -\omega u]^{n+1} \thinspace . $$
+This becomes a coupled system for \( u^{n+1} \) and \( v^{n+1} \):
+
+<p>
+$$
+\begin{align}
+u^{n+1} - \Delta t v^{n+1} &= u^{n},\\
+v^{n+1} + \Delta t \omega^2 u^{n+1} &= v^{n}
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>The Crank-Nicolson scheme  <a name="___sec23"></a></h4>
+<p>
+The Crank-Nicolson scheme takes this form in the operator notation:
+
+<p>
+$$
+[D_t u = \overline{v}^t]^{n+\frac{1}{2}},$$
+
+<p>
+$$
+[D_t v = -\omega \overline{u}^t]^{n+\frac{1}{2}} $$
+Also a coupled system:
+
+<p>
+$$
+\begin{align}
+u^{n+1} - \frac{1}{2}\Delta t v^{n+1} &= u^{n} + \frac{1}{2}\Delta t v^{n},\\
+v^{n+1} + \frac{1}{2}\Delta t \omega^2 u^{n+1} &= v^{n}
+- \frac{1}{2}\Delta t \omega^2 u^{n}
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>Comparison of schemes  <a name="___sec24"></a></h4>
+<p>
+We can easily compare methods like the ones above with the aid of the
+<a href="https://github.com/hplgit/odespy">Odespy</a> package:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">odespy</span>
+<span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">f</span>(u, t, w<span style="color: #666666">=1</span>):
+    <span style="color: #008800; font-style: italic"># u is array of length 2 holding our [u, v]</span>
+    u, v <span style="color: #666666">=</span> u
+    <span style="color: #AA22FF; font-weight: bold">return</span> [v, <span style="color: #666666">-</span>w<span style="color: #666666">**2*</span>u]
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">run_solvers_and_plot</span>(solvers, timesteps_per_period<span style="color: #666666">=20</span>,
+                         num_periods<span style="color: #666666">=1</span>, I<span style="color: #666666">=1</span>, w<span style="color: #666666">=2*</span>np<span style="color: #666666">.</span>pi):
+    P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>np<span style="color: #666666">.</span>pi<span style="color: #666666">/</span>w  <span style="color: #008800; font-style: italic"># one period</span>
+    dt <span style="color: #666666">=</span> P<span style="color: #666666">/</span>timesteps_per_period
+    N <span style="color: #666666">=</span> num_periods<span style="color: #666666">*</span>timesteps_per_period
+    T <span style="color: #666666">=</span> N<span style="color: #666666">*</span>dt
+    t_mesh <span style="color: #666666">=</span> np<span style="color: #666666">.</span>linspace(<span style="color: #666666">0</span>, T, N<span style="color: #666666">+1</span>)
+
+    legends <span style="color: #666666">=</span> []
+    <span style="color: #AA22FF; font-weight: bold">for</span> solver <span style="color: #AA22FF; font-weight: bold">in</span> solvers:
+        solver<span style="color: #666666">.</span>set(f_kwargs<span style="color: #666666">=</span>{<span style="color: #BB4444">&#39;w&#39;</span>: w})
+        solver<span style="color: #666666">.</span>set_initial_condition([I, <span style="color: #666666">0</span>])
+        u, t <span style="color: #666666">=</span> solver<span style="color: #666666">.</span>solve(t_mesh)
+</pre></div>
+<p>
+There is quite some more code dealing with plots also, and we refer
+to the source file <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_odespy.py"><tt>vb_odespy.py</tt></a>
+for details. Observe that keyword arguments in <tt>f(u,t,w=1)</tt> can
+be supplied through a solver parameter <tt>f_kwargs</tt> (dictionary).
+
+<p>
+Specification of the Forward Euler, Backward Euler, and
+Crank-Nicolson schemes is done like this (the equivalent to
+Crank-Nicolson in Odespy is <tt>MidpointImplicit</tt>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">solvers <span style="color: #666666">=</span> [
+    odespy<span style="color: #666666">.</span>ForwardEuler(f),
+    <span style="color: #008800; font-style: italic"># Implicit methods must use Newton solver to converge</span>
+    odespy<span style="color: #666666">.</span>BackwardEuler   (f, nonlinear_solver<span style="color: #666666">=</span><span style="color: #BB4444">&#39;Newton&#39;</span>),
+    odespy<span style="color: #666666">.</span>MidpointImplicit(f, nonlinear_solver<span style="color: #666666">=</span><span style="color: #BB4444">&#39;Newton&#39;</span>),
+    ]
+</pre></div>
+<p>
+
+<p>
+The <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_odespy.py"><tt>vb_odespy.py</tt></a>
+program makes two plots of the computed solutions with the various
+methods in the <tt>solvers</tt> list: one plot with \( u(t) \) versus \( t \), and
+one <em>phase plane plot</em> where \( v \) is plotted against \( u \).
+That is, the phase plane plot is the curve \( (u(t),v(t)) \) parameterized
+by \( t \). Analytically, \( u=I\cos(\omega t) \) and \( v=u'=-\omega I\sin(\omega t) \).
+The exact curve \( (u(t),v(t)) \) is therefore an ellipse, which often
+looks like a circle in a plot because the axes are automatically scaled. The
+important feature, however, is that exact curve \( (u(t),v(t)) \) is
+closed and repeats itself for every period. Not all numerical schemes
+are capable to do that.
+
+<p>
+The Forward Euler scheme in Figure
+<a href="#vib:model1:1st:odespy:theta:phaseplane">4</a> has a pronounced spiral
+curve, pointing to the fact that the amplitude steadily grows, which
+is also evident in Figure <a href="#vib:model1:1st:odespy:theta">5</a>.
+The Backward Euler scheme has a similar feature, except that the
+spriral goes inward and the amplitude is significantly damped.  The
+changing amplitude and the sprial form decreases with decreasing time
+step.  The Crank-Nicolson scheme (MidpointImplicit) looks much more
+accurate.  In fact, these plots tell that the Forward and Backward
+Euler schemes are not suitable for solving our ODEs with oscillating
+solutions.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 4:  Comparison of classical schemes in the phase plane. <a name="vib:model1:1st:odespy:theta:phaseplane"></a> </p></center>
+<p><img src="fig-vib/vb_theta_1_pp.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 5:  Comparison of classical schemes. <a name="vib:model1:1st:odespy:theta"></a> </p></center>
+<p><img src="fig-vib/vb_theta_1_u.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+We may run two popular standard methods for first-order ODEs, the 2nd-
+and 4th-order Runge-Kutta methods, to see how they perform. Figures
+<a href="#vib:model1:1st:odespy:RK:phaseplane">6</a> and
+<a href="#vib:model1:1st:odespy:RK">7</a> show the solutions with larger \( \Delta
+t \) values than what was used in the previous two plots.  How the
+amplitude develops in longer time integrations is illustrated in
+Figures <a href="#vib:model1:1st:odespy:RK:long:phaseplane">8</a> and
+<a href="#vib:model1:1st:odespy:RK:long">9</a>. The markers are dropped in these
+plots because there are so many mesh points with markers when \( T \)
+corresponds to 10 periods.  The visual impression is that the
+4th-order Runge-Kutta method is very accurate, under all circumstances
+in these tests, and the 2nd-order scheme suffer from amplitude errors
+unless the time step is very small.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 6:  Comparison of Runge-Kutta schemes in the phase plane. <a name="vib:model1:1st:odespy:RK:phaseplane"></a> </p></center>
+<p><img src="fig-vib/vb_RK_1_pp.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 7:  Comparison of Runge-Kutta schemes. <a name="vib:model1:1st:odespy:RK"></a> </p></center>
+<p><img src="fig-vib/vb_RK_1_u.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 8:  Long-time behavior of Runge-Kutta schemes in the phase plane. <a name="vib:model1:1st:odespy:RK:long:phaseplane"></a> </p></center>
+<p><img src="fig-vib/vb_RK_10_pp.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 9:  Long-time behavior of Runge-Kutta schemes. <a name="vib:model1:1st:odespy:RK:long"></a> </p></center>
+<p><img src="fig-vib/vb_RK_10_u.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+The corresponding results for the Crank-Nicolson scheme
+are shown in Figures <a href="#vib:model1:1st:odespy:CN:long:phaseplane">10</a> and
+<a href="#vib:model1:1st:odespy:CN:long">11</a>. It is clear that scheme outperforms
+the 2nd-order Runge-Kutta method. Both schemes has the same order
+of accuracy, but their differences in accuracy is clearly pronounced
+in this example.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 10:  Long-time behavior of the Crank-Nicolson scheme in the phase plane. <a name="vib:model1:1st:odespy:CN:long:phaseplane"></a> </p></center>
+<p><img src="fig-vib/vb_CN_10_pp.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 11:  Long-time behavior of the Crank-Nicolson scheme. <a name="vib:model1:1st:odespy:CN:long"></a> </p></center>
+<p><img src="fig-vib/vb_CN_10_u.png" align="bottom" width=600,></p>
+</center>
+
+<p>
+
+<p>
+
+<p>
+
+<h3>The Euler-Cromer method <a name="vib:model2:EulerCromer"></a></h3>
+<p>
+
+<p>
+While the 4th-order Runge-Kutta method and the a centered Crank-Nicolson scheme
+work well for the first-order formulation of the vibration model, both
+were inferior to the straightforward scheme for the second-order
+equation \( u''+\omega^2u=0 \). However, there is a similarly successful
+scheme available for the first-order system \( u'=v \), \( v'=-\omega^2u \),
+to be presented next.
+
+<p>
+
+<h4>Forward-backward discretization  <a name="___sec26"></a></h4>
+<p>
+The idea is to apply a Forward Euler discretization to the first
+equation and a Backward Euler discretization to the second. In operator
+notation this is stated as
+
+<p>
+$$ [D_t^+u &= v]^n,$$
+
+<p>
+$$
+[D_t^-v &= -\omega u]^{n+1}
+\thinspace .
+$$
+We can write out the formulas and collect the unknowns on the left-hand side:
+$$
+\begin{align}
+u^{n+1} &= u^n + \Delta t v^n,
+\label{vib:model2:EulerCromer:ueq1}\\
+v^{n+1} &= v^n -\Delta t \omega^2u^{n+1}
+\label{vib:model2:EulerCromer:veq1}
+\thinspace .
+\end{align}
+$$
+We realize that \( u^{n+1} \) can be computed from
+\eqref{vib:model2:EulerCromer:ueq1} and then \( v^{n+1} \) from
+\eqref{vib:model2:EulerCromer:veq1} using the recently computed value
+\( u^{n+1} \) on the right-hand side.
+
+<p>
+<!-- Despite using a backward difference, there is no need to solve a coupled -->
+<!-- system for \( u^{n+1} \) and \( v^{n+1} \) because the structure of the ODEs -->
+<!-- allows \eqref{vib:model2:EulerCromer:ueq1} -->
+
+<p>
+The scheme
+\eqref{vib:model2:EulerCromer:ueq1}-\eqref{vib:model2:EulerCromer:veq1}
+goes under several names: Forward-backward scheme, <a href="http://en.wikipedia.org/wiki/Semi-implicit_Euler_method">Semi-implicit Euler method</a>, symplectic
+Euler, semi-explicit Euler, Newton-Stormer-Verlet, and Euler-Cromer.
+Since both discretizations are based on first-order difference
+approximation, one may think that the scheme is only of first-order,
+but this is not true: the use of a forward and then a backward
+difference make errors cancel so that the overall error in the scheme
+os \( {\cal O}(\Delta t^2) \). This is explaned below.
+
+<p>
+
+<h4>Equivalence with the scheme for the second-order ODE  <a name="___sec27"></a></h4>
+<p>
+We may eliminate the \( v^n \) variable from
+\eqref{vib:model2:EulerCromer:ueq1}-\eqref{vib:model2:EulerCromer:veq1}.
+From \eqref{vib:model2:EulerCromer:veq1} we have
+\( v^n = v^{n-1} - \Delta t \omega^2u^{n} \), which can be inserted
+in \eqref{vib:model2:EulerCromer:ueq1} to yield
+$$
+\begin{equation}
+u^{n+1} = u^n + \Delta t v^{n-1} - \Delta t^2 \omega^2u^{n} .
+\label{vib:model2:EulerCromer:elim1}
+\end{equation}
+$$
+The \( v^{n-1} \) quantity can be expressed by \( u^n \) and \( u^{n-1} \)
+using \eqref{vib:model2:EulerCromer:ueq1}:
+$$ v^{n-1} = \frac{u^n - u^{n-1}}{\Delta t},
+$$
+and when this is inserted in \eqref{vib:model2:EulerCromer:elim1} we get
+$$
+\begin{equation}
+u^{n+1} = 2u^n - u^{n-1} - \Delta t^2 \omega^2u^{n},
+\end{equation}
+$$
+which is nothing but the centered scheme \eqref{vib:model1:step4}!
+The previous analysis of this scheme then also applies to the Euler-Cromer
+method.
+
+<p>
+The initial condition \( u'=0 \) means \( u'=v=0 \). Then \( v^0=0 \), and
+\eqref{vib:model2:EulerCromer:ueq1} implies \( u^1=u^0 \), while
+\eqref{vib:model2:EulerCromer:veq1} says \( v^1=-\omega^2 u^0 \).
+This approximation, \( u^1=u^0 \),
+corresponds to a first-order Forward Euler discretization
+of the initial condition \( u'(0)=0 \): \( [D_t^+ u = 0]^0 \).
+
+<p>
+
+<h3>A method utilizing a staggered mesh <a name="vib:model2:staggered"></a></h3>
+<p>
+
+<p>
+
+<p>
+<!-- new file: genealizations, systems, -->
+<!-- new file: apps -->
+
+<p>
+<!-- exercise: damping analysis, see geophysics book first... -->
+
+<p>
+
+<h2>Exercises  <a name="___sec29"></a></h2>
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 1: Investigate phase errors <a name="vib:exer:phaseerr"></a></h3>
+<p>
+
+<p>
+Consider an exact solution \( I\cos (\omega t) \) and an
+approximation \( I\cos(\tilde\omega t) \).
+Define the phase error as time lag between the peak \( I \)
+in the exact solution and the corresponding peak in the approximation
+after \( m \) periods of oscillations. Show that this phase error
+is linear in \( m \).
+Filename: <tt>vb_phase_error.pdf</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 2: Improve the accuracy by adjusting the frequency <a name="vib:exer:w:adjust"></a></h3>
+<p>
+
+<p>
+According to ref{vib:model1:tildeomega:series}, the numerical
+frequency deviates from the exact frequency by a (dominating) amount
+\( \omega^3\Delta t^2/24 >0 \). Replace the <tt>w</tt> parameter in the algorithm
+in the <tt>solver</tt> function (in <tt>vb_undamped.py</tt>) by <tt>w = w*(1 -
+(1./24)*w**2*dt**2</tt> and test how this adjustment in the numerical
+algorithm improves the accuracy.
+Filename: <tt>vb_adjust_w.py</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 3: Use a Taylor polynomial to compute \( u^1 \) <a name="vib:exer:step4b:alt"></a></h3>
+<p>
+
+<p>
+As an alternative to the derivation of \eqref{vib:model1:step4b} for
+computing \( u^1 \), one can use a Taylor polynomial with three terms
+for \( u^1 \). Show that this method also leads to
+\eqref{vib:model1:step4b}. Generalize the condition on \( u'(0) \) to
+be \( u'(0)=V \) and compute \( u^1 \) in this case with both methods.
+Filename: <tt>vb_first_step.pdf</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<!-- ------------------- end of main content ----------------->
+</body>
+</html>
+    
+

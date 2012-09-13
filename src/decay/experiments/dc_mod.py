@@ -70,7 +70,9 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
         ylabel('u')
         title('Method: theta-rule, theta=%g, dt=%g' % (theta, dt))
         theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
-        savefig('%s_%g.png' % (theta2name[theta], dt))
+        savefig('%s_%g.png' % (theta2name[theta], dt), dpi=150)
+        savefig('%s_%g.eps' % (theta2name[theta], dt))
+        savefig('%s_%g.pdf' % (theta2name[theta], dt))
         #show()  # run in batch
     return E
 

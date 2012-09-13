@@ -12,7 +12,7 @@ def A(p, theta):
 
 def amplification_factor(names):
     curves = {}
-    p = linspace(0, 3, 101)
+    p = linspace(0, 3, 15)
     curves['exact'] = A_exact(p)
     name2theta = dict(FE=0, BE=1, CN=0.5)
     for name in names:
@@ -27,6 +27,7 @@ def amplification_factor(names):
     ylabel('A')
     savefig('A_factors.png')
     savefig('A_factors.eps')
+    savefig('A_factors.pdf')
     show()
 
 if __name__ == '__main__':
