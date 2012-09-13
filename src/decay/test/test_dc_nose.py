@@ -50,7 +50,7 @@ def test_solver():
     for theta in 0, 0.5, 1:
         u, t = dc_mod.solver(I, a, T, dt, theta=theta)
         diff = np.abs(u - precomputed[theta]).max()
-        # Compare to 8 decimal places
+        # Precomputed numbers are known to 8 decimal places
         nt.assert_almost_equal(diff, 0, places=8,
                                msg='theta=%s' % theta)
 

@@ -6,9 +6,9 @@ Discretizing first-order ODEs by finite difference methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Sep 11, 2012
+:Date: Sep 13, 2012
 
-Note: **VERY PRELIMINARY VERSION!**
+Note: **VERY PRELIMINARY VERSION!** (Still lots of typos!)
 
 
 
@@ -1119,8 +1119,12 @@ IPython -- to mention a few of the most
 useful features.
 
 Although running programs in IPython is strongly recommended, most
-execution examples in the forthcoming text simply use a minimal
-text like ``Terminal> python programname``.
+execution examples in the forthcoming text use the standard
+Python shell with prompt ``>>>`` and run programs through
+a typesetting like
+``Terminal> python programname``. The reason is that such typesetting
+makes the text more compact in the vertical direction
+than showing sessions with IPython syntax.
 
 .. Explain running programs in IPython
 
@@ -1531,6 +1535,8 @@ to see how the error varies with the method and the mesh resolution:
                 title('theta=%g, dt=%g' % (theta, dt))
                 theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
                 savefig('%s_%g.png' % (theta2name[theta], dt))
+                savefig('%s_%g.pdf' % (theta2name[theta], dt))
+                savefig('%s_%g.eps' % (theta2name[theta], dt))
                 show()
             return E
 
@@ -1588,10 +1594,22 @@ specifies ``H`` images in the horizontal direction and ``V`` images in
 the vertical direction. A series of image files to be combined are then listed,
 with the name of the resulting combined image, here ``FE1.png`` at the end.
 
+For \LaTeX{} reports it is not recommended to use ``montage`` and PNG files
+as the result has too low resolution. Instead, plots should be made
+in the PDF format and combined using the ``pdftk`` and ``pdfnup`` tools
+(on Linux/Unix):
 
-The behavior of the two other schemes are shown in Figures :ref:`decay:fig:BE1`
+
+.. code-block:: console
+
+        Terminal> pdftk FE_0.4.png FE_0.04.png output tmp.pdf
+        Terminal> pdfnup --nup 2x1 tmp.pdf  # output in tmp-nup.pdf
+        Terminal> mv tmp-nup.pdf FE1.png
+
+
+The behavior of the two other schemes is shown in Figures :ref:`decay:fig:BE1`
 and :ref:`decay:fig:CN1`. Crank-Nicolson is obviously the most accurate
-scheme from a visual point of view.
+scheme from this visual point of view.
 
 
 .. _decay:fig:BE1:
@@ -1694,7 +1712,7 @@ the list ``sys.argv``, and there are, in principle, two ways of programming with
 command-line arguments in Python:
 
  * Decide upon a sequence of parameters on the command line and read
-   their values directly from the ``sys.argv[1:]`` list (``sys.argv[0]`` is
+   their values directly from the ``sys.argv`` list (``sys.argv[0]`` is
    the just program name).
 
  * Use option-value pairs (``--option value``) on
@@ -1759,7 +1777,7 @@ One should note the following about the constructions in the program above:
     ``'True'``, and ``False`` otherwise.
 
   * It is easy to build the list of :math:`\Delta t` values: we simply run through
-    the rest of the list, ``sys.argv[5:]``, convert each command-line argument
+    the rest of the list, ``sys.argv``, convert each command-line argument
     to ``float``, and collect these ``float`` objects in a list, using the
     compact and convenient *list comprehension* syntax in Python.
 
@@ -1833,7 +1851,7 @@ We introduce a function for defining the mentioned command-line options:
 
 Each command-line option is defined through the ``parser.add_argument``
 method. Alternative options, like the short ``--I`` and the more
-explaining ``--initial_condition`` can be defined. Other arguments
+explaining version ``--initial_condition`` can be defined. Other arguments
 are ``type`` for the Python object type, a default value, and a help
 string, which gets printed if the command-line argument ``-h`` or ``--help`` is
 included. The ``metavar`` argument specifies the value associated with
@@ -2878,7 +2896,7 @@ correct results:
             for theta in 0, 0.5, 1:
                 u, t = dc_mod.solver(I, a, T, dt, theta=theta)
                 diff = np.abs(u - precomputed[theta]).max()
-                # Compare to 8 decimal places
+                # Precomputed numbers are known to 8 decimal places
                 nt.assert_almost_equal(diff, 0, places=8,
                                        msg='theta=%s' % theta)
 
@@ -3551,18 +3569,20 @@ already has the loops over :math:`\theta` and :math:`\Delta t` implemented:
                   --T 5 --dt 0.5 0.25 0.1 0.05
 
 
-A lot of image files ``FE_*.png``, ``BE_*.png``, and ``CN_*.png`` are
-generated. We want to combine all the ``FE_*.png`` files in a table
+The ``dc_mod.py`` program generates a lot of image files, e.g.,
+``FE_*.png``, ``BE_*.png``, and ``CN_*.png``.
+We want to combine all the ``FE_*.png`` files in a table
 fashion in one file, with two images in each row,
 starting with the largest :math:`\Delta t` in the upper
 left corner and decreasing the value as we go to the right and down.
-This can be done using the `montage <http://www.imagemagick.org/script/montage.php>`_ program:
+This can be done using the `montage <http://www.imagemagick.org/script/montage.php>`_ program.
 
-
-.. code-block:: console
-
-        Terminal> montage -background white -geometry 100% -tile 2x \
-                  file1.png file2.png ... result.png
+Also plot files in the PDF format with names ``FE_*.pdf``, ``BE_*.pdf``,
+and ``CN_*.pdf`` are generated and these should be combined using other
+tools: ``pdftk`` to combine individual plots into one file with one plot
+per page, and ``pdfnup`` to combine the pages into a table with multiple
+plots per page. The code snippets below contains all details about the
+usage of ``montage``, ``pdftk``, and ``pdfnup``.
 
 
 
@@ -3582,7 +3602,8 @@ varies. For example,
 
         Terminal> python dc_exper0.py 0.5 0.25 0.1 0.05
 
-results in three images ``FE.png``, ``CN.png``, and ``BE.png``,
+results in images ``FE.png``, ``CN.png``, ``BE.png``,
+``FE.pdf``, ``CN.pdf``, and ``BE.pdf``,
 each with four plots corresponding to the four :math:`\Delta t` values.
 Each plot compares the numerical solution with the exact one.
 The latter image is shown in Figure :ref:`decay:experiments:fig:BE4a`.
@@ -3603,7 +3624,7 @@ implementation:
 
 .. code-block:: python
 
-        import os, sys, glob
+        import os, sys
         
         # The command line must contain dt values
         if len(sys.argv) > 1:
@@ -3627,21 +3648,33 @@ implementation:
             print 'Command failed:', cmd; sys.exit(1)
         
         # Combine images into rows with 2 plots in each row
-        montage_commands = []
+        combine_image_commands = []
         for method in 'BE', 'CN', 'FE':
-            imagefiles = ['%s_%s.png' % (method, dt) for dt in dt_values]
-            montage_commands.append(
+            imagefiles = ' '.join(['%s_%s.pdf' % (method, dt)
+                                   for dt in dt_values])
+            combine_image_commands.append(
                 'montage -background white -geometry 100%' + \
-                ' -tile 2x %s %s.png' % (' '.join(imagefiles), method))
+                ' -tile 2x %s %s.png' % (imagefiles, method))
+            combine_image_commands.append(
+                'pdftk %s output tmp.pdf' % imagefiles)
+            num_rows = int(round(len(dt_values)/2.0))
+            combine_image_commands.append(
+                'pdfnup --nup 2x%d tmp.pdf' % num_rows)
+            combine_image_commands.append(
+                'mv -f tmp-nup.pdf %s.pdf' % method)
+            imagefiles = ' '.join(['%s_%s.png' % (method, dt)
+                                   for dt in dt_values])
         
-        for cmd in montage_commands:
+        for cmd in combine_image_commands:
             print cmd
             failure = os.system(cmd)
             if failure:
                 print 'Command failed:', cmd; sys.exit(1)
         
         # Remove the files generated by dc_mod.py
-        filenames = glob.glob('*_*.png')
+        from glob import glob
+        filenames = glob('*_*.png') + glob('*_*.pdf') + glob('*_*.eps')  +\
+                    glob('tmp*.pdf')
         for filename in filenames:
             os.remove(filename)
 
@@ -3656,7 +3689,7 @@ This file is available as `experiments/dc_exper0.py <http://github.hplgit.com/IN
 
 We may comment upon many useful constructs in this script:
 
- * ``[float(arg) for arg in sys.argv[1:]]`` builds a list of real numbers
+ * ``[float(arg) for arg in sys.argv]`` builds a list of real numbers
    from all the command-line arguments.
 
  * ``failure = os.system(cmd)`` runs an operating system command, e.g.,
@@ -3670,10 +3703,11 @@ We may comment upon many useful constructs in this script:
  * ``['%s_%s.png' % (method, dt) for dt in dt_values]`` builds a list of
    filenames from a list of numbers (``dt_values``).
 
- * All ``montage`` commands for creating composite figures are stored in a
+ * All ``montage``, ``pdftk``, ``pdfnup``, and ``mv`` commands for creating
+   composite figures are stored in a
    list and thereafter executed in a loop.
 
- * ``glob.glob('*_*.png')`` returns a list of the names of all files in the
+ * ``glob('*_*.png')`` returns a list of the names of all files in the
    current folder where the filename matches the *Unix wildcard notation*
    ``*_*.png`` (meaning "any text, underscore, any text, and then `.png`").
 
@@ -3760,6 +3794,7 @@ We are now ready to plot :math:`E` versus :math:`\Delta t` for :math:`\theta=0,0
         plt.ylabel('log(error)')
         plt.title('Error vs time step')
         plt.savefig('error_BE_CN_FE.png')
+        plt.savefig('error_BE_CN_FE.pdf')
 
 Plots occasionally need some manual adjustments. Here, the axis of
 the log-log plot look nicer if we adapt them strictly to the data,
@@ -4172,16 +4207,6 @@ The program just prints ``Bug in the implementation!`` and does not
 show the plot. What went wrong?
 Filename: ``dc_memsave_v2.py``.
 
-.. --- begin short answer in exercise
-
-
-*Answer.* With only 5 decimals in the file, the ``verify`` function compares
-truncated elements ``u``, accurate only to :math:`10^{-5}` with the
-exact discrete solution and applies a far too small ``tol`` value.
-``tol`` must be ``1E-4``.
-.. --- end short answer in exercise
-
-
 .. --- end of exercise
 
 
@@ -4262,15 +4287,15 @@ Let
         \thinspace .
         
 
-Make a Python module ``q_module`` containing two functions ``q(t)`` and ``dqdt(t)``
-for computing :math:`q(t)` and :math:`q'(t)`, respectively. Perform a
+Make a Python module ``q_module`` containing two functions ``q(t)`` and
+``dqdt(t)`` for computing :math:`q(t)` and :math:`q'(t)`, respectively. Perform a
 ``from numpy import *`` in this module. Import ``q`` and ``dqdt`` in another
-file using a construction ``from q_module import *``. All objects available
-in this file is given by ``dir()``. Print ``dir()`` and ``len(dir())``.
-Then change the import of ``numpy`` in ``q_module.py`` to
-``import numpy as np``. What is the effect of this import on the
-number of objects in ``dir()`` in a file that does
-``from q_module import *``?
+file using the "star import" construction ``from q_module import
+*``. All objects available in this file is given by ``dir()``. Print
+``dir()`` and ``len(dir())``.  Then change the import of ``numpy`` in
+``q_module.py`` to ``import numpy as np``. What is the effect of this
+import on the number of objects in ``dir()`` in a file that does ``from
+q_module import *``?
 
 .. \frac{du}{dt}=au\left(1-\frac{u}{R}\right),\quad u(0)=A,
 
@@ -4322,7 +4347,7 @@ We address the ODE for exponential decay,
         u'(t) = -au(t),\quad u(0)=I,
         
 
-where :math:`a` and :math:`I` are given constant. This problem is solved
+where :math:`a` and :math:`I` are given constants. This problem is solved
 by the :math:`\theta`-rule finite difference scheme, resulting in
 the recursive equations
 
@@ -4389,17 +4414,17 @@ The characteristics of the displayed curves can be summarized as follows:
     solution.
 
 Since the exact solution of our model problem is a monotone function,
-:math:`u(t)=Ie^{-at}`, some of these results are indeed alarming!
+:math:`u(t)=Ie^{-at}`, some of these qualitatively wrong results are indeed alarming!
 
 Experimental investigation of oscillatory solutions
 ---------------------------------------------------
 
 We may ask the question: Under what circumstances, i.e., values of
 the input data :math:`I`, :math:`a`, and :math:`\Delta t` will the Forward Euler and
-Crank-Nicolson schemes result in oscillatory solutions?
+Crank-Nicolson schemes result in undesired oscillatory solutions?
 
 We may set up an experiment where we loop over values of :math:`I`, :math:`a`,
-and :math:`\Delta t`. For each experiment, we flat the solution as
+and :math:`\Delta t`. For each experiment, we flag the solution as
 oscillatory if
 
 .. math::
@@ -4413,8 +4438,8 @@ oscillations are independent of :math:`I`, but do depend on :math:`a` and
 function :math:`B(a,\Delta t)` which is 1 if oscillations occur
 and 0 otherwise. We can visualize :math:`B` as a contour plot
 (lines for which :math:`B=\hbox{const}`). The contour :math:`B=0.5` will
-correspond to the borderline between oscillator regions :math:`B=1`
-and monotone regions in the :math:`a-\Delta t` plane.
+correspond to the borderline between oscillatory regions with :math:`B=1`
+and monotone regions with :math:`B=0` in the :math:`a-\Delta t` plane.
 
 The :math:`B` function is defined at discrete :math:`a` and :math:`\Delta t` values.
 Say we have given :math:`P` $a$ values, :math:`a_0,\ldots,a_{P-1}`, and
@@ -4428,7 +4453,7 @@ array. Both Matplotlib and SciTools can create a plot of the
 contour line :math:`B_{ij}=0.5` dividing the oscillatory and monotone
 regions. The file `dc_osc_regions.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_osc_regions.py>`_ contains all nuts and
 bolts to produce the :math:`B=0.5` line in Figures :ref:`decay:analysis:B:FE`
-and {decay:analysis:B:CN} (the oscillatory region is above the line):
+and :ref:`decay:analysis:B:CN`. The oscillatory region is above this line.
 
 
 .. code-block:: python
@@ -4478,7 +4503,7 @@ and {decay:analysis:B:CN} (the oscillatory region is above the line):
 .. figure:: fig-decay/osc_region_FE.png
    :width: 500
 
-   *Forward Euler scheme*
+   *Forward Euler scheme: oscillatory solutions occur for points above the curve*
 
 
 
@@ -4487,7 +4512,7 @@ and {decay:analysis:B:CN} (the oscillatory region is above the line):
 .. figure:: fig-decay/osc_region_CN.png
    :width: 500
 
-   *Crank-Nicolson scheme*
+   *Crank-Nicolson scheme: oscillatory solutions occur for points above the curve*
 
 
 By looking at the curves in the figures one may guess that :math:`a\Delta t`
@@ -4570,7 +4595,7 @@ the stability criterion reads
 
 
 The Backward
-Euler scheme is always stable (since :math:`A<0` is impossible, while
+Euler scheme is always stable (since :math:`A<0` is impossible), while
 non-oscillating solutions for Forward Euler and Crank-Nicolson
 demand :math:`\Delta t\leq 1/a` and :math:`\Delta t\leq 2/a`, respectively.
 The relation between :math:`\Delta t` and :math:`a` look reasonable: a smaller
@@ -4590,11 +4615,11 @@ for :math:`\Delta t=1.25` is easily explained by :math:`A=-0.25`.
 
 
 The factor :math:`A` is called *amplification factor* since the solution at
-a time level times :math:`A` gives the solution at the next time level.  For
+a new time level is :math:`A` times the solution at the previous time level. For
 a decay process, we must obviously have :math:`|A|\leq 1` for all :math:`\Delta
 t`, which is fulfilled for :math:`\theta \geq 1/2`. Arbitrarily large values
 of :math:`u` can be generated when :math:`|A|>1` and :math:`n` is large enough. The
-numerical solution is then totally irrelevant to the ODE modeling decay
+numerical solution is in such cases totally irrelevant to an ODE modeling decay
 processes.
 
 
@@ -4602,7 +4627,7 @@ Comparing Amplification Factors
 -------------------------------
 
 After establishing how :math:`A` impacts the qualitative features of the
-solution, we mau now look more into how well the numerical amplification
+solution, we shall now look more into how well the numerical amplification
 factor approximates the exact one. The exact solution reads
 :math:`u(t)=Ie^{-at}`, which can be rewritten as
 
@@ -4619,13 +4644,13 @@ From this formula we see that the exact amplification factor is
         
 
 
-We realize that the amplification factors depend on :math:`a` and :math:`\Delta t`
-through the product :math:`a\Delta t`. Therefore, it is convenient to
-introduce a symbol for this product, :math:`p=a\Delta t`, and view :math:`A` and
-:math:`A_{\small\mbox{e}}` as functions of :math:`p`. Figure :ref:`decay:analysis:fig:A` shows
-these functions. Crank-Nicolson is clearly closest to the exact amplification
-factor, but that method has the unfortunate oscillatory behavior
-when :math:`p>2`.
+We realize that the exact and numerical amplification factors depend
+on :math:`a` and :math:`\Delta t` through the product :math:`a\Delta t`. Therefore, it
+is convenient to introduce a symbol for this product, :math:`p=a\Delta t`,
+and view :math:`A` and :math:`A_{\small\mbox{e}}` as functions of :math:`p`. Figure
+:ref:`decay:analysis:fig:A` shows these functions. Crank-Nicolson is
+clearly closest to the exact amplification factor, but that method has
+the unfortunate oscillatory behavior when :math:`p>2`.
 
 
 .. _decay:analysis:fig:A:
@@ -4764,15 +4789,8 @@ scheme can be efficiently reduce the error than the other schemes.
 Local error
 -----------
 
-Definition of local error or (local truncation error, no don't use
-truncation here, that is with Taylor series and residual):
-take one time step (from some arbitrary "initial" time)
-and measure the error over this single step.
-
-Global error: introduce some norm of the difference of the solutions
-over :math:`[0,T]` (max/infinity norm, :math:`L^p`).
-
-Both errors can be investigated analytically.
+(max/infinity norm etc).
+Both errors can be investigated analytically.]
 
 Analytical comparison of schemes
 --------------------------------
@@ -4894,7 +4912,7 @@ A simpler approximation is to use rectangles whose heights are determined
 by the left (or right) value in each interval:
 
 .. math::
-   :label: decay:E2:Reg
+   :label: decay:E2:Reg1
         
         E_2 \approx \left(\sum_{k=0}^{N-1}(t_{k+1} - t_k)({u_{\small\mbox{e}}}(k\Delta t) - u^k)^2
         \right)^{1/2} \thinspace .
@@ -5176,7 +5194,7 @@ The Python code
 ~~~~~~~~~~~~~~~
 
 A suitable implementation where :math:`a(t)` and :math:`b(t)` are given as
-Python function is given next.
+Python functions is given next.
 
 
 .. code-block:: python
@@ -5220,7 +5238,8 @@ be implemented as functions of ``t``, say
 Here, ``a(t)`` has three parameters ``a0``, ``tp``, and ``k``,
 which must be global variables.
 A better implementation is to represent ``a`` by a class where the
-parameters are attributes and a special method ``__call__`` evaluates :math:`a(t)`:
+parameters are attributes and a *special method* ``__call__`` evaluates :math:`a(t)`:
+
 
 .. code-block:: python
 
@@ -5230,6 +5249,8 @@ parameters are attributes and a special method ``__call__`` evaluates :math:`a(t
         
             def __call__(self, t):
                 return self.a0 if t < self.tp else self.k*self.a0
+        
+        a = A(a0=2, k=1)  # a behaves as a function a(t)
 
 
 
@@ -5265,30 +5286,67 @@ solve :math:`u'=-u+1`, :math:`u(0)=1`:
 
 A lambda function can appear anywhere where a variable can appear.
 
+.. _decay:verify:trivial:
+
+Verification via trivial solutions
+----------------------------------
+
+A very useful partial verification method is to construct a test
+problem with a very simple solution, usually :math:`u=\hbox{const}`.
+Especially the initial debugging of a program code can benefit greatly
+from such tests, because 1) all relevant numerical methods will
+exactly reproduce a constant solution, and 2) many of the intermediate
+calculations are easy to control for a constant :math:`u`.
+
+The only constant solution for the problem :math:`u'=-au`
+is :math:`u=0`, but too many bugs can escape from that trivial solution.
+It is much better to search for a problem where :math:`u=\hbox{const}\neq 0`.
+Then :math:`u'=-a(t)u + b(t)` is more appropriate. With :math:`u=u_{\hbox{const}}`
+we can choose any :math:`a(t)` and set :math:`b=a(t)u_{\hbox{const}}` and
+:math:`I=u_{\hbox{const}}`. An appropriate nose test is
+
+
+.. code-block:: python
+
+        import nose.tools as nt
+        
+        def test_constant_solution():
+            """
+            Test problem where u=u_const is the exact solution, to be
+            reproduced (to machine precision) by any relevant method.
+            """
+            def exact_solution(t):
+                return u_const
+        
+            def a(t):
+                return 2.5*(1+t**2)  # can be arbitrary
+        
+            def b(t):
+                return a(t)*u_const
+        
+            u_const = 2.15
+            theta = 0.4; I = u_const; dt = 4
+            N = 4  # enough with a few steps
+            u, t = solver(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
+            print u
+            u_e = exact_solution(t)
+            difference = abs(u_e - u).max()  # max deviation
+            nt.assert_almost_equal(difference, 0, places=14)
+
+
+An interesting question is what type of bugs that will make the
+computed :math:`u^n` to deviate from the exact solution :math:`u_{\hbox{const}}`.
+Fortunately, the updating formula and the initial condition must
+be absolutely correct for the test to pass! Any attempt to make
+a wrong indexing in terms like ``a(t[n])`` or any attempt to
+introduce an erroneous factor in the formula creates a solution
+that is different from :math:`u_{\hbox{const}}`.
+
+
 .. _decay:MMS:
 
 Verification via manufactured solutions
 ---------------------------------------
-
-One common method for verifying implementations of differential equation
-solvers is to choose :math:`u_{\small\mbox{e}}(t)` as a linear function, adjust variable
-coefficients to allow this solution, and then see if the numerical
-solution coincides with the linear solution at the mesh points.
-The rationale behind this test is that most numerical methods are
-capable of reproducing a linear solution (to machine precision).
-
-Let :math:`u_{\small\mbox{e}}(t) = ct + I`, which fulfills :math:`u_{\small\mbox{e}}(0)=I`.
-We can choose any :math:`a(t)` and insert this :math:`u_{\small\mbox{e}}(t)` in the
-differential equation to get
-
-.. math::
-         c = -a(t)u_{\small\mbox{e}}(t) + b(t) \thinspace . 
-
-Any function :math:`u_{\small\mbox{e}}(t)` is the correct solution if we choose
-
-.. math::
-         b(t) = c + a(t)u_{\small\mbox{e}}(t) \thinspace . 
-
 
 
 .. index:: method of manufactured solutions
@@ -5297,19 +5355,48 @@ Any function :math:`u_{\small\mbox{e}}(t)` is the correct solution if we choose
 .. index:: MMS (method of manufactured solutions)
 
 
-The method of *choosing* some function as the exact solution :math:`u_{\small\mbox{e}}` and
-then adjust parameters and functions in the differential equation to
-make the chosen solution fulfill the equation, is a powerful technique
-for generating exact solutions and is known as the *method of manufactured
+Following the idea of the previous section, we can choose any formula
+as the exact solution, insert the formula in the ODE problem and fit
+:math:`a(t)`, :math:`b(t)`, and I to make the formula fulfill the equation. This
+powerful technique for generating exact solutions is very useful for
+verification purposes and known as the *method of manufactured
 solutions*, often abbreviated MMS.
 
+One common choice of solution is a linear function in the independent
+variable(s). The rationale behind such a simple variation is that
+almost any relevant numerical solution method for differential
+equation problems is able to reproduce the linear function exactly (to
+machine precision). The linear solution also makes some stronger
+demands to the numerical method and the implementation than the
+constant solution used in the section :ref:`decay:verify:trivial`, at least
+in more complicated applications. However,
+the constant solution is often ideal for initial debugging before
+proceeding with a linear solution.
+
+Let :math:`u(t) = ct + d`. We must then have :math:`d=I` from the initial condition.
+Inserting this :math:`u` in the ODE results in
+
+.. math::
+         c = -a(t)u + b(t) \thinspace . 
+
+Any function :math:`u=ct+I` is then a correct solution if we choose
+
+.. math::
+         b(t) = c + a(t)(ct + I) \thinspace . 
+
+Note that there are no restrictions on :math:`a(t)` and :math:`c`.
+
 The following function offers an implementation of the verification
-test based on a linear :math:`u_{\small\mbox{e}}(t)`:
+test based on a linear exact solution:
 
 
 .. code-block:: python
 
-        def verify_linear_solution():
+        def test_linear_solution():
+            """
+            Test problem where u=c*t+I is the exact solution, to be
+            reproduced (to machine precision) by any relevant method.
+            """
             def exact_solution(t):
                 return c*t + I
         
@@ -5319,16 +5406,23 @@ test based on a linear :math:`u_{\small\mbox{e}}(t)`:
             def b(t):
                 return c + a(t)*exact_solution(t)
         
-            theta = 0; I = 0.1; dt = 0.1; c = -0.5
+            theta = 0.4; I = 0.1; dt = 0.1; c = -0.5
             T = 4
             N = int(T/dt)  # no of steps
             u, t = solver(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
-            u_e = array([exact_solution(tn) for tn in t])
+            u_e = exact_solution(t)
             difference = abs(u_e - u).max()  # max deviation
-            tol = 1E-15  # tolerance for comparing floats
-            success = difference <= tol
-            return success
+            nt.assert_almost_equal(difference, 0, places=14)
 
+As in the section :ref:`decay:verify:trivial`, any error in the updating
+formula makes this test fail.
+
+Choosing more complicated formulas as the exact solution, say
+:math:`\cos(t)`, will not make the numerical and exact solution
+coincide to machine precision. In such cases, the verification procedure
+must be based on measuring the convergence rates as exemplified in
+the section :ref:`decay:convergence:rate`. This is possible since one has
+an exact solution of a problem that the solver can be tested on.
 
 
 Extension to systems of ODEs
@@ -5356,14 +5450,13 @@ updating formula
         \thinspace .
         
 
-However, the Crank-Nicolson or Backward Euler schemes results in a
+However, the Crank-Nicolson or Backward Euler schemes result in a
 :math:`2\times 2` linear system for the new unknowns. The latter schemes gives
 
 .. math::
         
         u^{n+1} &= u^n + \Delta t (-a_u u^{n+1} + a_vv^{n+1}),\\
         v^{n+1} &= v^n + \Delta t (-a_vv^{n+1} + a_uu^{n+1}),
-        \thinspace .
         
 
 and bringing :math:`u^{n+1}` as well as :math:`v^{n+1}` on the left-hand side results
@@ -5373,7 +5466,6 @@ in
         
         (1 + \Delta t a_u)u^{n+1} + a_vv^{n+1}) &= u^n ,\\
         a_uu^{n+1} + (1 + \Delta t a_v) v^{n+1} &= v^n ,
-        \thinspace .
         
 
 which is a system of two coupled, linear, algebraic equations in two
@@ -5657,10 +5749,9 @@ the decay and larger time steps when the solution flattens out.
 .. _decay:odespy:fig2:
 
 .. figure:: fig-decay/decay_DormandPrince_adaptivity.png
-   :width: 600
+   :width: 800
 
-   *Choice of adaptive time mesh by the Dormand-Prince method for difference tolerances*
-
+   *Choice of adaptive time mesh by the Dormand-Prince method for different tolerances*
 
 
 
@@ -6726,7 +6817,7 @@ a nonlinear equation in :math:`v` when applied to
         \thinspace .
         
 
-However, instead of approximating the term :math:`-a|v|v` by an arithmetic
+However, instead of approximating the term :math:`-|v|v` by an arithmetic
 average, we can use a *geometric average*:
 
 
@@ -6930,7 +7021,7 @@ the section :ref:`decay:app:atm`:
 .. math::
         
         p'(z) &= -\frac{Mg}{R^*(T_0+Lz)} p,\\
-        \varrho &= p \frac{M}{RT^*}
+        \varrho &= p \frac{M}{R^*T}
         \thinspace .
         
 
