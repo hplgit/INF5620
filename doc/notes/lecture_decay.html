@@ -1481,10 +1481,11 @@ but needs careful coding).
 <p>
 
 <ol>
- <p><li> Collect tests in separate files with names starting with <tt>test_</tt>.
  <p><li> Implement tests in functions with names starting with <tt>test_</tt>.
- <p><li> These functions perform assertions on computing results
+ <p><li> Test functions perform assertions on computed results
     using <tt>assert</tt> functions from the <tt>nose.tools</tt> module.
+ <p><li> Test functions can be in the source code files or be
+    collected in separate files, usually with names starting with <tt>test_</tt>.
 </ol>
 
 Very simple illustration of module <tt>mymod</tt>:
@@ -1498,20 +1499,21 @@ Very simple illustration of module <tt>mymod</tt>:
 <p>
 
 <p>
-A corresponding <tt>test_mymod.py</tt> has a test function for testing
-that function <tt>double</tt> works:
+Either in this file or in a separate file <tt>test_mymod.py</tt>, we
+implement a test function for checking that
+<tt>double</tt> works:
 
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">mymod</span>
-<span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
 
 <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_double</span>():
     result <span style="color: #666666">=</span> mymod<span style="color: #666666">.</span>double(<span style="color: #666666">4</span>)
     nt<span style="color: #666666">.</span>assert_equal(result, <span style="color: #666666">8</span>)
 </pre></div>
 <p>
+(Need <tt>import mymod</tt> if the test is in <tt>test_mymod.py</tt>.)
 
 <p>
 Running
@@ -1522,8 +1524,8 @@ Running
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; nosetests
 </pre></div>
 <p>
-makes the <tt>nose</tt> tool look for <tt>test_*.py</tt> files and run the <tt>test*()</tt>
-functions found in these files.
+makes the <tt>nose</tt> tool look for Python files with <tt>test_*()</tt>
+functions and run these functions.
 
 <p>
 Main point with a test function: raise <tt>AssertionError</tt> exception if the
@@ -2229,7 +2231,7 @@ Problem:
 <p>
 $$
 \begin{equation}
-u'(t) = -au(t),\quad u(0)=I,\quad 0<t\leq T,
+u'(t) = -au(t),\quad u(0)=I,\ 0< t \leq T,
 \label{decay:experiments:model}
 \end{equation}
 $$
@@ -2254,12 +2256,7 @@ Tasks:
    \( I \), \( a \), \( \Delta t \), and \( \theta \)
  <p><li> How does the discrete solution compare with the exact solution
    when \( \Delta t \) is varied and \( \theta=0,0.5,1 \)?
- <p><li> Use the <a href="http://github.hplgit.com/INF5620/src/decay/dc_mod.py"><tt>dc_mod.py</tt></a> module (little modification of the plotting, see "`experiments/dc_mod.py`":
-</ul>
-
-"http://github.hplgit.com/INF5620/src/decay/experiments/dc_mod.py")
-
-<ul>
+ <p><li> Use the <a href="http://github.hplgit.com/INF5620/src/decay/dc_mod.py"><tt>dc_mod.py</tt></a> module (little modification of the plotting, see <a href="http://github.hplgit.com/INF5620/src/decay/experiments/dc_mod.py"><tt>experiments/dc_mod.py</tt></a>)
  <p><li> Make separate program for running (automating) the experiments (<em>script</em>)
 
 <ol>
@@ -2598,12 +2595,12 @@ Operator notation:
 <p>
 $$
 \begin{align*}
-[D^+_t u &= -au]^n,\\
-[D^-_t u &= -au]^n,\\
-[D_t u &= -a\overline{u}^t]^{n+\frac{1}{2}},\\
-[D_t u &= -\overline{au}^t]^{n+\frac{1}{2}},\\
-[D_t u &= -a\overline{u}^{t,\theta}]^{n+\frac{1}{2}},\\
-[D_t u &= -\overline{au}^{t,\theta}]^{n+\frac{1}{2}}
+\lbrack D^+_t u &= -au\rbrack^n,\\
+\lbrack D^-_t u &= -au\rbrack^n,\\
+\lbrack D_t u &= -a\overline{u}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &= -\overline{au}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &= -a\overline{u}^{t,\theta}\rbrack^{n+\theta},\\
+\lbrack D_t u &= -\overline{au}^{t,\theta}\rbrack^{n+\theta}
 \thinspace .
 \end{align*}
 $$
@@ -2630,12 +2627,12 @@ $$
 <p>
 $$
 \begin{align*}
-[D^+_t u &= -au + b]^n,\\
-[D^-_t u &= -au + b]^n,\\
-[D_t u   &= -a\overline{u}^t + b]^{n+\frac{1}{2}},\\
-[D_t u   &= \overline{-au+b}^t]^{n+\frac{1}{2}},\\
-[D_t u   &= -a\overline{u}^{t,\theta} + b]^{n+\theta},\\
-[D_t u   &= \overline{-au+b}^{t,\theta}]^{n+\theta}
+\lbrack D^+_t u &= -au + b\rbrack^n,\\
+\lbrack D^-_t u &= -au + b\rbrack^n,\\
+\lbrack D_t u   &= -a\overline{u}^t + b\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &= \overline{-au+b}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &= -a\overline{u}^{t,\theta} + b\rbrack^{n+\theta},\\
+\lbrack D_t u   &= \overline{-au+b}^{t,\theta}\rbrack^{n+\theta}
 \thinspace .
 \end{align*}
 $$
@@ -2765,14 +2762,14 @@ A lambda function can appear anywhere where a variable can appear.
 <ul>
  <p><li> Start debugging of a new code with trying a problem
    where \( u=\hbox{const} \neq 0 \).
- <p><li> Choose \( u=u_{\hbox{const}} \). Choose any \( a(t) \) and set
-   \( b=a(t)u_{\hbox{const}} \) and
-   \( I=u_{\hbox{const}} \).
+ <p><li> Choose \( u=C \) (a constant). Choose any \( a(t) \) and set
+   \( b=a(t)C \) and
+   \( I=C \).
  <p><li> "All" numerical methods will reproduce \( u=_{\hbox{const}} \)
    exactly (machine precision).
- <p><li> Often \( u=u_{\hbox{const}} \) eases debugging.
+ <p><li> Often \( u=C \) eases debugging.
  <p><li> In this example: <em>any error</em> in the formula for \( u^{n+1} \)
-   make \( u\neq u_{\hbox{const}} \)!
+   make \( u\neq C \)!
 </ul>
 
 Verification function as a nose test:
@@ -2827,7 +2824,7 @@ Verification function as a nose test:
  <p><li> Called the <em>method of manufactured solutions</em> (MMS)
  <p><li> Special case: \( u \) linear in \( t \), because all sound numerical
    methods will reproduce a linear \( u \) exactly (machine precision).
- <p><li> \( u(t) = ct + d \). \( (u0)=0\quad\Rightarrow\quad d=I \).
+ <p><li> \( u(t) = ct + d \). \( u(0)=0 \) means \( d=I \).
  <p><li> ODE implies \( c = -a(t)u + b(t) \).
  <p><li> Choose \( a(t) \) and \( c \), and set \( b(t) = c + a(t)(ct + I) \).
  <p><li> Any error in the formula for \( u^{n+1} \) makes \( u\neq ct+I \)!
@@ -2930,11 +2927,14 @@ $$
 
 <p>
 Vectors in case of ODE systems:
-$$ u(t) = (u^{(0)}(t),u^{(1)}(t),\ldots,u^{(m-1)}(t)) \thinspace . \]
+$$ u(t) = (u^{(0)}(t),u^{(1)}(t),\ldots,u^{(m-1)}(t)) \thinspace . $$
+
+<p>
+$$
 \begin{align*}
 f(u, t) = ( & f^{(0)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)),\\
             & f^{(1)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)),\\
-            & \vdots,\\
+            & \vdots\\
             & f^{(m-1)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)))
 \thinspace .
 \end{align*}
@@ -2950,9 +2950,15 @@ Higher-order ODEs are most often expressed as first-order systems.
 <a href="https://github.com/hplgit/odespy">Odespy</a>
 features simple Python implementations of the most fundamental
 schemes as well as Python interfaces to several famous packages for
-solving ODEs: <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">ODEPACK</a>, <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">Vode</a>,
-<a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>, "rkf45.f": http://www.netlib.org/ode/rkf45.f", "Radau5": "http://www.unige.ch/~hairer/software.html, as well
-as the ODE solvers in <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html">SciPy</a>, <a href="http://docs.sympy.org/dev/modules/mpmath/calculus/odes.html">SymPy</a>, and <a href="http://olivierverdier.github.com/odelab/">odelab</a>.
+solving ODEs: <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">ODEPACK</a>,
+<a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">Vode</a>,
+<a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>,
+<a href="http://www.netlib.org/ode/rkf45.f">rkf45.f</a>,
+"Radau5": "http://www.unige.ch/~hairer/software.html, as well
+as the ODE solvers in
+<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html">SciPy</a>,
+<a href="http://docs.sympy.org/dev/modules/mpmath/calculus/odes.html">SymPy</a>, and
+<a href="http://olivierverdier.github.com/odelab/">odelab</a>.
 
 <p>
 Typical usage:
@@ -2968,7 +2974,7 @@ import numpy as np
 
 I = 1; a = 2; T = 6; dt = 1
 
-solver = odespy.RK(f)
+solver = odespy.RK4(f)
 solver.set_initial_condition(I)
 
 t_mesh = np.linspace(0, T, N+1)

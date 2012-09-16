@@ -3092,10 +3092,11 @@ in Python. Here is a recommended way of structuring tests:
 <p>
 
 <ol>
- <li> Collect tests in separate files with names starting with <tt>test_</tt>.
  <li> Implement tests in functions with names starting with <tt>test_</tt>.
- <li> These functions perform assertions on computing results
+ <li> Test functions perform assertions on computed results
     using <tt>assert</tt> functions from the <tt>nose.tools</tt> module.
+ <li> Test functions can be in the source code files or be
+    collected in separate files, usually with names starting with <tt>test_</tt>.
 </ol>
 
 Here comes a very simple illustration of the three points.
@@ -3110,20 +3111,22 @@ Assume that we have this function in a module <tt>mymod</tt>:
 <p>
 
 <p>
-In a file <tt>test_mymod.py</tt> we implement a test function whose purpose is
+Either in this file or in a separate file <tt>test_mymod.py</tt>, we
+implement a test function whose purpose is
 to test that the function <tt>double</tt> works as intended:
 
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">mymod</span>
-<span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
 
 <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_double</span>():
     result <span style="color: #666666">=</span> mymod<span style="color: #666666">.</span>double(<span style="color: #666666">4</span>)
     nt<span style="color: #666666">.</span>assert_equal(result, <span style="color: #666666">8</span>)
 </pre></div>
 <p>
+We need to do an <tt>import mymod</tt> if this test is in a separate file, and
+Python needs to be able to find <tt>mymod</tt>.
 
 <p>
 Running
@@ -3134,8 +3137,8 @@ Running
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; nosetests
 </pre></div>
 <p>
-makes the <tt>nose</tt> tool look for <tt>test_*.py</tt> files and run the <tt>test*()</tt>
-functions found in these files. If the <tt>nt.assert_equal</tt> function
+makes the <tt>nose</tt> tool look for Python files with <tt>test_*()</tt>
+functions and run these functions. If the <tt>nt.assert_equal</tt> function
 finds that the two arguments are equal, the test is a success, otherwise
 it is a failure and an exception of type <tt>AssertionError</tt> is raised.
 Instead of calling the convenience function <tt>nt.assert_equal</tt>, we
@@ -5561,8 +5564,8 @@ Euler schemes can be summarized as
 <p>
 $$
 \begin{align}
-[D^+_t u &= -au]^n,\\
-[D^-_t u &= -au]^n
+\lbrack D^+_t u &= -au\rbrack^n,\\
+\lbrack D^-_t u &= -au\rbrack^n
 \thinspace .
 \end{align}
 $$
@@ -5573,10 +5576,10 @@ various versions are written as
 <p>
 $$
 \begin{align}
-[D_t u &= -a\overline{u}^t]^{n+\frac{1}{2}},\\
-[D_t u &= -\overline{au}^t]^{n+\frac{1}{2}},\\
-[D_t u &= -a\overline{u}^{t,\theta}]^{n+\frac{1}{2}},\\
-[D_t u &= -\overline{au}^{t,\theta}]^{n+\frac{1}{2}}
+\lbrack D_t u &= -a\overline{u}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &= -\overline{au}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &= -a\overline{u}^{t,\theta}\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &= -\overline{au}^{t,\theta}\rbrack^{n+\frac{1}{2}}
 \thinspace .
 \end{align}
 $$
@@ -5613,12 +5616,12 @@ particularly clear if we write up the schemes in the operator notation:
 <p>
 $$
 \begin{align}
-[D^+_t u &= -au + b]^n,\\
-[D^-_t u &= -au + b]^n,\\
-[D_t u   &= -a\overline{u}^t + b]^{n+\frac{1}{2}},\\
-[D_t u   &= \overline{-au+b}^t]^{n+\frac{1}{2}},\\
-[D_t u   &= -a\overline{u}^{t,\theta} + b]^{n+\theta},\\
-[D_t u   &= \overline{-au+b}^{t,\theta}]^{n+\theta}
+\lbrack D^+_t u &= -au + b\rbrack^n,\\
+\lbrack D^-_t u &= -au + b\rbrack^n,\\
+\lbrack D_t u   &= -a\overline{u}^t + b\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &= \overline{-au+b}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &= -a\overline{u}^{t,\theta} + b\rbrack^{n+\theta},\\
+\lbrack D_t u   &= \overline{-au+b}^{t,\theta}\rbrack^{n+\theta}
 \thinspace .
 \end{align}
 $$
@@ -5763,10 +5766,10 @@ calculations are easy to control for a constant \( u \).
 <p>
 The only constant solution for the problem \( u'=-au \)
 is \( u=0 \), but too many bugs can escape from that trivial solution.
-It is much better to search for a problem where \( u=\hbox{const}\neq 0 \).
-Then \( u'=-a(t)u + b(t) \) is more appropriate. With \( u=u_{\hbox{const}} \)
-we can choose any \( a(t) \) and set \( b=a(t)u_{\hbox{const}} \) and
-\( I=u_{\hbox{const}} \). An appropriate nose test is
+It is much better to search for a problem where \( u=C=\hbox{const}\neq 0 \).
+Then \( u'=-a(t)u + b(t) \) is more appropriate. With \( u=C \)
+we can choose any \( a(t) \) and set \( b=a(t)C \) and
+\( I=C \). An appropriate nose test is
 
 <p>
 <p>
@@ -5800,12 +5803,12 @@ we can choose any \( a(t) \) and set \( b=a(t)u_{\hbox{const}} \) and
 
 <p>
 An interesting question is what type of bugs that will make the
-computed \( u^n \) to deviate from the exact solution \( u_{\hbox{const}} \).
+computed \( u^n \) to deviate from the exact solution \( C \).
 Fortunately, the updating formula and the initial condition must
 be absolutely correct for the test to pass! Any attempt to make
 a wrong indexing in terms like <tt>a(t[n])</tt> or any attempt to
 introduce an erroneous factor in the formula creates a solution
-that is different from \( u_{\hbox{const}} \).
+that is different from \( C \).
 
 <p>
 
@@ -6009,7 +6012,7 @@ import odespy
 import numpy as np
 
 I = 1; a = 2; T = 6; dt = 1
-solver = odespy.RK(f)
+solver = odespy.RK4(f)
 solver.set_initial_condition(I)
 t_mesh = np.linspace(0, T, N+1)
 u, t = solver.solve(t_mesh)
@@ -7390,10 +7393,9 @@ Implement the Stokes' drag model \eqref{decay:app:fallingbody:model:S}
 and the quadratic drag model \eqref{decay:app:fallingbody:model:q} from
 the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a> in a program, using the Crank-Nicolson
 scheme as explained. At each time level, compute the Reynolds number
-Re and choose the Stokes' drag model if \( \hbox{Re} < 1 \) and
-the quadratic drag model otherwise.
-Make a nose test that runs the two suggested verification tests
-in the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a>.
+Re and choose the Stokes' drag model if \( \hbox{Re} < 1 \) and the
+quadratic drag model otherwise.  Include nose tests (in the file) that
+runs the two suggested verification tests in the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a>.
 Filename: <tt>vertical_motion.py</tt>.
 
 <p>

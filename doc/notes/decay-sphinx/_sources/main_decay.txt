@@ -2737,12 +2737,13 @@ Basic use of nose
 The ``nose`` package is a versatile tool for implementing unit tests
 in Python. Here is a recommended way of structuring tests:
 
- 1. Collect tests in separate files with names starting with ``test_``.
+ 1. Implement tests in functions with names starting with ``test_``.
 
- 2. Implement tests in functions with names starting with ``test_``.
-
- 3. These functions perform assertions on computing results
+ 2. Test functions perform assertions on computed results
     using ``assert`` functions from the ``nose.tools`` module.
+
+ 3. Test functions can be in the source code files or be
+    collected in separate files, usually with names starting with ``test_``.
 
 Here comes a very simple illustration of the three points.
 Assume that we have this function in a module ``mymod``:
@@ -2754,19 +2755,21 @@ Assume that we have this function in a module ``mymod``:
             return 2*n
 
 
-In a file ``test_mymod.py`` we implement a test function whose purpose is
+Either in this file or in a separate file ``test_mymod.py``, we
+implement a test function whose purpose is
 to test that the function ``double`` works as intended:
 
 
 .. code-block:: python
 
-        import mymod
         import nose.tools as nt
         
         def test_double():
             result = mymod.double(4)
             nt.assert_equal(result, 8)
 
+We need to do an ``import mymod`` if this test is in a separate file, and
+Python needs to be able to find ``mymod``.
 
 Running
 
@@ -2775,8 +2778,8 @@ Running
 
         Terminal> nosetests
 
-makes the ``nose`` tool look for ``test_*.py`` files and run the ``test*()``
-functions found in these files. If the ``nt.assert_equal`` function
+makes the ``nose`` tool look for Python files with ``test_*()``
+functions and run these functions. If the ``nt.assert_equal`` function
 finds that the two arguments are equal, the test is a success, otherwise
 it is a failure and an exception of type ``AssertionError`` is raised.
 Instead of calling the convenience function ``nt.assert_equal``, we
@@ -5092,8 +5095,8 @@ Euler schemes can be summarized as
 
 .. math::
         
-        [D^+_t u &= -au]^n,\\
-        [D^-_t u &= -au]^n
+        \lbrack D^+_t u &= -au\rbrack^n,\\
+        \lbrack D^-_t u &= -au\rbrack^n
         \thinspace .
         
 
@@ -5104,10 +5107,10 @@ various versions are written as
 
 .. math::
         
-        [D_t u &= -a\overline{u}^t]^{n+\frac{1}{2}},\\
-        [D_t u &= -\overline{au}^t]^{n+\frac{1}{2}},\\
-        [D_t u &= -a\overline{u}^{t,\theta}]^{n+\frac{1}{2}},\\
-        [D_t u &= -\overline{au}^{t,\theta}]^{n+\frac{1}{2}}
+        \lbrack D_t u &= -a\overline{u}^t\rbrack^{n+\frac{1}{2}},\\
+        \lbrack D_t u &= -\overline{au}^t\rbrack^{n+\frac{1}{2}},\\
+        \lbrack D_t u &= -a\overline{u}^{t,\theta}\rbrack^{n+\frac{1}{2}},\\
+        \lbrack D_t u &= -\overline{au}^{t,\theta}\rbrack^{n+\frac{1}{2}}
         \thinspace .
         
 
@@ -5142,12 +5145,12 @@ particularly clear if we write up the schemes in the operator notation:
 
 .. math::
         
-        [D^+_t u &= -au + b]^n,\\
-        [D^-_t u &= -au + b]^n,\\
-        [D_t u   &= -a\overline{u}^t + b]^{n+\frac{1}{2}},\\
-        [D_t u   &= \overline{-au+b}^t]^{n+\frac{1}{2}},\\
-        [D_t u   &= -a\overline{u}^{t,\theta} + b]^{n+\theta},\\
-        [D_t u   &= \overline{-au+b}^{t,\theta}]^{n+\theta}
+        \lbrack D^+_t u &= -au + b\rbrack^n,\\
+        \lbrack D^-_t u &= -au + b\rbrack^n,\\
+        \lbrack D_t u   &= -a\overline{u}^t + b\rbrack^{n+\frac{1}{2}},\\
+        \lbrack D_t u   &= \overline{-au+b}^t\rbrack^{n+\frac{1}{2}},\\
+        \lbrack D_t u   &= -a\overline{u}^{t,\theta} + b\rbrack^{n+\theta},\\
+        \lbrack D_t u   &= \overline{-au+b}^{t,\theta}\rbrack^{n+\theta}
         \thinspace .
         
 
@@ -5289,10 +5292,10 @@ calculations are easy to control for a constant :math:`u`.
 
 The only constant solution for the problem :math:`u'=-au`
 is :math:`u=0`, but too many bugs can escape from that trivial solution.
-It is much better to search for a problem where :math:`u=\hbox{const}\neq 0`.
-Then :math:`u'=-a(t)u + b(t)` is more appropriate. With :math:`u=u_{\hbox{const}}`
-we can choose any :math:`a(t)` and set :math:`b=a(t)u_{\hbox{const}}` and
-:math:`I=u_{\hbox{const}}`. An appropriate nose test is
+It is much better to search for a problem where :math:`u=C=\hbox{const}\neq 0`.
+Then :math:`u'=-a(t)u + b(t)` is more appropriate. With :math:`u=C`
+we can choose any :math:`a(t)` and set :math:`b=a(t)C` and
+:math:`I=C`. An appropriate nose test is
 
 
 .. code-block:: python
@@ -5324,12 +5327,12 @@ we can choose any :math:`a(t)` and set :math:`b=a(t)u_{\hbox{const}}` and
 
 
 An interesting question is what type of bugs that will make the
-computed :math:`u^n` to deviate from the exact solution :math:`u_{\hbox{const}}`.
+computed :math:`u^n` to deviate from the exact solution :math:`C`.
 Fortunately, the updating formula and the initial condition must
 be absolutely correct for the test to pass! Any attempt to make
 a wrong indexing in terms like ``a(t[n])`` or any attempt to
 introduce an erroneous factor in the formula creates a solution
-that is different from :math:`u_{\hbox{const}}`.
+that is different from :math:`C`.
 
 
 .. _decay:MMS:
@@ -5537,7 +5540,7 @@ by the famous 4th-order Runge-Kutta method:
         import numpy as np
         
         I = 1; a = 2; T = 6; dt = 1
-        solver = odespy.RK(f)
+        solver = odespy.RK4(f)
         solver.set_initial_condition(I)
         t_mesh = np.linspace(0, T, N+1)
         u, t = solver.solve(t_mesh)
@@ -6922,10 +6925,9 @@ Implement the Stokes' drag model :eq:`decay:app:fallingbody:model:S`
 and the quadratic drag model :eq:`decay:app:fallingbody:model:q` from
 the section :ref:`decay:app:drag` in a program, using the Crank-Nicolson
 scheme as explained. At each time level, compute the Reynolds number
-Re and choose the Stokes' drag model if :math:`\hbox{Re} < 1` and
-the quadratic drag model otherwise.
-Make a nose test that runs the two suggested verification tests
-in the section :ref:`decay:app:drag`.
+Re and choose the Stokes' drag model if :math:`\hbox{Re} < 1` and the
+quadratic drag model otherwise.  Include nose tests (in the file) that
+runs the two suggested verification tests in the section :ref:`decay:app:drag`.
 Filename: ``vertical_motion.py``.
 
 .. --- end of exercise
