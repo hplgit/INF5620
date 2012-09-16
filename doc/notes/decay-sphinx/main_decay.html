@@ -1952,10 +1952,11 @@ identifies a unit.</p>
 in Python. Here is a recommended way of structuring tests:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Collect tests in separate files with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.</li>
 <li>Implement tests in functions with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.</li>
-<li>These functions perform assertions on computing results
+<li>Test functions perform assertions on computed results
 using <tt class="docutils literal"><span class="pre">assert</span></tt> functions from the <tt class="docutils literal"><span class="pre">nose.tools</span></tt> module.</li>
+<li>Test functions can be in the source code files or be
+collected in separate files, usually with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.</li>
 </ol>
 </div></blockquote>
 <p>Here comes a very simple illustration of the three points.
@@ -1964,22 +1965,24 @@ Assume that we have this function in a module <tt class="docutils literal"><span
     <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">n</span>
 </pre></div>
 </div>
-<p>In a file <tt class="docutils literal"><span class="pre">test_mymod.py</span></tt> we implement a test function whose purpose is
+<p>Either in this file or in a separate file <tt class="docutils literal"><span class="pre">test_mymod.py</span></tt>, we
+implement a test function whose purpose is
 to test that the function <tt class="docutils literal"><span class="pre">double</span></tt> works as intended:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mymod</span>
-<span class="kn">import</span> <span class="nn">nose.tools</span> <span class="kn">as</span> <span class="nn">nt</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nose.tools</span> <span class="kn">as</span> <span class="nn">nt</span>
 
 <span class="k">def</span> <span class="nf">test_double</span><span class="p">():</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">mymod</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>We need to do an <tt class="docutils literal"><span class="pre">import</span> <span class="pre">mymod</span></tt> if this test is in a separate file, and
+Python needs to be able to find <tt class="docutils literal"><span class="pre">mymod</span></tt>.</p>
 <p>Running</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; nosetests</span>
 </pre></div>
 </div>
-<p>makes the <tt class="docutils literal"><span class="pre">nose</span></tt> tool look for <tt class="docutils literal"><span class="pre">test_*.py</span></tt> files and run the <tt class="docutils literal"><span class="pre">test*()</span></tt>
-functions found in these files. If the <tt class="docutils literal"><span class="pre">nt.assert_equal</span></tt> function
+<p>makes the <tt class="docutils literal"><span class="pre">nose</span></tt> tool look for Python files with <tt class="docutils literal"><span class="pre">test_*()</span></tt>
+functions and run these functions. If the <tt class="docutils literal"><span class="pre">nt.assert_equal</span></tt> function
 finds that the two arguments are equal, the test is a success, otherwise
 it is a failure and an exception of type <tt class="docutils literal"><span class="pre">AssertionError</span></tt> is raised.
 Instead of calling the convenience function <tt class="docutils literal"><span class="pre">nt.assert_equal</span></tt>, we
@@ -3647,17 +3650,17 @@ a(t_{n+1})u^{n+1}
 <p>With the finite difference operator notation the Forward Euler and Backward
 Euler schemes can be summarized as</p>
 <div class="math">
-\[\begin{split}[D^+_t u &amp;= -au]^n,\\
-[D^-_t u &amp;= -au]^n
+\[\begin{split}\lbrack D^+_t u &amp;= -au\rbrack^n,\\
+\lbrack D^-_t u &amp;= -au\rbrack^n
 \thinspace .\end{split}\]</div>
 <p>The Crank-Nicolson and <span class="math">\(\theta\)</span> schemes depend on whether we evaluate
 <span class="math">\(a\)</span> at the sample point for the ODE or if we use an average. The
 various versions are written as</p>
 <div class="math">
-\[\begin{split}[D_t u &amp;= -a\overline{u}^t]^{n+\frac{1}{2}},\\
-[D_t u &amp;= -\overline{au}^t]^{n+\frac{1}{2}},\\
-[D_t u &amp;= -a\overline{u}^{t,\theta}]^{n+\frac{1}{2}},\\
-[D_t u &amp;= -\overline{au}^{t,\theta}]^{n+\frac{1}{2}}
+\[\begin{split}\lbrack D_t u &amp;= -a\overline{u}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &amp;= -\overline{au}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &amp;= -a\overline{u}^{t,\theta}\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u &amp;= -\overline{au}^{t,\theta}\rbrack^{n+\frac{1}{2}}
 \thinspace .\end{split}\]</div>
 </div>
 <div class="section" id="extension-to-a-source-term">
@@ -3674,12 +3677,12 @@ have a choice of whether to evaluate <span class="math">\(a(t)\)</span> and <spa
 correct point or use an average. The chosen strategy becomes
 particularly clear if we write up the schemes in the operator notation:</p>
 <div class="math">
-\[\begin{split}[D^+_t u &amp;= -au + b]^n,\\
-[D^-_t u &amp;= -au + b]^n,\\
-[D_t u   &amp;= -a\overline{u}^t + b]^{n+\frac{1}{2}},\\
-[D_t u   &amp;= \overline{-au+b}^t]^{n+\frac{1}{2}},\\
-[D_t u   &amp;= -a\overline{u}^{t,\theta} + b]^{n+\theta},\\
-[D_t u   &amp;= \overline{-au+b}^{t,\theta}]^{n+\theta}
+\[\begin{split}\lbrack D^+_t u &amp;= -au + b\rbrack^n,\\
+\lbrack D^-_t u &amp;= -au + b\rbrack^n,\\
+\lbrack D_t u   &amp;= -a\overline{u}^t + b\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &amp;= \overline{-au+b}^t\rbrack^{n+\frac{1}{2}},\\
+\lbrack D_t u   &amp;= -a\overline{u}^{t,\theta} + b\rbrack^{n+\theta},\\
+\lbrack D_t u   &amp;= \overline{-au+b}^{t,\theta}\rbrack^{n+\theta}
 \thinspace .\end{split}\]</div>
 </div>
 </div>
@@ -3783,10 +3786,10 @@ exactly reproduce a constant solution, and 2) many of the intermediate
 calculations are easy to control for a constant <span class="math">\(u\)</span>.</p>
 <p>The only constant solution for the problem <span class="math">\(u'=-au\)</span>
 is <span class="math">\(u=0\)</span>, but too many bugs can escape from that trivial solution.
-It is much better to search for a problem where <span class="math">\(u=\hbox{const}\neq 0\)</span>.
-Then <span class="math">\(u'=-a(t)u + b(t)\)</span> is more appropriate. With <span class="math">\(u=u_{\hbox{const}}\)</span>
-we can choose any <span class="math">\(a(t)\)</span> and set <span class="math">\(b=a(t)u_{\hbox{const}}\)</span> and
-<span class="math">\(I=u_{\hbox{const}}\)</span>. An appropriate nose test is</p>
+It is much better to search for a problem where <span class="math">\(u=C=\hbox{const}\neq 0\)</span>.
+Then <span class="math">\(u'=-a(t)u + b(t)\)</span> is more appropriate. With <span class="math">\(u=C\)</span>
+we can choose any <span class="math">\(a(t)\)</span> and set <span class="math">\(b=a(t)C\)</span> and
+<span class="math">\(I=C\)</span>. An appropriate nose test is</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nose.tools</span> <span class="kn">as</span> <span class="nn">nt</span>
 
 <span class="k">def</span> <span class="nf">test_constant_solution</span><span class="p">():</span>
@@ -3814,12 +3817,12 @@ we can choose any <span class="math">\(a(t)\)</span> and set <span class="math">
 </pre></div>
 </div>
 <p>An interesting question is what type of bugs that will make the
-computed <span class="math">\(u^n\)</span> to deviate from the exact solution <span class="math">\(u_{\hbox{const}}\)</span>.
+computed <span class="math">\(u^n\)</span> to deviate from the exact solution <span class="math">\(C\)</span>.
 Fortunately, the updating formula and the initial condition must
 be absolutely correct for the test to pass! Any attempt to make
 a wrong indexing in terms like <tt class="docutils literal"><span class="pre">a(t[n])</span></tt> or any attempt to
 introduce an erroneous factor in the formula creates a solution
-that is different from <span class="math">\(u_{\hbox{const}}\)</span>.</p>
+that is different from <span class="math">\(C\)</span>.</p>
 </div>
 <div class="section" id="verification-via-manufactured-solutions">
 <span id="decay-mms"></span><h2>Verification via manufactured solutions<a class="headerlink" href="#verification-via-manufactured-solutions" title="Permalink to this headline">¶</a></h2>
@@ -3961,7 +3964,7 @@ by the famous 4th-order Runge-Kutta method:</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">I</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span> <span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">solver</span> <span class="o">=</span> <span class="n">odespy</span><span class="o">.</span><span class="n">RK</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">odespy</span><span class="o">.</span><span class="n">RK4</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="n">solver</span><span class="o">.</span><span class="n">set_initial_condition</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
 <span class="n">t_mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">t_mesh</span><span class="p">)</span>
@@ -4845,10 +4848,9 @@ Filename: <tt class="docutils literal"><span class="pre">atmospheric_pressure.py
 and the quadratic drag model <a href="#equation-decay:app:fallingbody:model:q">(55)</a> from
 the section <a class="reference internal" href="#decay-app-drag"><em>Vertical motion of a body in a viscous fluid</em></a> in a program, using the Crank-Nicolson
 scheme as explained. At each time level, compute the Reynolds number
-Re and choose the Stokes&#8217; drag model if <span class="math">\(\hbox{Re} &lt; 1\)</span> and
-the quadratic drag model otherwise.
-Make a nose test that runs the two suggested verification tests
-in the section <a class="reference internal" href="#decay-app-drag"><em>Vertical motion of a body in a viscous fluid</em></a>.
+Re and choose the Stokes&#8217; drag model if <span class="math">\(\hbox{Re} &lt; 1\)</span> and the
+quadratic drag model otherwise.  Include nose tests (in the file) that
+runs the two suggested verification tests in the section <a class="reference internal" href="#decay-app-drag"><em>Vertical motion of a body in a viscous fluid</em></a>.
 Filename: <tt class="docutils literal"><span class="pre">vertical_motion.py</span></tt>.</p>
 </div>
 <div class="section" id="exercise-25-plot-forces-acting-in-vertical-motion-in-a-fluid">
