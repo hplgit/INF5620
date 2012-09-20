@@ -6,7 +6,7 @@ A Vibration Problem
 
 :Author: Hans Petter Langtangen
 
-:Date: Sep 13, 2012
+:Date: Sep 20, 2012
 
 Note: **VERY PRELIMINARY VERSION!** (Still lots of typos!)
 
@@ -91,14 +91,18 @@ A centered finite difference scheme
 To formulate a finite difference method for the model
 problem  :eq:`vib:model1` we follow the `four steps <http://hplgit.github.com/INF5620/doc/notes/decay-sphinx/main_decay.html#the-forward-euler-scheme>`_ in [Langtangen:deq:decay]_.
 
-The discretization
-~~~~~~~~~~~~~~~~~~
+Step 1: Discretizing the domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, the domain is discretized by
+The domain is discretized by
 introducing a uniformly partitioned time mesh in the present problem.
 The points in the mesh are hence :math:`t_n=n\Delta t`, :math:`n=0,1,\ldots,N`,
 where :math:`\Delta t = T/N` is the constant length of the time steps.
-Second, the ODE is to be satisfied at each mesh point:
+
+Step 2: Fulfilling the equation at discrete time points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ODE is to be satisfied at each mesh point:
 
 
 .. math::
@@ -110,7 +114,10 @@ Second, the ODE is to be satisfied at each mesh point:
         
 
 
-Third, the derivative :math:`u''(t_n)` is to be replaced by a finite
+Step 3: Replacing derivatives by finite differences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The derivative :math:`u''(t_n)` is to be replaced by a finite
 difference approximation. A common second-order accurate approximation
 to the second-order derivative is
 
@@ -128,7 +135,7 @@ yields
 
 
 .. math::
-   :label: vib:model1:step4a
+   :label: vib:model1:step3b
         
         \frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2} = -\omega^2 u^n
         \thinspace .
@@ -136,7 +143,23 @@ yields
         
 
 
-Fourth, to formulate the computational algorithm, we assume that we
+We also need to replace the derivative in the initial condition by
+a finite difference. Here we choose a centered difference:
+
+
+.. math::
+   :label: vib:model1:step3c
+        
+        \frac{u^1-u^{-1}}{2\Delta t} = 0
+        
+        \thinspace .
+        
+
+
+Step 4: Formulating a recursive algorithm
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To formulate the computational algorithm, we assume that we
 have already computed :math:`u^{n-1}` and :math:`u^n` such that :math:`u^{n-1}` is the
 unknown value, which we can readily solve for:
 
@@ -160,19 +183,10 @@ Computing the first step
 
 We observe that :eq:`vib:model1:step4` cannot be used for :math:`n=0` since
 the computation of :math:`u^1` then involves the undefined value :math:`u^{-1}`
-at :math:`t=-\Delta t`. Also, we have not used the "other" initial
-condition :math:`u'(0)=0`. This condition can be combined with :eq:`vib:model1:step4`
-for :math:`n=1` to yield a value for :math:`u^1`. We may use central difference
-approximation to :math:`u'(0)` of the type
-
-
-.. math::
-        
-        \frac{u^1-u^{-1}}{2\Delta t} = 0\quad\Rightarrow\quad u^{-1} = u^1
-        \thinspace .
-        
-
-Using this relation in :eq:`vib:model1:step4` for :math:`n=0`, we get
+at :math:`t=-\Delta t`. The discretization of the initial condition
+then come to rescue: :eq:`vib:model1:step3c` implies :math:`u^{-1} = u^1`
+and this relation can be combined with :eq:`vib:model1:step4`
+for :math:`n=1` to yield a value for :math:`u^1`:
 
 
 .. math::
@@ -346,7 +360,6 @@ convenient to have:
             savefig('vib1.png')
             savefig('vib1.pdf')
             savefig('vib1.eps')
-            show()
 
 A corresponding main program calling these functions for a simulation
 of a given number of periods (``num_periods``) may take the form
@@ -382,6 +395,8 @@ pairs on the command line:
         I, w, dt, num_periods = a.I, a.w, a.dt, a.num_periods
 
 
+.. _vib:model1:verify:
+
 Verification
 ------------
 
@@ -403,7 +418,9 @@ helps initial debugging and verification as one expects any reasonable
 numerical method to reproduce such solutions to machine precision.
 We would, however, need a source term :math:`f(t)` in the equation,
 :math:`u'' +\omega^2 u = f(t)`, to have a constant solution more complicated
-than the not so useful :math:`u=0`.
+than the not so useful :math:`u=0`, or a linear solution. See
+:ref:`vib:exer:verify:linear` for how to extend the problem
+so that the code can be debugged with constant and linear solutions.
 
 Checking convergence rates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -673,6 +690,94 @@ looks like this:
 
 
 
+.. _vib:model1:empirical:
+
+Empirical analysis of the solution
+----------------------------------
+
+For oscillating functions like those in Figure :ref:`vib:model1:2dt` we may
+compute the amplitude and frequency (or period) empirically.
+That is, we run through the discrete solution points :math:`(t_n, u_n)` and
+find all maxima and minima points. The distance between two consecutive
+maxima (or minima) points can be used as estimate of the local period,
+while half the difference between the :math:`u` value at a maximum and a nearby
+minimum gives an estimate of the local amplitude.
+
+The local maxima are the points where
+
+.. math::
+        
+        u^{n-1} < u^n > u^{n+1},\quad n=1,\ldots,N-1,
+        
+
+and the local minima are recognized by
+
+.. math::
+        
+        u^{n-1} > u^n < u^{n+1},\quad n=1,\ldots,N-1
+        \thinspace .
+        
+
+In computer code this becomes
+
+
+.. code-block:: python
+
+        def minmax(t, u):
+            minima = []; maxima = []
+            for n in range(1, len(u)-1, 1):
+                if u[n-1] > u[n] < u[n+1]:
+                    minima.append((t[n], u[n]))
+                if u[n-1] < u[n] > u[n+1]:
+                    maxima.append((t[n], u[n]))
+            return minima, maxima
+
+Note that the returned objects are list of tuples.
+
+Let :math:`(t_i, e_i)`, :math:`i=0,\ldots,M-1`, be the sequence of all
+the :math:`M` maxima points, where :math:`t_i`
+is the time value and :math:`e_i` the corresponding :math:`u` value.
+The local period can be defined as :math:`p_i=t_{i+1}-t_i`.
+With Python syntax this reads
+
+
+.. code-block:: python
+
+        def periods(maxima):
+            p = [extrema[n][0] - maxima[n-1][0]
+                 for n in range(1, len(maxima))]
+            return np.array(p)
+
+The list ``p`` created by a list comprehension is converted to an array
+since we probably want to compute with it, e.g., find the corresponding
+frequencies ``2*pi/p``.
+
+If :math:`(t_i, f_i)` denotes a minimum, the local amplitude :math:`a_i` can be
+computed as :math:`a_i=|e_i-f_i|/2`:
+
+
+.. code-block:: python
+
+        def amplitudes(minima, maxima):
+            a = [(abs(maxima[n][1] - minima[n][1]))/2.0
+                 for n in range(min(len(minima),len(maxima)))]
+            return np.array(a)
+
+The code segments are found in the file `vb_empirical_analysis.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/vib/vb_empirical_analysis.py>`_.
+
+When plotting ``p`` or ``a`` it is most natural to just have a counter
+on the horizontal axis, because ``a[i]`` and ``p[i]`` correspond to
+the :math:`i`-th amplitude estimate and the :math:`i`-th period estimate, respectively.
+There is no unique time point associated with either of these estimate
+since values at two different time points were compared.
+
+In the analysis of very long time series, it is advantageous to
+compute and plot ``p`` and ``a`` instead of :math:`u` to get an impression of
+the development of the signal.
+
+.. Use it for very long time integration of CN! And of RK4!
+
+
 .. _vib:model1:analysis:
 
 Analysis of the numerical scheme
@@ -800,7 +905,7 @@ steps we have per period. The plot shows
 that at least 25-30 points per period are necessary for reasonable
 accuracy, but this depends on the length of the simulation (:math:`T`) as
 the total phase error due to the frequency error grows linearly with time
-(see :ref:`vib:exer:phaseerr`).
+(see :ref:`vib:exer:phase:err:growth`).
 
 
 .. _vib:model1:tildeomega:plot:
@@ -1299,10 +1404,36 @@ Exercises
 .. --- begin exercise
 
 
-.. _vib:exer:phaseerr:
+.. _vib:exer:verify:linear:
 
-Exercise 1: Investigate phase errors
-------------------------------------
+Exercise 1: Use a linear function to verify the implementation
+--------------------------------------------------------------
+
+Add a source term to the ODE problem :eq:`vib:model1`, :math:`u'+\omega^2u=f(x,t)`,
+and a more general initial condition :math:`u'(0)=V`, where :math:`V` is a given
+constant.
+Discretize this equation according to :math:`[D_tD_t u + \omega^2 u = f]^n_i`
+and derive a new equation for the first time step (:math:`u^1`).
+Let :math:`u_{\small\mbox{e}}(x,t)= ct+I` and show that this is a solution of the ODE
+if :math:`f(x,t)=\omega^2(ct+I)` and :math:`V=c`.
+Show that :math:`[D_tD_t t]^n_i=0` and therefore that :math:`u_{\small\mbox{e}}` also solves the
+discrete equations. Implement the modified problem and make a nose
+test with the linear :math:`u_{\small\mbox{e}}` to verify the solution.
+Filename: ``vb_verify_linear.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _vib:exer:phase:err:growth:
+
+Exercise 2: Show that the phase error grows linearly with :math:`t`
+-------------------------------------------------------------------
 
 Consider an exact solution :math:`I\cos (\omega t)` and an
 approximation :math:`I\cos(\tilde\omega t)`.
@@ -1310,7 +1441,7 @@ Define the phase error as time lag between the peak :math:`I`
 in the exact solution and the corresponding peak in the approximation
 after :math:`m` periods of oscillations. Show that this phase error
 is linear in :math:`m`.
-Filename: ``vb_phase_error.pdf``.
+Filename: ``vb_phase_error_growth.pdf``.
 
 .. --- end of exercise
 
@@ -1323,7 +1454,7 @@ Filename: ``vb_phase_error.pdf``.
 
 .. _vib:exer:w:adjust:
 
-Exercise 2: Improve the accuracy by adjusting the frequency
+Exercise 3: Improve the accuracy by adjusting the frequency
 -----------------------------------------------------------
 
 According to :ref:`vib:model1:tildeomega:series`, the numerical
@@ -1345,7 +1476,7 @@ Filename: ``vb_adjust_w.py``.
 
 .. _vib:exer:step4b:alt:
 
-Exercise 3: Use a Taylor polynomial to compute :math:`u^1`
+Exercise 4: Use a Taylor polynomial to compute :math:`u^1`
 ----------------------------------------------------------
 
 As an alternative to the derivation of :eq:`vib:model1:step4b` for
@@ -1354,6 +1485,64 @@ for :math:`u^1`. Show that this method also leads to
 :eq:`vib:model1:step4b`. Generalize the condition on :math:`u'(0)` to
 be :math:`u'(0)=V` and compute :math:`u^1` in this case with both methods.
 Filename: ``vb_first_step.pdf``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _vib:exer:wdt:limit:
+
+Exercise 5: Find the largest relevant value of :math:`\omega\Delta t`
+---------------------------------------------------------------------
+
+.. Short: Find the largest relevant value of :math:`\omega\Delta t`
+
+
+
+Sketch the function on a given mesh that has the highest possible
+frequency, i.e., the oscillatory "cos-like" function that has its
+maxima and minima at every two grid points.  Find an expression for
+the frequency of this function, and use the result to find the largest
+relevant value of :math:`\omega\Delta t`.
+Filename: ``vb_largest_wdt.pdf``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _vib:exer:fd:exp:plot:
+
+Exercise 6: Visualize the accuracy of finite differences for :math:`u=e^{i\omega t}`
+------------------------------------------------------------------------------------
+
+Introduce the error fraction
+
+.. math::
+         E = \frac{[D_tD_t u]^n}{u''(t_n)} 
+
+for the specific choice :math:`u=\exp{(i\omega t)}`. Show that
+
+.. math::
+         E = \left(\frac{2}{\omega\Delta t}\right)^2
+        \sin^2(\frac{\tilde\omega\Delta t}{2})
+        \thinspace .
+        
+
+Plot :math:`E` as a function of :math:`p=\omega\Delta t` for the relevant
+values of :math:`p` (see :ref:`vib:exer:wdt:limit`).
+The deviation of the curve from unity visualizes the error in the
+approximation.
+Filename: ``vb_plot_fd_exp_error.py``.
 
 .. --- end of exercise
 
