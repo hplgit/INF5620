@@ -1,0 +1,1080 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin:5;
+      padding:0;
+      border:0;	/* Remove the border around the viewport in old versions of IE */
+      width:100%;
+      background: #fdf6e3;
+      min-width:600px;	/* Minimum width of layout - remove if not required */
+      font-family: Verdana, Helvetica, Arial, sans-serif;
+      font-size: 1.0em;
+      line-height: 1.3em;
+      color: #657b83;
+    }
+    a { color: #657b83; text-decoration:none; }
+    a:hover { color: #b58900; background: #eee8d5; text-decoration:none; }
+    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; }
+    h2 { font-variant: small-caps; }
+    pre {
+      background: #fdf6e3;
+      -webkit-box-shadow: inset 0 0 2px #000000;
+      -moz-box-shadow: inset 0 0 2px #000000;
+      box-shadow: inset 0 0 2px #000000;
+      color: #586e75;
+      margin-left: 0px;
+      font-family: 'Droid Sans Mono', monospace;
+      padding: 2px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
+    }
+    tt { font-family: "Courier New", Courier; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p { text-indent: 0px; }
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+
+\newcommand{\xpoint}{\pmb{x}}
+\newcommand{\normalvec}{\pmb{n}}
+
+\renewcommand{\v}{\pmb{v}}
+\newcommand{\w}{\pmb{w}}
+\renewcommand{\u}{\pmb{u}}
+\newcommand{\e}{\pmb{e}}
+\newcommand{\f}{\pmb{f}}
+\newcommand{\ii}{\pmb{i}}
+\newcommand{\jj}{\pmb{j}}
+\newcommand{\kk}{\pmb{k}}
+%\newcommand{\refphi}{\tilde\phi}
+\newcommand{\basphi}{\varphi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\phib}{\pmb{\varphi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+
+% FEniCS commands:
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+<!-- ------------------- main content ------------------------>
+
+<title>Introduction to Cython for Solving Differential Equations</title>
+
+<center><h1>Introduction to Cython for Solving Differential Equations</h1></center>  <! -- document title -->
+
+<! -- author(s) -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2]
+</center>
+
+
+<p>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Dept. of Informatics, University of Oslo</b></center>
+
+
+<center><h4>Sep 23, 2012</h4></center> <!-- date -->
+<p>
+
+<p>
+Cython can be viewed as an extension of Python where variables and
+functions are annotated with extra information, in particular types.
+The resulting Cython source can be compiled into optimized C or C++
+code, and thereby yielding substantial speed-up of slow Python
+code. Cython is particularly favorable when working with long loops
+processing large <tt>numpy</tt> arrays.
+
+<p>
+Programmers will, as with most effective software development tools,
+need quite some experience also with Cython before Python code can be
+quickly extended with Cython syntax and turned into high-performance
+computing code.  The next sections provide a quick hands-on
+introduction to Cython with emphasis on basic ideas and a number of
+pitfalls that newcomers are likely to end up with.
+
+<p>
+Quite some Cython documentation is available, partly at
+<a href="http://docs.cython.org"><tt>http://docs.cython.org</tt></a> and partly as HTML files in the <tt>Doc</tt>
+folder of the Cython source code distribution.  If you find yourself
+using Cython after having seen the capabilities from the forthcoming
+examples, you are strongly encouraged to read through the existing
+Cython documentation.
+
+<p>
+
+<p>
+
+<h2>Cython for a scalar ODE  <a name="___sec0"></a></h2>
+<p>
+The first example involves a simple numerical method for solving
+a scalar first-order ordinary differential equation (ODE):
+
+<p>
+$$
+\begin{equation}
+u'(t) = - u(t) + 1\hbox{ for }t\in (0,T],\quad u(0)=1
+\thinspace .
+\end{equation}
+$$
+The software is created for solving general ODEs on the form
+
+<p>
+$$
+\begin{equation}
+u'(t) = f(u(t), t)\hbox{ for }t\in (0,T],\quad u(0)=I
+\thinspace .
+\end{equation}
+$$
+The user must provide the following input data:
+\( f(u,t) \), \( I \), \( T \), the time step
+\( \Delta t \) (<tt>dt</tt>), and the numerical method for solving the ODE.
+
+<p>
+
+<h3>The initial pure Python code  <a name="___sec1"></a></h3>
+<p>
+The core of the algorithm for solving this problem consists of a
+time loop where a new value of \( u \) in time are computed from
+the previous value. The particular method for advancing \( u \) one
+time step is naturally put in a separate function such that this
+function can simply be replaced by an alternative function if an alternative
+method is desired.
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, dt, t_end, method):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BB4444; font-style: italic">    Solve scalar ODE: </span>
+<span style="color: #BB4444; font-style: italic">    u&#39;(t) = f(u,t), u(0)=U0, 0 &lt; t &lt;= t_end</span>
+<span style="color: #BB4444; font-style: italic">    method: numerical method to advance u one time step.</span>
+<span style="color: #BB4444; font-style: italic">    dt: time step length.</span>
+<span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
+    u <span style="color: #666666">=</span> U0
+    t <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):  <span style="color: #008800; font-style: italic"># may get memory error for large N</span>
+        u <span style="color: #666666">=</span> method(u, t, f, dt)
+        t <span style="color: #666666">+=</span> dt
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+Here is one choice of the <tt>method</tt> function, using a 2nd-order
+Runge-Kutta scheme:
+
+<p>
+Our particular problem can now be solved by defining
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">problem1</span>(u, t):
+    <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Right-hand side function f(u,t) for the ODE u&#39;=-u+1.&quot;&quot;&quot;</span>
+    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+</span> <span style="color: #666666">1</span>
+</pre></div>
+<p>
+and calling
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(f<span style="color: #666666">=</span>problem1, U0<span style="color: #666666">=1</span>, dt<span style="color: #666666">=0.1</span>, t_end<span style="color: #666666">=5</span>, method<span style="color: #666666">=</span>RK2)
+</pre></div>
+<p>
+
+<p>
+We collect the <tt>solver</tt>, <tt>RK2</tt>, and <tt>problem1</tt> functions in a pure
+Python module file called <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0.py"><tt>ode0.py</tt></a>.
+
+<p>
+
+<h3>Compiling with Cython  <a name="___sec2"></a></h3>
+<p>
+A trivial Cython code for the present example is simply to copy
+<tt>ode0.py</tt> to a new file with extension <tt>.pyx</tt>, as Cython files always
+have this extension. We let the name of this first file, in a series
+of Cython versions of <tt>ode0.py</tt>, be <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy1.pyx"><tt>ode0_cy1.pyx</tt></a>. The
+pure Python code in this file is also valid Cython code (at the time
+of this writing Cython supports almost all of Python). However, before
+we can execute this Cython code, it needs to be compiled by the
+<tt>cython</tt> program, compiled by a C compiler, and linked as a shared
+library. This shared library is a Python extension module that can be
+imported in a Python program as any other module.
+
+<p>
+The easiest way of making an extension module from a <tt>.pyx</tt> file
+is to create a <tt>setup.py</tt> file that will apply the same compiler
+and flags as were used when compiling Python itself.
+A typical <tt>setup.py</tt> file for the present case looks as follows:
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.core</span> <span style="color: #AA22FF; font-weight: bold">import</span> setup
+<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.extension</span> <span style="color: #AA22FF; font-weight: bold">import</span> Extension
+<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">Cython.Distutils</span> <span style="color: #AA22FF; font-weight: bold">import</span> build_ext
+cymodule <span style="color: #666666">=</span> <span style="color: #BB4444">&#39;ode0_cy1&#39;</span>
+
+setup(
+  name<span style="color: #666666">=</span><span style="color: #BB4444">&#39;ODE test&#39;</span>,
+  ext_modules<span style="color: #666666">=</span>[Extension(cymodule, [cymodule <span style="color: #666666">+</span> <span style="color: #BB4444">&#39;.pyx&#39;</span>],)],
+  cmdclass<span style="color: #666666">=</span>{<span style="color: #BB4444">&#39;build_ext&#39;</span>: build_ext},
+)
+</pre></div>
+<p>
+The <tt>setup.py</tt> file is run by
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python setup.py install build_ext --inplace
+</pre></div>
+<p>
+The result is a compiled extension module <tt>ode0_cy1.so</tt> on Linux (with
+other extensions on other platforms). This module can be imported
+like any other module,
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">ode0_cy1</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">ode0</span>
+</pre></div>
+<p>
+In the rest of the program code we cannot distinguish between the Cython
+and Python versions of the <tt>ode0</tt> module.
+
+<p>
+We may compare the efficiency of the
+original Python module <tt>ode0</tt> with its Cython-compiled variant
+by running
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python ode0_main.py 0   <span style="color: #008800; font-style: italic"># runs ode0.py in pure Python</span>
+Terminal&gt; python ode0_main.py 1   <span style="color: #008800; font-style: italic"># runs ode0_cy1.py in Cython</span>
+</pre></div>
+<p>
+Just compiling with Cython halves the CPU time in this
+example.
+
+<p>
+
+<h3>Declaring variables with types  <a name="___sec3"></a></h3>
+<p>
+The first step in annotating Python code with the extended syntax offered
+by Cython is to declare (all) variables with their type.
+Cython supports C-style types like <tt>int</tt>, <tt>double</tt>, and <tt>ndarray</tt>.
+Moreover, C versions of functions can be called directly from C code by using
+<tt>cdef</tt> in the function header line instead of <tt>def</tt>. With <tt>cpdef</tt>,
+two versions of the function are made, one to be called from C and one
+from Python. The code now reads
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(f, double U0, double dt, double t_end, method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> U0  <span style="color: #008800; font-style: italic"># previous time step</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):
+        u <span style="color: #666666">=</span> method(u, t, f, dt)
+        t <span style="color: #666666">+=</span> dt
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">RK2</span>(double u, double t, f, double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>
+    K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u, t)
+    K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+    unew <span style="color: #666666">=</span> u <span style="color: #666666">+</span> K2
+    <span style="color: #AA22FF; font-weight: bold">return</span> unew
+    
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">problem1</span>(double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+1</span>  <span style="color: #008800; font-style: italic"># u = 1-exp(-t)</span>
+</pre></div>
+<p>
+The <tt>except *</tt> notation enables the functions to raise exceptions. The
+code will run faster without <tt>except *</tt>, but strange errors may
+potentially arise.  Annotating variables with their types decreases
+the CPU time by over 40 percent.
+The functions above appear in the test program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy2.pyx"><tt>ode0_cy2.pyx</tt></a>.
+
+<p>
+
+<p>
+
+<h3>Inspecting what Cython has done  <a name="___sec4"></a></h3>
+<p>
+Running <tt>cython -a</tt> on a <tt>.pyx</tt> file results in a <tt>.html</tt> file with
+information on what Cython has done with the code. For example,
+<tt>cython -a ode_cy2.pyx</tt> results in a file
+<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy2.html"><tt>ode0_cy2.html</tt></a>
+which can be
+loaded into a web browser and inspected. White lines have resulted
+in efficient C code, while yellow lines still use the Python API,
+see Figure <a href="#ode0cy2:fig">1</a>.
+One can click on the yellow lines to see the underlying
+C code. The complete C code is available in <tt>ode0_cy2.c</tt>.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  HTML output explaining what Cython has done with the Python code. <a name="ode0cy2:fig"></a> </p></center>
+<p><img src="fig-cyode/ode0_cy2.png" align="bottom" width=400></p>
+</center>
+
+<p>
+
+<p>
+
+<h3>Proper treatment of functions as arguments to functions  <a name="___sec5"></a></h3>
+<p>
+Our code involves two function objects as argument to functions: <tt>f</tt>
+for defining the right-hand side of the ODE (the problem) and <tt>method</tt>
+for advancing the ODE one time step (the method). When these are
+ordinary Python function objects, the resulting code is slow.
+We can easily see this by replacing the calls to <tt>f</tt> and <tt>method</tt>
+by the actual function names <tt>problem</tt> (in <tt>RK2</tt>)
+and <tt>RK2</tt> (in <tt>solver</tt>). The complete code is in <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy3.pyx"><tt>ode0_cy3.pyx</tt></a>.
+The result is a speed-up of a factor of 250!
+
+<p>
+Nevertheless, we do not want these calls to be hardcoded for a special
+choice of problem and method.  In C one would have applied function
+pointers for these arguments.  An efficient and flexible construction
+in Cython is to replace the functions by methods in classes. For
+example, the problem definition goes as follows with a superclass, a
+method <tt>rhs</tt>, and a subclass implementing the particular problem in
+question (see <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy4.pyx"><tt>ode0_py4.py</tt></a>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem1</span>(Problem):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+</span> <span style="color: #666666">1</span>
+</pre></div>
+<p>
+Note the use of <tt>cdef</tt> in the class definition: these are Cython classes
+with several special features that make them different from standard
+Python classes, see the chapter <a href="#ode2:cython">Using Cython</a>.
+
+<p>
+A similar strategy for implementing the <tt>RK2</tt> method in terms of classes
+reads
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u, double t, Problem p,
+                        double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Method_RK2</span>(ODEMethod):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u, double t, Problem p,
+                         double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>
+        K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u, t)
+        K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+        unew <span style="color: #666666">=</span> u <span style="color: #666666">+</span> K2
+        <span style="color: #AA22FF; font-weight: bold">return</span> unew
+</pre></div>
+<p>
+
+<p>
+We now have to feed our <tt>solver</tt> method with
+a <tt>Problem1</tt> object's <tt>rhs</tt> method in as <tt>f</tt> and
+a <tt>RK2</tt> object's <tt>advance</tt> method as <tt>method</tt>.
+However, we want also this Cython version to behave as the original
+<tt>ode0.py</tt> code so that the "main program" in <tt>ode0_main.py</tt> remains
+unchanged. This can easily be achieved by defining
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">RK2 <span style="color: #666666">=</span> Method_RK2()
+problem1 <span style="color: #666666">=</span> Problem1()
+problem2 <span style="color: #666666">=</span> Problem2()
+
+
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double U0, double dt, 
+             double t_end, ODEMethod method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> U0  <span style="color: #008800; font-style: italic"># previous time step</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):
+        u <span style="color: #666666">=</span> method<span style="color: #666666">.</span>advance(u, t, f, dt)
+        t <span style="color: #666666">+=</span> dt
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+in the Cython source.
+
+<p>
+The implementation described above doubles the CPU time compared to
+hardcoding the function names, but we still have a 125-fold reduction
+of the CPU time of the version where these functions are standard
+Python objects transferred to functions the standard way.
+
+<p>
+A natural next step is to remove the <tt>except *</tt> constructions
+(see <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy5.pyx"><tt>ode0_cy5.pyx</tt></a>), at least after the Cython module is debugged. The
+removal increases the efficiency by 25 percent.
+It can also be interesting to run <tt>cython -a ode_cy5.pyx</tt> and
+view
+<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy5.html"><tt>ode0_cy5.html</tt></a>
+to see that most of the Python
+code is now turned into efficient C code.
+
+<p>
+
+<h3>Handling of mathematical functions  <a name="___sec6"></a></h3>
+<p>
+Our right-hand side function has so far been very simple: \( f(u,t) =
+-u + 1 \).  Changing the problem to involve a standard mathematical
+function from the math library, e.g., \( f(u,t) = -u + \exp{(-2t)} \),
+requires a careful implementation in Cython. First, let us try the
+naive approach with using the standard <tt>math</tt> Python module
+(<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy6.pyx"><tt>ode_cy6.pyx</tt></a>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">math</span> <span style="color: #AA22FF; font-weight: bold">import</span> exp
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem2</span>(Problem):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span> u <span style="color: #666666">+</span> exp(<span style="color: #666666">-2*</span>t)
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u, double t, Problem p,
+                        double dt):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+</pre></div>
+<p>
+
+<p>
+This little change of the problem increases the CPU time by a factor of 40!
+The reason is that the potentially efficient <tt>rhs</tt> function must call
+the <tt>exp</tt> function in Python's <tt>math</tt> module via the Python API.
+
+<p>
+Fortunately, there are ways to improve the performance. One is to
+import <tt>exp</tt> from C's math library (<tt>math.h</tt>), which is already
+wrapped by Cython so we can write (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy7.pyx"><tt>ode0_cy7.pyx</tt></a>)
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">libc.math</span> <span style="color: #AA22FF; font-weight: bold">cimport</span> exp
+</pre></div>
+<p>
+Alternatively, if the C's math library had not been made available
+through Cython, we could have written (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy8.pyx"><tt>ode0_cy8.pyx</tt></a>)
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">extern</span> <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #BB4444">&quot;math.h&quot;</span>:
+    double exp(double)
+</pre></div>
+<p>
+Both versions brings down the CPU time by a factor of four. Compared to
+the choice \( f(u,t) = -u + 1 \), the use of <tt>exp</tt> is 10 times slower.
+There is nothing to do with this penalty, since we call the fastest
+available implementation of the exponential function.
+
+<p>
+For curiosity, using <tt>exp</tt> from <tt>numpy</tt> causes a slowdown of the code
+by a factor of 80 (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy9.pyx"><tt>ode0_cy9.pyx</tt></a>). Another
+natural test is to use <tt>__call__</tt> in classes <tt>Problem</tt> and <tt>ODEMethod</tt>
+instead of method names <tt>rhs</tt> and <tt>advance</tt>, to obtain nicer syntax.
+However, this slows down the code by a factor of 3.
+
+<p>
+
+<h3>Using arrays  <a name="___sec7"></a></h3>
+<p>
+The former implementations does not store the computed values of the
+unknown function \( u \) in the ODE, which means that we cannot plot or
+further analyze the solution. Suppose we now want to allocate an array
+for storing the computed point values in time of the solution. We also
+introduce an array <tt>t</tt> specifying all the time points for computation
+(this array defines then the time steps).  The corresponding pure
+Python implementation is found in the file <a href="http://hplgit.github.com/INF5620/doc/notes/ode1.py"><tt>ode1.py</tt></a> and looks like
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, t, method):
+    t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t)
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
+    u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>)
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method(u, n, t, f)
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">RK2</span>(u, n, t, f):
+    dt <span style="color: #666666">=</span> t[n<span style="color: #666666">+1</span>] <span style="color: #666666">-</span> t[n]
+    K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u[n], t[n])
+    K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+    unew <span style="color: #666666">=</span> u[n] <span style="color: #666666">+</span> K2
+    <span style="color: #AA22FF; font-weight: bold">return</span> unew
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">problem1</span>(u, t):
+    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+</span> <span style="color: #666666">1</span>
+</pre></div>
+<p>
+Note the rewrite of <tt>RK2</tt>: now we transfer the whole arrays <tt>u</tt> and <tt>t</tt>,
+which makes it simple to implement other multi-step methods, involving
+multiple time levels of <tt>u</tt> and <tt>t</tt>, using the same interface.
+
+<p>
+We can also just compile this program with Cython to get a very slight
+performance gain. It is, however, more natural to use the experience
+from the former sections and (i) declare all variables with types and
+(ii) represent function arguments to functions by classes and methods
+as outlined above. The code goes as follows (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy1.pyx"><tt>ode1_cy1.pyx</tt></a>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+<span style="color: #AA22FF; font-weight: bold">cimport</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem1</span>(Problem):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+1</span>  <span style="color: #008800; font-style: italic"># u = 1-exp(-t)</span>
+
+<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">math</span> <span style="color: #AA22FF; font-weight: bold">import</span> exp
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem2</span>(Problem):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span> u <span style="color: #666666">+</span> exp(<span style="color: #666666">-2*</span>t)
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, np<span style="color: #666666">.</span>ndarray u, <span style="color: #AA22FF">int</span> n,
+                         np<span style="color: #666666">.</span>ndarray t, Problem p):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Method_RK2</span>(ODEMethod):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, np<span style="color: #666666">.</span>ndarray u, <span style="color: #AA22FF">int</span> n,
+                         np<span style="color: #666666">.</span>ndarray t, Problem p):
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>, <span style="color: #00A000">dt</span>
+        dt <span style="color: #666666">=</span> t[n<span style="color: #666666">+1</span>] <span style="color: #666666">-</span> t[n]
+        K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u[n], t[n])
+        K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+        unew <span style="color: #666666">=</span> u[n] <span style="color: #666666">+</span> K2
+        <span style="color: #AA22FF; font-weight: bold">return</span> unew
+
+<span style="color: #008800; font-style: italic"># Create names compatible with ode0.py</span>
+RK2 <span style="color: #666666">=</span> Method_RK2()
+problem1 <span style="color: #666666">=</span> Problem1()
+problem2 <span style="color: #666666">=</span> Problem2()
+
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double U0, np<span style="color: #666666">.</span>ndarray t, ODEMethod method):
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>, dtype<span style="color: #666666">=</span>np<span style="color: #666666">.</span>float)
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method<span style="color: #666666">.</span>advance(u, n, t, f)
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+Note the double import of <tt>numpy</tt>: the standard <tt>numpy</tt> module and
+a Cython-enabled version of <tt>numpy</tt> that ensures fast indexing of
+and other operations on arrays. Both import statements are necessary
+in code that uses <tt>numpy</tt> arrays.
+The new thing in the code above is declaration of arrays by
+<tt>np.ndarray</tt>.
+
+<p>
+Unfortunately, the performance improvement by the code above is only a
+factor of 2.5 compared with the pure Python version. The reason is
+that array indexing is still done in the standard Python way.  To
+obtain efficiency C-style indexing, <tt>numpy</tt> arrays must be declared
+with their dimension (rank) and the type of their elements.  This is
+done by the quite comprehensive syntax (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy2.pyx"><tt>ode1_cy2.pyx</tt></a>)
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">np<span style="color: #666666">.</span>ndarray[np<span style="color: #666666">.</span>float_t, ndim<span style="color: #666666">=1</span>]
+</pre></div>
+<p>
+The <tt>np.float_t</tt> data type is a compiled data type defined in
+Cython's enhanced version of <tt>numpy</tt>, and <tt>ndim=1</tt> means that the
+array has one dimension (rank 1).
+An unfortunate side effect of the "buffer" syntax above
+is that functions with arrays declared this
+way cannot be declared with <tt>cdef</tt> or <tt>cpdef</tt>, they can only use the
+standard <tt>def</tt>, which implies that we end up with a pure Python function
+instead of a C function. However, the code inside this Python function
+can still be compiled to fast C.
+
+<p>
+The declaration above reduces the CPU time by a factor of 10,
+which is a factor of about 25 reduction compared to the pure standard
+<tt>numpy</tt> array code.
+
+<p>
+Since functions taking <tt>numpy</tt> arrays with "buffer" syntax are forced
+to be functions handled by the standard Python API, such functions
+have a significant overhead. Our <tt>RK2.advance</tt> method takes array
+arguments and performs operations on two single array elements <tt>u[n]</tt>
+and <tt>t[n]</tt>. We could easily avoid this and instead transfer <tt>u[n]</tt> and
+<tt>t[n]</tt> as <tt>double</tt> arguments (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy3.pyx"><tt>ode1_cy3.pyx</tt></a>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u_1, <span style="color: #AA22FF">int</span> n, double t_1,
+                  double dt, Problem p):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Method_RK2</span>(ODEMethod):
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u_1, <span style="color: #AA22FF">int</span> n, double t_1,
+                  double dt, Problem p):
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>
+        K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u_1, t_1)
+        K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u_1 <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t_1 <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+        unew <span style="color: #666666">=</span> u_1 <span style="color: #666666">+</span> K2
+        <span style="color: #AA22FF; font-weight: bold">return</span> unew
+</pre></div>
+<p>
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, double U0,
+           np<span style="color: #666666">.</span>ndarray[np<span style="color: #666666">.</span>float_t, ndim<span style="color: #666666">=1</span>] t,
+           ODEMethod method):
+    cdef <span style="color: #AA22FF">int</span> N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
+    cdef np<span style="color: #666666">.</span>ndarray[np<span style="color: #666666">.</span>float_t, ndim<span style="color: #666666">=1</span>] u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>)
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+
+    cdef <span style="color: #AA22FF">int</span> n
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method<span style="color: #666666">.</span>advance(u[n], n, t[n], t[n<span style="color: #666666">+1</span>]<span style="color: #666666">-</span>t[n], f)
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+A four-fold reduction in CPU time results from this technique of avoiding
+array arguments. The general rule of thumb is to avoid array
+arguments in functions that only operates on one or a few array elements.
+In functions processing large arrays with long loops
+element the overhead of using the Python C API to parse arguments the
+standard way will drown in the work done on the (large) arrays, so in
+such functions there is no efficiency loss by using "buffer" syntax
+and thereby the "def" declaration of functions.
+
+<p>
+Additional efficiency can be gained by turning off array bounds checking
+and the possibility to use negative indices:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f,
+           double U0,
+           np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>] t,
+           ODEMethod method):
+</pre></div>
+<p>
+We can also indicate that the arrays have contiguous memory (<tt>mode='c'</tt>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, 
+           double U0, 
+           np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>, 
+                      mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t, 
+           ODEMethod method):
+</pre></div>
+<p>
+The efficiency increase is about 5-10 percent (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy4.pyx"><tt>ode1_cy4.pyx</tt></a>).  Changing
+the data type <tt>double</tt> to <tt>np.float_t</tt> all over the Cython code has
+negligible effect in this example (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy5.pyx"><tt>ode1_cy5.pyx</tt></a>).
+
+<p>
+
+<h3>Using pure Fortran  <a name="___sec8"></a></h3>
+<p>
+We also could make a Fortran implementation of the <a href="http://hplgit.github.com/INF5620/doc/notes/ode1.py"><tt>ode1.py</tt></a> code to test what
+would be considered the fastest possible implementation.  The code
+looks like this
+(<a href="http://hplgit.github.com/INF5620/doc/notes/ode1.f"><tt>ode1.f</tt></a>):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">      <span style="color: #AA22FF; font-weight: bold">subroutine </span><span style="color: #B8860B">solver</span>(<span style="color: #B8860B">f</span>, <span style="color: #B8860B">U0</span>, <span style="color: #B8860B">t</span>, <span style="color: #B8860B">n_t</span>, <span style="color: #B8860B">u</span>, <span style="color: #B8860B">method</span>)
+      <span style="color: #00BB00; font-weight: bold">integer </span><span style="color: #B8860B">n_u0</span>, <span style="color: #B8860B">n_t</span>
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">U0</span>, <span style="color: #B8860B">t</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>), <span style="color: #B8860B">u</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>)
+      <span style="color: #AA22FF; font-weight: bold">external </span><span style="color: #B8860B">f</span>, <span style="color: #B8860B">method</span>
+      <span style="color: #00BB00; font-weight: bold">integer </span><span style="color: #B8860B">n</span>
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">dt</span> 
+      <span style="color: #B8860B">u</span>(<span style="color: #666666">0</span>) <span style="color: #666666">=</span> <span style="color: #B8860B">U0</span>
+
+      <span style="color: #AA22FF; font-weight: bold">do </span><span style="color: #B8860B">n</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>, <span style="color: #B8860B">n_t</span><span style="color: #666666">-2</span>
+         <span style="color: #AA22FF; font-weight: bold">call </span><span style="color: #B8860B">method</span>(<span style="color: #B8860B">u</span>, <span style="color: #B8860B">n</span>, <span style="color: #B8860B">t</span>, <span style="color: #B8860B">f</span>, <span style="color: #B8860B">n_t</span>)
+      <span style="color: #AA22FF; font-weight: bold">end do</span>
+<span style="color: #AA22FF; font-weight: bold">      return</span>
+<span style="color: #AA22FF; font-weight: bold">      end</span>
+
+<span style="color: #AA22FF; font-weight: bold">      subroutine </span><span style="color: #B8860B">rk2</span>(<span style="color: #B8860B">u</span>, <span style="color: #B8860B">n</span>, <span style="color: #B8860B">t</span>, <span style="color: #B8860B">f</span>, <span style="color: #B8860B">n_t</span>)
+      <span style="color: #00BB00; font-weight: bold">integer </span><span style="color: #B8860B">n</span>, <span style="color: #B8860B">n_t</span>
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">u</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>), <span style="color: #B8860B">t</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>)
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">dt</span>, <span style="color: #B8860B">un</span>, <span style="color: #B8860B">dudt</span>, <span style="color: #B8860B">K1</span>, <span style="color: #B8860B">K2</span>
+      <span style="color: #AA22FF; font-weight: bold">external </span><span style="color: #B8860B">f</span>
+
+      <span style="color: #B8860B">dt</span> <span style="color: #666666">=</span> <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span><span style="color: #666666">+1</span>) <span style="color: #666666">-</span> <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span>)
+      <span style="color: #B8860B">un</span> <span style="color: #666666">=</span> <span style="color: #B8860B">u</span>(<span style="color: #B8860B">n</span>)
+
+      <span style="color: #AA22FF; font-weight: bold">call </span><span style="color: #B8860B">f</span>(<span style="color: #B8860B">dudt</span>, <span style="color: #B8860B">un</span>, <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span>))
+
+      <span style="color: #B8860B">K1</span> <span style="color: #666666">=</span> <span style="color: #B8860B">dt</span><span style="color: #666666">*</span><span style="color: #B8860B">dudt</span>
+      <span style="color: #B8860B">un</span> <span style="color: #666666">=</span> <span style="color: #B8860B">u</span>(<span style="color: #B8860B">n</span>) <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span><span style="color: #B8860B">K1</span>
+
+      <span style="color: #AA22FF; font-weight: bold">call </span><span style="color: #B8860B">f</span>(<span style="color: #B8860B">dudt</span>, <span style="color: #B8860B">un</span>, <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span>) <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span><span style="color: #B8860B">dt</span>)
+
+      <span style="color: #B8860B">K2</span> <span style="color: #666666">=</span> <span style="color: #B8860B">dt</span><span style="color: #666666">*</span><span style="color: #B8860B">dudt</span>
+      <span style="color: #B8860B">u</span>(<span style="color: #B8860B">n</span><span style="color: #666666">+1</span>) <span style="color: #666666">=</span> <span style="color: #B8860B">u</span>(<span style="color: #B8860B">n</span>) <span style="color: #666666">+</span> <span style="color: #B8860B">K2</span>
+      <span style="color: #AA22FF; font-weight: bold">return</span>
+<span style="color: #AA22FF; font-weight: bold">      end</span>
+
+<span style="color: #AA22FF; font-weight: bold">      subroutine </span><span style="color: #B8860B">problem1</span>(<span style="color: #B8860B">dudt</span>, <span style="color: #B8860B">u</span>, <span style="color: #B8860B">t</span>)
+      <span style="color: #B8860B">dudt</span> <span style="color: #666666">=</span> <span style="color: #666666">-</span><span style="color: #B8860B">u</span> <span style="color: #666666">+</span> <span style="color: #666666">1</span>
+      <span style="color: #AA22FF; font-weight: bold">return</span>
+<span style="color: #AA22FF; font-weight: bold">      end</span>
+
+<span style="color: #AA22FF; font-weight: bold">      subroutine </span><span style="color: #B8860B">problem2</span>(<span style="color: #B8860B">dudt</span>, <span style="color: #B8860B">u</span>, <span style="color: #B8860B">t</span>)
+      <span style="color: #B8860B">dudt</span> <span style="color: #666666">=</span> <span style="color: #666666">-</span><span style="color: #B8860B">u</span> <span style="color: #666666">+</span> <span style="color: #AA22FF">exp</span>(<span style="color: #666666">-2*</span><span style="color: #B8860B">t</span>)
+      <span style="color: #AA22FF; font-weight: bold">return</span>
+<span style="color: #AA22FF; font-weight: bold">      end</span>
+</pre></div>
+<p>
+
+<p>
+We could have used a Fortran function for <tt>f</tt> since the result is a
+scalar, but the more general implementation for systems of ODEs would
+force us to use subroutines when <tt>dudt</tt> is an array.
+
+<p>
+The main program used in the test has the form
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">      <span style="color: #AA22FF; font-weight: bold">program </span><span style="color: #B8860B">ode2</span>
+      <span style="color: #00BB00; font-weight: bold">integer </span><span style="color: #B8860B">n_U0</span>, <span style="color: #B8860B">n_t</span>, <span style="color: #B8860B">n</span>
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">pi</span>
+      <span style="color: #AA22FF; font-weight: bold">parameter</span> (<span style="color: #B8860B">n_t</span><span style="color: #666666">=8000001</span>)
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">u</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>), <span style="color: #B8860B">U0</span>, <span style="color: #B8860B">dt</span>, <span style="color: #B8860B">t</span>(<span style="color: #666666">0</span>:<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>)
+      <span style="color: #00BB00; font-weight: bold">real</span><span style="color: #666666">*8</span> <span style="color: #B8860B">cpu0</span>, <span style="color: #B8860B">cpu1</span>
+      <span style="color: #AA22FF; font-weight: bold">external </span><span style="color: #B8860B">problem1</span>, <span style="color: #B8860B">problem2</span>, <span style="color: #B8860B">rk2</span>
+      <span style="color: #B8860B">U0</span> <span style="color: #666666">=</span> <span style="color: #666666">1.</span>
+      <span style="color: #AA22FF; font-weight: bold">call </span><span style="color: #AA22FF">cpu_time</span>(<span style="color: #B8860B">cpu0</span>)
+      <span style="color: #B8860B">dt</span> <span style="color: #666666">=</span> <span style="color: #666666">5./</span>(<span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>)
+      <span style="color: #B8860B">t</span>(<span style="color: #666666">0</span>) <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+      <span style="color: #AA22FF; font-weight: bold">do </span><span style="color: #B8860B">n</span> <span style="color: #666666">=</span> <span style="color: #666666">1</span>, <span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>
+         <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span>) <span style="color: #666666">=</span> <span style="color: #B8860B">t</span>(<span style="color: #B8860B">n</span><span style="color: #666666">-1</span>) <span style="color: #666666">+</span> <span style="color: #B8860B">dt</span>
+      <span style="color: #AA22FF; font-weight: bold">end do</span>
+<span style="color: #AA22FF; font-weight: bold">      call </span><span style="color: #B8860B">solver</span>(<span style="color: #B8860B">problem1</span>, <span style="color: #B8860B">U0</span>, <span style="color: #B8860B">t</span>, <span style="color: #B8860B">n_t</span>, <span style="color: #B8860B">u</span>, <span style="color: #B8860B">rk2</span>)
+      <span style="color: #AA22FF; font-weight: bold">call </span><span style="color: #AA22FF">cpu_time</span>(<span style="color: #B8860B">cpu1</span>)
+      <span style="color: #B8860B">n</span> <span style="color: #666666">=</span> <span style="color: #B8860B">n_t</span><span style="color: #666666">-1</span>
+      <span style="color: #AA22FF; font-weight: bold">write</span>(<span style="color: #666666">*</span>, <span style="color: #666666">1000</span>) <span style="color: #BB4444">&#39;u(&#39;</span>, <span style="color: #B8860B">n</span>, <span style="color: #BB4444">&#39;)=&#39;</span>, <span style="color: #B8860B">u</span>(<span style="color: #B8860B">n</span>)
+      <span style="color: #AA22FF; font-weight: bold">write</span>(<span style="color: #666666">*</span>, <span style="color: #666666">2000</span>) <span style="color: #BB4444">&#39;CPU time:&#39;</span>, <span style="color: #B8860B">cpu1</span><span style="color: #666666">-</span><span style="color: #B8860B">cpu0</span>
+ <span style="color: #666666">1000</span> <span style="color: #AA22FF; font-weight: bold">format</span>(<span style="color: #B8860B">A</span>, <span style="color: #B8860B">I8</span>, <span style="color: #B8860B">A</span>, <span style="color: #B8860B">F12</span><span style="color: #666666">.4</span>)
+ <span style="color: #666666">2000</span> <span style="color: #AA22FF; font-weight: bold">format</span>(<span style="color: #B8860B">A</span>, <span style="color: #B8860B">F9</span><span style="color: #666666">.3</span>)
+      <span style="color: #AA22FF; font-weight: bold">end</span>
+</pre></div>
+<p>
+
+<p>
+Quite surprisingly, this Fortran 77 implementation was almost five
+times slower than the most efficient Cython version (!). The Fortran
+code was also compiled with the <tt>-O3</tt> flag to <tt>gfortran</tt>, while
+<tt>setup.py</tt> building of Cython modules applies the <tt>-O2</tt> optimization
+that Python itself was built with.
+
+<p>
+To summarize, Cython increased the performance by a factor of 130+
+and was in fact faster than Fortran 77!
+
+<p>
+<b>Remark.</b> The Fortran program needs to be carefully examined
+as it is not at all expected to be slower than a Cython implementation.
+
+<p>
+
+<h3>Solver for systems of ODEs  <a name="___sec9"></a></h3>
+<p>
+The previous example codes on using Cython aimed at solving a scalar
+ODE with one unknown function. The more common case of a <em>system</em> of
+ODEs, having a vector of functions as unknown, represent quite
+a discouraging case when it comes to the performance of Cython.
+
+<p>
+For a system of ODEs, with \( m \) equations and \( m \) unknowns, we must
+work with arrays of length \( m \), representing the unknowns, the
+right-hand side of the ODEs, as well as intermediate values in
+computations. The core of the algorithm must now compute with \( m \)
+arrays. Here is a typical implementation in Python that works for both
+scalar ODEs and systems of ODEs ("`ode2.py`"
+"http://hplgit.github.com/INF5620/doc/notes/ode2.py"):
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, t, method):
+    t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t)
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(U0, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
+        U0 <span style="color: #666666">=</span> [U0]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
+    U0 <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(U0)
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f(U0,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
+        <span style="color: #AA22FF; font-weight: bold">raise</span> <span style="color: #D2413A; font-weight: bold">TypeError</span>(<span style="color: #BB4444">&#39;f (</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">) must return numpy array&#39;</span> <span style="color: #666666">%</span> f<span style="color: #666666">.</span>__name__)
+    u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(U0)))
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0[:]
+
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method(u, n, t, f)
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">RK2</span>(u, n, t, f):
+    dt <span style="color: #666666">=</span> t[n<span style="color: #666666">+1</span>] <span style="color: #666666">-</span> t[n]
+    K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u[n], t[n])
+    K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+    unew <span style="color: #666666">=</span> u[n] <span style="color: #666666">+</span> K2
+    <span style="color: #AA22FF; font-weight: bold">return</span> unew
+
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">problem2</span>(u, t):
+    r <span style="color: #666666">=</span> [u[<span style="color: #666666">1</span>], <span style="color: #666666">-</span>u[<span style="color: #666666">0</span>]]
+    <span style="color: #AA22FF; font-weight: bold">return</span> np<span style="color: #666666">.</span>asarray(r)
+</pre></div>
+<p>
+
+<p>
+Every time the function <tt>problem2</tt> is called (and that happens twice at
+each time level!), a new array must be made from a list. We can
+avoid this by implementing a class that allocates a <tt>numpy</tt> array
+for the right-hand side and reusing this in subsequent calls:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #0000FF">Problem1</span>:
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">__init__</span>(<span style="color: #AA22FF">self</span>):
+        <span style="color: #008800; font-style: italic"># Allocate an array for dudt for efficiency</span>
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(<span style="color: #666666">2</span>)
+
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">__call__</span>(<span style="color: #AA22FF">self</span>, u, t):
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">1</span>]
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> <span style="color: #666666">-</span>u[<span style="color: #666666">0</span>]
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt
+</pre></div>
+<p>
+This trick reduces the CPU time by a factor of about 1.7.
+
+<p>
+
+<p>
+
+<h3>Using Cython <a name="ode2:cython"></a></h3>
+<p>
+
+<p>
+We can introduce all the performance tricks we have covered so far
+when Cythonizing the <tt>ode2.py</tt> code:
+declare all variables, use "buffer" syntax for arrays (specify
+data type and rank/dimension, turn off negative indices, indicate
+contiguous memory),
+turn off array bounds checking, and use class methods instead of
+plain functions as arguments to functions.
+The complete code looks as follows:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+<span style="color: #AA22FF; font-weight: bold">cimport</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+<span style="color: #AA22FF; font-weight: bold">cimport</span> <span style="color: #0000FF; font-weight: bold">cython</span>
+<span style="color: #AA22FF; font-weight: bold">ctypedef</span> np<span style="color: #666666">.</span>float64_t DT
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span> <span style="color: #00A000">dudt</span>
+
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">__init__</span>(<span style="color: #AA22FF">self</span>):
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(<span style="color: #666666">2</span>)
+
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>,
+            np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                       mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u,
+            double t):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem1</span>(Problem):
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>,
+            np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                       mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u,
+            double t):
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">1</span>]
+        <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> <span style="color: #666666">-</span>u[<span style="color: #666666">0</span>]
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #AA22FF">self</span><span style="color: #666666">.</span>dudt
+
+
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>,
+                np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=2</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                           mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u,
+                <span style="color: #AA22FF">int</span> n,
+                np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                           mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t,
+                Problem p):
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
+
+<span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>)
+<span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Method_RK2</span>(ODEMethod):
+    <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>,
+                np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=2</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                           mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u,
+                <span style="color: #AA22FF">int</span> n,
+                np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                           mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t,
+                Problem p):
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                        mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] K1, K2, unew
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">dt</span>
+        <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                        mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] un <span style="color: #666666">=</span> u[n,:]
+        dt <span style="color: #666666">=</span> t[n<span style="color: #666666">+1</span>] <span style="color: #666666">-</span> t[n]
+        K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(un, t[n])
+        K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(un <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t[n] <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
+        unew <span style="color: #666666">=</span> u[n,:] <span style="color: #666666">+</span> K2
+        <span style="color: #AA22FF; font-weight: bold">return</span> unew
+
+<span style="color: #008800; font-style: italic"># Create names compatible with ode2.py</span>
+RK2 <span style="color: #666666">=</span> Method_RK2()
+problem1 <span style="color: #666666">=</span> Problem1()
+
+<span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, U0_, t_, ODEMethod method):
+    <span style="color: #008800; font-style: italic"># U0_ and t_ can be flexible objects</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t_)
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t_)<span style="color: #666666">-1</span>
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(U0_, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
+        U0_ <span style="color: #666666">=</span> [U0_]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] U0 <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(U0_)
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f<span style="color: #666666">.</span>rhs(U0,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
+        <span style="color: #AA22FF; font-weight: bold">raise</span> <span style="color: #D2413A; font-weight: bold">TypeError</span>(<span style="color: #BB4444">&#39;f (</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">) must return numpy array&#39;</span> <span style="color: #666666">%</span>
+                        f<span style="color: #666666">.</span>__name__)
+
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=2</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
+                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(U0)))
+    u[<span style="color: #666666">0</span>,:] <span style="color: #666666">=</span> U0[:]
+
+    <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
+        u[n<span style="color: #666666">+1</span>,:] <span style="color: #666666">=</span> method<span style="color: #666666">.</span>advance(u, n, t, f)
+    <span style="color: #AA22FF; font-weight: bold">return</span> u, t
+</pre></div>
+<p>
+
+<p>
+Note the way attributes are declared in Cython classes: <tt>cdef
+np.ndarray dudt</tt>.  Such an attribute is not visible from Python, only
+from C.  Unfortunately, "buffer" syntax of class attributes is not
+allowed, resulting in slow indexing of these arrays. The efficiency
+gain by this Cython code is hardly noticeable (15 percent). The reason
+is that the time is spent on array indexing which is as inefficient as
+in pure <tt>numpy</tt> code. Inspecting what Cython has done (<tt>cython -a
+ode2_cy1.pyx</tt>) shows that most of the code except variable
+declarations is yellow and hence not translated to efficient C code.
+
+<p>
+A Fortran 77 version of the code, in file <tt>ode2.f</tt>, is about 60 times
+faster than the Cython version.
+
+<p>
+It seems that the only way out of the problem is to get rid of arrays
+and generate problem specific code where the method and the problem is
+combined.
+
+<!-- ------------------- end of main content ----------------->
+</body>
+</html>
+    
+
