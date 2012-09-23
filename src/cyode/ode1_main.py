@@ -18,10 +18,10 @@ else:
         sys.exit(1)
         
 def case(N, problem=ode.problem2, showplot=False):
-    U0 = 0
+    I = 0
     t0 = time.clock()
     t = np.linspace(0, 5, N)
-    u, t = ode.solver(problem, U0, t, ode.RK2)
+    u, t = ode.solver(problem, I, t, ode.RK2)
     t1 = time.clock()
     if showplot:
         from scitools.std import plot

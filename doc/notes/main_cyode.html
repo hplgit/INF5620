@@ -201,15 +201,15 @@ method is desired.
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, dt, t_end, method):
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, I, dt, T, method):
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
 <span style="color: #BB4444; font-style: italic">    Solve scalar ODE: </span>
-<span style="color: #BB4444; font-style: italic">    u&#39;(t) = f(u,t), u(0)=U0, 0 &lt; t &lt;= t_end</span>
+<span style="color: #BB4444; font-style: italic">    u&#39;(t) = f(u,t), u(0)=I, 0 &lt; t &lt;= T</span>
 <span style="color: #BB4444; font-style: italic">    method: numerical method to advance u one time step.</span>
 <span style="color: #BB4444; font-style: italic">    dt: time step length.</span>
 <span style="color: #BB4444; font-style: italic">    &quot;&quot;&quot;</span>
-    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
-    u <span style="color: #666666">=</span> U0
+    N <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(T)<span style="color: #666666">/</span>dt))
+    u <span style="color: #666666">=</span> I
     t <span style="color: #666666">=</span> <span style="color: #666666">0</span>
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):  <span style="color: #008800; font-style: italic"># may get memory error for large N</span>
         u <span style="color: #666666">=</span> method(u, t, f, dt)
@@ -234,7 +234,7 @@ and calling
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(f<span style="color: #666666">=</span>problem1, U0<span style="color: #666666">=1</span>, dt<span style="color: #666666">=0.1</span>, t_end<span style="color: #666666">=5</span>, method<span style="color: #666666">=</span>RK2)
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(f<span style="color: #666666">=</span>problem1, I<span style="color: #666666">=1</span>, dt<span style="color: #666666">=0.1</span>, T<span style="color: #666666">=5</span>, method<span style="color: #666666">=</span>RK2)
 </pre></div>
 <p>
 
@@ -321,9 +321,9 @@ from Python. The code now reads
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(f, double U0, double dt, double t_end, method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
-    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
-    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> U0  <span style="color: #008800; font-style: italic"># previous time step</span>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(f, double I, double dt, double T, method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(T)<span style="color: #666666">/</span>dt))
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> I  <span style="color: #008800; font-style: italic"># previous time step</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):
@@ -453,10 +453,10 @@ problem1 <span style="color: #666666">=</span> Problem1()
 problem2 <span style="color: #666666">=</span> Problem2()
 
 
-<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double U0, double dt, 
-             double t_end, ODEMethod method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
-    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(t_end)<span style="color: #666666">/</span>dt))
-    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> U0  <span style="color: #008800; font-style: italic"># previous time step</span>
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double I, double dt, 
+             double T, ODEMethod method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(T)<span style="color: #666666">/</span>dt))
+    <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> I  <span style="color: #008800; font-style: italic"># previous time step</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">xrange</span>(N):
@@ -565,11 +565,11 @@ Python implementation is found in the file <a href="http://hplgit.github.com/INF
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
 
-<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, t, method):
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, I, t, method):
     t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t)
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
     u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>)
-    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
 
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
         u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method(u, n, t, f)
@@ -637,10 +637,10 @@ RK2 <span style="color: #666666">=</span> Method_RK2()
 problem1 <span style="color: #666666">=</span> Problem1()
 problem2 <span style="color: #666666">=</span> Problem2()
 
-<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double U0, np<span style="color: #666666">.</span>ndarray t, ODEMethod method):
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double I, np<span style="color: #666666">.</span>ndarray t, ODEMethod method):
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>, dtype<span style="color: #666666">=</span>np<span style="color: #666666">.</span>float)
-    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
 
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">n</span>
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
@@ -714,12 +714,12 @@ and <tt>t[n]</tt>. We could easily avoid this and instead transfer <tt>u[n]</tt>
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, double U0,
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, double I,
            np<span style="color: #666666">.</span>ndarray[np<span style="color: #666666">.</span>float_t, ndim<span style="color: #666666">=1</span>] t,
            ODEMethod method):
     cdef <span style="color: #AA22FF">int</span> N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
     cdef np<span style="color: #666666">.</span>ndarray[np<span style="color: #666666">.</span>float_t, ndim<span style="color: #666666">=1</span>] u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(N<span style="color: #666666">+1</span>)
-    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
 
     cdef <span style="color: #AA22FF">int</span> n
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
@@ -745,7 +745,7 @@ and the possibility to use negative indices:
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
 <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f,
-           double U0,
+           double I,
            np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>] t,
            ODEMethod method):
 </pre></div>
@@ -757,7 +757,7 @@ We can also indicate that the arrays have contiguous memory (<tt>mode='c'</tt>):
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
 <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, 
-           double U0, 
+           double I, 
            np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>, 
                       mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t, 
            ODEMethod method):
@@ -898,16 +898,16 @@ scalar ODEs and systems of ODEs ("`ode2.py`"
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, U0, t, method):
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(f, I, t, method):
     t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t)
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t)<span style="color: #666666">-1</span>
-    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(U0, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
-        U0 <span style="color: #666666">=</span> [U0]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
-    U0 <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(U0)
-    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f(U0,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(I, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
+        I <span style="color: #666666">=</span> [I]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
+    I <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(I)
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f(I,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
         <span style="color: #AA22FF; font-weight: bold">raise</span> <span style="color: #D2413A; font-weight: bold">TypeError</span>(<span style="color: #BB4444">&#39;f (</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">) must return numpy array&#39;</span> <span style="color: #666666">%</span> f<span style="color: #666666">.</span>__name__)
-    u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(U0)))
-    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> U0[:]
+    u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(I)))
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I[:]
 
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
         u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> method(u, n, t, f)
@@ -1030,22 +1030,22 @@ RK2 <span style="color: #666666">=</span> Method_RK2()
 problem1 <span style="color: #666666">=</span> Problem1()
 
 <span style="color: #AA22FF">@cython</span><span style="color: #666666">.</span>boundscheck(<span style="color: #AA22FF">False</span>) <span style="color: #008800; font-style: italic"># turn off bounds checking for this func.</span>
-<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, U0_, t_, ODEMethod method):
-    <span style="color: #008800; font-style: italic"># U0_ and t_ can be flexible objects</span>
+<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(Problem f, I_, t_, ODEMethod method):
+    <span style="color: #008800; font-style: italic"># I_ and t_ can be flexible objects</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
                     mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] t <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(t_)
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(t_)<span style="color: #666666">-1</span>
-    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(U0_, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
-        U0_ <span style="color: #666666">=</span> [U0_]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(I_, (<span style="color: #AA22FF">float</span>,<span style="color: #AA22FF">int</span>)):
+        I_ <span style="color: #666666">=</span> [I_]  <span style="color: #008800; font-style: italic"># wrap in list, which then will be array</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=1</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
-                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] U0 <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(U0_)
-    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f<span style="color: #666666">.</span>rhs(U0,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
+                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] I <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(I_)
+    <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> <span style="color: #AA22FF">isinstance</span>(f<span style="color: #666666">.</span>rhs(I,<span style="color: #666666">0</span>), np<span style="color: #666666">.</span>ndarray):
         <span style="color: #AA22FF; font-weight: bold">raise</span> <span style="color: #D2413A; font-weight: bold">TypeError</span>(<span style="color: #BB4444">&#39;f (</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BB4444">) must return numpy array&#39;</span> <span style="color: #666666">%</span>
                         f<span style="color: #666666">.</span>__name__)
 
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">np</span>.<span style="color: #00BB00; font-weight: bold">ndarray</span>[<span style="color: #00A000">DT</span>, <span style="color: #00A000">ndim</span><span style="color: #666666">=2</span>, negative_indices<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>,
-                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(U0)))
-    u[<span style="color: #666666">0</span>,:] <span style="color: #666666">=</span> U0[:]
+                    mode<span style="color: #666666">=</span><span style="color: #BB4444">&#39;c&#39;</span>] u <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((N<span style="color: #666666">+1</span>, <span style="color: #AA22FF">len</span>(I)))
+    u[<span style="color: #666666">0</span>,:] <span style="color: #666666">=</span> I[:]
 
     <span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(N):
         u[n<span style="color: #666666">+1</span>,:] <span style="color: #666666">=</span> method<span style="color: #666666">.</span>advance(u, n, t, f)
@@ -1071,7 +1071,9 @@ faster than the Cython version.
 <p>
 It seems that the only way out of the problem is to get rid of arrays
 and generate problem specific code where the method and the problem is
-combined.
+combined. Despite this negative comment regarding Cython code for
+systems of ODEs, Cython has an enormous potential for solving <em>partial
+differential equations</em>!
 
 <!-- ------------------- end of main content ----------------->
 </body>

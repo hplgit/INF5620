@@ -70,21 +70,21 @@ RK2 = Method_RK2()
 problem1 = Problem1()
 
 @cython.boundscheck(False) # turn off bounds checking for this func.
-def solver(Problem f, U0_, t_, ODEMethod method):
-    # U0_ and t_ can be flexible objects
+def solver(Problem f, I_, t_, ODEMethod method):
+    # I_ and t_ can be flexible objects
     cdef np.ndarray[DT, ndim=1, negative_indices=False,
                     mode='c'] t = np.asarray(t_)
     N = len(t_)-1
-    if isinstance(U0_, (float,int)):
-        U0_ = [U0_]  # wrap in list, which then will be array
+    if isinstance(I_, (float,int)):
+        I_ = [I_]  # wrap in list, which then will be array
     cdef np.ndarray[DT, ndim=1, negative_indices=False,
-                    mode='c'] U0 = np.asarray(U0_)
-    if not isinstance(f.rhs(U0,0), np.ndarray):
+                    mode='c'] I = np.asarray(I_)
+    if not isinstance(f.rhs(I,0), np.ndarray):
         raise TypeError('f (%s) must return numpy array' % f.__name__)
 
     cdef np.ndarray[DT, ndim=2, negative_indices=False,
-                    mode='c'] u = np.zeros((N+1, len(U0)))
-    u[0,:] = U0[:]
+                    mode='c'] u = np.zeros((N+1, len(I)))
+    u[0,:] = I[:]
                     
     for n in range(N):
         u[n+1,:] = method.advance(u, n, t, f)

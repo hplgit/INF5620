@@ -18,12 +18,12 @@ else:
         sys.exit(1)
         
 def case(nperiods=4, showplot=False):
-    U0 = [1, 0]   # Does not work well with float arrays and Cython
-    U0 = [1., 0.]
+    I = [1, 0]   # Does not work well with float arrays and Cython
+    I = [1., 0.]
     f = ode.Problem1()
     t0 = time.clock()
     time_points = np.linspace(0, nperiods*2*np.pi, nperiods*30+1)
-    u, t = ode.solver(f, U0, time_points, ode.RK2)
+    u, t = ode.solver(f, I, time_points, ode.RK2)
     t1 = time.clock()
     if showplot and nperiods < 8:
         from scitools.std import plot, figure

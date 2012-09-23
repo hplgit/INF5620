@@ -18,11 +18,11 @@ else:
         sys.exit(1)
         
 def case(N, problem):
-    U0 = 0
+    I = 0
     t0 = time.clock()
-    t_end = 5
-    dt = float(t_end)/(N-1)
-    u, t = ode.solver(problem, U0, dt, t_end, ode.RK2)
+    T = 5
+    dt = float(T)/(N-1)
+    u, t = ode.solver(problem, I, dt, T, ode.RK2)
     t1 = time.clock()
     #print 'Final value: u(%g)=%g' % (t, u)
     return t1-t0

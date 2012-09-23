@@ -6,9 +6,9 @@ No use a functions transferred as arguments.
 No use of except * in cpdef functions (factor 2.5).
 """
 
-cpdef solver(f, double U0, double dt, double t_end, method):
-    cdef int N = int(round(float(t_end)/dt))
-    cdef double u = U0  # previous time step
+cpdef solver(f, double I, double dt, double T, method):
+    cdef int N = int(round(float(T)/dt))
+    cdef double u = I  # previous time step
     cdef double t = 0
     cdef int n
     for n in xrange(N):

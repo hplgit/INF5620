@@ -39,10 +39,10 @@ cdef class Method_RK2(ODEMethod):
         return unew
     
 
-cpdef solver(Problem f, double U0, double dt, 
-             double t_end, ODEMethod method):
-    cdef int N = int(round(float(t_end)/dt))
-    cdef double u = U0  # previous time step
+cpdef solver(Problem f, double I, double dt, 
+             double T, ODEMethod method):
+    cdef int N = int(round(float(T)/dt))
+    cdef double u = I  # previous time step
     cdef double t = 0
     cdef int n
     for n in xrange(N):

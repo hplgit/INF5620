@@ -11,16 +11,16 @@ class Wrap:
     def __call__(self, u, t):
         return np.asarray(self.f(u, t))
 
-cpdef RK2(f_, U0, double t):
+cpdef RK2(f_, I, double t):
     f = Wrap(f_)
     cdef np.dnarray t = np.asarray(t)
     cdef int N = len(t)-1
-    if isinstance(U0, (list,tuple,np.ndarray)):
-        u = np.zeros((N+1, len(U0)))
-        u[0] = np.asarray(U0)
+    if isinstance(I, (list,tuple,np.ndarray)):
+        u = np.zeros((N+1, len(I)))
+        u[0] = np.asarray(I)
     else:
         u = np.zeros(N+1)
-        u[0] = U0
+        u[0] = I
              
     cdef int n
     cdef double dt       
@@ -44,13 +44,13 @@ class ProblemOpt:
         return self.f_return
     
 def case(nperiods=4, showplot=False, ftype='class'):
-    U0 = [1, 0]
+    I = [1, 0]
     if ftype == 'class':
         f = ProblemOpt()
     else:
         f = problem
     t0 = time.clock()
-    u, t = RK2(f, U0, t=np.linspace(0, nperiods*np.pi, nperiods*30+1))
+    u, t = RK2(f, I, t=np.linspace(0, nperiods*np.pi, nperiods*30+1))
     t1 = time.clock()
     if showplot:
         plot(t[-200:], u[-200:,0])

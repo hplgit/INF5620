@@ -41,10 +41,10 @@ RK2 = Method_RK2()
 problem1 = Problem1()
 problem2 = Problem2()
 
-cpdef solver(Problem f, double U0, np.ndarray t, ODEMethod method):
+cpdef solver(Problem f, double I, np.ndarray t, ODEMethod method):
     cdef int N = len(t)-1
     cdef np.ndarray u = np.zeros(N+1, dtype=np.float)
-    u[0] = U0
+    u[0] = I
 
     cdef int n
     for n in range(N):
