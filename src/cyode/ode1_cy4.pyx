@@ -48,7 +48,7 @@ problem2 = Problem2()
 
 @cython.boundscheck(False) # turn off bounds checking for this func.
 def solver(Problem f, 
-           double U0, 
+           double I, 
            np.ndarray[DT, ndim=1, negative_indices=False, 
                       mode='c'] t, 
            ODEMethod method):
@@ -58,7 +58,7 @@ def solver(Problem f,
     #declares the type
     cdef np.ndarray[DT, ndim=1, negative_indices=False, 
                     mode='c'] u = np.zeros(N+1)
-    u[0] = U0   
+    u[0] = I   
              
     cdef int n
     for n in range(N):

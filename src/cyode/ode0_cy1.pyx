@@ -4,9 +4,9 @@ No use of arrays.
 Just plain Python code compiled as Cython.
 """
 
-def solver(f, U0, dt, t_end, method):
-    N = int(round(float(t_end)/dt))
-    u = U0  # previous time step
+def solver(f, I, dt, T, method):
+    N = int(round(float(T)/dt))
+    u = I  # previous time step
     t = 0
     for n in xrange(N):
         u = method(u, t, f, dt)

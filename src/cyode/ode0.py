@@ -2,15 +2,15 @@
 ODE integration restricted to scalar ODEs.
 No use of arrays.
 """
-def solver(f, U0, dt, t_end, method):
+def solver(f, I, dt, T, method):
     """
     Solve scalar ODE: 
-    u'(t) = f(u,t), u(0)=U0, 0 < t <= t_end
+    u'(t) = f(u,t), u(0)=I, 0 < t <= T
     method: numerical method to advance u one time step.
     dt: time step length.
     """
-    N = int(round(float(t_end)/dt))
-    u = U0
+    N = int(round(float(T)/dt))
+    u = I
     t = 0
     for n in xrange(N):  # may get memory error for large N
         u = method(u, t, f, dt)

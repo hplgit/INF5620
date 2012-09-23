@@ -3,16 +3,16 @@
 import numpy as np
 from scitools.std import plot, figure
 
-def solver(f, U0, t, method):
+def solver(f, I, t, method):
     t = np.asarray(t)
     N = len(t)-1
-    if isinstance(U0, (float,int)):
-        U0 = [U0]  # wrap in list, which then will be array
-    U0 = np.asarray(U0)
-    if not isinstance(f(U0,0), np.ndarray):
+    if isinstance(I, (float,int)):
+        I = [I]  # wrap in list, which then will be array
+    I = np.asarray(I)
+    if not isinstance(f(I,0), np.ndarray):
         raise TypeError('f (%s) must return numpy array' % f.__name__)
-    u = np.zeros((N+1, len(U0)))
-    u[0] = U0[:]
+    u = np.zeros((N+1, len(I)))
+    u[0] = I[:]
 
     for n in range(N):
         u[n+1] = method(u, n, t, f)
@@ -48,7 +48,7 @@ class Problem1:
         return self.dudt
 
 def case(nperiods=4, showplot=False, ftype='class'):
-    U0 = [1, 0]
+    I = [1, 0]
     if ftype == 'class':
         f = Problem1()
     elif ftype == 'func2':
@@ -57,7 +57,7 @@ def case(nperiods=4, showplot=False, ftype='class'):
         f = problem3
     t0 = time.clock()
     time_points = np.linspace(0, nperiods*2*np.pi, nperiods*30+1)
-    u, t = solver(f, U0, time_points, RK2)
+    u, t = solver(f, I, time_points, RK2)
     t1 = time.clock()
     if showplot:
         plot(t[-200:], u[-200:,0])

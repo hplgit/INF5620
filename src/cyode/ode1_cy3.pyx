@@ -56,7 +56,7 @@ problem1 = Problem1()
 problem2 = Problem2()
 
 
-def solver(Problem f, double U0, 
+def solver(Problem f, double I, 
            np.ndarray[np.float_t, ndim=1] t, 
            ODEMethod method):
     cdef int N = len(t)-1
@@ -64,7 +64,7 @@ def solver(Problem f, double U0,
     #Cython does not like type specification via dtype when the buffer
     #declares the type
     cdef np.ndarray[np.float_t, ndim=1] u = np.zeros(N+1)
-    u[0] = U0   
+    u[0] = I   
              
     cdef int n
     for n in range(N):

@@ -2,11 +2,11 @@
 from scitools.std import plot, figure
 import numpy as np
 
-def solver(f, U0, t, method):
+def solver(f, I, t, method):
     t = np.asarray(t)
     N = len(t)-1
     u = np.zeros(N+1)
-    u[0] = U0
+    u[0] = I
 
     for n in range(N):
         u[n+1] = method(u, n, t, f)
