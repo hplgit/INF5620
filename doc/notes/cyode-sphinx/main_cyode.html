@@ -1,0 +1,872 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction to Cython for Solving Differential Equations &mdash; Preliminary notes for INF5620 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Preliminary notes for INF5620 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Preliminary notes for INF5620" href="index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Preliminary notes for INF5620"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Preliminary notes for INF5620 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-to-cython-for-solving-differential-equations">
+<h1>Introduction to Cython for Solving Differential Equations<a class="headerlink" href="#introduction-to-cython-for-solving-differential-equations" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Sep 23, 2012</td>
+</tr>
+</tbody>
+</table>
+<p>Cython can be viewed as an extension of Python where variables and
+functions are annotated with extra information, in particular types.
+The resulting Cython source can be compiled into optimized C or C++
+code, and thereby yielding substantial speed-up of slow Python
+code. Cython is particularly favorable when working with long loops
+processing large <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays.</p>
+<p>Programmers will, as with most effective software development tools,
+need quite some experience also with Cython before Python code can be
+quickly extended with Cython syntax and turned into high-performance
+computing code.  The next sections provide a quick hands-on
+introduction to Cython with emphasis on basic ideas and a number of
+pitfalls that newcomers are likely to end up with.</p>
+<p>Quite some Cython documentation is available, partly at
+<a class="reference external" href="http://docs.cython.org">http://docs.cython.org</a> and partly as HTML files in the <tt class="docutils literal"><span class="pre">Doc</span></tt>
+folder of the Cython source code distribution.  If you find yourself
+using Cython after having seen the capabilities from the forthcoming
+examples, you are strongly encouraged to read through the existing
+Cython documentation.</p>
+</div>
+<div class="section" id="cython-for-a-scalar-ode">
+<h1>Cython for a scalar ODE<a class="headerlink" href="#cython-for-a-scalar-ode" title="Permalink to this headline">¶</a></h1>
+<p>The first example involves a simple numerical method for solving
+a scalar first-order ordinary differential equation (ODE):</p>
+<div class="math">
+\[u'(t) = - u(t) + 1\hbox{ for }t\in (0,T],\quad u(0)=1
+\thinspace .\]</div>
+<p>The software is created for solving general ODEs on the form</p>
+<div class="math">
+\[u'(t) = f(u(t), t)\hbox{ for }t\in (0,T],\quad u(0)=I
+\thinspace .\]</div>
+<p>The user must provide the following input data:
+<span class="math">\(f(u,t)\)</span>, <span class="math">\(I\)</span>, <span class="math">\(T\)</span>, the time step
+<span class="math">\(\Delta t\)</span> (<tt class="docutils literal"><span class="pre">dt</span></tt>), and the numerical method for solving the ODE.</p>
+<div class="section" id="the-initial-pure-python-code">
+<h2>The initial pure Python code<a class="headerlink" href="#the-initial-pure-python-code" title="Permalink to this headline">¶</a></h2>
+<p>The core of the algorithm for solving this problem consists of a
+time loop where a new value of <span class="math">\(u\)</span> in time are computed from
+the previous value. The particular method for advancing <span class="math">\(u\)</span> one
+time step is naturally put in a separate function such that this
+function can simply be replaced by an alternative function if an alternative
+method is desired.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve scalar ODE:</span>
+<span class="sd">    u&#39;(t) = f(u,t), u(0)=I, 0 &lt; t &lt;= T</span>
+<span class="sd">    method: numerical method to advance u one time step.</span>
+<span class="sd">    dt: time step length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">I</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>  <span class="c"># may get memory error for large N</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>Here is one choice of the <tt class="docutils literal"><span class="pre">method</span></tt> function, using a 2nd-order
+Runge-Kutta scheme:</p>
+<p>Our particular problem can now be solved by defining</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">problem1</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Right-hand side function f(u,t) for the ODE u&#39;=-u+1.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">u</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>and calling</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">problem1</span><span class="p">,</span> <span class="n">I</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">RK2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We collect the <tt class="docutils literal"><span class="pre">solver</span></tt>, <tt class="docutils literal"><span class="pre">RK2</span></tt>, and <tt class="docutils literal"><span class="pre">problem1</span></tt> functions in a pure
+Python module file called <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0.py">ode0.py</a>.</p>
+</div>
+<div class="section" id="compiling-with-cython">
+<h2>Compiling with Cython<a class="headerlink" href="#compiling-with-cython" title="Permalink to this headline">¶</a></h2>
+<p>A trivial Cython code for the present example is simply to copy
+<tt class="docutils literal"><span class="pre">ode0.py</span></tt> to a new file with extension <tt class="docutils literal"><span class="pre">.pyx</span></tt>, as Cython files always
+have this extension. We let the name of this first file, in a series
+of Cython versions of <tt class="docutils literal"><span class="pre">ode0.py</span></tt>, be <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy1.pyx">ode0_cy1.pyx</a>. The
+pure Python code in this file is also valid Cython code (at the time
+of this writing Cython supports almost all of Python). However, before
+we can execute this Cython code, it needs to be compiled by the
+<tt class="docutils literal"><span class="pre">cython</span></tt> program, compiled by a C compiler, and linked as a shared
+library. This shared library is a Python extension module that can be
+imported in a Python program as any other module.</p>
+<p>The easiest way of making an extension module from a <tt class="docutils literal"><span class="pre">.pyx</span></tt> file
+is to create a <tt class="docutils literal"><span class="pre">setup.py</span></tt> file that will apply the same compiler
+and flags as were used when compiling Python itself.
+A typical <tt class="docutils literal"><span class="pre">setup.py</span></tt> file for the present case looks as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">distutils.core</span> <span class="kn">import</span> <span class="n">setup</span>
+<span class="kn">from</span> <span class="nn">distutils.extension</span> <span class="kn">import</span> <span class="n">Extension</span>
+<span class="kn">from</span> <span class="nn">Cython.Distutils</span> <span class="kn">import</span> <span class="n">build_ext</span>
+<span class="n">cymodule</span> <span class="o">=</span> <span class="s">&#39;ode0_cy1&#39;</span>
+
+<span class="n">setup</span><span class="p">(</span>
+  <span class="n">name</span><span class="o">=</span><span class="s">&#39;ODE test&#39;</span><span class="p">,</span>
+  <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span><span class="n">Extension</span><span class="p">(</span><span class="n">cymodule</span><span class="p">,</span> <span class="p">[</span><span class="n">cymodule</span> <span class="o">+</span> <span class="s">&#39;.pyx&#39;</span><span class="p">],)],</span>
+  <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;build_ext&#39;</span><span class="p">:</span> <span class="n">build_ext</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">setup.py</span></tt> file is run by</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python setup.py install build_ext --inplace</span>
+</pre></div>
+</div>
+<p>The result is a compiled extension module <tt class="docutils literal"><span class="pre">ode0_cy1.so</span></tt> on Linux (with
+other extensions on other platforms). This module can be imported
+like any other module,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ode0_cy1</span> <span class="kn">as</span> <span class="nn">ode0</span>
+</pre></div>
+</div>
+<p>In the rest of the program code we cannot distinguish between the Cython
+and Python versions of the <tt class="docutils literal"><span class="pre">ode0</span></tt> module.</p>
+<p>We may compare the efficiency of the
+original Python module <tt class="docutils literal"><span class="pre">ode0</span></tt> with its Cython-compiled variant
+by running</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python ode0_main.py 0   # runs ode0.py in pure Python</span>
+<span class="go">Terminal&gt; python ode0_main.py 1   # runs ode0_cy1.py in Cython</span>
+</pre></div>
+</div>
+<p>Just compiling with Cython halves the CPU time in this
+example.</p>
+</div>
+<div class="section" id="declaring-variables-with-types">
+<h2>Declaring variables with types<a class="headerlink" href="#declaring-variables-with-types" title="Permalink to this headline">¶</a></h2>
+<p>The first step in annotating Python code with the extended syntax offered
+by Cython is to declare (all) variables with their type.
+Cython supports C-style types like <tt class="docutils literal"><span class="pre">int</span></tt>, <tt class="docutils literal"><span class="pre">double</span></tt>, and <tt class="docutils literal"><span class="pre">ndarray</span></tt>.
+Moreover, C versions of functions can be called directly from C code by using
+<tt class="docutils literal"><span class="pre">cdef</span></tt> in the function header line instead of <tt class="docutils literal"><span class="pre">def</span></tt>. With <tt class="docutils literal"><span class="pre">cpdef</span></tt>,
+two versions of the function are made, one to be called from C and one
+from Python. The code now reads</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">cpdef</span> <span class="nf">solver</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">double</span> <span class="n">I</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt</span><span class="p">,</span> <span class="n">double</span> <span class="n">T</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">u</span> <span class="o">=</span> <span class="n">I</span>  <span class="c"># previous time step</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">t</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">n</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+
+<span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">RK2</span><span class="p">(</span><span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">K1</span><span class="p">,</span> <span class="nf">K2</span><span class="p">,</span> <span class="nf">unew</span>
+    <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">K2</span>
+    <span class="k">return</span> <span class="n">unew</span>
+
+<span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">problem1</span><span class="p">(</span><span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">u</span> <span class="o">+</span><span class="mf">1</span>  <span class="c"># u = 1-exp(-t)</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">except</span> <span class="pre">*</span></tt> notation enables the functions to raise exceptions. The
+code will run faster without <tt class="docutils literal"><span class="pre">except</span> <span class="pre">*</span></tt>, but strange errors may
+potentially arise.  Annotating variables with their types decreases
+the CPU time by over 40 percent.
+The functions above appear in the test program <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy2.pyx">ode0_cy2.pyx</a>.</p>
+</div>
+<div class="section" id="inspecting-what-cython-has-done">
+<h2>Inspecting what Cython has done<a class="headerlink" href="#inspecting-what-cython-has-done" title="Permalink to this headline">¶</a></h2>
+<p>Running <tt class="docutils literal"><span class="pre">cython</span> <span class="pre">-a</span></tt> on a <tt class="docutils literal"><span class="pre">.pyx</span></tt> file results in a <tt class="docutils literal"><span class="pre">.html</span></tt> file with
+information on what Cython has done with the code. For example,
+<tt class="docutils literal"><span class="pre">cython</span> <span class="pre">-a</span> <span class="pre">ode_cy2.pyx</span></tt> results in a file
+<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy2.html">ode0_cy2.html</a>
+which can be
+loaded into a web browser and inspected. White lines have resulted
+in efficient C code, while yellow lines still use the Python API,
+see Figure <a class="reference internal" href="#ode0cy2-fig"><em>HTML output explaining what Cython has done with the Python code</em></a>.
+One can click on the yellow lines to see the underlying
+C code. The complete C code is available in <tt class="docutils literal"><span class="pre">ode0_cy2.c</span></tt>.</p>
+<div class="figure" id="ode0cy2-fig">
+<img alt="_images/ode0_cy2.png" src="_images/ode0_cy2.png" style="width: 400px;" />
+<p class="caption"><em>HTML output explaining what Cython has done with the Python code</em></p>
+</div>
+</div>
+<div class="section" id="proper-treatment-of-functions-as-arguments-to-functions">
+<h2>Proper treatment of functions as arguments to functions<a class="headerlink" href="#proper-treatment-of-functions-as-arguments-to-functions" title="Permalink to this headline">¶</a></h2>
+<p>Our code involves two function objects as argument to functions: <tt class="docutils literal"><span class="pre">f</span></tt>
+for defining the right-hand side of the ODE (the problem) and <tt class="docutils literal"><span class="pre">method</span></tt>
+for advancing the ODE one time step (the method). When these are
+ordinary Python function objects, the resulting code is slow.
+We can easily see this by replacing the calls to <tt class="docutils literal"><span class="pre">f</span></tt> and <tt class="docutils literal"><span class="pre">method</span></tt>
+by the actual function names <tt class="docutils literal"><span class="pre">problem</span></tt> (in <tt class="docutils literal"><span class="pre">RK2</span></tt>)
+and <tt class="docutils literal"><span class="pre">RK2</span></tt> (in <tt class="docutils literal"><span class="pre">solver</span></tt>). The complete code is in <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy3.pyx">ode0_cy3.pyx</a>.
+The result is a speed-up of a factor of 250!</p>
+<p>Nevertheless, we do not want these calls to be hardcoded for a special
+choice of problem and method.  In C one would have applied function
+pointers for these arguments.  An efficient and flexible construction
+in Cython is to replace the functions by methods in classes. For
+example, the problem definition goes as follows with a superclass, a
+method <tt class="docutils literal"><span class="pre">rhs</span></tt>, and a subclass implementing the particular problem in
+question (see <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy4.pyx">ode0_py4.py</a>):</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem1</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">u</span> <span class="o">+</span> <span class="mf">1</span>
+</pre></div>
+</div>
+<p>Note the use of <tt class="docutils literal"><span class="pre">cdef</span></tt> in the class definition: these are Cython classes
+with several special features that make them different from standard
+Python classes, see the chapter <a class="reference internal" href="#ode2-cython"><em>Using Cython</em></a>.</p>
+<p>A similar strategy for implementing the <tt class="docutils literal"><span class="pre">RK2</span></tt> method in terms of classes
+reads</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">cdef</span> <span class="k">class</span> <span class="nf">ODEMethod</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">,</span>
+                        <span class="n">double</span> <span class="n">dt</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Method_RK2</span><span class="p">(</span><span class="n">ODEMethod</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">,</span>
+                         <span class="n">double</span> <span class="n">dt</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+        <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">K1</span><span class="p">,</span> <span class="nf">K2</span><span class="p">,</span> <span class="nf">unew</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">K2</span>
+        <span class="k">return</span> <span class="n">unew</span>
+</pre></div>
+</div>
+<p>We now have to feed our <tt class="docutils literal"><span class="pre">solver</span></tt> method with
+a <tt class="docutils literal"><span class="pre">Problem1</span></tt> object&#8217;s <tt class="docutils literal"><span class="pre">rhs</span></tt> method in as <tt class="docutils literal"><span class="pre">f</span></tt> and
+a <tt class="docutils literal"><span class="pre">RK2</span></tt> object&#8217;s <tt class="docutils literal"><span class="pre">advance</span></tt> method as <tt class="docutils literal"><span class="pre">method</span></tt>.
+However, we want also this Cython version to behave as the original
+<tt class="docutils literal"><span class="pre">ode0.py</span></tt> code so that the &#8220;main program&#8221; in <tt class="docutils literal"><span class="pre">ode0_main.py</span></tt> remains
+unchanged. This can easily be achieved by defining</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="n">RK2</span> <span class="o">=</span> <span class="n">Method_RK2</span><span class="p">()</span>
+<span class="n">problem1</span> <span class="o">=</span> <span class="n">Problem1</span><span class="p">()</span>
+<span class="n">problem2</span> <span class="o">=</span> <span class="n">Problem2</span><span class="p">()</span>
+
+
+<span class="k">cpdef</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span> <span class="n">double</span> <span class="n">I</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt</span><span class="p">,</span>
+             <span class="n">double</span> <span class="n">T</span><span class="p">,</span> <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">)</span> <span class="k">except</span> <span class="o">*</span><span class="p">:</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">u</span> <span class="o">=</span> <span class="n">I</span>  <span class="c"># previous time step</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">t</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">n</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>in the Cython source.</p>
+<p>The implementation described above doubles the CPU time compared to
+hardcoding the function names, but we still have a 125-fold reduction
+of the CPU time of the version where these functions are standard
+Python objects transferred to functions the standard way.</p>
+<p>A natural next step is to remove the <tt class="docutils literal"><span class="pre">except</span> <span class="pre">*</span></tt> constructions
+(see <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy5.pyx">ode0_cy5.pyx</a>), at least after the Cython module is debugged. The
+removal increases the efficiency by 25 percent.
+It can also be interesting to run <tt class="docutils literal"><span class="pre">cython</span> <span class="pre">-a</span> <span class="pre">ode_cy5.pyx</span></tt> and
+view
+<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy5.html">ode0_cy5.html</a>
+to see that most of the Python
+code is now turned into efficient C code.</p>
+</div>
+<div class="section" id="handling-of-mathematical-functions">
+<h2>Handling of mathematical functions<a class="headerlink" href="#handling-of-mathematical-functions" title="Permalink to this headline">¶</a></h2>
+<p>Our right-hand side function has so far been very simple: <span class="math">\(f(u,t) =
+-u + 1\)</span>.  Changing the problem to involve a standard mathematical
+function from the math library, e.g., <span class="math">\(f(u,t) = -u + \exp{(-2t)}\)</span>,
+requires a careful implementation in Cython. First, let us try the
+naive approach with using the standard <tt class="docutils literal"><span class="pre">math</span></tt> Python module
+(<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy6.pyx">ode_cy6.pyx</a>):</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">exp</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem2</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span> <span class="n">u</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">ODEMethod</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">,</span>
+                        <span class="n">double</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+</pre></div>
+</div>
+<p>This little change of the problem increases the CPU time by a factor of 40!
+The reason is that the potentially efficient <tt class="docutils literal"><span class="pre">rhs</span></tt> function must call
+the <tt class="docutils literal"><span class="pre">exp</span></tt> function in Python&#8217;s <tt class="docutils literal"><span class="pre">math</span></tt> module via the Python API.</p>
+<p>Fortunately, there are ways to improve the performance. One is to
+import <tt class="docutils literal"><span class="pre">exp</span></tt> from C&#8217;s math library (<tt class="docutils literal"><span class="pre">math.h</span></tt>), which is already
+wrapped by Cython so we can write (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy7.pyx">ode0_cy7.pyx</a>)</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">from</span> <span class="nn">libc.math</span> <span class="k">cimport</span> <span class="n">exp</span>
+</pre></div>
+</div>
+<p>Alternatively, if the C&#8217;s math library had not been made available
+through Cython, we could have written (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy8.pyx">ode0_cy8.pyx</a>)</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">cdef</span> <span class="kr">extern</span> <span class="k">from</span> <span class="s">&quot;math.h&quot;</span><span class="p">:</span>
+    <span class="n">double</span> <span class="n">exp</span><span class="p">(</span><span class="n">double</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Both versions brings down the CPU time by a factor of four. Compared to
+the choice <span class="math">\(f(u,t) = -u + 1\)</span>, the use of <tt class="docutils literal"><span class="pre">exp</span></tt> is 10 times slower.
+There is nothing to do with this penalty, since we call the fastest
+available implementation of the exponential function.</p>
+<p>For curiosity, using <tt class="docutils literal"><span class="pre">exp</span></tt> from <tt class="docutils literal"><span class="pre">numpy</span></tt> causes a slowdown of the code
+by a factor of 80 (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy9.pyx">ode0_cy9.pyx</a>). Another
+natural test is to use <tt class="docutils literal"><span class="pre">__call__</span></tt> in classes <tt class="docutils literal"><span class="pre">Problem</span></tt> and <tt class="docutils literal"><span class="pre">ODEMethod</span></tt>
+instead of method names <tt class="docutils literal"><span class="pre">rhs</span></tt> and <tt class="docutils literal"><span class="pre">advance</span></tt>, to obtain nicer syntax.
+However, this slows down the code by a factor of 3.</p>
+</div>
+<div class="section" id="using-arrays">
+<h2>Using arrays<a class="headerlink" href="#using-arrays" title="Permalink to this headline">¶</a></h2>
+<p>The former implementations does not store the computed values of the
+unknown function <span class="math">\(u\)</span> in the ODE, which means that we cannot plot or
+further analyze the solution. Suppose we now want to allocate an array
+for storing the computed point values in time of the solution. We also
+introduce an array <tt class="docutils literal"><span class="pre">t</span></tt> specifying all the time points for computation
+(this array defines then the time steps).  The corresponding pure
+Python implementation is found in the file <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1.py">ode1.py</a> and looks like</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+
+<span class="k">def</span> <span class="nf">RK2</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">K2</span>
+    <span class="k">return</span> <span class="n">unew</span>
+
+<span class="k">def</span> <span class="nf">problem1</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">u</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Note the rewrite of <tt class="docutils literal"><span class="pre">RK2</span></tt>: now we transfer the whole arrays <tt class="docutils literal"><span class="pre">u</span></tt> and <tt class="docutils literal"><span class="pre">t</span></tt>,
+which makes it simple to implement other multi-step methods, involving
+multiple time levels of <tt class="docutils literal"><span class="pre">u</span></tt> and <tt class="docutils literal"><span class="pre">t</span></tt>, using the same interface.</p>
+<p>We can also just compile this program with Cython to get a very slight
+performance gain. It is, however, more natural to use the experience
+from the former sections and (i) declare all variables with types and
+(ii) represent function arguments to functions by classes and methods
+as outlined above. The code goes as follows (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy1.pyx">ode1_cy1.pyx</a>):</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">cimport</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem1</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">u</span> <span class="o">+</span><span class="mf">1</span>  <span class="c"># u = 1-exp(-t)</span>
+
+<span class="k">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">exp</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem2</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span> <span class="n">u</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">ODEMethod</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="n">u</span><span class="p">,</span> <span class="nb">int</span> <span class="n">n</span><span class="p">,</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="n">t</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Method_RK2</span><span class="p">(</span><span class="n">ODEMethod</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="kt">double</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="n">u</span><span class="p">,</span> <span class="nb">int</span> <span class="n">n</span><span class="p">,</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="n">t</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">K1</span><span class="p">,</span> <span class="nf">K2</span><span class="p">,</span> <span class="nf">unew</span><span class="p">,</span> <span class="nf">dt</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">K2</span>
+        <span class="k">return</span> <span class="n">unew</span>
+
+<span class="c"># Create names compatible with ode0.py</span>
+<span class="n">RK2</span> <span class="o">=</span> <span class="n">Method_RK2</span><span class="p">()</span>
+<span class="n">problem1</span> <span class="o">=</span> <span class="n">Problem1</span><span class="p">()</span>
+<span class="n">problem2</span> <span class="o">=</span> <span class="n">Problem2</span><span class="p">()</span>
+
+<span class="k">cpdef</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span> <span class="n">double</span> <span class="n">I</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="n">t</span><span class="p">,</span> <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">):</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mf">1</span>
+    <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span> <span class="nf">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span>
+
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">n</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mf">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>Note the double import of <tt class="docutils literal"><span class="pre">numpy</span></tt>: the standard <tt class="docutils literal"><span class="pre">numpy</span></tt> module and
+a Cython-enabled version of <tt class="docutils literal"><span class="pre">numpy</span></tt> that ensures fast indexing of
+and other operations on arrays. Both import statements are necessary
+in code that uses <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays.
+The new thing in the code above is declaration of arrays by
+<tt class="docutils literal"><span class="pre">np.ndarray</span></tt>.</p>
+<p>Unfortunately, the performance improvement by the code above is only a
+factor of 2.5 compared with the pure Python version. The reason is
+that array indexing is still done in the standard Python way.  To
+obtain efficiency C-style indexing, <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays must be declared
+with their dimension (rank) and the type of their elements.  This is
+done by the quite comprehensive syntax (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy2.pyx">ode1_cy2.pyx</a>)</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_t</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">np.float_t</span></tt> data type is a compiled data type defined in
+Cython&#8217;s enhanced version of <tt class="docutils literal"><span class="pre">numpy</span></tt>, and <tt class="docutils literal"><span class="pre">ndim=1</span></tt> means that the
+array has one dimension (rank 1).
+An unfortunate side effect of the &#8220;buffer&#8221; syntax above
+is that functions with arrays declared this
+way cannot be declared with <tt class="docutils literal"><span class="pre">cdef</span></tt> or <tt class="docutils literal"><span class="pre">cpdef</span></tt>, they can only use the
+standard <tt class="docutils literal"><span class="pre">def</span></tt>, which implies that we end up with a pure Python function
+instead of a C function. However, the code inside this Python function
+can still be compiled to fast C.</p>
+<p>The declaration above reduces the CPU time by a factor of 10,
+which is a factor of about 25 reduction compared to the pure standard
+<tt class="docutils literal"><span class="pre">numpy</span></tt> array code.</p>
+<p>Since functions taking <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays with &#8220;buffer&#8221; syntax are forced
+to be functions handled by the standard Python API, such functions
+have a significant overhead. Our <tt class="docutils literal"><span class="pre">RK2.advance</span></tt> method takes array
+arguments and performs operations on two single array elements <tt class="docutils literal"><span class="pre">u[n]</span></tt>
+and <tt class="docutils literal"><span class="pre">t[n]</span></tt>. We could easily avoid this and instead transfer <tt class="docutils literal"><span class="pre">u[n]</span></tt> and
+<tt class="docutils literal"><span class="pre">t[n]</span></tt> as <tt class="docutils literal"><span class="pre">double</span></tt> arguments (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy3.pyx">ode1_cy3.pyx</a>):</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">cdef</span> <span class="k">class</span> <span class="nf">ODEMethod</span><span class="p">:</span>
+    <span class="k">cpdef</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u_1</span><span class="p">,</span> <span class="nb">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">double</span> <span class="n">t_1</span><span class="p">,</span>
+                  <span class="n">double</span> <span class="n">dt</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Method_RK2</span><span class="p">(</span><span class="n">ODEMethod</span><span class="p">):</span>
+    <span class="k">cpdef</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">double</span> <span class="n">u_1</span><span class="p">,</span> <span class="nb">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">double</span> <span class="n">t_1</span><span class="p">,</span>
+                  <span class="n">double</span> <span class="n">dt</span><span class="p">,</span> <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">K1</span><span class="p">,</span> <span class="nf">K2</span><span class="p">,</span> <span class="nf">unew</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u_1</span><span class="p">,</span> <span class="n">t_1</span><span class="p">)</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">u_1</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t_1</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">unew</span> <span class="o">=</span> <span class="n">u_1</span> <span class="o">+</span> <span class="n">K2</span>
+        <span class="k">return</span> <span class="n">unew</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span> <span class="n">double</span> <span class="n">I</span><span class="p">,</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_t</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
+           <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">):</span>
+    <span class="n">cdef</span> <span class="nb">int</span> <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">cdef</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_t</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span> <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span>
+
+    <span class="n">cdef</span> <span class="nb">int</span> <span class="n">n</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>A four-fold reduction in CPU time results from this technique of avoiding
+array arguments. The general rule of thumb is to avoid array
+arguments in functions that only operates on one or a few array elements.
+In functions processing large arrays with long loops
+element the overhead of using the Python C API to parse arguments the
+standard way will drown in the work done on the (large) arrays, so in
+such functions there is no efficiency loss by using &#8220;buffer&#8221; syntax
+and thereby the &#8220;def&#8221; declaration of functions.</p>
+<p>Additional efficiency can be gained by turning off array bounds checking
+and the possibility to use negative indices:</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="nd">@cython</span><span class="o">.</span><span class="n">boundscheck</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span> <span class="c"># turn off bounds checking for this func.</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span>
+           <span class="n">double</span> <span class="n">I</span><span class="p">,</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
+           <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>We can also indicate that the arrays have contiguous memory (<tt class="docutils literal"><span class="pre">mode='c'</span></tt>):</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="nd">@cython</span><span class="o">.</span><span class="n">boundscheck</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span> <span class="c"># turn off bounds checking for this func.</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span>
+           <span class="n">double</span> <span class="n">I</span><span class="p">,</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                      <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
+           <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>The efficiency increase is about 5-10 percent (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy4.pyx">ode1_cy4.pyx</a>).  Changing
+the data type <tt class="docutils literal"><span class="pre">double</span></tt> to <tt class="docutils literal"><span class="pre">np.float_t</span></tt> all over the Cython code has
+negligible effect in this example (<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy5.pyx">ode1_cy5.pyx</a>).</p>
+</div>
+<div class="section" id="using-pure-fortran">
+<h2>Using pure Fortran<a class="headerlink" href="#using-pure-fortran" title="Permalink to this headline">¶</a></h2>
+<p>We also could make a Fortran implementation of the <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1.py">ode1.py</a> code to test what
+would be considered the fastest possible implementation.  The code
+looks like this
+(<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode1.f">ode1.f</a>):</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">subroutine </span><span class="nv">solver</span><span class="p">(</span><span class="nv">f</span><span class="p">,</span> <span class="nv">U0</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">n_t</span><span class="p">,</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">method</span><span class="p">)</span>
+<span class="kt">integer </span><span class="nv">n_u0</span><span class="p">,</span> <span class="nv">n_t</span>
+<span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">U0</span><span class="p">,</span> <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">external </span><span class="nv">f</span><span class="p">,</span> <span class="nv">method</span>
+<span class="kt">integer </span><span class="nv">n</span>
+<span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">dt</span>
+<span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="nv">U0</span>
+
+<span class="k">do </span><span class="nv">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">n_t</span><span class="o">-</span><span class="mi">2</span>
+   <span class="k">call </span><span class="nv">method</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">n</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">n_t</span><span class="p">)</span>
+<span class="k">end do</span>
+<span class="k">return</span>
+<span class="k">end</span>
+
+<span class="k">subroutine </span><span class="nv">rk2</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">n</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">n_t</span><span class="p">)</span>
+<span class="kt">integer </span><span class="nv">n</span><span class="p">,</span> <span class="nv">n_t</span>
+<span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">dt</span><span class="p">,</span> <span class="nv">un</span><span class="p">,</span> <span class="nv">dudt</span><span class="p">,</span> <span class="nv">K1</span><span class="p">,</span> <span class="nv">K2</span>
+<span class="k">external </span><span class="nv">f</span>
+
+<span class="nv">dt</span> <span class="o">=</span> <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span>
+<span class="nv">un</span> <span class="o">=</span> <span class="nv">u</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span>
+
+<span class="k">call </span><span class="nv">f</span><span class="p">(</span><span class="nv">dudt</span><span class="p">,</span> <span class="nv">un</span><span class="p">,</span> <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="p">))</span>
+
+<span class="nv">K1</span> <span class="o">=</span> <span class="nv">dt</span><span class="o">*</span><span class="nv">dudt</span>
+<span class="nv">un</span> <span class="o">=</span> <span class="nv">u</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="nv">K1</span>
+
+<span class="k">call </span><span class="nv">f</span><span class="p">(</span><span class="nv">dudt</span><span class="p">,</span> <span class="nv">un</span><span class="p">,</span> <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="nv">dt</span><span class="p">)</span>
+
+<span class="nv">K2</span> <span class="o">=</span> <span class="nv">dt</span><span class="o">*</span><span class="nv">dudt</span>
+<span class="nv">u</span><span class="p">(</span><span class="nv">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="nv">u</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span> <span class="o">+</span> <span class="nv">K2</span>
+<span class="k">return</span>
+<span class="k">end</span>
+
+<span class="k">subroutine </span><span class="nv">problem1</span><span class="p">(</span><span class="nv">dudt</span><span class="p">,</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">t</span><span class="p">)</span>
+<span class="nv">dudt</span> <span class="o">=</span> <span class="o">-</span><span class="nv">u</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="k">return</span>
+<span class="k">end</span>
+
+<span class="k">subroutine </span><span class="nv">problem2</span><span class="p">(</span><span class="nv">dudt</span><span class="p">,</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">t</span><span class="p">)</span>
+<span class="nv">dudt</span> <span class="o">=</span> <span class="o">-</span><span class="nv">u</span> <span class="o">+</span> <span class="nb">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="nv">t</span><span class="p">)</span>
+<span class="k">return</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>We could have used a Fortran function for <tt class="docutils literal"><span class="pre">f</span></tt> since the result is a
+scalar, but the more general implementation for systems of ODEs would
+force us to use subroutines when <tt class="docutils literal"><span class="pre">dudt</span></tt> is an array.</p>
+<p>The main program used in the test has the form</p>
+<div class="highlight-fortran"><div class="highlight"><pre>     <span class="k">program </span><span class="nv">ode2</span>
+     <span class="kt">integer </span><span class="nv">n_U0</span><span class="p">,</span> <span class="nv">n_t</span><span class="p">,</span> <span class="nv">n</span>
+     <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">pi</span>
+     <span class="k">parameter</span> <span class="p">(</span><span class="nv">n_t</span><span class="o">=</span><span class="mi">8000001</span><span class="p">)</span>
+     <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nv">U0</span><span class="p">,</span> <span class="nv">dt</span><span class="p">,</span> <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+     <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">cpu0</span><span class="p">,</span> <span class="nv">cpu1</span>
+     <span class="k">external </span><span class="nv">problem1</span><span class="p">,</span> <span class="nv">problem2</span><span class="p">,</span> <span class="nv">rk2</span>
+     <span class="nv">U0</span> <span class="o">=</span> <span class="mf">1.</span>
+     <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="nv">cpu0</span><span class="p">)</span>
+     <span class="nv">dt</span> <span class="o">=</span> <span class="mf">5.</span><span class="o">/</span><span class="p">(</span><span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+     <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+     <span class="k">do </span><span class="nv">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span>
+        <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span> <span class="o">=</span> <span class="nv">t</span><span class="p">(</span><span class="nv">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nv">dt</span>
+     <span class="k">end do</span>
+<span class="k">     call </span><span class="nv">solver</span><span class="p">(</span><span class="nv">problem1</span><span class="p">,</span> <span class="nv">U0</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">n_t</span><span class="p">,</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">rk2</span><span class="p">)</span>
+     <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="nv">cpu1</span><span class="p">)</span>
+     <span class="nv">n</span> <span class="o">=</span> <span class="nv">n_t</span><span class="o">-</span><span class="mi">1</span>
+     <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="s1">&#39;u(&#39;</span><span class="p">,</span> <span class="nv">n</span><span class="p">,</span> <span class="s1">&#39;)=&#39;</span><span class="p">,</span> <span class="nv">u</span><span class="p">(</span><span class="nv">n</span><span class="p">)</span>
+     <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="s1">&#39;CPU time:&#39;</span><span class="p">,</span> <span class="nv">cpu1</span><span class="o">-</span><span class="nv">cpu0</span>
+<span class="mi">1000</span> <span class="k">format</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">I8</span><span class="p">,</span> <span class="nv">A</span><span class="p">,</span> <span class="nv">F12</span><span class="mf">.4</span><span class="p">)</span>
+<span class="mi">2000</span> <span class="k">format</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">F9</span><span class="mf">.3</span><span class="p">)</span>
+     <span class="k">end</span>
+</pre></div>
+</div>
+<p>Quite surprisingly, this Fortran 77 implementation was almost five
+times slower than the most efficient Cython version (!). The Fortran
+code was also compiled with the <tt class="docutils literal"><span class="pre">-O3</span></tt> flag to <tt class="docutils literal"><span class="pre">gfortran</span></tt>, while
+<tt class="docutils literal"><span class="pre">setup.py</span></tt> building of Cython modules applies the <tt class="docutils literal"><span class="pre">-O2</span></tt> optimization
+that Python itself was built with.</p>
+<p>To summarize, Cython increased the performance by a factor of 130+
+and was in fact faster than Fortran 77!</p>
+<p><em>Remark.</em> The Fortran program needs to be carefully examined
+as it is not at all expected to be slower than a Cython implementation.</p>
+</div>
+<div class="section" id="solver-for-systems-of-odes">
+<h2>Solver for systems of ODEs<a class="headerlink" href="#solver-for-systems-of-odes" title="Permalink to this headline">¶</a></h2>
+<p>The previous example codes on using Cython aimed at solving a scalar
+ODE with one unknown function. The more common case of a <em>system</em> of
+ODEs, having a vector of functions as unknown, represent quite
+a discouraging case when it comes to the performance of Cython.</p>
+<p>For a system of ODEs, with <span class="math">\(m\)</span> equations and <span class="math">\(m\)</span> unknowns, we must
+work with arrays of length <span class="math">\(m\)</span>, representing the unknowns, the
+right-hand side of the ODEs, as well as intermediate values in
+computations. The core of the algorithm must now compute with <span class="math">\(m\)</span>
+arrays. Here is a typical implementation in Python that works for both
+scalar ODEs and systems of ODEs (&#8220;<cite>ode2.py</cite>&#8221;
+&#8220;<a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/ode2.py">http://hplgit.github.com/INF5620/doc/notes/ode2.py</a>&#8221;):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="nb">int</span><span class="p">)):</span>
+        <span class="n">I</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">]</span>  <span class="c"># wrap in list, which then will be array</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;f (</span><span class="si">%s</span><span class="s">) must return numpy array&#39;</span> <span class="o">%</span> <span class="n">f</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">I</span><span class="p">)))</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">[:]</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+
+<span class="k">def</span> <span class="nf">RK2</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+    <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">K2</span>
+    <span class="k">return</span> <span class="n">unew</span>
+
+<span class="k">def</span> <span class="nf">problem2</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Every time the function <tt class="docutils literal"><span class="pre">problem2</span></tt> is called (and that happens twice at
+each time level!), a new array must be made from a list. We can
+avoid this by implementing a class that allocates a <tt class="docutils literal"><span class="pre">numpy</span></tt> array
+for the right-hand side and reusing this in subsequent calls:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Problem1</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Allocate an array for dudt for efficiency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span>
+</pre></div>
+</div>
+<p>This trick reduces the CPU time by a factor of about 1.7.</p>
+</div>
+<div class="section" id="using-cython">
+<span id="ode2-cython"></span><h2>Using Cython<a class="headerlink" href="#using-cython" title="Permalink to this headline">¶</a></h2>
+<p>We can introduce all the performance tricks we have covered so far
+when Cythonizing the <tt class="docutils literal"><span class="pre">ode2.py</span></tt> code:
+declare all variables, use &#8220;buffer&#8221; syntax for arrays (specify
+data type and rank/dimension, turn off negative indices, indicate
+contiguous memory),
+turn off array bounds checking, and use class methods instead of
+plain functions as arguments to functions.
+The complete code looks as follows:</p>
+<div class="highlight-cython"><div class="highlight"><pre><span class="k">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">cimport</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="k">cimport</span> <span class="nn">cython</span>
+<span class="k">ctypedef</span> <span class="n">np</span><span class="o">.</span><span class="n">float64_t</span> <span class="n">DT</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem</span><span class="p">:</span>
+    <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span> <span class="nf">dudt</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mf">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                       <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u</span><span class="p">,</span>
+            <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Problem1</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                       <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u</span><span class="p">,</span>
+            <span class="n">double</span> <span class="n">t</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dudt</span>
+
+
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">ODEMethod</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u</span><span class="p">,</span>
+                <span class="nb">int</span> <span class="n">n</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0</span>
+
+<span class="nd">@cython</span><span class="o">.</span><span class="n">boundscheck</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">cdef</span> <span class="k">class</span> <span class="nf">Method_RK2</span><span class="p">(</span><span class="n">ODEMethod</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u</span><span class="p">,</span>
+                <span class="nb">int</span> <span class="n">n</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
+                <span class="n">Problem</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span>[<span class="nf">DT</span><span class="p">,</span> <span class="nf">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">,</span> <span class="n">unew</span>
+        <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">dt</span>
+        <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span>[<span class="nf">DT</span><span class="p">,</span> <span class="nf">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">un</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">,:]</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">un</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">un</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">K1</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">unew</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">,:]</span> <span class="o">+</span> <span class="n">K2</span>
+        <span class="k">return</span> <span class="n">unew</span>
+
+<span class="c"># Create names compatible with ode2.py</span>
+<span class="n">RK2</span> <span class="o">=</span> <span class="n">Method_RK2</span><span class="p">()</span>
+<span class="n">problem1</span> <span class="o">=</span> <span class="n">Problem1</span><span class="p">()</span>
+
+<span class="nd">@cython</span><span class="o">.</span><span class="n">boundscheck</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span> <span class="c"># turn off bounds checking for this func.</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">Problem</span> <span class="n">f</span><span class="p">,</span> <span class="n">I_</span><span class="p">,</span> <span class="n">t_</span><span class="p">,</span> <span class="n">ODEMethod</span> <span class="n">method</span><span class="p">):</span>
+    <span class="c"># I_ and t_ can be flexible objects</span>
+    <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span>[<span class="nf">DT</span><span class="p">,</span> <span class="nf">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_</span><span class="p">)</span><span class="o">-</span><span class="mf">1</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">I_</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="nb">int</span><span class="p">)):</span>
+        <span class="n">I_</span> <span class="o">=</span> <span class="p">[</span><span class="n">I_</span><span class="p">]</span>  <span class="c"># wrap in list, which then will be array</span>
+    <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span>[<span class="nf">DT</span><span class="p">,</span> <span class="nf">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">I_</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">rhs</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="mf">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;f (</span><span class="si">%s</span><span class="s">) must return numpy array&#39;</span> <span class="o">%</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+    <span class="k">cdef</span> <span class="kt">np</span>.<span class="kt">ndarray</span>[<span class="nf">DT</span><span class="p">,</span> <span class="nf">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">negative_indices</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">I</span><span class="p">)))</span>
+    <span class="n">u</span><span class="p">[</span><span class="mf">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">I</span><span class="p">[:]</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mf">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>Note the way attributes are declared in Cython classes: <tt class="docutils literal"><span class="pre">cdef</span>
+<span class="pre">np.ndarray</span> <span class="pre">dudt</span></tt>.  Such an attribute is not visible from Python, only
+from C.  Unfortunately, &#8220;buffer&#8221; syntax of class attributes is not
+allowed, resulting in slow indexing of these arrays. The efficiency
+gain by this Cython code is hardly noticeable (15 percent). The reason
+is that the time is spent on array indexing which is as inefficient as
+in pure <tt class="docutils literal"><span class="pre">numpy</span></tt> code. Inspecting what Cython has done (<tt class="docutils literal"><span class="pre">cython</span> <span class="pre">-a</span>
+<span class="pre">ode2_cy1.pyx</span></tt>) shows that most of the code except variable
+declarations is yellow and hence not translated to efficient C code.</p>
+<p>A Fortran 77 version of the code, in file <tt class="docutils literal"><span class="pre">ode2.f</span></tt>, is about 60 times
+faster than the Cython version.</p>
+<p>It seems that the only way out of the problem is to get rid of arrays
+and generate problem specific code where the method and the problem is
+combined. Despite this negative comment regarding Cython code for
+systems of ODEs, Cython has an enormous potential for solving <em>partial
+differential equations</em>!</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction to Cython for Solving Differential Equations</a></li>
+<li><a class="reference internal" href="#cython-for-a-scalar-ode">Cython for a scalar ODE</a><ul>
+<li><a class="reference internal" href="#the-initial-pure-python-code">The initial pure Python code</a></li>
+<li><a class="reference internal" href="#compiling-with-cython">Compiling with Cython</a></li>
+<li><a class="reference internal" href="#declaring-variables-with-types">Declaring variables with types</a></li>
+<li><a class="reference internal" href="#inspecting-what-cython-has-done">Inspecting what Cython has done</a></li>
+<li><a class="reference internal" href="#proper-treatment-of-functions-as-arguments-to-functions">Proper treatment of functions as arguments to functions</a></li>
+<li><a class="reference internal" href="#handling-of-mathematical-functions">Handling of mathematical functions</a></li>
+<li><a class="reference internal" href="#using-arrays">Using arrays</a></li>
+<li><a class="reference internal" href="#using-pure-fortran">Using pure Fortran</a></li>
+<li><a class="reference internal" href="#solver-for-systems-of-odes">Solver for systems of ODEs</a></li>
+<li><a class="reference internal" href="#using-cython">Using Cython</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Preliminary notes for INF5620</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Preliminary notes for INF5620"
+             >previous</a> |</li>
+        <li><a href="index.html">Preliminary notes for INF5620 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hans Petter Langtangen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
