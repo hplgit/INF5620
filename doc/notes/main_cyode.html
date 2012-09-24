@@ -285,7 +285,7 @@ setup(
 The <tt>setup.py</tt> file is run by
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python setup.py install build_ext --inplace
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python setup.py build_ext --inplace
 </pre></div>
 <p>
 The result is a compiled extension module <tt>ode0_cy1.so</tt> on Linux (with
@@ -327,7 +327,7 @@ from Python. The code now reads
 <p>
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(f, double I, double dt, double T, method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(f, double I, double dt, double T, method):
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(T)<span style="color: #666666">/</span>dt))
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> I  <span style="color: #008800; font-style: italic"># previous time step</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
@@ -337,22 +337,45 @@ from Python. The code now reads
         t <span style="color: #666666">+=</span> dt
     <span style="color: #AA22FF; font-weight: bold">return</span> u, t
 
-<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">RK2</span>(double u, double t, f, double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">RK2</span>(double u, double t, f, double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>
     K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u, t)
     K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>f(u <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
     unew <span style="color: #666666">=</span> u <span style="color: #666666">+</span> K2
     <span style="color: #AA22FF; font-weight: bold">return</span> unew
-    
-<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">problem1</span>(double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">problem1</span>(double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
     <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+1</span>  <span style="color: #008800; font-style: italic"># u = 1-exp(-t)</span>
 </pre></div>
 <p>
-The <tt>except *</tt> notation enables the functions to raise exceptions. The
-code will run faster without <tt>except *</tt>, but strange errors may
-potentially arise.  Annotating variables with their types decreases
+Annotating variables with their types decreases
 the CPU time by over 40 percent.
 The functions above appear in the test program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy2.pyx"><tt>ode0_cy2.pyx</tt></a>.
+
+<p>
+At this point we should mention that if exceptions occur inside
+Cython function, the calling code cannot detect the exception. However,
+when an exception do occur in such a function, a warning message
+is printed and execution proceeds. It
+is possible, for C functions that returns primitive C types (and not
+a Python object), to propagate exceptions to the calling environment
+by using the <tt>except</tt> keyword:
+
+<p>
+<p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">cpdef double RK2(double u, double t, f, double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
+   <span style="color: #666666">...</span>
+</pre></div>
+<p>
+In this example, the value <tt>-10001</tt> is returned when an exception occurs
+and that value signals an exception. The value should not be returned
+under circumstances where the function works.
+
+<p>
+Functions returning <tt>void</tt> in C (<tt>None</tt> in Python) must use <tt>except *</tt>,
+while functions returning a Python object that is not a primitive C
+data type cannot make use of the <tt>except</tt> keyword.
 
 <p>
 
@@ -408,11 +431,11 @@ question (see <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode
 <p>
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem</span>:
-    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
         <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
 
 <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Problem1</span>(Problem):
-    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+    <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">rhs</span>(<span style="color: #AA22FF">self</span>, double u, double t) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
         <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">-</span>u <span style="color: #666666">+</span> <span style="color: #666666">1</span>
 </pre></div>
 <p>
@@ -429,12 +452,12 @@ reads
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">ODEMethod</span>:
     <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u, double t, Problem p,
-                        double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+                        double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
         <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">0</span>
 
 <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #00A000">Method_RK2</span>(ODEMethod):
     <span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">advance</span>(<span style="color: #AA22FF">self</span>, double u, double t, Problem p,
-                         double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+                         double dt) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">-10001</span>:
         <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">K1</span>, <span style="color: #00A000">K2</span>, <span style="color: #00A000">unew</span>
         K1 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u, t)
         K2 <span style="color: #666666">=</span> dt<span style="color: #666666">*</span>p<span style="color: #666666">.</span>rhs(u <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>K1, t <span style="color: #666666">+</span> <span style="color: #666666">0.5*</span>dt)
@@ -459,8 +482,8 @@ problem1 <span style="color: #666666">=</span> Problem1()
 problem2 <span style="color: #666666">=</span> Problem2()
 
 
-<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double I, double dt, 
-             double T, ODEMethod method) <span style="color: #AA22FF; font-weight: bold">except</span> <span style="color: #666666">*</span>:
+<span style="color: #AA22FF; font-weight: bold">cpdef</span> <span style="color: #00A000">solver</span>(Problem f, double I, double dt,
+             double T, ODEMethod method):
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">int</span> <span style="color: #00A000">N</span> <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(<span style="color: #AA22FF">round</span>(<span style="color: #AA22FF">float</span>(T)<span style="color: #666666">/</span>dt))
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">u</span> <span style="color: #666666">=</span> I  <span style="color: #008800; font-style: italic"># previous time step</span>
     <span style="color: #AA22FF; font-weight: bold">cdef</span> <span style="color: #00BB00; font-weight: bold">double</span> <span style="color: #00A000">t</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>

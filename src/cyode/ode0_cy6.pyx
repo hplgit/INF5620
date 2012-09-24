@@ -5,7 +5,7 @@ Cython version with declaration of variables.
 Function objects transferred as arguments are 
 made as class instances,
 cf. http://docs.cython.org/src/tutorial/cdef_classes.html.
-Dropped except * in functions. (20% effect)
+Dropped except -10001 in functions. (20% effect)
 
 Testing Problem2 with exp(t) function and various types of
 libraries for such functions. Here: math.

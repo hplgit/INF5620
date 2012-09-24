@@ -2,10 +2,10 @@
 ODE integration restricted to scalar ODEs.
 No use of arrays.
 Cython version with declaration of variables.
-Function objects transferred as arguments are 
+Function objects transferred as arguments are
 made as class instances,
 cf. http://docs.cython.org/src/tutorial/cdef_classes.html.
-Dropped except * in functions. (25% effect)
+Dropped except -10001 in functions. (25% effect)
 """
 cdef class Problem:
     cpdef double rhs(self, double u, double t):
@@ -40,9 +40,9 @@ cdef class Method_RK2(ODEMethod):
         K2 = dt*p.rhs(u + 0.5*K1, t + 0.5*dt)
         unew = u + K2
         return unew
-    
 
-cpdef solver(Problem f, double I, double dt, 
+
+cpdef solver(Problem f, double I, double dt,
              double T, ODEMethod method):
     cdef int N = int(round(float(T)/dt))
     cdef double u = I  # previous time step
@@ -57,8 +57,3 @@ cpdef solver(Problem f, double I, double dt,
 RK2 = Method_RK2()
 problem1 = Problem1()
 problem2 = Problem2()
-
-
-
-
-    

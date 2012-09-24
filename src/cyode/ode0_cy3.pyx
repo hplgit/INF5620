@@ -3,7 +3,7 @@ ODE integration restricted to scalar ODEs.
 No use of arrays.
 Cython version with declaration of variables.
 No use a functions transferred as arguments.
-No use of except * in cpdef functions (factor 2.5).
+No use of except -10001 in cpdef functions (factor 2.5).
 """
 
 cpdef solver(f, double I, double dt, double T, method):

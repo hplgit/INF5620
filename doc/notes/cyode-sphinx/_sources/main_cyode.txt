@@ -142,7 +142,7 @@ The ``setup.py`` file is run by
 
 .. code-block:: console
 
-        Terminal> python setup.py install build_ext --inplace
+        Terminal> python setup.py build_ext --inplace
 
 The result is a compiled extension module ``ode0_cy1.so`` on Linux (with
 other extensions on other platforms). This module can be imported
@@ -181,7 +181,7 @@ from Python. The code now reads
 
 .. code-block:: cython
 
-        cpdef solver(f, double I, double dt, double T, method) except *:
+        cpdef solver(f, double I, double dt, double T, method):
             cdef int N = int(round(float(T)/dt))
             cdef double u = I  # previous time step
             cdef double t = 0
@@ -191,21 +191,41 @@ from Python. The code now reads
                 t += dt
             return u, t
         
-        cpdef double RK2(double u, double t, f, double dt) except *:
+        cpdef double RK2(double u, double t, f, double dt) except -10001:
             cdef double K1, K2, unew
             K1 = dt*f(u, t)
             K2 = dt*f(u + 0.5*K1, t + 0.5*dt)
             unew = u + K2
             return unew
-            
-        cpdef double problem1(double u, double t) except *:
+        
+        cpdef double problem1(double u, double t) except -10001:
             return -u +1  # u = 1-exp(-t)
 
-The ``except *`` notation enables the functions to raise exceptions. The
-code will run faster without ``except *``, but strange errors may
-potentially arise.  Annotating variables with their types decreases
+Annotating variables with their types decreases
 the CPU time by over 40 percent.
 The functions above appear in the test program `ode0_cy2.pyx <https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy2.pyx>`_.
+
+At this point we should mention that if exceptions occur inside
+Cython function, the calling code cannot detect the exception. However,
+when an exception do occur in such a function, a warning message
+is printed and execution proceeds. It
+is possible, for C functions that returns primitive C types (and not
+a Python object), to propagate exceptions to the calling environment
+by using the ``except`` keyword:
+
+
+.. code-block:: python
+
+        cpdef double RK2(double u, double t, f, double dt) except -10001:
+           ...
+
+In this example, the value ``-10001`` is returned when an exception occurs
+and that value signals an exception. The value should not be returned
+under circumstances where the function works.
+
+Functions returning ``void`` in C (``None`` in Python) must use ``except *``,
+while functions returning a Python object that is not a primitive C
+data type cannot make use of the ``except`` keyword.
 
 
 Inspecting what Cython has done
@@ -255,11 +275,11 @@ question (see `ode0_py4.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/
 .. code-block:: cython
 
         cdef class Problem:
-            cpdef double rhs(self, double u, double t) except *:
+            cpdef double rhs(self, double u, double t) except -10001:
                 return 0
         
         cdef class Problem1(Problem):
-            cpdef double rhs(self, double u, double t) except *:
+            cpdef double rhs(self, double u, double t) except -10001:
                 return -u + 1
 
 Note the use of ``cdef`` in the class definition: these are Cython classes
@@ -274,12 +294,12 @@ reads
 
         cdef class ODEMethod:
             cpdef double advance(self, double u, double t, Problem p,
-                                double dt) except *:
+                                double dt) except -10001:
                 return 0
         
         cdef class Method_RK2(ODEMethod):
             cpdef double advance(self, double u, double t, Problem p,
-                                 double dt) except *:
+                                 double dt) except -10001:
                 cdef double K1, K2, unew
                 K1 = dt*p.rhs(u, t)
                 K2 = dt*p.rhs(u + 0.5*K1, t + 0.5*dt)
@@ -302,8 +322,8 @@ unchanged. This can easily be achieved by defining
         problem2 = Problem2()
         
         
-        cpdef solver(Problem f, double I, double dt, 
-                     double T, ODEMethod method) except *:
+        cpdef solver(Problem f, double I, double dt,
+                     double T, ODEMethod method):
             cdef int N = int(round(float(T)/dt))
             cdef double u = I  # previous time step
             cdef double t = 0
