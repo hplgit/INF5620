@@ -1,10 +1,14 @@
 #!/bin/sh
+
+# Build Cython module ode${problem}_cy${version}
+# where problem and version are given on the command line
 if [ $# -eq 2 ]; then
   problem=$1
   version=$2
 else
   echo "Usage:   ./make.sh problem version"
-  echo "Example: ./make.sh 1 1"
+  echo "Example: ./make.sh 0 4"
+  echo "...compiles ode0_cy4.pyx and makes module ode0_cy4"
   exit 1
 fi
 python setup.py $problem $version build_ext --inplace
