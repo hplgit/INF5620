@@ -84,11 +84,17 @@ $$
 \newcommand{\xpoint}{\pmb{x}}
 \newcommand{\normalvec}{\pmb{n}}
 
+\renewcommand{\u}{\pmb{u}}
 \renewcommand{\v}{\pmb{v}}
 \newcommand{\w}{\pmb{w}}
 \renewcommand{\u}{\pmb{u}}
 \newcommand{\e}{\pmb{e}}
 \newcommand{\f}{\pmb{f}}
+\newcommand{\stressb}{\pmb{\sigma}}
+\newcommand{\strainb}{\pmb{\varepsilon}}
+\newcommand{\I}{\pmb{I}}
+\newcommand{\T}{\pmb{T}}
+
 \newcommand{\ii}{\pmb{i}}
 \newcommand{\jj}{\pmb{j}}
 \newcommand{\kk}{\pmb{k}}
@@ -131,7 +137,7 @@ $$
 <center>[2] <b>Dept. of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Sep 23, 2012</h4></center> <!-- date -->
+<center><h4>Sep 24, 2012</h4></center> <!-- date -->
 <p>
 
 <p>
@@ -386,7 +392,7 @@ for advancing the ODE one time step (the method). When these are
 ordinary Python function objects, the resulting code is slow.
 We can easily see this by replacing the calls to <tt>f</tt> and <tt>method</tt>
 by the actual function names <tt>problem</tt> (in <tt>RK2</tt>)
-and <tt>RK2</tt> (in <tt>solver</tt>). The complete code is in <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy3.pyx"><tt>ode0_cy3.pyx</tt></a>.
+and <tt>RK2</tt> (in <tt>solver</tt>). The complete code is in <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy3.pyx"><tt>ode0_cy3.pyx</tt></a>.
 The result is a speed-up of a factor of 250!
 
 <p>
@@ -396,7 +402,7 @@ pointers for these arguments.  An efficient and flexible construction
 in Cython is to replace the functions by methods in classes. For
 example, the problem definition goes as follows with a superclass, a
 method <tt>rhs</tt>, and a subclass implementing the particular problem in
-question (see <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy4.pyx"><tt>ode0_py4.py</tt></a>):
+question (see <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy4.pyx"><tt>ode0_py4.py</tt></a>):
 
 <p>
 <p>
@@ -475,7 +481,7 @@ Python objects transferred to functions the standard way.
 
 <p>
 A natural next step is to remove the <tt>except *</tt> constructions
-(see <a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy5.pyx"><tt>ode0_cy5.pyx</tt></a>), at least after the Cython module is debugged. The
+(see <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy5.pyx"><tt>ode0_cy5.pyx</tt></a>), at least after the Cython module is debugged. The
 removal increases the efficiency by 25 percent.
 It can also be interesting to run <tt>cython -a ode_cy5.pyx</tt> and
 view
@@ -492,7 +498,7 @@ Our right-hand side function has so far been very simple: \( f(u,t) =
 function from the math library, e.g., \( f(u,t) = -u + \exp{(-2t)} \),
 requires a careful implementation in Cython. First, let us try the
 naive approach with using the standard <tt>math</tt> Python module
-(<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy6.pyx"><tt>ode_cy6.pyx</tt></a>):
+(<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy6.pyx"><tt>ode_cy6.pyx</tt></a>):
 
 <p>
 <p>
@@ -518,7 +524,7 @@ the <tt>exp</tt> function in Python's <tt>math</tt> module via the Python API.
 <p>
 Fortunately, there are ways to improve the performance. One is to
 import <tt>exp</tt> from C's math library (<tt>math.h</tt>), which is already
-wrapped by Cython so we can write (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy7.pyx"><tt>ode0_cy7.pyx</tt></a>)
+wrapped by Cython so we can write (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy7.pyx"><tt>ode0_cy7.pyx</tt></a>)
 
 <p>
 <p>
@@ -527,7 +533,7 @@ wrapped by Cython so we can write (<a href="http://hplgit.github.com/INF5620/doc
 </pre></div>
 <p>
 Alternatively, if the C's math library had not been made available
-through Cython, we could have written (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy8.pyx"><tt>ode0_cy8.pyx</tt></a>)
+through Cython, we could have written (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy8.pyx"><tt>ode0_cy8.pyx</tt></a>)
 
 <p>
 <p>
@@ -543,7 +549,7 @@ available implementation of the exponential function.
 
 <p>
 For curiosity, using <tt>exp</tt> from <tt>numpy</tt> causes a slowdown of the code
-by a factor of 80 (<a href="http://hplgit.github.com/INF5620/doc/notes/ode0_cy9.pyx"><tt>ode0_cy9.pyx</tt></a>). Another
+by a factor of 80 (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode0_cy9.pyx"><tt>ode0_cy9.pyx</tt></a>). Another
 natural test is to use <tt>__call__</tt> in classes <tt>Problem</tt> and <tt>ODEMethod</tt>
 instead of method names <tt>rhs</tt> and <tt>advance</tt>, to obtain nicer syntax.
 However, this slows down the code by a factor of 3.
@@ -558,7 +564,7 @@ further analyze the solution. Suppose we now want to allocate an array
 for storing the computed point values in time of the solution. We also
 introduce an array <tt>t</tt> specifying all the time points for computation
 (this array defines then the time steps).  The corresponding pure
-Python implementation is found in the file <a href="http://hplgit.github.com/INF5620/doc/notes/ode1.py"><tt>ode1.py</tt></a> and looks like
+Python implementation is found in the file <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1.py"><tt>ode1.py</tt></a> and looks like
 
 <p>
 <p>
@@ -595,7 +601,7 @@ We can also just compile this program with Cython to get a very slight
 performance gain. It is, however, more natural to use the experience
 from the former sections and (i) declare all variables with types and
 (ii) represent function arguments to functions by classes and methods
-as outlined above. The code goes as follows (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy1.pyx"><tt>ode1_cy1.pyx</tt></a>):
+as outlined above. The code goes as follows (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1_cy1.pyx"><tt>ode1_cy1.pyx</tt></a>):
 
 <p>
 <p>
@@ -661,7 +667,7 @@ factor of 2.5 compared with the pure Python version. The reason is
 that array indexing is still done in the standard Python way.  To
 obtain efficiency C-style indexing, <tt>numpy</tt> arrays must be declared
 with their dimension (rank) and the type of their elements.  This is
-done by the quite comprehensive syntax (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy2.pyx"><tt>ode1_cy2.pyx</tt></a>)
+done by the quite comprehensive syntax (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1_cy2.pyx"><tt>ode1_cy2.pyx</tt></a>)
 
 <p>
 <p>
@@ -690,7 +696,7 @@ to be functions handled by the standard Python API, such functions
 have a significant overhead. Our <tt>RK2.advance</tt> method takes array
 arguments and performs operations on two single array elements <tt>u[n]</tt>
 and <tt>t[n]</tt>. We could easily avoid this and instead transfer <tt>u[n]</tt> and
-<tt>t[n]</tt> as <tt>double</tt> arguments (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy3.pyx"><tt>ode1_cy3.pyx</tt></a>):
+<tt>t[n]</tt> as <tt>double</tt> arguments (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1_cy3.pyx"><tt>ode1_cy3.pyx</tt></a>):
 
 <p>
 <p>
@@ -763,18 +769,18 @@ We can also indicate that the arrays have contiguous memory (<tt>mode='c'</tt>):
            ODEMethod method):
 </pre></div>
 <p>
-The efficiency increase is about 5-10 percent (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy4.pyx"><tt>ode1_cy4.pyx</tt></a>).  Changing
+The efficiency increase is about 5-10 percent (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1_cy4.pyx"><tt>ode1_cy4.pyx</tt></a>).  Changing
 the data type <tt>double</tt> to <tt>np.float_t</tt> all over the Cython code has
-negligible effect in this example (<a href="http://hplgit.github.com/INF5620/doc/notes/ode1_cy5.pyx"><tt>ode1_cy5.pyx</tt></a>).
+negligible effect in this example (<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1_cy5.pyx"><tt>ode1_cy5.pyx</tt></a>).
 
 <p>
 
 <h3>Using pure Fortran  <a name="___sec8"></a></h3>
 <p>
-We also could make a Fortran implementation of the <a href="http://hplgit.github.com/INF5620/doc/notes/ode1.py"><tt>ode1.py</tt></a> code to test what
+We also could make a Fortran implementation of the <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1.py"><tt>ode1.py</tt></a> code to test what
 would be considered the fastest possible implementation.  The code
 looks like this
-(<a href="http://hplgit.github.com/INF5620/doc/notes/ode1.f"><tt>ode1.f</tt></a>):
+(<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode1.f"><tt>ode1.f</tt></a>):
 
 <p>
 <p>
@@ -893,7 +899,7 @@ right-hand side of the ODEs, as well as intermediate values in
 computations. The core of the algorithm must now compute with \( m \)
 arrays. Here is a typical implementation in Python that works for both
 scalar ODEs and systems of ODEs ("`ode2.py`"
-"http://hplgit.github.com/INF5620/doc/notes/ode2.py"):
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/cyode/ode2.py"):
 
 <p>
 <p>
