@@ -79,15 +79,51 @@ $$
 \newcommand{\uex}{u_{\small\mbox{e}}}
 \newcommand{\Aex}{A_{\small\mbox{e}}}
 \newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+
+\newcommand{\xpoint}{\pmb{x}}
+\newcommand{\normalvec}{\pmb{n}}
+
+\renewcommand{\u}{\pmb{u}}
+\renewcommand{\v}{\pmb{v}}
+\newcommand{\w}{\pmb{w}}
+\renewcommand{\u}{\pmb{u}}
+\newcommand{\e}{\pmb{e}}
+\newcommand{\f}{\pmb{f}}
+\newcommand{\stress}{\pmb{\sigma}}
+\newcommand{\strain}{\pmb{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\pmb{I}}
+\newcommand{\T}{\pmb{T}}
+
+\newcommand{\ii}{\pmb{i}}
+\newcommand{\jj}{\pmb{j}}
+\newcommand{\kk}{\pmb{k}}
+%\newcommand{\refphi}{\tilde\phi}
+\newcommand{\basphi}{\varphi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\phib}{\pmb{\varphi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+
+% FEniCS commands:
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
 $$
 
 
 
 <!-- ------------------- main content ------------------------>
 
-<title>Discretizing first-order ODEs by finite difference methods</title>
+<title>Finite difference methods for first-order ODEs</title>
 
-<center><h1>Discretizing first-order ODEs by finite difference methods</h1></center>  <! -- document title -->
+<center><h1>Finite difference methods for first-order ODEs</h1></center>  <! -- document title -->
 
 <! -- author(s) -->
 
@@ -103,9 +139,9 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Sep 13, 2012</h4></center> <!-- date -->
+<center><h4>Sep 28, 2012</h4></center> <!-- date -->
 <p>
-Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
+Note: <b>VERY PRELIMINARY VERSION!</b> (Not proof-read! Expect lots of typos!)
 
 <p>
 
@@ -115,8 +151,8 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 <p>
 
 <p>
-<a href="#decay:basics"> Finite difference methods for an ODE </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:model"> Exponential decay </a><br>
+<a href="#decay:basics"> Finite difference methods  </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:model"> A basic model for exponential decay </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:sec:FE"> The Forward Euler scheme </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec3"> Step 1: Discretizing the domain </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec4"> Step 2: Fulfilling the equation at discrete time points </a><br>
@@ -128,7 +164,7 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 &nbsp; &nbsp; &nbsp; <a href="#___sec10"> Constant time step </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:sec:fdop"> Compact operator notation for finite differences </a><br>
 <a href="#decay:impl1"> Implementation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:py1"> Making a program </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:py1"> Making a solver function </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec14"> Function for computing the numerical solution </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec15"> Integer division </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec16"> Doc strings </a><br>
@@ -149,22 +185,22 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec31"> Debugging via convergence rates </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec32"> Memory-saving implementation </a><br>
 <a href="#___sec33"> Software engineering </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec34"> Making a module </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec35"> Prefixing imported functions by the module name </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec36"> Doctests </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec37"> Unit testing with nose </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:module"> Making a module </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:import"> Prefixing imported functions by the module name </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:doctest"> Doctests </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:nose"> Unit testing with nose </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec38"> Basic use of nose </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec39"> Demonstrating nose </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec40"> Installation of nose </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec41"> Classical unit testing with unittest </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:unittest"> Classical unit testing with unittest </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec42"> Basic use of unittest </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec43"> Demonstration of unittest </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec44"> Implementing simple problem and solver classes </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:class"> Implementing simple problem and solver classes </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec45"> The problem class </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec46"> The solver class </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec47"> The visualizer class </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec48"> Combing the objects </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec49"> Implementing more advanced problem and solver classes </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:prog:se:class2"> Implementing more advanced problem and solver classes </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec50"> A generic class for parameters </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec51"> The problem class </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec52"> The solver class </a><br>
@@ -179,8 +215,9 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec61"> Markdown </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec62"> Wiki formats </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec63"> Doconce </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec64"> Worked example </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exper:github"> Publishing a complete project </a><br>
-<a href="#___sec65"> Exercises </a><br>
+<a href="#___sec66"> Exercises </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:intdiv"> Exercise 1: Experiment with integer division </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:decay1err"> Exercise 2: Experiment with wrong computations </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:FEBECN"> Exercise 3: Implement specialized functions </a><br>
@@ -192,45 +229,46 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:module1"> Exercise 9: Make a module </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:dc_class:exper"> Exercise 10: Make use of a class implementation </a><br>
 <a href="#decay:analysis"> Analysis of the \( \theta \)-rule for a decay ODE </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec77"> Discouraging numerical solutions </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec78"> Experimental investigation of oscillatory solutions </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec79"> Exact numerical solution </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec80"> Stability </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec81"> Comparing Amplification Factors </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec82"> Series Expansion of Amplification Factors </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec83"> Local error </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec84"> Analytical comparison of schemes </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec85"> The real (global) error at a point </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec86"> Integrated errors </a><br>
-<a href="#___sec87"> Exercises </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec78"> Discouraging numerical solutions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec79"> Experimental investigation of oscillatory solutions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec80"> Exact numerical solution </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec81"> Stability </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec82"> Comparing Amplification Factors </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec83"> Series Expansion of Amplification Factors </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec84"> Local error </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec85"> Analytical comparison of schemes </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec86"> The real (global) error at a point </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec87"> Integrated errors </a><br>
+<a href="#___sec88"> Exercises </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:analysis:exer:growth"> Exercise 11: Explore the \( \theta \)-rule for exponential growth </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:analysis:exer:growth:report"> Exercise 12: Summarize investigations in a report </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:analysis:exer:growth:A"> Exercise 13: Plot amplification factors for exponential growth </a><br>
-<a href="#___sec91"> Model extensions </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec92"> Extension to a variable coefficient </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:source"> Extension to a source term </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec94"> Schemes </a><br>
+<a href="#___sec92"> Model extensions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec93"> Generalization: variable coefficient </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:source"> Generalization: source term </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec95"> Schemes </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:general"> Implementation of the generalized model problem </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec96"> Deriving the \( \theta \)-rule formula </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec97"> The Python code </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec98"> Implementations of variable coefficients </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec97"> Deriving the \( \theta \)-rule formula </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec98"> The Python code </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec99"> Coding of variable coefficients </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:verify:trivial"> Verification via trivial solutions </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:MMS"> Verification via manufactured solutions </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec101"> Extension to systems of ODEs </a><br>
-<a href="#___sec102"> General first-order ODEs </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec103"> Generic form </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec104"> The Odespy software </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec105"> Example: Runge-Kutta methods  </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec106"> Remark about using the \( \theta \)-rule in Odespy </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec107"> Example: Adaptive Runge-Kutta methods  </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec108"> Other schemes </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec109"> Implicit 2-step backward scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec110"> The Leapfrog scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec111"> The filtered Leapfrog scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec112"> 2nd-order Runge-Kutta scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec113"> 2nd-order Adams-Bashforth scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec114"> 3rd-order Adams-Bashforth scheme </a><br>
-<a href="#___sec115"> Exercises </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec102"> Extension to systems of ODEs </a><br>
+<a href="#___sec103"> General first-order ODEs </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec104"> Generic form </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec105"> The Odespy software </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec106"> Example: Runge-Kutta methods  </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec107"> Remark about using the \( \theta \)-rule in Odespy </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec108"> Example: Adaptive Runge-Kutta methods  </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec109"> Other schemes </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec110"> Implicit 2-step backward scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec111"> The Leapfrog scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec112"> The filtered Leapfrog scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec113"> 2nd-order Runge-Kutta scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec114"> A 2nd-order Taylor-series method </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec115"> 2nd-order Adams-Bashforth scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec116"> 3rd-order Adams-Bashforth scheme </a><br>
+<a href="#___sec117"> Exercises </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:fd2:exer:bw2"> Exercise 14: Implement the 2-step backward scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:fd2:exer:leapfrog1"> Exercise 15: Implement the Leapfrog scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:fd2:exer:leapfrog2"> Exercise 16: Experiment with the Leapfrog scheme </a><br>
@@ -240,39 +278,41 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Still lots of typos!)
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:dc_class2"> Exercise 20: Generalize a class implementation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:exer:dc_class3"> Exercise 21: Generalize an advanced class implementation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:fd2:exer:uni"> Exercise 22: Make a unified implementation of many schemes </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:exer:RK2:Taylor:analysis"> Exercise 23: Analyze explicit 2nd-order methods </a><br>
 <a href="#decay:app"> Applications of exponential decay models </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:app:pop"> Evolution of a population </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:app:interest"> Compound interest and inflation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec128"> Radioactive Decay </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec129"> Newton's law of cooling </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec131"> Radioactive Decay </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec132"> Newton's law of cooling </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:app:atm"> Decay of atmospheric pressure with altitude </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec131"> Multiple atmospheric layers </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec132"> Simplification: \( L=0 \) </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec133"> Simplification: one-layer model </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec134"> Multiple atmospheric layers </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec135"> Simplification: \( L=0 \) </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec136"> Simplification: one-layer model </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#decay:app:drag"> Vertical motion of a body in a viscous fluid </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec135"> Overview of forces </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec136"> Equation of motion </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec137"> Terminal velocity </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec138"> A Crank-Nicolson scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec139"> Physical data </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec140"> Verification </a><br>
-<a href="#___sec141"> Exercises </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:atm1"> Exercise 23: Simulate the pressure drop in the atmosphere </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:prog"> Exercise 24: Make a program for vertical motion in a fluid </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:prog:viz"> Exercise 25: Plot forces acting in vertical motion in a fluid </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:parachute1"> Exercise 26: Simulate a free fall of a parachute jumper </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:parachute2"> Exercise 27: Simulate a complete parachute jump </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:rising"> Exercise 28: Simulate a rising ball in water </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:radio:C14"> Exercise 29: Radioactive decay of Carbon-14 </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:radio:twosubst"> Exercise 30: Radioactive decay of two substances </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:cooling:pizza"> Exercise 31: Find time of murder from body temperature </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:cooling:osc"> Exercise 32: Simulate an oscillating cooling process </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:signum"> Exercise 33: Compute \( y=|x| \) by solving an ODE </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:interest"> Exercise 34: Simulate growth of a fortune with random interest rate </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:at"> Exercise 35: Simulate sudden environmental changes for a population </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:osc"> Exercise 36: Simulate oscillating environment for a population </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:logistic1"> Exercise 37: Simulate logistic growth </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:interest:derive"> Exercise 38: Rederive the equation for continuous compound interest </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec138"> Overview of forces </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec139"> Equation of motion </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec140"> Terminal velocity </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec141"> A Crank-Nicolson scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec142"> Physical data </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec143"> Verification </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:diffusion:Fourier"> Decay ODEs from solving a PDE by Fourier expansions </a><br>
+<a href="#___sec145"> Exercises </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:atm1"> Exercise 24: Simulate the pressure drop in the atmosphere </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:prog"> Exercise 25: Make a program for vertical motion in a fluid </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:prog:viz"> Exercise 26: Plot forces acting in vertical motion in a fluid </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:parachute1"> Exercise 27: Simulate a free fall of a parachute jumper </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:parachute2"> Exercise 28: Simulate a complete parachute jump </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:drag:rising"> Exercise 29: Simulate a rising ball in water </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:radio:C14"> Exercise 30: Radioactive decay of Carbon-14 </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:radio:twosubst"> Exercise 31: Radioactive decay of two substances </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:cooling:pizza"> Exercise 32: Find time of murder from body temperature </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:cooling:osc"> Exercise 33: Simulate an oscillating cooling process </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:signum"> Exercise 34: Compute \( y=|x| \) by solving an ODE </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:interest"> Exercise 35: Simulate growth of a fortune with random interest rate </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:at"> Exercise 36: Simulate sudden environmental changes for a population </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:osc"> Exercise 37: Simulate oscillating environment for a population </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:pop:logistic1"> Exercise 38: Simulate logistic growth </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#decay:app:exer:interest:derive"> Exercise 39: Rederive the equation for continuous compound interest </a><br>
 
 <p>
 <p>
@@ -312,7 +352,7 @@ their behavior.
 
 <p>
 
-<h2>Finite difference methods for an ODE <a name="decay:basics"></a></h2>
+<h2>Finite difference methods <a name="decay:basics"></a></h2>
 <p>
 
 <p>
@@ -328,7 +368,7 @@ of the methods to explain the observations.
 
 <p>
 
-<h3>Exponential decay <a name="decay:model"></a></h3>
+<h3>A basic model for exponential decay <a name="decay:model"></a></h3>
 <p>
 
 <p>
@@ -1124,7 +1164,7 @@ languages.
 
 <p>
 
-<h3>Making a program <a name="decay:py1"></a></h3>
+<h3>Making a solver function <a name="decay:py1"></a></h3>
 <p>
 
 <p>
@@ -2677,7 +2717,9 @@ to the exponential decay model:
   <li> Implementation with classes
 </ul>
 
-<h3>Making a module  <a name="___sec34"></a></h3>
+<h3>Making a module <a name="decay:prog:se:module"></a></h3>
+<p>
+
 <p>
 
 <p>
@@ -2824,7 +2866,9 @@ will not work properly.
 
 <p>
 
-<h3>Prefixing imported functions by the module name  <a name="___sec35"></a></h3>
+<h3>Prefixing imported functions by the module name <a name="decay:prog:se:import"></a></h3>
+<p>
+
 <p>
 
 <p>
@@ -2917,7 +2961,9 @@ The style <tt>import module</tt> is preferred inside Python modules (see
 
 <p>
 
-<h3>Doctests  <a name="___sec36"></a></h3>
+<h3>Doctests <a name="decay:prog:se:doctest"></a></h3>
+<p>
+
 <p>
 
 <p>
@@ -3061,7 +3107,9 @@ the terminal window.
 
 <p>
 
-<h3>Unit testing with nose  <a name="___sec37"></a></h3>
+<h3>Unit testing with nose <a name="decay:prog:se:nose"></a></h3>
+<p>
+
 <p>
 
 <p>
@@ -3369,7 +3417,9 @@ with MacPorts you run <tt>sudo port install py27-nose</tt>.
 
 <p>
 
-<h3>Classical unit testing with unittest  <a name="___sec41"></a></h3>
+<h3>Classical unit testing with unittest <a name="decay:prog:se:unittest"></a></h3>
+<p>
+
 <p>
 
 <p>
@@ -3475,7 +3525,9 @@ slightly different syntax.
 
 <p>
 
-<h3>Implementing simple problem and solver classes  <a name="___sec44"></a></h3>
+<h3>Implementing simple problem and solver classes <a name="decay:prog:se:class"></a></h3>
+<p>
+
 <p>
 The \( \theta \)-rule was compactly and conveniently implemented in
 a function <tt>solver</tt>. In more complicated problems it might
@@ -3526,8 +3578,11 @@ We could in the <tt>exact_solution</tt> method have written
 a formula <tt>I*exp(-a*t)</tt> which looks closer to the mathematical
 expression \( Ie^{-at} \).  This is not an important issue with the
 current compact formula, but is beneficial in more complicated
-problems with longer formulas. We will therefore often "strip off"
-<tt>self</tt> in variables in forthcoming examples.
+problems with longer formulas to obtain the closest possible
+relationship between code and mathematics. Python class
+programming by this author is therefore
+recognized by "stripping off" the <tt>self</tt> prefix in variables that
+enter mathematical formulas.
 
 <p>
 The class data can be set either as arguments in the constructor or
@@ -3737,7 +3792,9 @@ constitutes a module with the three classes and the <tt>main</tt> function.
 
 <p>
 
-<h3>Implementing more advanced problem and solver classes  <a name="___sec49"></a></h3>
+<h3>Implementing more advanced problem and solver classes <a name="decay:prog:se:class2"></a></h3>
+<p>
+
 <p>
 The previous <tt>Problem</tt> and <tt>Solver</tt> classes containing parameters
 soon get much repetitive code when the number of parameters increases.
@@ -4270,7 +4327,8 @@ mathematical typesetting. In plain HTML, as used in the
 characters to write mathematics. However, there is an extension to
 HTML, called <a href="http://www.mathjax.org/">MathJax</a>, that allows
 formulas and equations to be typeset with LaTeX syntax and nicely
-rendered in web browsers.  A relatively small subset of LaTeX
+rendered in web browsers, see Figure <a href="#decay:exper:report:fig:mathjax">11</a>.
+A relatively small subset of LaTeX
 environments is supported, but the syntax for formulas is quite
 rich. Inline formulas are look like <tt>\( u'=-au \)</tt> while equations are
 surrounded by <tt>$$</tt> signs.  Inside such signs, one can use <tt>\[ u'=-au
@@ -4286,13 +4344,25 @@ into <a href="http://hplgit.github.com/INF5620/doc/writing_reports/report_html_m
 
 <p>
 
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 11:  Report in HTML format with MathJax. <a name="decay:exper:report:fig:mathjax"></a> </p></center>
+<p><img src="fig-decay/report_mathjax.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+<p>
+
 <h4>LaTeX  <a name="___sec59"></a></h4>
 <p>
 <!-- "http://en.wikibooks.org/wiki/LaTeX" -->
 
 <p>
 The <em>de facto</em> language for mathematical typesetting and scientific
-report writing is <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a>.  A
+report writing is <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a>, see
+Figure <a href="#decay:exper:report:fig:latex">12</a> for an example. A
 number of very sophisticated packages have been added to the language
 over a period of three decades, allowing very fine-tuned layout and
 typesetting. For output in the <a href="http://hplgit.github.com/INF5620/doc/writing_reports/report.pdf">PDF format</a>, LaTeX is
@@ -4304,6 +4374,17 @@ the web, using HTML (and not the PDF directly in the browser window),
 LaTeX struggles with delivering high quality typesetting. Other tools,
 especially Sphinx, gives better results and can also produce
 nice-looking PDFs.
+The file <tt>dc_exper1_latex.py</tt> shows how to generate the LaTeX source
+from a program.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 12:  Report in PDF format generated from LaTeX source. <a name="decay:exper:report:fig:latex"></a> </p></center>
+<p><img src="fig-decay/report_latexpdf.png" align="bottom" width=600></p>
+</center>
 
 <p>
 
@@ -4317,14 +4398,28 @@ nice-looking PDFs.
 <a href="http://sphinx.pocoo.org/">Sphinx</a> is a typesetting language with
 similarities to HTML and LaTeX, but with much less tagging. It has
 recently become very popular for software documentation and
-mathematical reports. Sphinx can utilize MathJax or LaTeX for
-mathematical formulas and equations, but has limitations compared to
-both tools. The Sphinx <a href="http://hplgit.github.com/INF5620/doc/writing_reports/report_sphinx.rst.html">syntax</a>
-is an extension of the reStructuredText language, and comes with rich
-support for <a href="http://hplgit.github.com/INF5620/doc/writing_reports/sphinx-cloud/index.html">fancy layout of web pages</a>. In
+mathematical reports. Sphinx can utilize LaTeX (via MathJax or PNG
+images) for
+mathematical formulas and equations. Unfortunately, the subset
+of LaTeX mathematics supported is less than in full MathJax
+(in particular, numbering of multiple equations in an <tt>align</tt> type environment
+is not supported).
+The Sphinx <a href="http://hplgit.github.com/INF5620/doc/writing_reports/report_sphinx.rst.html">syntax</a>
+is an extension of the reStructuredText language. An attractive feature
+of Sphinx is its rich support for <a href="http://hplgit.github.com/INF5620/doc/writing_reports/sphinx-cloud/index.html">fancy layout of web pages</a>. In
 particular, Sphinx can easily be combined with various layout <em>themes</em>
 that give a certain look and feel to the web site and that offers
-table of contents, navigation, search facilities, etc.
+table of contents, navigation, and search facilities, see
+Figure <a href="#decay:exper:report:fig:sphinx">13</a>.
+
+<p>
+
+<p>
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 13:  Report in HTML format generated from Sphinx source. <a name="decay:exper:report:fig:sphinx"></a> </p></center>
+<p><img src="fig-decay/report_sphinx.png" align="bottom" width=600></p>
+</center>
 
 <p>
 
@@ -4365,12 +4460,17 @@ and wikis. <a href="http://code.google.com/p/doconce">Doconce</a> is such
 a tool. It is similar to Pandoc, but offers some special convenient
 features for writing about mathematics and programming.
 The tagging is modest, <a href="http://hplgit.github.com/INF5620/doc/writing_reports/report.do.txt.html">somewhere between LaTeX and Markdown</a>.
+The program <tt>dc_exper_do.py</tt> demonstrates how to generate (and write)
+Doconce code for a report.
 
 <p>
-The HTML, LaTeX PDF, Sphinx, and Doconce formats for the scientific
+
+<h4>Worked example  <a name="___sec64"></a></h4>
+<p>
+The HTML, LaTeX (PDF), Sphinx, and Doconce formats for the scientific
 report whose content is outlined above, are exemplified
-with source codes and results at the <a href="http://hplgit.github.com/INF5620/doc/writing_reports/">web pages associated with this
-teaching material</a>.
+with source codes and results at the
+<a href="http://hplgit.github.com/INF5620/doc/writing_reports/">web pages associated with this teaching material</a>.
 
 <p>
 <!-- project with exploring instability (help with matplotlib contour plots, and maybe show such a plot) -->
@@ -4397,23 +4497,30 @@ For the investigations outlined in the section <a href="#decay:exper:report">Mak
 we can create a folder tree with files
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">src/dc_exper1_mathjax.py
-doc/report.html
-doc/run.sh
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">src/dc_mod.py
+setup.py
+doc/src/dc_exper1_mathjax.py
+doc/src/make_report.sh
+doc/src/run.sh
+doc/pub/report.html
 </pre></div>
 <p>
+The <tt>src</tt> directory holds source code (modules) to be reused in other project,
+the <tt>setup.py</tt> builds and installs such software,
+the <tt>doc</tt> directory contains the documentation, with <tt>src</tt> for the
+source of the documentation and <tt>pub</tt> for ready-made, published documentation.
 The <tt>run.sh</tt> file is a simple Bash script listing the <tt>python</tt> command
-we used to generate the experiments that are documented in <tt>report.html</tt>.
+we used to run <tt>dc_exper1_mathjax.py</tt> to generate the experiments and
+report documented in the final published <tt>report.html</tt> file.
 
 <p>
 <!-- Point to Doconce version -->
 
 <p>
-<!-- Big project on instability -->
 
 <p>
 
-<h2>Exercises  <a name="___sec65"></a></h2>
+<h2>Exercises  <a name="___sec66"></a></h2>
 <p>
 
 <p>
@@ -4791,19 +4898,19 @@ which we assume here, \( t_{n+1}=(n+1)\Delta t \).
 
 <p>
 
-<h3>Discouraging numerical solutions  <a name="___sec77"></a></h3>
+<h3>Discouraging numerical solutions  <a name="___sec78"></a></h3>
 <p>
 Choosing \( I=1 \), \( a=2 \), and running experiments with \( \theta =1,0.5, 0 \)
 for \( \Delta t=1.25, 0.75, 0.5, 0.1 \), gives the results in
-Figures <a href="#decay:analysis:BE4c">11</a>, <a href="#decay:analysis:CN4c">12</a>, and
-<a href="#decay:analysis:FE4c">13</a>.
+Figures <a href="#decay:analysis:BE4c">14</a>, <a href="#decay:analysis:CN4c">15</a>, and
+<a href="#decay:analysis:FE4c">16</a>.
 
 <p>
 
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 11:  Backward Euler. <a name="decay:analysis:BE4c"></a> </p></center>
+<center><p class="caption">Figure 14:  Backward Euler. <a name="decay:analysis:BE4c"></a> </p></center>
 <p><img src="fig-decay/BE4c.png" align="bottom" width=600,></p>
 </center>
 
@@ -4814,7 +4921,7 @@ Figures <a href="#decay:analysis:BE4c">11</a>, <a href="#decay:analysis:CN4c">12
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 12:  Crank-Nicolson. <a name="decay:analysis:CN4c"></a> </p></center>
+<center><p class="caption">Figure 15:  Crank-Nicolson. <a name="decay:analysis:CN4c"></a> </p></center>
 <p><img src="fig-decay/CN4c.png" align="bottom" width=600,></p>
 </center>
 
@@ -4825,7 +4932,7 @@ Figures <a href="#decay:analysis:BE4c">11</a>, <a href="#decay:analysis:CN4c">12
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 13:  Forward Euler. <a name="decay:analysis:FE4c"></a> </p></center>
+<center><p class="caption">Figure 16:  Forward Euler. <a name="decay:analysis:FE4c"></a> </p></center>
 <p><img src="fig-decay/FE4c.png" align="bottom" width=600,></p>
 </center>
 
@@ -4854,7 +4961,7 @@ Since the exact solution of our model problem is a monotone function,
 
 <p>
 
-<h3>Experimental investigation of oscillatory solutions  <a name="___sec78"></a></h3>
+<h3>Experimental investigation of oscillatory solutions  <a name="___sec79"></a></h3>
 <p>
 We may ask the question: Under what circumstances, i.e., values of
 the input data \( I \), \( a \), and \( \Delta t \) will the Forward Euler and
@@ -4888,8 +4995,8 @@ The \( B_{ij} \) values are naturally stored in a two-dimensional
 array. Both Matplotlib and SciTools can create a plot of the
 contour line \( B_{ij}=0.5 \) dividing the oscillatory and monotone
 regions. The file <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_osc_regions.py"><tt>dc_osc_regions.py</tt></a> contains all nuts and
-bolts to produce the \( B=0.5 \) line in Figures <a href="#decay:analysis:B:FE">14</a>
-and <a href="#decay:analysis:B:CN">15</a>. The oscillatory region is above this line.
+bolts to produce the \( B=0.5 \) line in Figures <a href="#decay:analysis:B:FE">17</a>
+and <a href="#decay:analysis:B:CN">18</a>. The oscillatory region is above this line.
 
 <p>
 <p>
@@ -4939,7 +5046,7 @@ non_physical_behavior(
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 14:  Forward Euler scheme: oscillatory solutions occur for points above the curve. <a name="decay:analysis:B:FE"></a> </p></center>
+<center><p class="caption">Figure 17:  Forward Euler scheme: oscillatory solutions occur for points above the curve. <a name="decay:analysis:B:FE"></a> </p></center>
 <p><img src="fig-decay/osc_region_FE.png" align="bottom" width=500></p>
 </center>
 
@@ -4950,7 +5057,7 @@ non_physical_behavior(
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 15:  Crank-Nicolson scheme: oscillatory solutions occur for points above the curve. <a name="decay:analysis:B:CN"></a> </p></center>
+<center><p class="caption">Figure 18:  Crank-Nicolson scheme: oscillatory solutions occur for points above the curve. <a name="decay:analysis:B:CN"></a> </p></center>
 <p><img src="fig-decay/osc_region_CN.png" align="bottom" width=500></p>
 </center>
 
@@ -4966,7 +5073,7 @@ experiments.
 
 <p>
 
-<h3>Exact numerical solution  <a name="___sec79"></a></h3>
+<h3>Exact numerical solution  <a name="___sec80"></a></h3>
 <p>
 Starting with \( u^0=I \), the simple recursion \eqref{decay:analysis:scheme}
 can be applied repeatedly \( n \) times, with the result that
@@ -4996,7 +5103,7 @@ stability properties of the three schemes.
 
 <p>
 
-<h3>Stability  <a name="___sec80"></a></h3>
+<h3>Stability  <a name="___sec81"></a></h3>
 <p>
 
 <p>
@@ -5041,7 +5148,7 @@ The relation between \( \Delta t \) and \( a \) look reasonable: a smaller
 \( a \) means faster decay and hence a need for smaller time steps.
 
 <p>
-Looking at Figure <a href="#decay:analysis:FE4c">13</a>, we see that with \( a\Delta
+Looking at Figure <a href="#decay:analysis:FE4c">16</a>, we see that with \( a\Delta
 t= 2\cdot 1.25=2.5 \), \( A=-1.5 \), and the solution \( u^n=(-1.5)^n \)
 oscillates <em>and</em> grows. With \( a\Delta t = 2\cdot 0.75=1.5 \), \( A=-0.5 \),
 \( u^n=(-0.5)^n \) decays but oscillates. The peculiar case \( \Delta t =
@@ -5065,7 +5172,7 @@ processes.
 
 <p>
 
-<h3>Comparing Amplification Factors  <a name="___sec81"></a></h3>
+<h3>Comparing Amplification Factors  <a name="___sec82"></a></h3>
 <p>
 After establishing how \( A \) impacts the qualitative features of the
 solution, we shall now look more into how well the numerical amplification
@@ -5088,7 +5195,7 @@ We realize that the exact and numerical amplification factors depend
 on \( a \) and \( \Delta t \) through the product \( a\Delta t \). Therefore, it
 is convenient to introduce a symbol for this product, \( p=a\Delta t \),
 and view \( A \) and \( \Aex \) as functions of \( p \). Figure
-<a href="#decay:analysis:fig:A">16</a> shows these functions. Crank-Nicolson is
+<a href="#decay:analysis:fig:A">19</a> shows these functions. Crank-Nicolson is
 clearly closest to the exact amplification factor, but that method has
 the unfortunate oscillatory behavior when \( p>2 \).
 
@@ -5097,7 +5204,7 @@ the unfortunate oscillatory behavior when \( p>2 \).
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 16:  Comparison of amplification factors. <a name="decay:analysis:fig:A"></a> </p></center>
+<center><p class="caption">Figure 19:  Comparison of amplification factors. <a name="decay:analysis:fig:A"></a> </p></center>
 <p><img src="fig-decay/A_factors.png" align="bottom" width=500></p>
 </center>
 
@@ -5107,10 +5214,10 @@ the unfortunate oscillatory behavior when \( p>2 \).
 
 <p>
 
-<h3>Series Expansion of Amplification Factors  <a name="___sec82"></a></h3>
+<h3>Series Expansion of Amplification Factors  <a name="___sec83"></a></h3>
 <p>
 As an alternative to the visual understanding
-inherent in Figure <a href="#decay:analysis:fig:A">16</a>, there
+inherent in Figure <a href="#decay:analysis:fig:A">19</a>, there
 is a strong tradition in numerical analysis to investigate
 approximation errors when the discretization parameter, here \( \Delta t \),
 becomes small. In the present case we let \( p \) be our small
@@ -5237,14 +5344,14 @@ scheme reduces the error more efficiently than the other schemes.
 
 <p>
 
-<h3>Local error  <a name="___sec83"></a></h3>
+<h3>Local error  <a name="___sec84"></a></h3>
 <p>
 (max/infinity norm etc).
 Both errors can be investigated analytically.]
 
 <p>
 
-<h3>Analytical comparison of schemes  <a name="___sec84"></a></h3>
+<h3>Analytical comparison of schemes  <a name="___sec85"></a></h3>
 <p>
 An alternative comparison of the schemes is to look at the
 ratio \( A/\Aex \), or the error \( 1-A/\Aex \) in this ratio:
@@ -5266,7 +5373,7 @@ in the analysis of \( A-\Aex \).
 
 <p>
 
-<h3>The real (global) error at a point  <a name="___sec85"></a></h3>
+<h3>The real (global) error at a point  <a name="___sec86"></a></h3>
 <p>
 The error in the amplification factor reflects the error when
 progressing from time level \( t_n \) to \( t_{n-1} \).
@@ -5300,7 +5407,7 @@ the former schemes.
 
 <p>
 
-<h3>Integrated errors  <a name="___sec86"></a></h3>
+<h3>Integrated errors  <a name="___sec87"></a></h3>
 <p>
 The formulas for various error measures have so far measured the
 error at one time point. Many prefer to use the error
@@ -5404,7 +5511,11 @@ since \( t=i\Delta t \), \( \sum_{i=0}^N i^2\approx \frac{1}{3}N^3 \), and
 
 <p>
 
-<h2>Exercises  <a name="___sec65"></a></h2>
+<h2>Exercises  <a name="___sec66"></a></h2>
+<p>
+
+<p>
+
 <p>
 
 <p>
@@ -5480,7 +5591,7 @@ Filename: <tt>growth_ampf_plot.py</tt>.
 
 <p>
 
-<h2>Model extensions  <a name="___sec91"></a></h2>
+<h2>Model extensions  <a name="___sec92"></a></h2>
 <p>
 It is time to consider generalizations of the simple decay model
 \( u=-au \), where \( a \) is constant, and also to look at other numerical
@@ -5488,7 +5599,7 @@ solution methods.
 
 <p>
 
-<h3>Extension to a variable coefficient  <a name="___sec92"></a></h3>
+<h3>Generalization: variable coefficient  <a name="___sec93"></a></h3>
 <p>
 In the ODE for decay, \( u'=-au \), we now consider the case where \( a \)
 depends on time:
@@ -5539,7 +5650,8 @@ $$
 \thinspace .
 \end{equation}
 $$
-The \( \theta \)-rule unifies the three mentioned schemes,
+The \( \theta \)-rule unifies the three mentioned schemes. Either with \( a \)
+evaluated at \( t_{n+\theta} \),
 
 <p>
 $$
@@ -5548,7 +5660,7 @@ $$
 \thinspace .
 \end{equation}
 $$
-or,
+or using a weighted average for the product \( au \),
 $$
 \begin{equation}
 \frac{u^{n+1} - u^{n}}{\Delta t} = -(1-\theta) a(t_n)u^n - \theta
@@ -5578,8 +5690,8 @@ $$
 \begin{align}
 \lbrack D_t u &= -a\overline{u}^t\rbrack^{n+\frac{1}{2}},\\
 \lbrack D_t u &= -\overline{au}^t\rbrack^{n+\frac{1}{2}},\\
-\lbrack D_t u &= -a\overline{u}^{t,\theta}\rbrack^{n+\frac{1}{2}},\\
-\lbrack D_t u &= -\overline{au}^{t,\theta}\rbrack^{n+\frac{1}{2}}
+\lbrack D_t u &= -a\overline{u}^{t,\theta}\rbrack^{n+\theta},\\
+\lbrack D_t u &= -\overline{au}^{t,\theta}\rbrack^{n+\theta}
 \thinspace .
 \end{align}
 $$
@@ -5588,7 +5700,7 @@ $$
 
 <p>
 
-<h3>Extension to a source term <a name="decay:source"></a></h3>
+<h3>Generalization: source term <a name="decay:source"></a></h3>
 <p>
 
 <p>
@@ -5605,7 +5717,7 @@ $$
 
 <p>
 
-<h4>Schemes  <a name="___sec94"></a></h4>
+<h4>Schemes  <a name="___sec95"></a></h4>
 <p>
 The time point where we sample the ODE determines where \( b(t) \) is
 evaluated. For the Crank-Nicolson scheme and the \( \theta \)-rule we
@@ -5622,6 +5734,7 @@ $$
 \lbrack D_t u   &= \overline{-au+b}^t\rbrack^{n+\frac{1}{2}},\\
 \lbrack D_t u   &= -a\overline{u}^{t,\theta} + b\rbrack^{n+\theta},\\
 \lbrack D_t u   &= \overline{-au+b}^{t,\theta}\rbrack^{n+\theta}
+\label{decay:problem:ab:theta:avg:all:op}
 \thinspace .
 \end{align}
 $$
@@ -5633,12 +5746,18 @@ $$
 
 <p>
 
-<h4>Deriving the \( \theta \)-rule formula  <a name="___sec96"></a></h4>
+<h4>Deriving the \( \theta \)-rule formula  <a name="___sec97"></a></h4>
 <p>
-Writing out the latter \( \theta \)-rule, using \eqref{decay:fd1:Du:theta}
+Writing out the \( \theta \)-rule in \eqref{decay:problem:ab:theta:avg:all:op},
+using \eqref{decay:fd1:Du:theta}
 and \eqref{decay:fd1:wmean:a}, we get
-$$\frac{u^{n+1}-u^n}{\Delta t} = \theta(-a^{n+1}u^{n+1} + b^{n+1}))
-+ (1-\theta)(-a^nu^{n} + b^n)),$$
+$$
+\begin{equation}
+\frac{u^{n+1}-u^n}{\Delta t} = \theta(-a^{n+1}u^{n+1} + b^{n+1}))
++ (1-\theta)(-a^nu^{n} + b^n)),
+\label{decay:problem:ab:theta:avg:all}
+\end{equation}
+$$
 where \( a^n \) means evaluating \( a \) at \( t=t_n \) and similar for
 \( a^{n+1} \), \( b^n \), and \( b^{n+1} \).
 We solve for \( u^{n+1} \):
@@ -5652,10 +5771,11 @@ $$
 
 <p>
 
-<h4>The Python code  <a name="___sec97"></a></h4>
+<h4>The Python code  <a name="___sec98"></a></h4>
 <p>
-A suitable implementation where \( a(t) \) and \( b(t) \) are given as
-Python functions is given next.
+Here is a suitable implementation of \eqref{decay:problem:ab:theta:avg:all}
+where \( a(t) \) and \( b(t) \) are given as
+Python functions:
 
 <p>
 <p>
@@ -5684,10 +5804,10 @@ This function is found in the file <a href="https://github.com/hplgit/INF5620/bl
 
 <p>
 
-<h4>Implementations of variable coefficients  <a name="___sec98"></a></h4>
+<h4>Coding of variable coefficients  <a name="___sec99"></a></h4>
 <p>
 The <tt>solver</tt> function shown above demands the arguments <tt>a</tt> and <tt>b</tt> to
-be implemented as functions of <tt>t</tt>, say
+be Python functions of time <tt>t</tt>, say
 
 <p>
 <p>
@@ -5742,10 +5862,10 @@ is equivalent to
 </pre></div>
 <p>
 One can use lambda functions directly in calls. Say we want to
-solve \( u'=-u+1 \), \( u(0)=1 \):
+solve \( u'=-u+1 \), \( u(0)=2 \):
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(<span style="color: #666666">1</span>, <span style="color: #AA22FF; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, <span style="color: #AA22FF; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, T, dt, theta)
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(<span style="color: #666666">2</span>, <span style="color: #AA22FF; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, <span style="color: #AA22FF; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, T, dt, theta)
 </pre></div>
 <p>
 A lambda function can appear anywhere where a variable can appear.
@@ -5785,7 +5905,7 @@ we can choose any \( a(t) \) and set \( b=a(t)C \) and
         <span style="color: #AA22FF; font-weight: bold">return</span> u_const
 
     <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">a</span>(t):
-        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">2.5*</span>(<span style="color: #666666">1+</span>t<span style="color: #666666">**2</span>)  <span style="color: #008800; font-style: italic"># can be arbitrary</span>
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">2.5*</span>(<span style="color: #666666">1+</span>t<span style="color: #666666">**3</span>)  <span style="color: #008800; font-style: italic"># can be arbitrary</span>
 
     <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">b</span>(t):
         <span style="color: #AA22FF; font-weight: bold">return</span> a(t)<span style="color: #666666">*</span>u_const
@@ -5831,13 +5951,14 @@ solutions</em>, often abbreviated MMS.
 One common choice of solution is a linear function in the independent
 variable(s). The rationale behind such a simple variation is that
 almost any relevant numerical solution method for differential
-equation problems is able to reproduce the linear function exactly (to
-machine precision). The linear solution also makes some stronger
-demands to the numerical method and the implementation than the
-constant solution used in the section <a href="#decay:verify:trivial">Verification via trivial solutions</a>, at least
-in more complicated applications. However,
-the constant solution is often ideal for initial debugging before
-proceeding with a linear solution.
+equation problems is able to reproduce the linear function exactly to
+machine precision (if \( u \) is about unity in size; precision is lost if
+\( u \) take on large values, see ref{decay:fd2:exer:precision}).
+The linear solution also makes some stronger demands to the
+numerical method and the implementation than the constant solution
+used in the section <a href="#decay:verify:trivial">Verification via trivial solutions</a>, at least in more
+complicated applications. However, the constant solution is often
+ideal for initial debugging before proceeding with a linear solution.
 
 <p>
 Let \( u(t) = ct + d \). We must then have \( d=I \) from the initial condition.
@@ -5848,7 +5969,39 @@ $$ b(t) = c + a(t)(ct + I) \thinspace . $$
 Note that there are no restrictions on \( a(t) \) and \( c \).
 
 <p>
-The following function offers an implementation of the verification
+Let us see if such a linear solution is compatible with the numerical
+schemes. That is, we must check that \( u^n = ca(t_n)(ct_n+I) \) fits
+the discrete equations. To this end, it is convenient to
+compute the action of a difference operator on \( u^n=t_n \):
+
+<p>
+$$
+\begin{align}
+\lbrack D_t^+ t\rbrack^n &= \frac{t_{n+1}-t_n}{\Delta t}=\frac{(n+1)\Delta t - n\Delta t}{\Delta t}=1,\label{decay:fd2:Dop:tn:fw}\\
+\lbrack D_t^- t\rbrack^n &= \frac{t_{n}-t_{n-1}}{\Delta t}=\frac{n\Delta t - (n-1)\Delta t}{\Delta t}=1,\label{decay:fd2:Dop:tn:bw}\\
+\lbrack D_t t\rbrack^n &= \frac{t_{n+\frac{1}{2}}-t_{n-\frac{1}{2}}}{\Delta t}=\frac{(n+\frac{1}{2})\Delta t - (n-\frac{1}{2})\Delta t}{\Delta t}=1
+\label{decay:fd2:Dop:tn:cn}
+\thinspace .
+\end{align}
+$$
+The difference equation for the Forward Euler scheme
+
+<p>
+$$ [D^+_t u = -au + b]^n, $$
+with \( a^n=a(t_n) \), \( b^n=c + a(t_n)(ct_n + I) \), and \( u^n=ct_n + I \)
+then results in
+
+<p>
+$$ c = -a(t_n)(ct_n+I) + c + a(t_n)(ct_n + I) = c $$
+which is always fulfilled. Similar calculations can be done for the
+Backward Euler and Crank-Nicolson schemes, or the \( \theta \)-rule for
+that matter. In all cases, \( u^n=ct_n +I \) is an exact solution of
+the discrete equations. That is why we should expect that
+\( u^n - \uex(t_n) =0 \) mathematically and \( |u^n - \uex(t_n)| \) less
+than a small number about the machine precision for \( n=0,\ldots,N \).
+
+<p>
+The following function offers an implementation of this verification
 test based on a linear exact solution:
 
 <p>
@@ -5874,6 +6027,8 @@ test based on a linear exact solution:
     u, t <span style="color: #666666">=</span> solver(I<span style="color: #666666">=</span>I, a<span style="color: #666666">=</span>a, b<span style="color: #666666">=</span>b, T<span style="color: #666666">=</span>N<span style="color: #666666">*</span>dt, dt<span style="color: #666666">=</span>dt, theta<span style="color: #666666">=</span>theta)
     u_e <span style="color: #666666">=</span> exact_solution(t)
     difference <span style="color: #666666">=</span> <span style="color: #AA22FF">abs</span>(u_e <span style="color: #666666">-</span> u)<span style="color: #666666">.</span>max()  <span style="color: #008800; font-style: italic"># max deviation</span>
+    <span style="color: #AA22FF; font-weight: bold">print</span> difference
+    <span style="color: #008800; font-style: italic"># No of decimal places for comparison depend on size of c</span>
     nt<span style="color: #666666">.</span>assert_almost_equal(difference, <span style="color: #666666">0</span>, places<span style="color: #666666">=14</span>)
 </pre></div>
 <p>
@@ -5892,7 +6047,7 @@ an exact solution of a problem that the solver can be tested on.
 
 <p>
 
-<h3>Extension to systems of ODEs  <a name="___sec101"></a></h3>
+<h3>Extension to systems of ODEs  <a name="___sec102"></a></h3>
 <p>
 Many ODE models involves more than one unknown function and more
 than one equation. Here is an example of two unknown functions \( u(t) \)
@@ -5938,18 +6093,18 @@ unknowns.
 
 <p>
 
-<h2>General first-order ODEs  <a name="___sec102"></a></h2>
+<h2>General first-order ODEs  <a name="___sec103"></a></h2>
 <p>
-We now turn the attention to general, nonlinear ODEs and systems of such ODEs.
-Many schemes that are occasionally reused for PDEs are listed. We also
-demonstrate a Python interface to a range of different software for
-general first-order ODE systems.
+We now turn the attention to general, nonlinear ODEs and systems of
+such ODEs.  Many schemes that are often reused for time-discretization
+of PDEs are listed. We also demonstrate a Python interface to a range
+of different software for general first-order ODE systems.
 
 <p>
 
-<h3>Generic form  <a name="___sec103"></a></h3>
+<h3>Generic form  <a name="___sec104"></a></h3>
 <p>
-ODEs are commonly written in a generic form
+ODEs are commonly written in the generic form
 
 <p>
 $$
@@ -5987,20 +6142,22 @@ ODEs then need auxiliary unknown functions.
 
 <p>
 
-<h3>The Odespy software  <a name="___sec104"></a></h3>
+<h3>The Odespy software  <a name="___sec105"></a></h3>
 <p>
-A wide range of methods and software exist for solving \eqref{decay:ode:general}.
+A wide range of the methods and software exist for solving \eqref{decay:ode:general}.
 Many of methods are accessible through a unified Python interface offered
 by the <a href="https://github.com/hplgit/odespy">Odespy</a> package.
 Odespy features simple Python implementations of the most fundamental
 schemes as well as Python interfaces to several famous packages for
 solving ODEs: <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">ODEPACK</a>, <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">Vode</a>,
-<a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>, "rkf45.f": http://www.netlib.org/ode/rkf45.f", "Radau5": "http://www.unige.ch/~hairer/software.html, as well
+<a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>, <a href="http://www.netlib.org/ode/rkf45.f">rkf45.f</a>, <a href="http://www.unige.ch/~hairer/software.html">Radau5</a>, as well
 as the ODE solvers in <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html">SciPy</a>, <a href="http://docs.sympy.org/dev/modules/mpmath/calculus/odes.html">SymPy</a>, and <a href="http://olivierverdier.github.com/odelab/">odelab</a>.
 
 <p>
-The usage of Odespy follows this setup for the ODE \( u'=-au \) solved
-by the famous 4th-order Runge-Kutta method:
+The usage of Odespy follows this setup for the ODE \( u'=-au \),
+\( u(0)=I \), \( t\in (0,T] \), here solved
+by the famous 4th-order Runge-Kutta method, using \( \Delta t=1 \)
+and \( N=6 \) steps:
 
 <p>
 <p>
@@ -6011,25 +6168,29 @@ by the famous 4th-order Runge-Kutta method:
 import odespy
 import numpy as np
 
-I = 1; a = 2; T = 6; dt = 1
+I = 1; a = 0.5; N = 6; dt = 1
 solver = odespy.RK4(f)
 solver.set_initial_condition(I)
-t_mesh = np.linspace(0, T, N+1)
+t_mesh = np.linspace(0, N*dt, N+1)
 u, t = solver.solve(t_mesh)
 </pre></div>
 <p>
 
 <p>
 
-<h3>Example: Runge-Kutta methods   <a name="___sec105"></a></h3>
+<h3>Example: Runge-Kutta methods   <a name="___sec106"></a></h3>
 <p>
 Since all solvers have the same interface, modulo different set of
 parameters to the solvers' constructors, one can easily make a list of
 solver objects and run a loop for comparing (a lot of) solvers. The
-code below, found in complete form in <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_odespy.py"><tt>dc_odespy.py</tt></a>
-compares the famous Runge-Kutta methods of orders 2, 3, and 4 with the
-Backward Euler scheme and the exact solution of the decay equation
-\( u'=-au \). Figure <a href="#decay:odespy:fig1">17</a> shows the results.
+code below, found in complete form in <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_odespy.py"><tt>dc_odespy.py</tt></a>,
+compares the famous Runge-Kutta methods of orders 2, 3, and 4
+with the exact solution of the decay equation
+\( u'=-au \).
+Since we have quite long time steps, we have included the only
+relevant \( \theta \)-rule for large time steps, the BackwardEuler scheme
+(\( \theta=1 \)), as well.
+Figure <a href="#decay:odespy:fig1">20</a> shows the results.
 
 <p>
 <p>
@@ -6091,42 +6252,44 @@ a the class type (as a string) of an object <tt>obj</tt> is obtained by
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 17:  Behavior of different schemes for the decay equation. <a name="decay:odespy:fig1"></a> </p></center>
+<center><p class="caption">Figure 20:  Behavior of different schemes for the decay equation. <a name="decay:odespy:fig1"></a> </p></center>
 <p><img src="fig-decay/decay_odespy1_png.png" align="bottom" width=600></p>
 </center>
 
 <p>
 
 <p>
-Since we have quite long time steps, we have included the only
-relevant \( \theta \)-rule for large time steps, the BackwardEuler scheme
-(\( \theta=1 \)), as well in Figure <a href="#decay:odespy:fig1">17</a>.  These and
-other experiments reveal that
+
+<p>
+The runs in Figure <a href="#decay:odespy:fig1">20</a>
+and other experiments reveal that the 2-nd order Runge-Kutta
+method (<tt>RK2</tt>) is unstable for \( \Delta t>1 \) and decays slower than the
+Backward Euler scheme for large and moderate \( \Delta t \) (see <a href="#decay:exer:RK2:Taylor:analysis">Exercise 23: Analyze explicit 2nd-order methods</a> for an analysis).  However, for
+fine \( \Delta t = 0.25 \) the 2-nd order Runge-Kutta method approaches
+the exact solution faster than the Backward Euler scheme.  That is,
+the latter scheme does a better job for larger \( \Delta t \), while the
+higher order scheme is superior for smaller \( \Delta t \). This is a
+typical trend also when solving many other ordinary and partial
+differential equations.
+
+<p>
+The 3-rd order Runge-Kutta method (<tt>RK3</tt>) has also artifacts in form
+of oscillatory behavior for the larger \( \Delta t \) values, much
+like that of the Crank-Nicolson scheme. For finer \( \Delta t \),
+the 3-rd order Runge-Kutta method converges quickly to the exact
+solution.
+
+<p>
+The 4-th order Runge-Kutta method (<tt>RK4</tt>) is slightly inferior
+to the Backward Euler scheme on the coarsest mesh, but is then
+clearly superior to all the other schemes. It is definitely the
+method of choice for all the tested schemes.
 
 <p>
 
-<ul>
-  <li> The 2-nd order Runge-Kutta method (<tt>RK2</tt>) is unstable for \( \Delta t>1 \)
-    and decays slower than the Backward Euler scheme, which is known to
-    decay slower than the Crank-Nicolson and Forward Euler schemes.
-    However, for fine \( \Delta t = 0.25 \) the 2-nd order Runge-Kutta method
-    decays faster than the Backward Euler scheme and lies closer to the
-    exact curve. This means that the 2-nd order Runge-Kutta method
-    approaches the exact solution faster than the Backward Euler scheme,
-    although it is less accurate for large \( \Delta t \) values.
-  <li> The 3-rd order Runge-Kutta method (<tt>RK3</tt>) is oscillating for
-    \( \Delta t = 1.05 \) and lies partly above and below the exact curve for
-    \( \Delta t = 0.75 \). This behavior is much like what one observes for
-    the Crank-Nicolson scheme. For finer \( \Delta t \),
-    the 3-rd order Runge-Kutta method converges quickly to the exact
-    solution.
-  <li> The 4-th order Runge-Kutta method (<tt>RK4</tt>) is slightly inferior
-    to the Backward Euler scheme on the coarsest mesh, but is then
-    clearly superior to all the other schemes. It is definitely the
-    method of choise for all the tested schemes.
-</ul>
+<p>
 
-<h4>Remark about using the \( \theta \)-rule in Odespy  <a name="___sec106"></a></h4>
+<h4>Remark about using the \( \theta \)-rule in Odespy  <a name="___sec107"></a></h4>
 <p>
 The Odespy package assumes that the ODE is written as \( u'=f(u,t) \) with
 an \( f \) that is possibly nonlinear in \( u \). The \( \theta \)-rule for
@@ -6151,10 +6314,10 @@ bad initial guess in linear problems.)
 
 <p>
 
-<h3>Example: Adaptive Runge-Kutta methods   <a name="___sec107"></a></h3>
+<h3>Example: Adaptive Runge-Kutta methods   <a name="___sec108"></a></h3>
 <p>
 Odespy offers solution methods that can adapt the size of \( \Delta t \)
-with time to match a desired accuracy in solution. Intuitively,
+with time to match a desired accuracy in the solution. Intuitively,
 small time steps will be chosen in areas where the solution is changing
 rapidly, while larger time steps can be used where the solution
 is slowly varying. Some kind of <em>error estimator</em> is used to
@@ -6215,7 +6378,7 @@ plt<span style="color: #666666">.</span>show()
 
 <p>
 Running four cases with tolerances \( 10^{-1} \), \( 10^{-3} \), \( 10^{-5} \),
-and \( 10^{-7} \), gives the results in Figure <a href="#decay:odespy:fig2">18</a>.
+and \( 10^{-7} \), gives the results in Figure <a href="#decay:odespy:fig2">21</a>.
 Intuitively, one would expect denser points in the beginning of
 the decay and larger time steps when the solution flattens out.
 
@@ -6224,8 +6387,8 @@ the decay and larger time steps when the solution flattens out.
 <p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 18:  Choice of adaptive time mesh by the Dormand-Prince method for different tolerances. <a name="decay:odespy:fig2"></a> </p></center>
-<p><img src="fig-decay/decay_DormandPrince_adaptivity.png" align="bottom" width=800></p>
+<center><p class="caption">Figure 21:  Choice of adaptive time mesh by the Dormand-Prince method for different tolerances. <a name="decay:odespy:fig2"></a> </p></center>
+<p><img src="fig-decay/decay_DormandPrince_adaptivity.png" align="bottom" width=800,></p>
 </center>
 
 <p>
@@ -6234,7 +6397,7 @@ the decay and larger time steps when the solution flattens out.
 
 <p>
 
-<h3>Other schemes  <a name="___sec108"></a></h3>
+<h3>Other schemes  <a name="___sec109"></a></h3>
 <p>
 Next we list some well-known methods for \( u'=f(u,t) \), valid both for
 a single ODE (scalar \( u \)) and systems of ODEs (vector \( u \)).
@@ -6243,7 +6406,7 @@ a single ODE (scalar \( u \)) and systems of ODEs (vector \( u \)).
 
 <p>
 
-<h4>Implicit 2-step backward scheme  <a name="___sec109"></a></h4>
+<h4>Implicit 2-step backward scheme  <a name="___sec110"></a></h4>
 <p>
 The implicit backward method with 2 steps applies a
 three-level backward difference as approximation to \( u'(t) \),
@@ -6272,7 +6435,7 @@ can be used for the first step.
 
 <p>
 
-<h4>The Leapfrog scheme  <a name="___sec110"></a></h4>
+<h4>The Leapfrog scheme  <a name="___sec111"></a></h4>
 <p>
 The derivative of \( u \) at some point \( t_n \) can be approximated by
 a central difference over two time steps,
@@ -6280,11 +6443,15 @@ a central difference over two time steps,
 <p>
 $$
 \begin{equation}
-u'(t_n)\approx \frac{u^{n+1}-u^{n-1}}{2\Delta t},
+u'(t_n)\approx \frac{u^{n+1}-u^{n-1}}{2\Delta t} = [D_{2t}u]^n
 \end{equation}
 $$
-which is an approximation of second order in \( \Delta t \).
-This approximation gives the scheme
+which is an approximation of second order in \( \Delta t \). The scheme
+can then be written as
+
+<p>
+$$ [D_{2t}=-au + b]^n, $$
+in operator notation. Solving for \( u^{n+1} \) gives
 
 <p>
 $$
@@ -6296,17 +6463,18 @@ u^{n+1} = u^{n-1} + \Delta t f(u^n, t_n)
 $$
 Some other scheme must be used as starter to compute \( u^1 \).
 Observe that \eqref{decay:fd2:leapfrog} is an explicit scheme, and that
-a nonlinear \( f \) (in \( u \)) is trivial to handle.
+a nonlinear \( f \) (in \( u \)) is trivial to handle since it only involves
+the known \( u^n \) value.
 
 <p>
 
 <p>
 
-<h4>The filtered Leapfrog scheme  <a name="___sec111"></a></h4>
+<h4>The filtered Leapfrog scheme  <a name="___sec112"></a></h4>
 <p>
 Unfortunately, the Leapfrog scheme \eqref{decay:fd2:leapfrog}
-will develop growing oscillations with time (see <a href="#decay:fd2:exer:leapfrog1">Exercise 15: Implement the Leapfrog scheme</a>, {decay:fd2:exer:leapfrog2}, and
-{decay:fd2:exer:leapfrog3}). A remedy for such undesired oscillations
+will develop growing oscillations with time (see <a href="#decay:fd2:exer:leapfrog1">Exercise 15: Implement the Leapfrog scheme</a>, <a href="#decay:fd2:exer:leapfrog2">Exercise 16: Experiment with the Leapfrog scheme</a>, and
+<a href="#decay:fd2:exer:leapfrog3">Exercise 17: Analyze the Leapfrog scheme</a>). A remedy for such undesired oscillations
 is to introduce a <em>filtering technique</em>. First, a standard Leapfrog
 step is taken, according to \eqref{decay:fd2:leapfrog}, and then
 the previous \( u^n \) value is adjusted according to
@@ -6323,10 +6491,16 @@ particular). A common choice of \( \gamma \) is 0.6 (a value used in the
 famous NCAR Climate Model).
 
 <p>
+<!-- Need to elaborate more on this: -->
+<!-- The difference in th \( \gamma \) term in \eqref{decay:fd2:leapfrog:filtered} -->
+<!-- can be recognized as a finite difference approximation to -->
+<!-- \( \Delta t^2 u''(t_n) \). -->
 
 <p>
 
-<h4>2nd-order Runge-Kutta scheme  <a name="___sec112"></a></h4>
+<p>
+
+<h4>2nd-order Runge-Kutta scheme  <a name="___sec113"></a></h4>
 <p>
 The two-step scheme
 
@@ -6340,9 +6514,10 @@ u^{n+1} &= u^n + \Delta t \frac{1}{2} \left( f(u^n, t_n) + f(u^*, t_{n+1})
 \label{decay:fd2:RK2:s2}
 \end{align}
 $$
-essentially applies a Crank-Nicolson method to the ODE, but replaces
+essentially applies a Crank-Nicolson method \eqref{decay:fd2:RK2:s2}
+to the ODE, but replaces
 the term \( f(u^{n+1}, t_{n+1}) \) by a prediction
-\( f(u^{*}, t_{n+1}) \) based on a Forward Euler step.
+\( f(u^{*}, t_{n+1}) \) based on a Forward Euler step \eqref{decay:fd2:RK2:s1}.
 The scheme \eqref{decay:fd2:RK2:s1}-\eqref{decay:fd2:RK2:s2} is
 known as Huen's method, but is also a 2nd-order Runge-Kutta method.
 The scheme is explicit, and the error is expected to behave as \( \Delta t^2 \).
@@ -6351,9 +6526,41 @@ The scheme is explicit, and the error is expected to behave as \( \Delta t^2 \).
 
 <p>
 
+<h4>A 2nd-order Taylor-series method  <a name="___sec114"></a></h4>
+<p>
+One way to compute \( u^{n+1} \) given \( u^n \) is to use a Taylor polynomial.
+We may write up a polynomial of 2nd degree:
+$$
+u^{n+1} = u^n + u'(t_n)\Delta t + \frac{1}{2}u''(t_n)\Delta t^2
+\thinspace .
+$$
+From the equation \( u'=f(u,t) \) it follows that the derivatives of \( u \)
+can be expressed in terms of \( f \) and its derivatives:
+$$
+u'(t_n)=f(u^n,t_n),\quad u''(t_n)=
+\frac{\partial f}{\partial u}(u^n,t_n) u'(t_n) + \frac{partial f}{\partial t} =
+ f(u^n,t_n)\frac{\partial f}{\partial u}(u^n,t_n)  + \frac{partial f}{\partial t},
+$$
+resulting in the scheme
+$$
+\begin{equation}
+u^{n+1} = u^n + f(u^n,t_n)\Delta t + \frac{1}{2}\left(
+f(u^n,t_n)\frac{\partial f}{\partial u}(u^n,t_n)  +
+\frac{partial f}{\partial t}\right)\Delta t^2
+\thinspace .
+\label{decay:fd2:Taylor2}
+\end{equation}
+$$
+More series could be included in the Taylor polynomial to obtain methods
+of higher order.
+
 <p>
 
-<h4>2nd-order Adams-Bashforth scheme  <a name="___sec113"></a></h4>
+<p>
+
+<p>
+
+<h4>2nd-order Adams-Bashforth scheme  <a name="___sec115"></a></h4>
 <p>
 The following method is known as the 2nd-order Adams-Bashforth scheme:
 
@@ -6376,7 +6583,7 @@ As the name implies, the scheme is of order \( \Delta t^2 \).
 
 <p>
 
-<h4>3rd-order Adams-Bashforth scheme  <a name="___sec114"></a></h4>
+<h4>3rd-order Adams-Bashforth scheme  <a name="___sec116"></a></h4>
 <p>
 Another explicit scheme, involving four time levels, is the
 3rd-order Adams-Bashforth scheme
@@ -6395,13 +6602,15 @@ some method for computing \( u^1 \) and \( u^2 \).
 
 <p>
 <!--  -->
-<!-- === 2nd-order Runge-Kutta scheme  <a name="___sec112"></a>=== -->
+<!-- === 2nd-order Runge-Kutta scheme  <a name="___sec113"></a>=== -->
 
 <p>
 
 <p>
 
-<h2>Exercises  <a name="___sec65"></a></h2>
+<h2>Exercises  <a name="___sec66"></a></h2>
+<p>
+
 <p>
 
 <p>
@@ -6415,19 +6624,20 @@ some method for computing \( u^1 \) and \( u^2 \).
 <p>
 
 <p>
-Implement the 2-step backward method \eqref{decay:fd2:bw:2step}
-for the model \( u'(t) = -a(t)u(t) + b(t) \), \( u(0)=I \).
-Allow the first step to be computed by either the Backward Euler
-scheme or the Crank-Nicolson scheme. Verify the implementing by choosing
-\( a(t) \) and \( b(t) \) such that the exact solution is linear in \( t \)
-(see the section <a href="#decay:MMS">Verification via manufactured solutions</a>).
+Implement the 2-step backward method \eqref{decay:fd2:bw:2step} for the
+model \( u'(t) = -a(t)u(t) + b(t) \), \( u(0)=I \).  Allow the first step to
+be computed by either the Backward Euler scheme or the Crank-Nicolson
+scheme. Verify the implementing by choosing \( a(t) \) and \( b(t) \) such
+that the exact solution is linear in \( t \) (see the section <a href="#decay:MMS">Verification via manufactured solutions</a>). Show mathematically that a linear solution is a
+solution of the discrete equations.
 
 <p>
 Compute convergence rates (see the section <a href="#decay:convergence:rate">Computing convergence rates</a>) in
 a test case \( a=\hbox{const} \) and \( b=0 \), where we easily have an exact
-solution, and determine if the choice of
-a first-order scheme (Backward Euler) has any impact on the overall
-accuracy of this scheme. The expected error goes like \( {\cal O}(\Delta t^2) \).
+solution, and determine if the choice of a first-order scheme
+(Backward Euler) for the first step has any impact on the overall
+accuracy of this scheme. The expected error goes like \( {\cal O}(\Delta
+t^2) \).
 Filename: <tt>dc_backward2step.py</tt>.
 
 <p>
@@ -6456,14 +6666,15 @@ convenient to use the explicit Forward Euler scheme for computing \( u^1 \).
 <p>
 Verify the implementation by choosing \( a(t) \) and \( b(t) \) such that
 the exact solution is linear in \( t \) (see the section <a href="#decay:MMS">Verification via manufactured solutions</a>).
-Also run the case \( u'=-u + 1 \), \( u(0)=0 \), and compare the numerical
-and exact solutions in a plot (\( \uex(t)=1-e^{-t} \) for this case).
 
 <p>
 Compute convergence rates (see the section <a href="#decay:convergence:rate">Computing convergence rates</a>)
 to determine if the choice of a first-order scheme (Forward Euler) for
 the first time step has any impact on the overall accuracy of the
 Leapfrog scheme, which is expected to be of second order in \( \Delta t \).
+A possible test case is
+\( u'=-au + b \), \( u(0)=0 \), where \( \uex(t)=b/a + (I - b/a)e^{-at} \) if
+\( a \) and \( b \) are constants.
 Filename: <tt>dc_leapfrog.py</tt>.
 
 <p>
@@ -6512,9 +6723,12 @@ instabilities of the Leapfrog scheme \eqref{decay:fd2:leapfrog}.
 Consider the case where \( a \) is constant and \( b=0 \).
 Assume that an exact solution of the discrete equations has
 the form \( u^n=A^n \), where \( A \) is an amplification factor to
-be determined. Use <tt>sympy</tt> to compute \( A \). Since the governing
+be determined. Compute \( A \) either by and or with the aid of <tt>sympy</tt>.
 polynomial for \( A \) has two roots, \( A_1 \) and \( A_2 \),
 \( u^n \) is a linear combination \( u^n=C_1A_1^n + C_2A_2^n \).
+Show that one of the roots is the explanation of the instability.
+Determine \( C_1 \) and \( C_2 \) and compare \( A \) with the exact
+expression, using Taylor series.
 Filename: <tt>dc_leapfrog_anaysis.py</tt>.
 
 <p>
@@ -6678,6 +6892,32 @@ The subclasses also need extra lists for methods needed to start
 schemes with \( m>0 \).
 Verify the implementation by testing with a linear solution (\( \uex(t)=ct+d \)).
 Filename: <tt>decay_schemes_oo.py</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 23: Analyze explicit 2nd-order methods <a name="decay:exer:RK2:Taylor:analysis"></a></h3>
+<p>
+
+<p>
+Show that the schemes \eqref{decay:fd2:RK2:s2} and
+\eqref{decay:fd2:Taylor2} are identical in the case \( f(u,t)=-a \), where
+\( a>0 \) is a constant. Find an expression for the amplification factor,
+and determine the stability limit (\( A= \)). Can the scheme produce
+oscillatory solutions of \( u'=-au \)? Plot the numerical and exact
+amplification factor.
+Filename: <tt>dc_RK2_Taylor2.py</tt>.
 
 <p>
 <!-- --- end of exercise -->
@@ -6878,7 +7118,7 @@ $$ u' = -au,\quad u(0)=I\thinspace . $$
 
 <p>
 
-<h3>Radioactive Decay  <a name="___sec129"></a></h3>
+<h3>Radioactive Decay  <a name="___sec132"></a></h3>
 <p>
 
 <p>
@@ -6927,7 +7167,7 @@ With \( u(t)=e^{-at} \), we get \( t_{1/2}=a^{-1}\ln 2 \) or \( a=\ln 2/t_{1/2} 
 
 <p>
 
-<h3>Newton's law of cooling  <a name="___sec130"></a></h3>
+<h3>Newton's law of cooling  <a name="___sec133"></a></h3>
 <p>
 <!-- http://web.bham.ac.uk/winterhs/Newton.htm -->
 <!-- I. Newton, Scala Graduum Caloris, Philosophical Transactions of the Royal Society of London, 1701 -->
@@ -7018,7 +7258,7 @@ $$
 
 <p>
 
-<h4>Multiple atmospheric layers  <a name="___sec132"></a></h4>
+<h4>Multiple atmospheric layers  <a name="___sec135"></a></h4>
 <p>
 The atmosphere can be approximately modeled by seven layers.
 In each layer, \eqref{decay:app:atm:ode} is applied with
@@ -7057,14 +7297,14 @@ The value of the pressure at the ground \( z=0 \) is \( 101325 \) Pa.
 
 <p>
 
-<h4>Simplification: \( L=0 \)  <a name="___sec133"></a></h4>
+<h4>Simplification: \( L=0 \)  <a name="___sec136"></a></h4>
 <p>
 One commonly used simplification is to assume that the temperature is
 constant within each layer. This means that \( L=0 \).
 
 <p>
 
-<h4>Simplification: one-layer model  <a name="___sec134"></a></h4>
+<h4>Simplification: one-layer model  <a name="___sec137"></a></h4>
 <p>
 Another commonly used approximation is to work with one layer instead of
 seven. This <a href="http://en.wikipedia.org/wiki/Density_of_air">one-layer model</a>
@@ -7089,7 +7329,7 @@ and the buoyancy force.
 
 <p>
 
-<h4>Overview of forces  <a name="___sec136"></a></h4>
+<h4>Overview of forces  <a name="___sec139"></a></h4>
 <p>
 The gravity force is \( F_g= -mg \), where \( m \) is the mass of the body and
 \( g \) is the acceleration of gravity.
@@ -7103,7 +7343,7 @@ direction.
 The drag force is of two types, depending on the Reynolds number
 $$
 \begin{equation}
-\hbox{Re} = \frac{\varrho dv}{\mu},
+\hbox{Re} = \frac{\varrho d|v|}{\mu},
 \end{equation}
 $$
 where \( d \) is the diameter of the body in
@@ -7134,7 +7374,7 @@ respectively.
 
 <p>
 
-<h4>Equation of motion  <a name="___sec137"></a></h4>
+<h4>Equation of motion  <a name="___sec140"></a></h4>
 <p>
 All the mentioned forces act in the vertical direction.
 Newton's second law of motion applied to the body says that the sum of
@@ -7229,7 +7469,7 @@ $$
 
 <p>
 
-<h4>Terminal velocity  <a name="___sec138"></a></h4>
+<h4>Terminal velocity  <a name="___sec141"></a></h4>
 <p>
 An interesting aspect of \eqref{decay:app:fallingbody:gmodel:S} and
 \eqref{decay:app:fallingbody:gmodel:q} is whether we can approach
@@ -7249,7 +7489,7 @@ The former equation implies \( v_T = b/a \), while the latter has solutions
 
 <p>
 
-<h4>A Crank-Nicolson scheme  <a name="___sec139"></a></h4>
+<h4>A Crank-Nicolson scheme  <a name="___sec142"></a></h4>
 <p>
 Both governing equations, the Stokes' drag model
 \eqref{decay:app:fallingbody:gmodel:S} and the quadratic drag model
@@ -7293,7 +7533,7 @@ $$
 
 <p>
 
-<h4>Physical data  <a name="___sec140"></a></h4>
+<h4>Physical data  <a name="___sec143"></a></h4>
 <p>
 Suitable values of \( \mu \) are \( 1.8\cdot 10^{-5}\hbox{ Pa}\, \hbox{s} \) for air
 and \( 8.9\cdot 10^{-4}\hbox{ Pa}\, \hbox{s} \) for water.
@@ -7315,7 +7555,7 @@ to the flow, and
 
 <p>
 
-<h4>Verification  <a name="___sec141"></a></h4>
+<h4>Verification  <a name="___sec144"></a></h4>
 <p>
 To verify the program, one may assume a heavy body in air such that the \( F_b \)
 force can be neglected, and assume a small velocity such that the
@@ -7337,7 +7577,71 @@ the exact expressions.
 
 <p>
 
-<h2>Exercises  <a name="___sec65"></a></h2>
+<h3>Decay ODEs from solving a PDE by Fourier expansions <a name="decay:app:diffusion:Fourier"></a></h3>
+<p>
+
+<p>
+<!-- Maybe move to diffusion part? Makes sense there two, or refer...or -->
+<!-- repeat, or make one exer with two k's and then generalize in diffusion -->
+
+<p>
+Suppose we have a partial differential equation
+$$ \frac{\partial u}{\partial t} = \alpha\frac{\partial^2u}{\partial x^2}
++ f(x,t),
+$$
+with boundary conditions \( u(0,t)=u(L,t)=0 \) and initial condition
+\( u(x,0)=I(x) \). One may express the solution as
+$$ u(x,t) = \sum_{k=1}^m A_k(t)e^{ikx\pi/L},$$
+for appropriate unknown functions \( A_k \), \( k=1,\ldots,m \).
+We use the complex exponential \( e^{ikx\pi/L} \) for easy algebra, but
+the physical \( u \) is taken as the real part of any complex expression.
+Note that the expansion in terms of \( e^{ikx\pi/L} \) is compatible with
+the boundary conditions: all functions \( e^{ikx\pi/L} \) vanish for
+\( x=0 \) and \( x=L \). Suppose we can express \( I(x) \) as
+
+<p>
+$$ I(x) = \sum_{k=1}^m I_ke^{ikx\pi/L},
+\thinspace .
+$$
+Such an expansion can be computed by well-known Fourier expansion techniques,
+but the details are not important here.
+Also suppose we can express the given \( f(x,t) \) as
+$$ f(x,t) = \sum_{k=1}^m b_k(t)e^{ikx\pi/L}
+\thinspace .
+$$
+Inserting the expansions for \( u \)
+and \( f \) in the differential equations demands that all terms corresponding
+to a given \( k \) must be equal. The calculations results in the follow
+system of ODEs:
+
+<p>
+$$
+A_k'(t) = -\alpha\frac{k^2\pi^2}{L^2} + b_k(t),\quad k=1,\ldots,m
+\thinspace .
+$$
+From the initial condition
+$$ u(x,0)=\sum_k A_k(0)e^{ikx\pi/L}=I(x)=\sum_k I_k\e^{(ikx\pi/L)},$$
+it follows that \( A_k(0)=I_k \), \( k=1,\ldots,m \). We then have \( m \)
+equations of the form \( A_k'=-a A_k +b \), \( A_k(0)=I_k \), for
+appropriate definitions of \( a \) and \( b \). These ODE problems
+independent each other such that we can solve one problem
+at a time. The outline technique is a quite common approach for solving
+partial differential equations.
+
+<p>
+<b>Remark.</b> Since \( a=\alpha k^2\pi^2/L^2 \) depends on \( k \) and the stability of
+the Forward Euler scheme demands \( a\Delta t \leq 1 \), we get that
+\( \Delta t \leq \alpha^{-1}L^2\pi^{-2} k^{-2} \). Usually, quite large
+\( k \) values are needed to accurately represent the given functions
+\( I(x) \) and \( f(x,y) \) and then \( \Delta t \) needs to be very small.
+Therefore, the Crank-Nicolson and Backward Euler schemes, which
+allow larger \( \Delta t \) without any growth in the solutions, are
+more popular choices when creating time-stepping algorithms for
+partial differential equations.
+
+<p>
+
+<h2>Exercises  <a name="___sec66"></a></h2>
 <p>
 
 <p>
@@ -7347,7 +7651,7 @@ the exact expressions.
 
 <p>
 
-<h3>Exercise 23: Simulate the pressure drop in the atmosphere <a name="decay:app:exer:atm1"></a></h3>
+<h3>Exercise 24: Simulate the pressure drop in the atmosphere <a name="decay:app:exer:atm1"></a></h3>
 <p>
 
 <p>
@@ -7385,7 +7689,7 @@ Filename: <tt>atmospheric_pressure.py</tt>.
 
 <p>
 
-<h3>Exercise 24: Make a program for vertical motion in a fluid <a name="decay:app:exer:drag:prog"></a></h3>
+<h3>Exercise 25: Make a program for vertical motion in a fluid <a name="decay:app:exer:drag:prog"></a></h3>
 <p>
 
 <p>
@@ -7412,11 +7716,11 @@ Filename: <tt>vertical_motion.py</tt>.
 
 <p>
 
-<h3>Exercise 25: Plot forces acting in vertical motion in a fluid <a name="decay:app:exer:drag:prog:viz"></a></h3>
+<h3>Exercise 26: Plot forces acting in vertical motion in a fluid <a name="decay:app:exer:drag:prog:viz"></a></h3>
 <p>
 
 <p>
-Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 24: Make a program for vertical motion in a fluid</a> to compute
+Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 25: Make a program for vertical motion in a fluid</a> to compute
 the forces \( F_d^{(q)} \), \( F_d^{(S)} \), \( F_g \), and \( F_b \).
 Plot the latter two and the relevant drag force, depending on
 the value of the Reynolds number.
@@ -7436,11 +7740,11 @@ Filename: <tt>vertical_motion_force_plot.py</tt>.
 
 <p>
 
-<h3>Exercise 26: Simulate a free fall of a parachute jumper <a name="decay:app:exer:drag:parachute1"></a></h3>
+<h3>Exercise 27: Simulate a free fall of a parachute jumper <a name="decay:app:exer:drag:parachute1"></a></h3>
 <p>
 
 <p>
-Apply the program from <a href="#decay:app:exer:drag:prog">Exercise 24: Make a program for vertical motion in a fluid</a> to
+Apply the program from <a href="#decay:app:exer:drag:prog">Exercise 25: Make a program for vertical motion in a fluid</a> to
 a parachute jumper in free fall before the parachute opens.
 Set the density of the human body
 as \( \varrho_b = 1003 \hbox{ kg}/\hbox{m}^3 \)
@@ -7469,7 +7773,7 @@ Filename: <tt>parachute_jumper1.py</tt>.
 
 <p>
 
-<h3>Exercise 27: Simulate a complete parachute jump <a name="decay:app:exer:drag:parachute2"></a></h3>
+<h3>Exercise 28: Simulate a complete parachute jump <a name="decay:app:exer:drag:parachute2"></a></h3>
 <p>
 
 <p>
@@ -7498,7 +7802,7 @@ p'(z) &= -\frac{Mg}{R^*(T_0+Lz)} p,\\
 $$
 
 <p>
-Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 24: Make a program for vertical motion in a fluid</a> to
+Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 25: Make a program for vertical motion in a fluid</a> to
 handle three coupled differential equations. With the Crank-Nicolson
 method, one must solve a \( 3\times 3 \) system of equations at each time
 level, since \( p \) depends on \( z \), which depends on \( v \), which depends
@@ -7507,7 +7811,7 @@ method avoids the need to solve coupled equations, but demands smaller
 \( \Delta t \) for accuracy. Make sure \( A \) and \( C_D \) can be changed at
 some time \( t_p \) when the parachute is released.
 Make nose tests of this program based on the
-same verification cases as outlined in <a href="#decay:app:exer:drag:prog">Exercise 24: Make a program for vertical motion in a fluid</a>.
+same verification cases as outlined in <a href="#decay:app:exer:drag:prog">Exercise 25: Make a program for vertical motion in a fluid</a>.
 
 <p>
 Use the program to simulate a jump from \( z=5000 \) m to the ground \( z=0 \).
@@ -7527,7 +7831,7 @@ Filename: <tt>parachute_jumper2.py</tt>.
 
 <p>
 
-<h3>Exercise 28: Simulate a rising ball in water <a name="decay:app:exer:drag:rising"></a></h3>
+<h3>Exercise 29: Simulate a rising ball in water <a name="decay:app:exer:drag:rising"></a></h3>
 <p>
 
 <p>
@@ -7553,7 +7857,7 @@ Filename: <tt>rising_ball.py</tt>.
 
 <p>
 
-<h3>Exercise 29: Radioactive decay of Carbon-14 <a name="decay:app:exer:radio:C14"></a></h3>
+<h3>Exercise 30: Radioactive decay of Carbon-14 <a name="decay:app:exer:radio:C14"></a></h3>
 <p>
 
 <p>
@@ -7581,7 +7885,7 @@ Filename: <tt>carbon14.py</tt>.
 
 <p>
 
-<h3>Exercise 30: Radioactive decay of two substances <a name="decay:app:exer:radio:twosubst"></a></h3>
+<h3>Exercise 31: Radioactive decay of two substances <a name="decay:app:exer:radio:twosubst"></a></h3>
 <p>
 
 <p>
@@ -7626,7 +7930,7 @@ Filename: <tt>radioactive_decay_2subst.py</tt>.
 
 <p>
 
-<h3>Exercise 31: Find time of murder from body temperature <a name="decay:app:exer:cooling:pizza"></a></h3>
+<h3>Exercise 32: Find time of murder from body temperature <a name="decay:app:exer:cooling:pizza"></a></h3>
 <p>
 
 <p>
@@ -7666,7 +7970,7 @@ Filename: <tt>detective.py</tt>.
 
 <p>
 
-<h3>Exercise 32: Simulate an oscillating cooling process <a name="decay:app:exer:cooling:osc"></a></h3>
+<h3>Exercise 33: Simulate an oscillating cooling process <a name="decay:app:exer:cooling:osc"></a></h3>
 <p>
 
 <p>
@@ -7699,7 +8003,7 @@ Filename: <tt>osc_cooling.py</tt>.
 
 <p>
 
-<h3>Exercise 33: Compute \( y=|x| \) by solving an ODE <a name="decay:app:exer:signum"></a></h3>
+<h3>Exercise 34: Compute \( y=|x| \) by solving an ODE <a name="decay:app:exer:signum"></a></h3>
 <p>
 
 <p>
@@ -7734,7 +8038,7 @@ Filename: <tt>signum.py</tt>.
 
 <p>
 
-<h3>Exercise 34: Simulate growth of a fortune with random interest rate <a name="decay:app:exer:interest"></a></h3>
+<h3>Exercise 35: Simulate growth of a fortune with random interest rate <a name="decay:app:exer:interest"></a></h3>
 <p>
 
 <p>
@@ -7805,7 +8109,7 @@ computing the statistics.
 
 <p>
 
-<h3>Exercise 35: Simulate sudden environmental changes for a population <a name="decay:app:exer:pop:at"></a></h3>
+<h3>Exercise 36: Simulate sudden environmental changes for a population <a name="decay:app:exer:pop:at"></a></h3>
 <p>
 
 <p>
@@ -7842,11 +8146,11 @@ Filename: <tt>population_drop.py</tt>.
 
 <p>
 
-<h3>Exercise 36: Simulate oscillating environment for a population <a name="decay:app:exer:pop:osc"></a></h3>
+<h3>Exercise 37: Simulate oscillating environment for a population <a name="decay:app:exer:pop:osc"></a></h3>
 <p>
 
 <p>
-This exercise is a variant of <a href="#decay:app:exer:pop:at">Exercise 35: Simulate sudden environmental changes for a population</a>.
+This exercise is a variant of <a href="#decay:app:exer:pop:at">Exercise 36: Simulate sudden environmental changes for a population</a>.
 Now we assume that the environmental conditions changes periodically with
 time so that we may take
 $$ r(t) = r_0 + A\sin\left(\frac{2\pi}{P}t\right)
@@ -7872,7 +8176,7 @@ Filename: <tt>population_osc.py</tt>.
 
 <p>
 
-<h3>Exercise 37: Simulate logistic growth <a name="decay:app:exer:pop:logistic1"></a></h3>
+<h3>Exercise 38: Simulate logistic growth <a name="decay:app:exer:pop:logistic1"></a></h3>
 <p>
 
 <p>
@@ -7899,7 +8203,7 @@ Filename: <tt>logistic_growth.py</tt>.
 
 <p>
 
-<h3>Exercise 38: Rederive the equation for continuous compound interest <a name="decay:app:exer:interest:derive"></a></h3>
+<h3>Exercise 39: Rederive the equation for continuous compound interest <a name="decay:app:exer:interest:derive"></a></h3>
 <p>
 
 <p>

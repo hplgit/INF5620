@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Preliminary notes for INF5620 1.0 documentation" href="#" />
-    <link rel="next" title="Discretizing first-order ODEs by finite difference methods" href="main_decay.html" />
+    <link rel="next" title="Finite difference methods for first-order ODEs" href="main_decay.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <!--[if lte IE 6]>
@@ -43,7 +43,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="main_decay.html" title="Discretizing first-order ODEs by finite difference methods"
+          <a href="main_decay.html" title="Finite difference methods for first-order ODEs"
              accesskey="N">next</a> |</li>
         <li><a href="#">Preliminary notes for INF5620 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -59,9 +59,9 @@
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="main_decay.html">Discretizing first-order ODEs by finite difference methods</a></li>
-<li class="toctree-l1"><a class="reference internal" href="main_decay.html#finite-difference-methods-for-an-ode">Finite difference methods for an ODE</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exponential-decay">Exponential decay</a></li>
+<li class="toctree-l1"><a class="reference internal" href="main_decay.html">Finite difference methods for first-order ODEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="main_decay.html#finite-difference-methods">Finite difference methods</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#a-basic-model-for-exponential-decay">A basic model for exponential decay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#the-forward-euler-scheme">The Forward Euler scheme</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#the-backward-euler-scheme">The Backward Euler scheme</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#the-crank-nicolson-scheme">The Crank-Nicolson scheme</a></li>
@@ -71,7 +71,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="main_decay.html#implementation">Implementation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#making-a-program">Making a program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#making-a-solver-function">Making a solver function</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#verifying-the-implementation">Verifying the implementation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#computing-the-numerical-error">Computing the numerical error</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#plotting-solutions">Plotting solutions</a></li>
@@ -130,8 +130,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="main_decay.html#model-extensions">Model extensions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#extension-to-a-variable-coefficient">Extension to a variable coefficient</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#extension-to-a-source-term">Extension to a source term</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#generalization-variable-coefficient">Generalization: variable coefficient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#generalization-source-term">Generalization: source term</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#implementation-of-the-generalized-model-problem">Implementation of the generalized model problem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#verification-via-trivial-solutions">Verification via trivial solutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#verification-via-manufactured-solutions">Verification via manufactured solutions</a></li>
@@ -156,6 +156,7 @@
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-20-generalize-a-class-implementation">Exercise 20: Generalize a class implementation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-21-generalize-an-advanced-class-implementation">Exercise 21: Generalize an advanced class implementation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-22-make-a-unified-implementation-of-many-schemes">Exercise 22: Make a unified implementation of many schemes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-23-analyze-explicit-2nd-order-methods">Exercise 23: Analyze explicit 2nd-order methods</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="main_decay.html#applications-of-exponential-decay-models">Applications of exponential decay models</a><ul>
@@ -165,25 +166,26 @@
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#newton-s-law-of-cooling">Newton&#8217;s law of cooling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#decay-of-atmospheric-pressure-with-altitude">Decay of atmospheric pressure with altitude</a></li>
 <li class="toctree-l2"><a class="reference internal" href="main_decay.html#vertical-motion-of-a-body-in-a-viscous-fluid">Vertical motion of a body in a viscous fluid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#decay-odes-from-solving-a-pde-by-fourier-expansions">Decay ODEs from solving a PDE by Fourier expansions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="main_decay.html#id24">Exercises</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-23-simulate-the-pressure-drop-in-the-atmosphere">Exercise 23: Simulate the pressure drop in the atmosphere</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-24-make-a-program-for-vertical-motion-in-a-fluid">Exercise 24: Make a program for vertical motion in a fluid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-25-plot-forces-acting-in-vertical-motion-in-a-fluid">Exercise 25: Plot forces acting in vertical motion in a fluid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-26-simulate-a-free-fall-of-a-parachute-jumper">Exercise 26: Simulate a free fall of a parachute jumper</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-27-simulate-a-complete-parachute-jump">Exercise 27: Simulate a complete parachute jump</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-28-simulate-a-rising-ball-in-water">Exercise 28: Simulate a rising ball in water</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-29-radioactive-decay-of-carbon-14">Exercise 29: Radioactive decay of Carbon-14</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-30-radioactive-decay-of-two-substances">Exercise 30: Radioactive decay of two substances</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-31-find-time-of-murder-from-body-temperature">Exercise 31: Find time of murder from body temperature</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-32-simulate-an-oscillating-cooling-process">Exercise 32: Simulate an oscillating cooling process</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-33-compute-by-solving-an-ode">Exercise 33: Compute <span class="math">\(y=|x|\)</span> by solving an ODE</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-34-simulate-growth-of-a-fortune-with-random-interest-rate">Exercise 34: Simulate growth of a fortune with random interest rate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-35-simulate-sudden-environmental-changes-for-a-population">Exercise 35: Simulate sudden environmental changes for a population</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-36-simulate-oscillating-environment-for-a-population">Exercise 36: Simulate oscillating environment for a population</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-37-simulate-logistic-growth">Exercise 37: Simulate logistic growth</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-38-rederive-the-equation-for-continuous-compound-interest">Exercise 38: Rederive the equation for continuous compound interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-24-simulate-the-pressure-drop-in-the-atmosphere">Exercise 24: Simulate the pressure drop in the atmosphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-25-make-a-program-for-vertical-motion-in-a-fluid">Exercise 25: Make a program for vertical motion in a fluid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-26-plot-forces-acting-in-vertical-motion-in-a-fluid">Exercise 26: Plot forces acting in vertical motion in a fluid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-27-simulate-a-free-fall-of-a-parachute-jumper">Exercise 27: Simulate a free fall of a parachute jumper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-28-simulate-a-complete-parachute-jump">Exercise 28: Simulate a complete parachute jump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-29-simulate-a-rising-ball-in-water">Exercise 29: Simulate a rising ball in water</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-30-radioactive-decay-of-carbon-14">Exercise 30: Radioactive decay of Carbon-14</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-31-radioactive-decay-of-two-substances">Exercise 31: Radioactive decay of two substances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-32-find-time-of-murder-from-body-temperature">Exercise 32: Find time of murder from body temperature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-33-simulate-an-oscillating-cooling-process">Exercise 33: Simulate an oscillating cooling process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-34-compute-by-solving-an-ode">Exercise 34: Compute <span class="math">\(y=|x|\)</span> by solving an ODE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-35-simulate-growth-of-a-fortune-with-random-interest-rate">Exercise 35: Simulate growth of a fortune with random interest rate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-36-simulate-sudden-environmental-changes-for-a-population">Exercise 36: Simulate sudden environmental changes for a population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-37-simulate-oscillating-environment-for-a-population">Exercise 37: Simulate oscillating environment for a population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-38-simulate-logistic-growth">Exercise 38: Simulate logistic growth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main_decay.html#exercise-39-rederive-the-equation-for-continuous-compound-interest">Exercise 39: Rederive the equation for continuous compound interest</a></li>
 </ul>
 </li>
 </ul>
@@ -214,7 +216,7 @@
 
   <h4>Next topic</h4>
   <p class="topless"><a href="main_decay.html"
-                        title="next chapter">Discretizing first-order ODEs by finite difference methods</a></p>
+                        title="next chapter">Finite difference methods for first-order ODEs</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -239,7 +241,7 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="main_decay.html" title="Discretizing first-order ODEs by finite difference methods"
+          <a href="main_decay.html" title="Finite difference methods for first-order ODEs"
              >next</a> |</li>
         <li><a href="#">Preliminary notes for INF5620 1.0 documentation</a> &raquo;</li> 
       </ul>
