@@ -81,164 +81,140 @@ for filename in filenames:
 
 #plt.show()  # at the end of the program
 
-# Write Doconce report
-do = open('tmp_report.do.txt', 'w')
-title = 'Experiments with Schemes for Exponential Decay'
-author1 = 'Hans Petter Langtangen Email:hpl@simula.no at '\
-          'Center for Biomedical Computing, '\
-          'Simula Research Laboratory and '\
-          'Department of Informatics, University of Oslo.'
-date = 'August 20, 2012'
-
-dt_values_str = ', '.join([str(v) for v in dt_values])
-
-# Remember to use raw string because of latex commands for math
+# Write LaTeX report
+do = open('tmp_report.tex', 'w')
+# raw strings are important since LaTeX makes heavy use of backslashes
 do.write(r"""
-TITLE: %(title)s
-AUTHOR: %(author1)s
-DATE: %(date)s
+\documentclass[twoside]{article}
+\usepackage{relsize,epsfig,makeidx,amsmath,amsfonts}
+\usepackage[latin1]{inputenc}
+% Hyperlinks in PDF:
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,
+    filecolor=black,urlcolor=black,pdfmenubar=true,pdftoolbar=true,
+    urlcolor=black,bookmarksdepth=3]{hyperref}
 
-__Summary.__
+\makeindex
+
+\begin{document}
+\title{Experiments with Schemes for Exponential Decay}
+\author{Hans Petter Langtangen\footnote{
+Center for Biomedical Computing, Simula Research Laboratory, and
+Department of Informatics, University of Oslo.}}
+\date{\today}
+
+\begin{abstract}
 This report investigates the accuracy of three finite difference
 schemes for the ordinary differential equation $u'=-au$ with the
 aid of numerical experiments. Numerical artifacts are in particular
 demonstrated.
 
-# Include table of contents (latex and html; sphinx always has a toc)
+% Include table of contents (latex and html; sphinx always has a toc)[[[[[[[
 
-TOC: on
+\end{abstract}
 
-# Purpose: section with multi-line equation.
+\tableofcontents
 
-======= Mathematical problem =======
-label{math:problem}
-
-idx{model problem} idx{exponential decay}
+\section{Mathematical problem}
+\label{math:problem}
+\index{model problem}\index{exponential decay}
 
 We address the initial-value problem
 
-!bt
 \begin{align}
-u'(t) &= -au(t), \quad t \in (0,T], label{ode}\\
-u(0)  &= I,                         label{initial:value}
+u'(t) &= -au(t), \quad t \in (0,T], \label{ode}\\
+u(0)  &= I,                         \label{initial:value}
 \end{align}
-!et
 where $a$, $I$, and $T$ are prescribed parameters, and $u(t)$ is
 the unknown function to be estimated. This mathematical model
 is relevant for physical phenomena featuring exponential decay
 in time.
 
-# Purpose: section with single-line equation and a bullet list.
-
-======= Numerical solution method =======
-label{numerical:problem}
-
-idx{mesh in time} idx{$\theta$-rule} idx{numerical scheme}
-idx{finite difference scheme}
+\section{Numerical solution method}
+\label{numerical:problem}
+\index{mesh in time} \index{$\theta$-rule} \index{numerical scheme}
+\index{finite difference scheme}
 
 We introduce a mesh in time with points $0= t_0< t_1 \cdots < t_N=T$.
 For simplicity, we assume constant spacing $\Delta t$ between the
 mesh points: $\Delta t = t_{n}-t_{n-1}$, $n=1,\ldots,N$. Let
 $u^n$ be the numerical approximation to the exact solution at $t_n$.
 
-The $\theta$-rule is used to solve (ref{ode}) numerically:
+The $\theta$-rule is used to solve (\ref{ode}) numerically:
 
-!bt
 \[
 u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n,
 \]
-!et
 for $n=0,1,\ldots,N-1$. This scheme corresponds to
 
-  * The Forward Euler scheme when $\theta=0$
-  * The Backward Euler scheme when $\theta=1$
-  * The Crank-Nicolson scheme when $\theta=1/2$
+\begin{itemize}
+  \item The Forward Euler scheme when $\theta=0$
+  \item The Backward Euler scheme when $\theta=1$
+  \item The Crank-Nicolson scheme when $\theta=1/2$
+\end{itemize}
 
-# Purpose: section with computer code taken from a part of
-# a file. The fromto: f@t syntax copies from the regular
-# expression f up to the line, but not including, the regular
-# expression t.
-
-======= Implementation =======
+\section{Implementation}
 
 The numerical method is implemented in a Python function:
 
-@@@CODE ../dc_mod.py  fromto: def solver@def verify_three
+\begin{quote}
+\begin{verbatim}
+def solver(I, a, T, dt, theta):
+    """Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt."""
+    dt = float(dt)           # avoid integer division
+    N = int(round(T/dt))     # no of time intervals
+    T = N*dt                 # adjust T to fit time step dt
+    u = zeros(N+1)           # array of u[n] values
+    t = linspace(0, T, N+1)  # time mesh
 
-# Purpose: section with figures.
+    u[0] = I                 # assign initial condition
+    for n in range(0, N):    # n=0,1,...,N-1
+        u[n+1] = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)*u[n]
+    return u, t
+\end{verbatim}
+\end{quote}
 
-======= Numerical experiments =======
-
-idx{numerical experiments}
+\section{Numerical experiments}
+\index{numerical experiments}
 
 We define a set of numerical experiments where $I$, $a$, and $T$ are
 fixed, while $\Delta t$ and $\theta$ are varied.
-In particular, $I=%(I)g$, $a=%(a)g$, $\Delta t = %(dt_values_str)s$.
+In particular, $I=1$, $a=2$, $\Delta t = 1.25, 0.75, 0.5, 0.1$.
 
-""" % vars())
+\subsection{The Backward Euler method}
+\index{BE}
 
-short2long = dict(FE='The Forward Euler method',
-                  BE='The Backward Euler method',
-                  CN='The Crank-Nicolson method')
-methods = 'BE', 'CN', 'FE'
-inline_figures = True  # True: subsections with inline graphics
-                       # False: no subsecs, figures with captions
-if inline_figures:
-    for method in methods:
-        do.write("""
+\begin{center}  % inline figure
+  \centerline{\includegraphics[width=0.9\linewidth]{BE.png}}
+\end{center}
 
-# Purpose: subsection with inline figure (figure without caption).
+\subsection{The Crank-Nicolson method}
+\index{CN}
 
-===== %s =====
+\begin{center}  % inline figure
+  \centerline{\includegraphics[width=0.9\linewidth]{CN.png}}
+\end{center}
 
-idx{%s}
+\subsection{The Forward Euler method}
+\index{FE}
 
-FIGURE: [%s.png, width=800]
+\begin{center}  % inline figure
+  \centerline{\includegraphics[width=0.9\linewidth]{FE.png}}
+\end{center}
 
-""" % (short2long[method], method, method))
-else:
-    do.write("""
-
-===== Time series =====
-
-Figures ref{fig:BE}-ref{fig:FE} display the results.
-
-""")
-    # Full figures with captions
-    for method in methods:
-        fig = 'FIGURE: [%s.png, width=800] %s. '\
-              'label{fig:%s}\n\n' % \
-              (method, short2long[method], method)
-        do.write(fig)
-
-# Remember raw string for latex math with backslashes
-do.write(r"""
-
-# Purpose: exemplify referring to a figure with label and caption.
-
-===== Error vs $\Delta t$ =====
-
-idx{error vs time step}
+\subsection{Error vs $\Delta t$}
+\index{error vs time step}
 
 How $E$ varies with $\Delta t$ for $\theta=0,0.5,1$
-is shown in Figure ref{fig:E}.
+is shown in Figure~\ref{fig:E}.
 
-FIGURE: [error.png, width=400] Error versus time step. label{fig:E}
+\begin{figure}[!ht]
+  \centerline{\includegraphics[width=0.9\linewidth]{error.png}}
+  \caption{
+  Error versus time step. \label{fig:E}
+  }
+\end{figure}
+
+
+\printindex
+\end{document}
 """)
-
-# Good habits when writing for latex, sphinx and mathjax-html
-# at once:
-#
-# Minimize math in captions as the caption becomes the figure
-# name in sphinx, when referring to figures, and any math
-# is deleted in the name.
-#
-# Use \[, equation or align enviroments in latex math.
-# Sphinx cannot handle labels in align environments.
-#
-# Figures float around in latex, but are placed at where
-# they are defined in sphinx and html. Figures without captions
-# are placed inline in latex and may be convenient.
-#
-# Remember raw strings for any text with latex math with
-# backslashes.

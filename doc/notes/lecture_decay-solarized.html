@@ -79,6 +79,42 @@ $$
 \newcommand{\uex}{u_{\small\mbox{e}}}
 \newcommand{\Aex}{A_{\small\mbox{e}}}
 \newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+
+\newcommand{\xpoint}{\pmb{x}}
+\newcommand{\normalvec}{\pmb{n}}
+
+\renewcommand{\u}{\pmb{u}}
+\renewcommand{\v}{\pmb{v}}
+\newcommand{\w}{\pmb{w}}
+\renewcommand{\u}{\pmb{u}}
+\newcommand{\e}{\pmb{e}}
+\newcommand{\f}{\pmb{f}}
+\newcommand{\stress}{\pmb{\sigma}}
+\newcommand{\strain}{\pmb{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\pmb{I}}
+\newcommand{\T}{\pmb{T}}
+
+\newcommand{\ii}{\pmb{i}}
+\newcommand{\jj}{\pmb{j}}
+\newcommand{\kk}{\pmb{k}}
+%\newcommand{\refphi}{\tilde\phi}
+\newcommand{\basphi}{\varphi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\phib}{\pmb{\varphi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+
+% FEniCS commands:
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
 $$
 
 
@@ -3626,7 +3662,7 @@ Verification function as a nose test:
         <span style="color: #AA22FF; font-weight: bold">return</span> u_const
 
     <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">a</span>(t):
-        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">2.5*</span>(<span style="color: #666666">1+</span>t<span style="color: #666666">**2</span>)  <span style="color: #008800; font-style: italic"># can be arbitrary</span>
+        <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">2.5*</span>(<span style="color: #666666">1+</span>t<span style="color: #666666">**3</span>)  <span style="color: #008800; font-style: italic"># can be arbitrary</span>
 
     <span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">b</span>(t):
         <span style="color: #AA22FF; font-weight: bold">return</span> a(t)<span style="color: #666666">*</span>u_const
@@ -3668,6 +3704,30 @@ Verification function as a nose test:
  <p><li> Any error in the formula for \( u^{n+1} \) makes \( u\neq ct+I \)!
 </ul>
 
+We can easily show that a linear \( u^n = ct_n+I \) fulfills the discrete
+equations for the Forward Euler, Backward Euler, and Crank-Nicolson
+schemes. First,
+
+<p>
+$$
+\begin{align}
+\lbrack D_t^+ t\rbrack^n = \frac{t_{n+1}-t_n}{\Delta t}=\frac{(n+1)\Delta t - n\Delta t}{\Delta t}=1,\label{decay:fd2:Dop:tn:fw}\\
+\lbrack D_t^- t\rbrack^n = \frac{t_{n}-t_{n-1}}{\Delta t}=\frac{n\Delta t - (n-1)\Delta t}{\Delta t}=1,\label{decay:fd2:Dop:tn:bw}\\
+\lbrack D_t t\rbrack^n = \frac{t_{n+\frac{1}{2}}-t_{n-\frac{1}{2}}{\Delta t}=\frac{(n+\frac{1}{2})\Delta t - (n-\frac{1}{2})\Delta t}{\Delta t}=1\label{decay:fd2:Dop:tn:cn}
+\thinspace .
+\end{align}
+$$
+The difference equation for the Forward Euler scheme
+
+<p>
+$$ [D_^+ u = -au + b]^n, $$
+with \( a^n=a(t_n) \), \( b^n=c + a(t_n)(ct_n + I) \), and \( u^n=ct_n + I \)
+then results in
+
+<p>
+$$ c = -a(t_n)(ct_n+I) + c + a(t_n)(ct_n + I) = c $$
+
+<p>
 Verification function as a nose test:
 
 <p>
@@ -3693,7 +3753,9 @@ Verification function as a nose test:
 18
 19
 20
-21</pre></div></td><td class="code"><div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_linear_solution</span>():
+21
+22
+23</pre></div></td><td class="code"><div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_linear_solution</span>():
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
 <span style="color: #BB4444; font-style: italic">    Test problem where u=c*t+I is the exact solution, to be</span>
 <span style="color: #BB4444; font-style: italic">    reproduced (to machine precision) by any relevant method.</span>
@@ -3713,6 +3775,8 @@ Verification function as a nose test:
     u, t <span style="color: #666666">=</span> solver(I<span style="color: #666666">=</span>I, a<span style="color: #666666">=</span>a, b<span style="color: #666666">=</span>b, T<span style="color: #666666">=</span>N<span style="color: #666666">*</span>dt, dt<span style="color: #666666">=</span>dt, theta<span style="color: #666666">=</span>theta)
     u_e <span style="color: #666666">=</span> exact_solution(t)
     difference <span style="color: #666666">=</span> <span style="color: #AA22FF">abs</span>(u_e <span style="color: #666666">-</span> u)<span style="color: #666666">.</span>max()  <span style="color: #008800; font-style: italic"># max deviation</span>
+    <span style="color: #AA22FF; font-weight: bold">print</span> difference
+    <span style="color: #008800; font-style: italic"># No of decimal places for comparison depend on size of c</span>
     nt<span style="color: #666666">.</span>assert_almost_equal(difference, <span style="color: #666666">0</span>, places<span style="color: #666666">=14</span>)
 </pre></div>
 </td></tr></table><p>
@@ -3812,7 +3876,7 @@ solving ODEs: <a href="https://computation.llnl.gov/casc/odepack/odepack_home.ht
 <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">Vode</a>,
 <a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>,
 <a href="http://www.netlib.org/ode/rkf45.f">rkf45.f</a>,
-"Radau5": "http://www.unige.ch/~hairer/software.html, as well
+<a href="http://www.unige.ch/~hairer/software.html">Radau5</a>, as well
 as the ODE solvers in
 <a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html">SciPy</a>,
 <a href="http://docs.sympy.org/dev/modules/mpmath/calculus/odes.html">SymPy</a>, and
@@ -3953,12 +4017,16 @@ $$
 <p>
 $$
 \begin{equation}
-u'(t_n)\approx \frac{u^{n+1}-u^{n-1}}{2\Delta t},
+u'(t_n)\approx \frac{u^{n+1}-u^{n-1}}{2\Delta t} = [D_{2t} u]^n,
 \end{equation}
 $$
 
 <p>
 Scheme:
+
+<p>
+$$ [D_{2t} u = -a + b]^n,$$
+or, if we write out and solve for the unknown \( u^{n+1} \),
 $$
 \begin{equation}
 u^{n+1} = u^{n-1} + \Delta t f(u^n, t_n)

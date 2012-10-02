@@ -31,7 +31,7 @@ def test_constant_solution():
         return u_const
 
     def a(t):
-        return 2.5*(1+t**2)  # can be arbitrary
+        return 2.5*(1+t**3)  # can be arbitrary
 
     def b(t):
         return a(t)*u_const
@@ -65,6 +65,8 @@ def test_linear_solution():
     u, t = solver(I=I, a=a, b=b, T=N*dt, dt=dt, theta=theta)
     u_e = exact_solution(t)
     difference = abs(u_e - u).max()  # max deviation
+    print difference
+    # No of decimal places for comparison depend on size of c
     nt.assert_almost_equal(difference, 0, places=14)
 
 if __name__ == '__main__':
