@@ -249,7 +249,7 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Expect lots of typos!)
 &nbsp; &nbsp; &nbsp; <a href="#wave:app:elastic:rod"> Elastic waves in a rod </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#wave:app:acoustic:seismic"> The acoustic model for seismic waves </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec97"> Anisotropy </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#wave:app:sound"> Sound waves </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#wave:app:sound"> Sound waves in liquids and gases </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#wave:app:spherical"> Spherical waves </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#wave:app:sw:2D"> The linear shallow water equations </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec101"> Wind drag on the surface </a><br>
@@ -4466,7 +4466,7 @@ $$
 <p>
 
 <p>
-This presents a range of wave equation models
+This section presents a range of wave equation models
 for different physical phenomena. Although many wave motion problems
 in physics can be modeled by the standard linear wave equation, or a similar
 formulation with a system of first-order equations, there are some
@@ -4500,7 +4500,7 @@ establishing wave equation models.
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 7:  Discrete string model with point masses connected by elastic strings. <a name="wave:app:string:fig"></a> </p></center>
-<p><img src="fig-wave/wave_on_string.png" align="bottom" width=800></p>
+<p><img src="fig-wave/wave_on_string.png" align="bottom" width=800,></p>
 </center>
 
 <p>
@@ -4511,12 +4511,13 @@ the equation for waves on a string. The string is modeled as a
 set of discrete point masses (at mesh points) with
 elastic strings in between. The strings are at a high constant tension \( T \).
 We let the mass at mesh point \( x_i \) be \( m_i \). The displacement of
-this mass point is denoted by \( u_i(t) \).
+this mass point in \( y \) direction is denoted by \( u_i(t) \).
 
 <p>
 The motion of mass \( m_i \) is governed by Newton's second law of motion.
-The position of the mass is \( (x_i,u_i(t)) \) at time \( t \).
-The acceleration is then \( (0, u_i''(t)) \). Two forces are acting
+The position of the mass at time \( t \) is \( x_i\ii + u_i(t)\jj \), where
+\( \ii \) and \( \jj \) are unit vectors in the \( x \) and \( y \) direction, respectively.
+The acceleration is then \( u_i''(t)\jj \). Two forces are acting
 on the mass as indicated in Figure <a href="#wave:app:string:fig">7</a>.
 The force \( \T^{-} \) acting toward the point \( x_{i-1} \) can be decomposed
 as
@@ -4524,7 +4525,7 @@ as
 <p>
 $$ \T^{-} = -T\sin\phi\ii -T\cos\phi\jj, $$
 where \( \phi \) is the angle between the force and the
-line \( x=x_i \). Let \( \Delta u_i = u_i - u_{i-1} \) and
+line \( x=x_i \). Let \( \Delta u_i = u_i - u_{i-1} \) and let
 \( \Delta s_i = \sqrt{\Delta u_i^2 + (x_i - x_{i-1})^2} \)
 be the distance from mass \( m_{i-1} \) to mass \( m_i \).
 It is seen that \( \cos\phi = \Delta u_i/\Delta s_i \) and \( \sin\phi =
@@ -4563,14 +4564,15 @@ $$
 
 <p>
 A basic assumption now is small displacements \( u_i \) and small
-displacement gradients \( \Delta u_i/\Delta x \). We have that
+displacement gradients \( \Delta u_i/\Delta x \). For small \( g=\Delta u_i/\Delta x \)
+we have that
 
 <p>
 $$ \Delta s_i = \sqrt{\Delta u_i^2 + \Delta x^2} = \Delta x\sqrt{1 + g^2}
-+ \Delta x (1 + \frac{1}{2}g^2 + {\cal O}(g^4) \approx \Delta x,
++ \Delta x (1 + \frac{1}{2}g^2 + {\cal O}(g^4) \approx \Delta x
+\thinspace .
 $$
-for small \( g=\Delta u_i/\Delta x \).
-Equation \eqref{wave:app:string:hcomp} is then \( T=T \), while
+Equation \eqref{wave:app:string:hcomp} is then simply the identity \( T=T \), while
 \eqref{wave:app:string:vcomp} can be written as
 
 <p>
@@ -4589,7 +4591,7 @@ $$
 \thinspace .
 \end{equation}
 $$
-We can choose to approximate \( u_i'' \) by a finite difference in time
+We can now choose to approximate \( u_i'' \) by a finite difference in time
 and get the discretized wave equation,
 
 <p>
@@ -4643,7 +4645,7 @@ It is easy to include an external force acting on the string.
 Say we have a vertical force \( \tilde f_i\jj \) acting on mass \( m_i \).
 This force affects the vertical component of Newton's law
 and gives rise to an extra term \( \tilde f(x,t) \) on the right-hand side of
-\eqref{wave:app:string:model1}. In the perhaps more common model
+\eqref{wave:app:string:model1}. In the model
 \eqref{wave:app:string:model2} we would add a term
 \( f(x,t) = \tilde f(x,y)/\varrho(x) \).
 
@@ -4657,18 +4659,18 @@ string segments between the masses as standard springs, where the
 force (tension \( T \)) is proportional to the elongation of the spring segment.
 Let \( k \) be the spring constant, and set \( T_i=k\Delta \ell \) for the
 tension in the spring segment between \( x_{i-1} \) and \( x_i \), where
-\( \ell \) is the elongation of this segment from the tension-free state.
+\( \Delta\ell \) is the elongation of this segment from the tension-free state.
 A basic feature of a string is that it has high tension in the
-equilibrium position \( u=0 \). Let the string segment has an elongation
+equilibrium position \( u=0 \). Let the string segment have an elongation
 \( \Delta\ell_0 \) in the equilibrium position. After deformation of the
 string, the elongation is \( \Delta \ell = \Delta \ell_0 + \Delta s_i \):
 \( T_i = k(\Delta \ell_0 + \Delta s_i)\approx k(\Delta \ell_0 + \Delta x) \).
 This shows that \( T_i \) is independent of \( i \). Moreover, the extra
 approximate elongation \( \Delta x \) is very small compared to \( \Delta\ell_0 \),
-so we may well set \( T_i = T = k\Delta\ell_0 \). So,
+so we may well set \( T_i = T = k\Delta\ell_0 \). This means that
 the tension is completely dominated by the initial tension determined
 by the tuning of the string. The additional deformations of the
-spring during the vibrations due not introduce significant changes in the
+spring during the vibrations do not introduce significant changes in the
 tension.
 
 <p>
@@ -4689,7 +4691,7 @@ tension.
 
 <p>
 Consider an elastic rod subject to a hammer impact at the end.
-This will give rise to an elastic deformation pulse that travels
+This experiment will give rise to an elastic deformation pulse that travels
 through the rod. A mathematical model for longitudinal waves along
 an elastic rod starts with the general equation for deformations
 and stresses in an elastic medium,
@@ -4726,7 +4728,8 @@ $$
 $$
 
 <p>
-The associated boundary conditions are \( u \) or \( \sigma_{xx} \) known.
+The associated boundary conditions are \( u \) or \( \sigma_{xx} \) known, typically
+\( u=0 \) for a clamped end and \( \sigma_{xx}=0 \) for a free end.
 
 <p>
 
@@ -4736,9 +4739,9 @@ The associated boundary conditions are \( u \) or \( \sigma_{xx} \) known.
 <p>
 Seismic waves are used to infer properties of subsurface
 geological structures. The physical model is a heterogeneous
-elastic medium where sounds is propagated by small elastic
+elastic medium where sound is propagated by small elastic
 vibrations. The general mathematical model for deformations
-in an elastic medium is based on a Newton's second law,
+in an elastic medium is based on Newton's second law,
 
 <p>
 $$
@@ -4753,7 +4756,7 @@ generalized law,
 <p>
 $$
 \begin{equation}
-\stress = K\nabla\cdot\u \I  + G(\nabla\u + (\nabla\u)^T - \frac{2}{3}\nabla u\I)
+\stress = K\nabla\cdot\u\, \I  + G(\nabla\u + (\nabla\u)^T - \frac{2}{3}\nabla\cdot\u\, \I)
 \label{wave:app:acoustic:seismic:Hooke}
 \thinspace .
 \end{equation}
@@ -4781,8 +4784,7 @@ $$
 \label{wave:app:acoustic:seismic:eqmotion2}
 \end{equation}
 $$
-Introducing \( p \) as a pressure to represent the isotropic stress,
-via
+Introducing \( p \) as a pressure via
 
 <p>
 $$
@@ -4800,7 +4802,7 @@ $$
 \thinspace .
 \end{equation}
 $$
-Taking the divergence of this equation, using \( \nabla\cdot u = -p/K \),
+Taking the divergence of this equation, using \( \nabla\cdot\u = -p/K \),
 gives the <em>acoustic approximation to elastic waves</em>:
 
 <p>
@@ -4811,10 +4813,9 @@ p_{tt} = K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right)
 \label{wave:app:acoustic:seismic:accoustic1}
 \end{equation}
 $$
-This is a standard, linear wave equation, though with a variable
-coefficient \( K \) outside the common "$\nabla\cdot c^2\nabla u$" term.
+This is a standard, linear wave equation with variable coefficients.
 It is common to add a source term \( s(x,y,z,t) \)
-to model the generation of sound waves (pressure):
+to model the generation of sound waves:
 
 <p>
 $$
@@ -4832,8 +4833,8 @@ is based on using the chain rule on the right-hand side,
 <p>
 $$
 K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right)
-= \frac{K}{\varrho}\nabla^p + K\nabla\left(\frac{1}{\varrho}\right)\cdot
-\nabla p \approx \frac{K}{\varrho}\nabla^p,
+= \frac{K}{\varrho}\nabla^2 p + K\nabla\left(\frac{1}{\varrho}\right)\cdot
+\nabla p \approx \frac{K}{\varrho}\nabla^2 p,
 $$
 in that one assumes the relative spatial gradient \( \nabla\varrho^{-1}
 = -\varrho^{-2}\nabla\varrho \) to be small. This results
@@ -4852,8 +4853,7 @@ $$
 The acoustic approximations to seismic waves are used for sound
 waves in the ground, and the Earth's surface is then a boundary
 where \( p \) equals the atmospheric pressure \( p_0 \) such that the
-boundary condition becomes \( p=p_0\approx 0 \) (\( p_0 \) is small compared
-to the pressures due to the wave motion in the ground).
+boundary condition becomes \( p=p_0 \).
 
 <p>
 
@@ -4881,7 +4881,7 @@ $$
 
 <p>
 
-<h3>Sound waves <a name="wave:app:sound"></a></h3>
+<h3>Sound waves in liquids and gases <a name="wave:app:sound"></a></h3>
 <p>
 
 <p>
@@ -4897,16 +4897,17 @@ $$
 \label{wave:app:sound:cont}\\
 \varrho \u_{t} + \varrho \u\cdot\nabla\u &= -\nabla p,
 \label{wave:app:sound:Euler}\\
-\varrho &= \varrho (p),
+\varrho &= \varrho (p)
+\thinspace .
 \label{wave:app:sound:prho}
 \end{align}
 $$
-These equations are often referred as the Euler equations for the motion
+These equations are often referred to as the Euler equations for the motion
 of a fluid. The parameters involved are the density \( \varrho \),
 the velocity \( \u \),
 and the pressure \( p \). Equation \eqref{wave:app:sound:Euler} reflects
 mass balance, \eqref{wave:app:sound:cont} is Newton's second law for
-a fluid (with frictional and body forces omitted), and
+a fluid, with frictional and body forces omitted, and
 \eqref{wave:app:sound:prho} is a constitutive law relating
 density to pressure by thermodynamics considerations.
 A typical model
@@ -4916,10 +4917,11 @@ adiabatic processes where there is not heat transfer:
 <p>
 $$
 \begin{equation}
-\varrho = \varrho_0\left(\frac{p}{p_0}\right)^{1/\gamma},
+\varrho = \varrho_0\left(\frac{p}{p_0}\right)^{1/\gamma}
+\thinspace .
 \end{equation}
 $$
-where  \( p_0 \) and \( \varrho_0 \) are references values for \( p \) and \( 
+Here, \( p_0 \) and \( \varrho_0 \) are references values for \( p \) and \( 
 \varrho \), for instances when the fluid is at rest, and
 \( \gamma \) is the ratio of specific heat at constant pressure and
 constant volume (\( \gamma = 5/3 \) for air).
@@ -4943,7 +4945,7 @@ to \( \u=0 \), and a small perturbation marked with a hat symbol.
 By inserting these decompositions in \eqref{wave:app:sound:cont} and
 (ref{wave:app:sound:Euler}, neglecting all product terms of small
 perturbations and/or their derivatives, and dropping the hat symbols,
-one gets the following PDE system for the small perturbations in
+one gets the following linearized PDE system for the small perturbations in
 density, pressure, and velocity:
 
 <p>
@@ -4957,7 +4959,7 @@ $$
 Eliminating \( \varrho \) with the aid of a relation \( \varrho = \varrho(p) \),
 expanded as \( \varrho = \varrho'(p_0)p = \varrho_0/(\gamma p_0) \)
 for small perturbations,
-yields and PDE system for \( p \) and \( \u \):
+yields a PDE system for \( p \) and \( \u \):
 
 <p>
 $$
@@ -4977,7 +4979,7 @@ arrive at a standard, linear wave equation for \( p \):
 <p>
 $$
 \begin{equation}
-p_{tt} = c^2\nabla^p,
+p_{tt} = c^2\nabla^2 p,
 \end{equation}
 $$
 where \( c = \sqrt{\gamma p_0/\varrho_0} \) is the speed of sound in the fluid.
@@ -5081,16 +5083,22 @@ condition is assigned at \( r=\epsilon \), for some \( \epsilon >0 \).
 <p>
 
 <p>
-We consider water waves whose wavelengths are much lager than the depth
-whose wave amplitudes are small. This class of waves may be generated by
-catastrophic geophysical events, such as earthquakes at the sea bottom,
-landslides moving into water, or underwater slides
-(or a combination, as earthquakes frequently release
-avalanches of masses). For example, a subsea earthquake will normal has an
-extension of many kilometers but lift the water only a few meters. The
-wave length will have a size dictated by the earthquake area, which is
-much lager than the water depth, and compared to this wave length, an
-amplitude of a few meters is very small.
+The next example considers water waves whose wavelengths are much
+lager than the depth and whose wave amplitudes are small. This class
+of waves may be generated by catastrophic geophysical events, such as
+earthquakes at the sea bottom, landslides moving into water, or
+underwater slides (or a combination, as earthquakes frequently release
+avalanches of masses). For example, a subsea earthquake will normally
+have an extension of many kilometers but lift the water only a few
+meters. The wave length will have a size dictated by the earthquake
+area, which is much lager than the water depth, and compared to this
+wave length, an amplitude of a few meters is very small.
+The water is essentially a thin film, and mathematically we can average
+the problem in the vertical direction and approximate the 3D
+wave phenomenon by 2D PDEs. Instead of a moving water domain in three
+space dimensions, we get a horizontal 2D domain with an unknown function
+for the surface elevation and the water depth as a variable coefficient
+in the PDEs.
 
 <p>
 Let \( \eta(x,y,t) \) be the elevation of
@@ -5113,8 +5121,7 @@ v_t &= -g\eta_y,
 $$
 where \( g \) is the acceleration of gravity. Equation \eqref{wave:app:sw:2D:eeq}
 corresponds to mass balance while the other two are derived from momentum
-balance (Newton's second law). Note that the 2D PDE model describes a
-3D physical problem.
+balance (Newton's second law).
 
 <p>
 The initial conditions associated with
@@ -5122,24 +5129,25 @@ The initial conditions associated with
 and \( v \) prescribed at \( t=0 \). A common condition is to have some water
 elevation \( \eta =I(x,y) \) and assume that the surface is at rest:
 \( u=v=0 \). A subsea earthquake usually means a sufficiently rapid motion
-of the bottom and the water volume above to say that the bottom
+of the bottom and the water volume to say that the bottom
 deformation is mirrored at the water surface as an initial lift \( I(x,y) \)
 and that \( u=v=0 \).
 
 <p>
-Boundary conditions may be \( \eta \) prescribed for incoming,
-known waves, or zero normal velocity at reflecting boundaries (steep
+Boundary conditions may be \( \eta \) prescribed for incoming, known
+waves, or zero normal velocity at reflecting boundaries (steep
 mountains, for instance): \( un_x + vn_y =0 \), where \( (n_x,n_y) \) is the
 outward unit normal to the boundary.  More sophisticated boundary
-conditions are need at beaches and at open boundaries where we want
-the waves to leave the computational domain undisturbed.
+conditions are needed when waves run up at the shore, and at open
+boundaries where we want the waves to leave the computational domain
+undisturbed.
 
 <p>
 Equations \eqref{wave:app:sw:2D:eeq}, \eqref{wave:app:sw:2D:ueq}, and
 \eqref{wave:app:sw:2D:veq} can be transformed to a standard, linear
-wave equation. First, multiply ({wave:app:sw:2D:ueq}) and
+wave equation. First, multiply \eqref{wave:app:sw:2D:ueq} and
 \eqref{wave:app:sw:2D:veq} by \( H \), differentiate \eqref{wave:app:sw:2D:ueq})
-with respect to \( x \) and (ref({wave:app:sw:2D:veq}) with respect to \( y \).
+with respect to \( x \) and \eqref{wave:app:sw:2D:veq} with respect to \( y \).
 Second, differentiate \eqref{wave:app:sw:2D:eeq} with respect to \( t \)
 and use that \( (Hu)_{xt}=(Hu_t)_x \) and \( (Hv)_{yt}=(Hv_t)_y \) when \( H \)
 is independent of \( t \). Third, eliminate \( (Hu_t)_x \) and \( (Hv_t)_y \)
@@ -5159,17 +5167,18 @@ $$
 
 <p>
 In the case we have an initial non-flat water surface at rest, the
-initial conditions become \( \beta=I(x,y) \) and \( \partial\eta/\partial t=0 \).
+initial conditions become \( \eta =I(x,y) \) and \( \eta_t=0 \).
 The latter follows from \eqref{wave:app:sw:2D:eeq} if \( u=v=0 \), or
 simply from the fact that the vertical velocity of the surface
-must be \( \partial\eta/\partial t \), which is zero for a surface at rest.
+is \( \eta_t \), which is zero for a surface at rest.
 
 <p>
-The system \eqref{wave:app:sw:2D:eeq}-({wave:app:sw:2D:veq})
-can be extended to handled a time-varying bottom topography, which is
+The system \eqref{wave:app:sw:2D:eeq}-\eqref{wave:app:sw:2D:veq}
+can be extended to handle a time-varying bottom topography, which is
 relevant for modeling long waves generated by underwater slides.
-In such cases the water depth function \( H \) is also a function of \( t \)
-and one must add a term \( \partial H/\partial t \) to the left-hand side
+In such cases the water depth function \( H \) is also a function of \( t \),
+due to the moving slide,
+and one must add a time-derivative term \( H_t \) to the left-hand side
 of \eqref{wave:app:sw:2D:eeq}. A moving bottom is best described by
 introducing \( z=H_0 \) as the still-water level, \( z=B(x,y,t) \) as
 the time- and space-varying bottom topography, so that \( H=H_0-B(x,y,t) \).
@@ -5190,7 +5199,7 @@ $$
 <p>
 The reduction of \eqref{wave:app:sw:2D:eta:2ndoeq:Ht} to 1D, for long waves
 in a straight channel, or for approximately plane waves in the ocean, is
-trivial by assuming no change in \( y \) direction \( \partial/\partial y=0 \):
+trivial by assuming no change in \( y \) direction (\( \partial/\partial y=0 \)):
 
 <p>
 $$
@@ -5249,8 +5258,8 @@ the latitude.
 <p>
 
 <p>
-The heart pumps blood through our blood vessels. Basically, this is
-flow of a fluid in a network of pipes. However, the walls in the
+The flow of blood in our bodies is basically fluid flow in
+a network of pipes. Unlike rigid pipes, the walls in the
 blood vessels are elastic and will increase their diameter when the
 pressure rises. The elastic forces will then push the wall back
 and accelerate the fluid. This interaction between the flow of blood
@@ -5286,7 +5295,7 @@ Q(x,t) = A(x,t)v_x(x,t)
 $$
 
 <p>
-Mass balance and Newton's second law leads to the PDEs
+Mass balance and Newton's second law lead to the PDEs
 
 <p>
 $$
@@ -5335,10 +5344,11 @@ internal pressure. This gives the relation
 <p>
 $$ P=P_0 + \frac{\pi h E}{(1-\nu^2)A_0}(\sqrt{A} - \sqrt{A_0}),
 $$
-where \( P_0 \) and \( A_0 \) are corresponding reference values, \( h \) is the
+where \( P_0 \) and \( A_0 \) are corresponding reference values when the
+wall is not deformed, \( h \) is the
 thickness of the wall, and \( E \) and \( \nu \) are Young's modulus and
 Poisson's ratio of the elastic material in the wall.
-The derivative reads
+The derivative becomes
 
 <p>
 $$
@@ -5370,7 +5380,8 @@ $$
 <p>
 It is not uncommon to neglect the viscous term on the right-hand side of
 \eqref{wave:app:blood:mom} and also the quadratic term
-with \( Q^2 \) on the left-hand side. The reduced \eqref{wave:app:blood:mom}
+with \( Q^2 \) on the left-hand side. The reduced equations
+\eqref{wave:app:blood:mom}
 and \eqref{wave:app:blood:const} form a first-order
 linear wave equation system:
 
@@ -5388,16 +5399,15 @@ the first equation with respect \( t \) and the second with respect to \( x \),
 $$ \frac{\partial}{\partial t}\left( CC\frac{\partial P}{\partial t}
 \right) = \frac{\partial}{\partial x}\left(
 \frac{A}{\varrho}\frac{\partial P}{\partial x}\right),$$
-which for linearized, constant \( C \), \( A \), and \( \varrho \), gives
+which can be approximated by
 $$
 \begin{equation}
 \frac{\partial^2 Q}{\partial t^2} = c^2\frac{\partial^2 Q}{\partial x^2},\quad
-c = \sqrt{\frac{A}{\varrho C}}
-\thinspace .
+c = \sqrt{\frac{A}{\varrho C}},
 \end{equation}
 $$
-
-<p>
+where the \( A \) and \( C \) in the expression for \( c \) are taken as constant
+reference values.
 
 <p>
 
@@ -5474,13 +5484,13 @@ S,& 0 < t \leq t_s,\\
 0, & t > t_s
 \end{array}\right.
 $$
-The corresponding condition on \( u \) becomes \( \partial u/\partial x
-= S/E \) for \( t\leq t_s \) and zero afterwards (recall that
+The corresponding condition on \( u \) becomes \( u_x= S/E \)
+for \( t\leq t_s \) and zero afterwards (recall that
 \( \sigma_{xx} = Eu_x \)). This is a non-homogeneous
 Neumann condition, and you will need to approximate this condition
-and combine with the scheme (the ideas and manipulations follow
+and combine it with the scheme (the ideas and manipulations follow
 closely the handling of a non-zero initial condition
-\( \partial u/\partial t \) in wave PDEs or the corresponding
+\( u_t=V \) in wave PDEs or the corresponding
 second-order ODEs for vibrations).
 Filename: <tt>rod.py</tt>.
 
@@ -5536,7 +5546,7 @@ the outgoing wave to the left does not come back due to reflection,
 we insert a boundary \( x=0 \) and impose a symmetry condition there: \( \partial\eta\
 \partial x =0 \), where \( \eta(x,t) \) is the elevation of the water surface.
 We are not interested in what happens with the right-going wave after
-it hits the right boundary conditions, so whether we impose
+it hits the right boundary, so whether we impose
 \( \eta =0 \) or \( \partial\eta /\partial x=0 \) at that boundary is not of importance.
 
 <p>
@@ -5552,7 +5562,8 @@ I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
 $$
 with \( I_m=0 \) reflecting the location of the peak of \( I(x) \) and
 \( I_s \) being a measure of the width of the function \( I(x) \)
-(\( I_s \) is \( \sqrt{2} \) times the standard deviation of the Gaussian curve).
+(\( I_s \) is \( \sqrt{2} \) times the standard deviation of the familiar
+normal distribution curve).
 
 <p>
 Set up the relevant one-dimensional, linear, wave equation for \( \eta \),
@@ -5628,9 +5639,9 @@ is \( c=\sqrt{gH(x_R)} \).
 
 <p>
 Show that \eqref{wave:app:exer:tsunami1D:radiation:eq} accepts
-a solution \( \eta = f(x-ct) \), but not \( \eta = f(x+ct) \). This means
+a solution \( \eta = g_R(x-ct) \), but not \( \eta = g_L(x+ct) \). This means
 that \eqref{wave:app:exer:tsunami1D:radiation:eq} will allow any
-right-going wave \( f(x-ct) \) pass through the boundary.
+right-going wave \( g_R(x-ct) \) pass through the boundary.
 
 <p>
 The condition \eqref{wave:app:exer:tsunami1D:radiation:eq} can be
@@ -5661,9 +5672,11 @@ flat.
 
 <p>
 <b>Remark 1.</b> The condition \eqref{wave:app:exer:tsunami1D:radiation:eq}
-works perfectly in 1D when \( c \) is known. In 2D and 3D, however, one needs
-to know the speed of the wave and the direction, and this is often
-challenging to estimate. Other methods are normally used in 2D and 3D to
+works perfectly in 1D when \( c \) is known. In 2D and 3D, however, the
+condition reads \( \eta_t + c_x\eta_x + c_y\eta_y=0 \), where \( c_x \) and
+\( c_y \) are the wave speeds in the \( x \) and \( y \) directions, and estimating
+these components (i.e., the direction of the wave) is often
+challenging. Other methods are normally used in 2D and 3D to
 let waves move out of a computational domain.
 
 <p>
@@ -5671,7 +5684,7 @@ let waves move out of a computational domain.
 boundary takes the same form as \eqref{wave:app:exer:tsunami1D:radiation:eq},
 except that there is a minus sign in front of the \( c\eta_x \)
 term. One can easily show that with this sign, the condition accepts
-left-going waves of the form \( \eta = f(x+ct) \).
+left-going waves of the form \( \eta = g_L(x+ct) \).
 Filename: <tt>wave1D_Ropen.py</tt>.
 
 <p>
@@ -5746,17 +5759,20 @@ interval.
 <p>
 
 <p>
-Simulate this case and visualize both the bottom topography and the
-water surface elevation (this requires modifying <tt>plot_u</tt> and
-realizing that only <tt>c</tt> is known, but \( B \) can be computed from
-\( B=H_0-c^2/g^2 \)). Allow for a flexible choice of bottom shape,
+Visualize both the bottom topography and the
+water surface elevation (this requires modifying <tt>plot_u</tt>).
+Allow for a flexible choice of bottom shape,
 \eqref{wave:app:exer:tsunami1D:hill:Gauss},
 \eqref{wave:app:exer:tsunami1D:hill:cohat},
 \eqref{wave:app:exer:tsunami1D:hill:box}, or \( B(x)=B_0 \) (flat)
 and see if the waves become
-qualitatively different.  Use either the open boundary condition from
+qualitatively different. Also investigate the amount of numerical
+noise that is triggered by rapid changes in the bottom function
+and a small water gap at the top of the hill, and how this noise
+varies with the mesh resolution \( \Delta x \).
+Use either the open boundary condition from
 <a href="#wave:app:exer:tsunami1D:radiation">Exercise 14: Implement an open boundary condition</a>, or set \( \eta =0 \) at
-the right boundary and stop the simulation when the wave hits the
+the right boundary and stop the simulation when the wave hits this
 boundary.
 Filename: <tt>tsunami1D_hill.py</tt>.
 
@@ -5881,10 +5897,9 @@ to a three-dimensional wave phenomenon, governed by the 2D PDE
 \eqref{wave:app:sw:2D:eta:2ndoeq}. We assume that the earthquake
 arise from a fault along the line \( x=0 \) in the \( xy \)-plane so that
 the initial lift of the surface can be taken as \( I(x) \) in
-<a href="#wave:app:exer:tsunami1D:hill">Exercise 15: Earthquake-generated tsunami over a subsea hill</a>. That is, we neglect
-initial variations of the surface in \( y \) direction, assuming that
-the fault is much longer than the characteristic width \( I_s \) of
-the initial surface.
+<a href="#wave:app:exer:tsunami1D:hill">Exercise 15: Earthquake-generated tsunami over a subsea hill</a>. That is, a plan wave is
+propagating to the right, but will experience bending because of
+the bottom.
 
 <p>
 The bottom shape is now a function of \( x \) and \( y \).
@@ -5902,8 +5917,8 @@ B_0 + B_a\exp{\left(-\left(\frac{x-B_{mx}}{B_s}\right)^2
 \end{equation}
 $$
 where \( b \) is a scaling parameter: \( b=1 \) gives a circular Gaussian
-function (circular contour lines), while \( b\neq 1 \) gives an elliptic
-shape (elliptic contour lines).
+function with circular contour lines, while \( b\neq 1 \) gives an elliptic
+shape with elliptic contour lines.
 
 <p>
 The "cosine hat" \eqref{wave:app:exer:tsunami1D:hill:cohat} can also be
@@ -5937,18 +5952,27 @@ The \( b \) parameter controls the rectangular shape of the cross section of
 the box.
 
 <p>
-Let the boundaries \( y=\hbox{const} \) be reflecting with conditions
-\( \partial\eta/\partial n =0 \) (\( \partial\eta/\partial y=0 \) on
-both boundaries). At the right boundary \( x=\hbox{const} \)
+Note that the initial condition and the listed bottom shapes are
+symmetric around the line \( y=B_{my} \). We therefore expect the
+surface elevation also to be symmetric with respect to this line.
+This means that we can halve the computational domain by working
+with  \( [0,L_x]\times [0, B_{my}] \). Along the upper boundary, \( y=B_{my} \),
+we must impose the symmetry condition \( \partial \eta/\partial n=0 \).
+Such a symmetry condition (\( -\eta_x=0 \))
+is also needed at the \( x=0 \) boundary because
+the initial condition has a symmetry here. At the lower boundary
+\( y=0 \) we also set a Neumann condition (which becomes \( -\eta_y=0 \)).
+At the right boundary \( x=L_x \)
 one can either implement a radiation (or open boundary) condition
 as in <a href="#wave:app:exer:tsunami1D:radiation">Exercise 14: Implement an open boundary condition</a> or just set
 \( \eta = 0 \) or use a reflecting condition \( \partial\eta/\partial n
-=\partial\eta/\partial x=0 \).
+=\eta_x =0 \).
 
 <p>
-Visualize the surface elevation.  Run several meshes with different
-resolutions to see if there are visual effects of the parameters
-\( \Delta t \) and \( \Delta x \) on the numerical solution.
+Visualize the surface elevation.  Investigate how different hill shapes,
+different sizes of the water gap above the hill, and different
+resolutions \( \Delta x \) and \( \Delta t \) influence
+the numerical quality of the solution.
 Filename: <tt>tsunami2D_hill.py</tt>.
 
 <p>
@@ -5973,22 +5997,11 @@ Extend the program from <a href="#wave:app:exer:tsunami2D:hill">Exercise 18: Ear
 that the loops over mesh points, inside the time loop, are
 implemented in compiled languages.
 Consider implementations in
-
-<p>
-
-<ul>
-  <li> <tt>numpy</tt> with array slicing
-  <li> Cython
-  <li> Fortran via <tt>f2py</tt>
-  <li> C via Cython
-  <li> C via <tt>f2py</tt>
-  <li> C/C++ via Instant
-  <li> C/C++ via <tt>scipy.weave</tt>
-</ul>
-
+Cython, Fortran via <tt>f2py</tt>, C via Cython, C via <tt>f2py</tt>, C/C++ via Instant,
+and C/C++ via <tt>scipy.weave</tt>.
 Perform efficiency experiments to investigate the relative performance
 of the various implementations. It is often advantageous to normalize
-CPU times by the fastest method.
+CPU times by the fastest method on a given mesh.
 Filename: <tt>tsunami3D_hill_compiled.py</tt>.
 
 <p>
@@ -6179,12 +6192,15 @@ $$ c_{z,0}=c_{z,1}=c_{z,2},\quad c_{h,0}=c_{h,2},\quad c_{h,1} \ll c_{h,0}
 \thinspace .
 $$
 Let \( s \) be a localized point source at the middle of the Earth's surface
-and investigate how the result wave travels through the medium.
+(the upper boundary)
+and investigate how the resulting wave travels through the medium.
+The source can be a localized Gaussian peak that oscillates in
+time for some time interval.
 Place the boundaries far enough from the expanding wave so that the
-boundary conditions do not influence the wave. That is, choose
-either \( p=0 \) or \( \partial p/\partial n=0 \) at the vertical boundaries
-and the bottom boundary, and simulate the wave until it hits a boundary.
-One needs to have \( p=0 \) at the upper boundary.
+boundary conditions do not disturb the wave. Then the type of
+boundary condition does not matter, except that we physically need
+to have \( p=p_0 \), where \( p_0 \) is the atmospheric pressure,
+at the upper boundary.
 
 <p>
 <!-- Idea: one thing at a time: no f2py intro for du/dn, just u=0 to make it -->
