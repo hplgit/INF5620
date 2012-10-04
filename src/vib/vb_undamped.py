@@ -31,7 +31,7 @@ def visualize(u, t, I, w):
     ylabel('u')
     dt = t[1] - t[0]
     title('dt=%g' % dt)
-    umin = -1.2*I;  umax = -umin
+    umin = 1.2*u.min();  umax = -umin
     axis([t[0], t[-1], umin, umax])
     savefig('vib1.png')
     savefig('vib1.pdf')
@@ -84,17 +84,19 @@ def main():
     parser.add_argument('--w', type=float, default=2*pi)
     parser.add_argument('--dt', type=float, default=0.05)
     parser.add_argument('--num_periods', type=int, default=5)
+    parser.add_argument('--savefig', action='store_true')
     # Hack to allow --SCITOOLS options (read when importing scitools.std)
     parser.add_argument('--SCITOOLS_easyviz_backend', default='matplotlib')
     a = parser.parse_args()
-    I, w, dt, num_periods = a.I, a.w, a.dt, a.num_periods
+    I, w, dt, num_periods, savefig = \
+       a.I, a.w, a.dt, a.num_periods, a.savefig
     P = 2*pi/w  # one period
     T = P*num_periods
     u, t = solver(I, w, dt, T)
     if num_periods <= 10:
         visualize(u, t, I, w)
     else:
-        visualize_front(u, t, I, w)
+        visualize_front(u, t, I, w, savefig)
         #visualize_front_ascii(u, t, I, w)
     empirical_freq_and_amplitude(u, t, I, w)
     show()
@@ -113,6 +115,7 @@ def empirical_freq_and_amplitude(u, t, I, w):
             'analytical frequency', 'anaytical amplitude'],
            loc='center right')
 
+
 def visualize_front(u, t, I, w, savefig=False):
     """
     Visualize u and the exact solution vs t, using a
@@ -124,7 +127,7 @@ def visualize_front(u, t, I, w, savefig=False):
     from scitools.MovingPlotWindow import MovingPlotWindow
 
     P = 2*pi/w  # one period
-    umin = -1.2*I;  umax = -umin
+    umin = 1.2*u.min();  umax = -umin
     plot_manager = MovingPlotWindow(
         window_width=8*P,
         dt=t[1]-t[0],
@@ -151,7 +154,7 @@ def visualize_front_ascii(u, t, I, w, fps=10):
     from scitools.avplotter import Plotter
     import time
     P = 2*pi/w
-    umin = -1.2*I;  umax = -umin
+    umin = 1.2*u.min();  umax = -umin
 
     p = Plotter(ymin=umin, ymax=umax, width=60, symbols='+o')
     for n in range(len(u)):
@@ -192,19 +195,6 @@ def amplitudes(minima, maxima):
          for n in range(min(len(minima),len(maxima)))]
     return array(a)
 
-def empirical_freq_and_amplitude(u, t, I, w):
-    minima, maxima = minmax(t, u)
-    p = periods(maxima)
-    a = amplitudes(minima, maxima)
-    figure()
-    plot(2*pi/p, 'r-')
-    hold('on')
-    plot(a, 'b-')
-    plot([w]*len(p), 'r--')
-    plot([I]*len(a), 'b--')
-    legend(['numerical frequency', 'numerical amplitude',
-            'analytical frequency', 'anaytical amplitude'],
-           loc='center right')
 
 if __name__ == '__main__':
     main()
