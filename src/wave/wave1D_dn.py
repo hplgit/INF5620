@@ -46,8 +46,6 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    t0 = time.clock()            # for measuring CPU time
-
     x = linspace(0, L, Nx+1)     # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
@@ -73,7 +71,9 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     u_1 = zeros(Nx+1)   # solution at 1 time level back
     u_2 = zeros(Nx+1)   # solution at 2 time levels back
 
-    # Set initial condition
+    import time;  t0 = time.clock()  # for measuring CPU time
+
+    # Load initial condition into u_1
     for i in range(0,Nx+1):
         u_1[i] = I(x[i])
 
@@ -187,8 +187,10 @@ def viz(I, V, f, c, U_0, U_L, L, Nx, C, T, umin, umax,
     u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
                           user_action, version)
     if animate:
-        st.movie('frame_*.png', encoder='html',
-                 output_file='index.html', fps=4)
+        st.movie('frame_*.png', encoder='mencoder', fps=4,
+                 output_file='movie.avi')
+        st.movie('frame_*.png', encoder='html', fps=4,
+                 output_file='movie.html')
     return cpu
 
 import nose.tools as nt

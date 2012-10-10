@@ -39,8 +39,6 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
            user_action=None, version='scalar',
            dt_safety_factor=1.0):
     """Solve u_tt=(c^2*u_x)_x + f on (0,L)x(0,T]."""
-    import time;  t0 = time.clock()  # for measuring CPU time
-
     x = linspace(0, L, Nx+1)     # mesh points in space
     dx = x[1] - x[0]
 
@@ -76,7 +74,9 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     u_1 = zeros(Nx+1)   # solution at 1 time level back
     u_2 = zeros(Nx+1)   # solution at 2 time levels back
 
-    # Set initial condition
+    import time;  t0 = time.clock()  # for measuring CPU time
+
+    # Load initial condition into u_1
     for i in range(0,Nx+1):
         u_1[i] = I(x[i])
 
@@ -281,6 +281,9 @@ class PlotSolution:
         an index.html for viewing the movie in a browser
         (as a sequence of PNG files).
         """
+        self.st.movie('frame_*.png', encoder='mencoder', fps=4,
+                      output_file='movie.avi')
+        # Make HTML movie in a subdirectory
         directory = self.casename
         shutil.rmtree(directory)   # rm -rf directory
         os.mkdir(directory)        # mkdir directory
@@ -290,7 +293,7 @@ class PlotSolution:
         os.chdir(directory)        # cd directory
         self.st.movie('frame_*.png', encoder='html',
                       output_file='index.html', fps=4)
-        # Can make other movie files...
+        os.chdir(os.pardir)  # move back to parent directory
 
 def moving_end(C=1, Nx=50, reflecting_right_boundary=True,
                version='vectorized'):

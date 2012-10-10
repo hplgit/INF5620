@@ -25,8 +25,6 @@ from numpy import *
 
 def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    import time;  t0 = time.clock()  # for measuring CPU time
-
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
@@ -42,7 +40,9 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     u_1 = zeros(Nx+1)   # solution at 1 time level back
     u_2 = zeros(Nx+1)   # solution at 2 time levels back
 
-    # Set initial condition
+    import time;  t0 = time.clock()  # for measuring CPU time
+
+    # Load initial condition into u_1
     for i in range(0,Nx+1):
         u_1[i] = I(x[i])
 
@@ -106,7 +106,6 @@ def test_quadratic():
     u, x, t, cpu = solver(I, V, f, c, L, Nx, C, T)
     u_e = exact_solution(x, t[-1])
     diff = abs(u - u_e).max()
-    print diff
     nt.assert_almost_equal(diff, 0, places=14)
 
 def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
@@ -130,6 +129,12 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
 
     user_action = plot_u if animate else None
     u, x, t, cpu = solver(I, V, f, c, L, Nx, C, T, user_action)
+
+    # Make movie files
+    st.movie('frame_*.png', encoder='mencoder', fps=4,
+             output_file='movie.avi')
+    st.movie('frame_*.png', encoder='html', fps=4,
+             output_file='movie.html')
 
 def guitar(C):
     """Triangular wave (pulled guitar string)."""
