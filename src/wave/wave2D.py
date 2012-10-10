@@ -292,7 +292,7 @@ def solver(I, f, c, bc, Lx, Ly, Nx, Ny, dt, T,
     u_2 = zeros((Nx+1,Ny+1))   # solution at t-2*dt
 
 
-    # Set initial condition
+    # Load initial condition into u_1
     for i in range(0, Nx+1):
         for j in range(0, Ny+1):
             u_1[i,j] = I(x[i], y[j])

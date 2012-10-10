@@ -62,7 +62,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 6, 2012</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 10, 2012</td>
 </tr>
 </tbody>
 </table>
@@ -414,7 +414,7 @@ taking all the input data for the problem as arguments.  The physical
 input data consists of <span class="math">\(c\)</span>, <span class="math">\(I(x)\)</span>, <span class="math">\(V(x)\)</span>, <span class="math">\(f(x,t)\)</span>, <span class="math">\(L\)</span>, and <span class="math">\(T\)</span>.
 The numerical input is the mesh parameters <span class="math">\(\Delta t\)</span> and <span class="math">\(\Delta x\)</span>.
 One possibility is to specify <span class="math">\(N_x\)</span> and the Courant number <span class="math">\(C=c\Delta
-T/\Delta x\)</span>.  The latter is convenient to prescribe instead of <span class="math">\(\Delta
+t/\Delta x\)</span>.  The latter is convenient to prescribe instead of <span class="math">\(\Delta
 t\)</span> when performing numerical investigations, because the numerical
 accuracy depends directly on <span class="math">\(C\)</span>.</p>
 <p>The solution at all spatial points at a new time level is stored in an
@@ -433,8 +433,6 @@ the user in a suppled function</p>
 
 <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].&quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">time</span><span class="p">;</span>  <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>  <span class="c"># for measuring CPU time</span>
-
     <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c"># mesh points in space</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="n">dx</span><span class="o">/</span><span class="n">c</span>
@@ -450,7 +448,9 @@ the user in a suppled function</p>
     <span class="n">u_1</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c"># solution at 1 time level back</span>
     <span class="n">u_2</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c"># solution at 2 time levels back</span>
 
-    <span class="c"># Set initial condition</span>
+    <span class="kn">import</span> <span class="nn">time</span><span class="p">;</span>  <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>  <span class="c"># for measuring CPU time</span>
+
+    <span class="c"># Load initial condition into u_1</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -520,7 +520,6 @@ verification. Here is a function realizing this verification as a nose test:</p>
     <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">cpu</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
     <span class="n">u_e</span> <span class="o">=</span> <span class="n">exact_solution</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_e</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">print</span> <span class="n">diff</span>
     <span class="n">nt</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -529,7 +528,10 @@ verification. Here is a function realizing this verification as a nose test:</p>
 <h2>Visualization: animating <span class="math">\(u(x,t)\)</span><a class="headerlink" href="#visualization-animating" title="Permalink to this headline">¶</a></h2>
 <p>Now that we have verified the implementation it is time to do a
 real computation where we also display the evolution of the waves
-on the screen. The following <tt class="docutils literal"><span class="pre">viz</span></tt> function defines a <tt class="docutils literal"><span class="pre">user_action</span></tt>
+on the screen.</p>
+<div class="section" id="visualization-via-scitools">
+<h3>Visualization via SciTools<a class="headerlink" href="#visualization-via-scitools" title="Permalink to this headline">¶</a></h3>
+<p>The following <tt class="docutils literal"><span class="pre">viz</span></tt> function defines a <tt class="docutils literal"><span class="pre">user_action</span></tt>
 callback function for plotting the solution at each time level:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">viz</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">umin</span><span class="p">,</span> <span class="n">umax</span><span class="p">,</span> <span class="n">animate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run solver and visualize u at each time level.&quot;&quot;&quot;</span>
@@ -552,18 +554,59 @@ callback function for plotting the solution at each time level:</p>
 
     <span class="n">user_action</span> <span class="o">=</span> <span class="n">plot_u</span> <span class="k">if</span> <span class="n">animate</span> <span class="k">else</span> <span class="bp">None</span>
     <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">cpu</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">user_action</span><span class="p">)</span>
+
+    <span class="c"># Make movie files</span>
+    <span class="n">st</span><span class="o">.</span><span class="n">movie</span><span class="p">(</span><span class="s">&#39;frame_*.png&#39;</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s">&#39;mencoder&#39;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+             <span class="n">output_file</span><span class="o">=</span><span class="s">&#39;movie.avi&#39;</span><span class="p">)</span>
+    <span class="n">st</span><span class="o">.</span><span class="n">movie</span><span class="p">(</span><span class="s">&#39;frame_*.png&#39;</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="s">&#39;html&#39;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+             <span class="n">output_file</span><span class="o">=</span><span class="s">&#39;movie.html&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A function inside another function, like <tt class="docutils literal"><span class="pre">plot_u</span></tt> in the above code
 segment, has access to <em>and remembers</em> (!) all the local variables
 in the surrounding code inside the <tt class="docutils literal"><span class="pre">viz</span></tt> function. This is known
-in computer science as a <em>closure</em> and is very convenient. For example,
+in computer science as a <em>closure</em> and is convenient. For example,
 the <tt class="docutils literal"><span class="pre">st</span></tt> and <tt class="docutils literal"><span class="pre">time</span></tt> modules defined outside <tt class="docutils literal"><span class="pre">plot_u</span></tt> are accessible for
-<tt class="docutils literal"><span class="pre">plot_u</span></tt> the function is called (as <tt class="docutils literal"><span class="pre">user_action</span></tt>) in the <tt class="docutils literal"><span class="pre">solver</span></tt> function.</p>
+<tt class="docutils literal"><span class="pre">plot_u</span></tt> the function is called (as <tt class="docutils literal"><span class="pre">user_action</span></tt>) in the <tt class="docutils literal"><span class="pre">solver</span></tt> function.
+Some think, however, that a class instead of a closure is a cleaner
+and easier-to-understand implementation of
+the user action function, see the section <a class="reference internal" href="#wave-pde2-software"><em>Building a general 1D wave equation solver</em></a>.</p>
+</div>
+<div class="section" id="making-movie-files">
+<h3>Making movie files<a class="headerlink" href="#making-movie-files" title="Permalink to this headline">¶</a></h3>
+<p>Two hardcopies of the animation are made from the
+<tt class="docutils literal"><span class="pre">frame_*.png</span></tt> files, using <tt class="docutils literal"><span class="pre">movie</span></tt> function from SciTools
+at the end of the <tt class="docutils literal"><span class="pre">viz</span></tt>
+function. The AVI file <tt class="docutils literal"><span class="pre">movie1.avi</span></tt> can be played in a
+standard movie player.
+The HTML file <tt class="docutils literal"><span class="pre">movie.html</span></tt> is essentially a movie player
+that can be loaded into a browser to display
+the individual <tt class="docutils literal"><span class="pre">frame_*.png</span></tt> files.
+Note that padding the frame counter in the <tt class="docutils literal"><span class="pre">frame_*.png</span></tt>
+files (<tt class="docutils literal"><span class="pre">%04d</span></tt> format) is essential so that the wildcard
+notation <tt class="docutils literal"><span class="pre">frame_*.png</span></tt> expands to the correct set of
+files.</p>
+<p>Rather than using the simple <tt class="docutils literal"><span class="pre">movie</span></tt> function, one can
+run native commands in the terminal window. An AVI movie
+can be made by <tt class="docutils literal"><span class="pre">mencoder</span></tt>:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; mencoder &quot;mf://frame_%04d.png&quot; -mf fps=4:type=png \</span>
+<span class="go">          -ovc lavc -o movie.avi</span>
+<span class="go">Terminal&gt; mplayer movie.avi</span>
+</pre></div>
+</div>
+<p>The HTML player can only be generated by</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; scitools movie output_file=movie.html fps=4 frame_*.png</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">fps</span></tt> parameter controls the number of <em>frames per second</em>, i.e.,
+the speed of the movie.</p>
+</div>
+<div class="section" id="skipping-frames-for-animation-speed">
+<h3>Skipping frames for animation speed<a class="headerlink" href="#skipping-frames-for-animation-speed" title="Permalink to this headline">¶</a></h3>
 <p>Sometimes the time step is small and <span class="math">\(T\)</span> is large, leading to an
 inconveniently large number of plot files and a slow animation on the
 screen. The solution to such a problem is to decide on a total number
-of frames in the animation, <tt class="docutils literal"><span class="pre">num_frames</span></tt>, and plot the solution at
+of frames in the animation, <tt class="docutils literal"><span class="pre">num_frames</span></tt>, and plot the solution only at
 every <tt class="docutils literal"><span class="pre">every</span></tt> frame. The total number of time levels (i.e., maximum
 possible number of frames) is the length of <tt class="docutils literal"><span class="pre">t</span></tt>, <tt class="docutils literal"><span class="pre">t.size</span></tt>, and if we
 want <tt class="docutils literal"><span class="pre">num_frames</span></tt>, we need to plot every <tt class="docutils literal"><span class="pre">t.size/num_frames</span></tt> frame:</p>
@@ -573,26 +616,73 @@ want <tt class="docutils literal"><span class="pre">num_frames</span></tt>, we n
 </pre></div>
 </div>
 <p>The initial condition (<tt class="docutils literal"><span class="pre">n=0</span></tt>) is natural to include,
-and as <tt class="docutils literal"><span class="pre">n</span> <span class="pre">%</span> <span class="pre">every</span> <span class="pre">==</span> <span class="pre">0</span></tt> we will very seldom be true for the
-very final frame, we therefore add that frame (<tt class="docutils literal"><span class="pre">n</span> <span class="pre">==</span> <span class="pre">t.size-1</span></tt>).</p>
+and as <tt class="docutils literal"><span class="pre">n</span> <span class="pre">%</span> <span class="pre">every</span> <span class="pre">==</span> <span class="pre">0</span></tt> will very seldom be true for the
+very final frame, we also add that frame (<tt class="docutils literal"><span class="pre">n</span> <span class="pre">==</span> <span class="pre">t.size-1</span></tt>).</p>
 <p>A simple choice of numbers may illustrate the formulas: say we have
 801 frames in total (<tt class="docutils literal"><span class="pre">t.size</span></tt>) and we allow only 60 frames to be
 plotted. Then we need to plot every 801/60 frame, which with integer
 division yields 13 as <tt class="docutils literal"><span class="pre">every</span></tt>. Using the mod function, <tt class="docutils literal"><span class="pre">n</span> <span class="pre">%</span> <span class="pre">every</span></tt>,
 this operation is zero every time <tt class="docutils literal"><span class="pre">n</span></tt> can be divided by 13 without a
-reminder. That is, the <tt class="docutils literal"><span class="pre">if</span></tt> test is true when <tt class="docutils literal"><span class="pre">n</span></tt> equals <span class="math">\(0, 13, 26,
+remainder. That is, the <tt class="docutils literal"><span class="pre">if</span></tt> test is true when <tt class="docutils literal"><span class="pre">n</span></tt> equals <span class="math">\(0, 13, 26,
 39, ..., 780, 801\)</span>. The associated code is included in the <tt class="docutils literal"><span class="pre">plot_u</span></tt>
 function in the file <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave1D_u0_sv.py">wave1D_u0_sv.py</a>.</p>
-<div class="section" id="visualization-running-a-case">
-<h3>Visualization: running a case<a class="headerlink" href="#visualization-running-a-case" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="visualization-via-matplotlib">
+<h3>Visualization via Matplotlib<a class="headerlink" href="#visualization-via-matplotlib" title="Permalink to this headline">¶</a></h3>
+<p>The previous code based on the <tt class="docutils literal"><span class="pre">plot</span></tt> interface from <tt class="docutils literal"><span class="pre">scitools.std</span></tt>
+can be run with Matplotlib as the visualization backend, but if one
+desires to program directly with Matplotlib, quite different code
+is needed. Matplotlib&#8217;s interactive mode must be turned on:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>  <span class="c"># interactive mode on</span>
+</pre></div>
+</div>
+<p>The most
+commonly used animation technique with Matplotlib
+is to update the data in the plot at each time level:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Make a first plot</span>
+<span class="n">lines</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="c"># call plt.axis, plt.xlabel, plt.ylabel, etc. as desired</span>
+
+<span class="c"># At later time levels</span>
+<span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="s">&#39;t=</span><span class="si">%g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>  <span class="c"># make updated plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An alternative is to rebuild the plot at every time level:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>        <span class="c"># delete any previous curve(s)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="o">...</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="c"># plt.xlabel, plt.legend and other decorations</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Many prefer to work with figure and axis objects as in MATLAB:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="o">...</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="c"># ax.set_xlabel, ax.legend and other decorations</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-a-case">
+<h3>Running a case<a class="headerlink" href="#running-a-case" title="Permalink to this headline">¶</a></h3>
 <p>The first demo of our 1D wave equation solver concerns vibrations of a
 string that is initially deformed to a triangular shape, like when picking
 a guitar string:</p>
 <div class="math" id="equation-wave:pde1:guitar:I">
 <span class="eqno">(10)</span>\[\begin{split}     I(x) = \left\lbrace
      \begin{array}{ll}
-     ax/x_0, &amp; 0\leq x &lt; x_0,\\
-     a(L-x)/(L-x_0), &amp; x_0\leq x \leq L
+     ax/x_0, &amp; x &lt; x_0,\\
+     a(L-x)/(L-x_0), &amp; \hbox{otherwise}
      \end{array}\right.\end{split}\]</div>
 <p>We choose <span class="math">\(L=40\)</span> cm, <span class="math">\(x_0=0.8L\)</span>, <span class="math">\(a=5\)</span> mm, <span class="math">\(N_x=50\)</span>, and a time frequency
 <span class="math">\(\nu = 440\)</span> Hz. The relation between the wave speed <span class="math">\(c\)</span> and <span class="math">\(\nu\)</span> is
@@ -636,8 +726,8 @@ value of these vary between 0 and 1:</p>
 \[\bar x = \frac{x}{L},\quad \bar t = \frac{L}{c}t,\quad
 \bar u = \frac{u}{a}
 \thinspace .\]</div>
-<p>Replacing old by new variables in the PDE and using <span class="math">\(f=0\)</span> results
-and dropping the bars results in <span class="math">\(u_{tt} = u_{xx}\)</span>. That is,
+<p>Replacing old by new variables in the PDE, using <span class="math">\(f=0\)</span>,
+and dropping the bars, results in <span class="math">\(u_{tt} = u_{xx}\)</span>. That is,
 the original equation with <span class="math">\(c=1\)</span>. The initial condition
 corresponds to <a href="#equation-wave:pde1:guitar:I">(10)</a> with <span class="math">\(a=1\)</span>, <span class="math">\(L=1\)</span>, and
 <span class="math">\(x_0\in [0,1]\)</span>. This means that we only need to decide on <span class="math">\(x_0\)</span>, because
@@ -647,7 +737,7 @@ other parameters to unity! In the code we can just set
 wavelengths and frequencies to estimate <span class="math">\(c\)</span>.</p>
 <p>The only non-trivial parameter to estimate is <span class="math">\(T\)</span> and how it relates
 to periods in periodic solutions.  If <span class="math">\(u\sim \sin (\omega t) = \sin
-(\omega \bar t L/c\)</span> in time, <span class="math">\(\omega = 2\pi c/\lambda\)</span>, where <span class="math">\(\lambda
+(\omega \bar t L/c)\)</span> in time, <span class="math">\(\omega = 2\pi c/\lambda\)</span>, where <span class="math">\(\lambda
 =2L\)</span> is the wavelength. One period <span class="math">\(T\)</span> in dimensionless time means
 <span class="math">\(\omega T L/c = 2\pi\)</span>, which gives <span class="math">\(T=2\)</span>.</p>
 </div>
@@ -945,7 +1035,7 @@ the boundary value <span class="math">\(u_{N_x}^{n+1}\)</span>:</p>
 \[u^{n+1}_i = -u^{n-1}_i + 2u^n_i + 2C^2
 \left(u^{n}_{i-1}-u^{n}_{i}\right),\quad i=N_x \thinspace .\]</div>
 <p>The modification of the scheme at the boundary is also required for
-the special formula for the first time step. How the stencil movies
+the special formula for the first time step. How the stencil moves
 through the mesh and is modified at the boundary can be illustrated
 by an <a class="reference external" href="http://hplgit.github.com/INF5620/doc/notes/mov-wave/wave1D_PDE_Neumann_stencil_gpl/index.html">animation</a></p>
 </div>
@@ -989,7 +1079,7 @@ general boundary and initial conditions:</p>
 <li><span class="math">\(x=0\)</span>: <span class="math">\(u=U_0(t)\)</span> or <span class="math">\(u_x=0\)</span></li>
 <li><span class="math">\(x=L\)</span>: <span class="math">\(u=U_L(t)\)</span> or <span class="math">\(u_x=0\)</span></li>
 <li><span class="math">\(t=0\)</span>: <span class="math">\(u=I(x)\)</span></li>
-<li><span class="math">\(t=0\)</span>: <span class="math">\(u_t==I(x)\)</span></li>
+<li><span class="math">\(t=0\)</span>: <span class="math">\(u_t=I(x)\)</span></li>
 </ul>
 </div></blockquote>
 </div>
@@ -1004,7 +1094,7 @@ often referred to as &#8220;ghost cells&#8221;, to the mesh gives us all the
 needed mesh points <span class="math">\(i=-1,0,\ldots,N_x,N_x+1\)</span>.
 If we ensure that we always have</p>
 <div class="math">
-\[u_{-1}^n = u_{-1}^n\hbox{ and } u_{N_x-1}^n = u_{N_x+1}^n,\]</div>
+\[u_{-1}^n = u_{1}^n\hbox{ and } u_{N_x-1}^n = u_{N_x+1}^n,\]</div>
 <p>the application of the standard scheme at a boundary point <span class="math">\(i=0\)</span> or <span class="math">\(i=N_x\)</span>
 will be correct and ensure the solution is compatible with the
 boundary condition.</p>
@@ -1221,8 +1311,8 @@ at internal points in the mesh becomes</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="a-more-general-model-pde-with-a-variable-coefficients">
-<h2>A more general model PDE with a variable coefficients<a class="headerlink" href="#a-more-general-model-pde-with-a-variable-coefficients" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="a-more-general-model-pde-with-variable-coefficients">
+<h2>A more general model PDE with variable coefficients<a class="headerlink" href="#a-more-general-model-pde-with-variable-coefficients" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes a wave PDE has a variable coefficient also in front of
 the time-derivative term:</p>
 <div class="math" id="equation-wave:pde2:var:c:pde2">
@@ -1254,7 +1344,7 @@ effects in the string.</p>
 to the equation (in the same way as friction forces enter a vibrating
 mechanical system):</p>
 <div class="math" id="equation-wave:pde3">
-<span class="eqno">(21)</span>\[     \frac{\partial^2 u}{\partial t^2} + b\frac{\partial^2 u}{\partial t^2} =
+<span class="eqno">(21)</span>\[     \frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
      c^2\frac{\partial^2 u}{\partial x^2}
       + f(x,t),\]</div>
 <p>where <span class="math">\(b \geq 0\)</span> is a prescribed damping coefficient.</p>
@@ -1299,6 +1389,8 @@ preceding text.</p>
 <p>The vectorization is only applied inside the time loop, not for the
 initial condition or the first time steps, since this initial work
 is negligible for long time simulations in 1D problems.</p>
+<div class="section" id="user-action-function-as-a-class">
+<h2>User action function as a class<a class="headerlink" href="#user-action-function-as-a-class" title="Permalink to this headline">¶</a></h2>
 <p>A useful feature in the <tt class="docutils literal"><span class="pre">wave1D_dn_vc.py</span></tt> program is the specification of
 the <tt class="docutils literal"><span class="pre">user_action</span></tt> function as a class. Although the <tt class="docutils literal"><span class="pre">plot_u</span></tt>
 function in the <tt class="docutils literal"><span class="pre">viz</span></tt> function of previous <tt class="docutils literal"><span class="pre">wave1D*.py</span></tt> programs
@@ -1356,7 +1448,9 @@ files like function <tt class="docutils literal"><span class="pre">viz</span></t
 in general and class programming in particular.</p>
 <p>The constructor shows how we can flexibly import the plotting engine
 as (typically) <tt class="docutils literal"><span class="pre">scitools.easyviz.gnuplot_</span></tt> or
-<tt class="docutils literal"><span class="pre">scitools.easyviz.matplotlib_</span></tt>. With the <tt class="docutils literal"><span class="pre">screen_movie</span></tt> parameter
+<tt class="docutils literal"><span class="pre">scitools.easyviz.matplotlib_</span></tt> (the trailing underscore is SciTool&#8217;s
+way of avoiding name clash between its interface modules
+and plotting packages). With the <tt class="docutils literal"><span class="pre">screen_movie</span></tt> parameter
 we can suppress displaying each movie frame on the screen (<tt class="docutils literal"><span class="pre">show=False</span></tt>
 parameter to <tt class="docutils literal"><span class="pre">plot</span></tt>). Alternatively, for slow movies associated with
 fine meshes, one can set
@@ -1365,6 +1459,9 @@ fine meshes, one can set
 functions, so we can just pass an instance, say <tt class="docutils literal"><span class="pre">p</span></tt>, as the
 <tt class="docutils literal"><span class="pre">user_action</span></tt> argument in the <tt class="docutils literal"><span class="pre">solver</span></tt> function, and any call to
 <tt class="docutils literal"><span class="pre">user_action</span></tt> will be a call to <tt class="docutils literal"><span class="pre">p.__call__</span></tt>.</p>
+</div>
+<div class="section" id="collection-of-initial-conditions">
+<h2>Collection of initial conditions<a class="headerlink" href="#collection-of-initial-conditions" title="Permalink to this headline">¶</a></h2>
 <p>The function <tt class="docutils literal"><span class="pre">pulse</span></tt> in <tt class="docutils literal"><span class="pre">wave1D_dn_vc.py</span></tt> demonstrates wave motion in
 heterogeneous media where <span class="math">\(c\)</span> varies. One can specify an interval
 where the wave velocity is decreased by a factor <tt class="docutils literal"><span class="pre">slowness_factor</span></tt>
@@ -1438,6 +1535,9 @@ shapes and location of a medium with a different wave velocity:</p>
 <p>The <tt class="docutils literal"><span class="pre">PlotMediumAndSolution</span></tt> class used here is a subclass of
 <tt class="docutils literal"><span class="pre">PlotSolution</span></tt> where the medium, specified by the <tt class="docutils literal"><span class="pre">medium</span></tt> interval,
 is indicated in the plots.</p>
+</div>
+<div class="section" id="calling-functions-from-the-command-line">
+<h2>Calling functions from the command line<a class="headerlink" href="#calling-functions-from-the-command-line" title="Permalink to this headline">¶</a></h2>
 <p>Experimenting with the <tt class="docutils literal"><span class="pre">pulse</span></tt> function, as suggested in
 <a class="reference internal" href="#wave-app-exer-pulse1d"><em>Exercise 8: Send pulse waves through a layered medium</em></a>, <a class="reference internal" href="#wave-app-exer-pulse1d-analysis"><em>Exercise 9: Explain why numerical noise occurs</em></a>,
 and <a class="reference internal" href="#wave-app-exer-pulse1d-harmonic"><em>Exercise 10: Investigate harmonic averaging in a 1D model</em></a> can easily be done in a little
@@ -1480,6 +1580,7 @@ a help string.
 In short, <tt class="docutils literal"><span class="pre">scitools.mist.function_UI</span></tt> makes all your desired functions
 in a program callable from the command line with two statements.
 This is especially useful during program testing.</p>
+</div>
 </div>
 <div class="section" id="id3">
 <h1>Exercises<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h1>
@@ -3894,7 +3995,11 @@ at the upper boundary.</p>
 <li><a class="reference internal" href="#making-a-solver-function">Making a solver function</a></li>
 <li><a class="reference internal" href="#verification-exact-quadratic-solution">Verification: exact quadratic solution</a></li>
 <li><a class="reference internal" href="#visualization-animating">Visualization: animating <span class="math">\(u(x,t)\)</span></a><ul>
-<li><a class="reference internal" href="#visualization-running-a-case">Visualization: running a case</a></li>
+<li><a class="reference internal" href="#visualization-via-scitools">Visualization via SciTools</a></li>
+<li><a class="reference internal" href="#making-movie-files">Making movie files</a></li>
+<li><a class="reference internal" href="#skipping-frames-for-animation-speed">Skipping frames for animation speed</a></li>
+<li><a class="reference internal" href="#visualization-via-matplotlib">Visualization via Matplotlib</a></li>
+<li><a class="reference internal" href="#running-a-case">Running a case</a></li>
 <li><a class="reference internal" href="#the-benefits-of-scaling">The benefits of scaling</a></li>
 </ul>
 </li>
@@ -3932,11 +4037,16 @@ at the upper boundary.</p>
 <li><a class="reference internal" href="#computing-the-coefficient-between-mesh-points">Computing the coefficient between mesh points</a></li>
 <li><a class="reference internal" href="#how-a-variable-coefficient-affects-the-stability">How a variable coefficient affects the stability</a></li>
 <li><a class="reference internal" href="#implementation-of-variable-coefficients">Implementation of variable coefficients</a></li>
-<li><a class="reference internal" href="#a-more-general-model-pde-with-a-variable-coefficients">A more general model PDE with a variable coefficients</a></li>
+<li><a class="reference internal" href="#a-more-general-model-pde-with-variable-coefficients">A more general model PDE with variable coefficients</a></li>
 <li><a class="reference internal" href="#generalization-including-damping">Generalization: including damping</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#building-a-general-1d-wave-equation-solver">Building a general 1D wave equation solver</a></li>
+<li><a class="reference internal" href="#building-a-general-1d-wave-equation-solver">Building a general 1D wave equation solver</a><ul>
+<li><a class="reference internal" href="#user-action-function-as-a-class">User action function as a class</a></li>
+<li><a class="reference internal" href="#collection-of-initial-conditions">Collection of initial conditions</a></li>
+<li><a class="reference internal" href="#calling-functions-from-the-command-line">Calling functions from the command line</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id3">Exercises</a><ul>
 <li><a class="reference internal" href="#exercise-4-use-ghost-cells-to-implement-neumann-conditions">Exercise 4: Use ghost cells to implement Neumann conditions</a></li>
 <li><a class="reference internal" href="#exercise-5-find-a-symmetry-boundary-condition">Exercise 5: Find a symmetry boundary condition</a></li>

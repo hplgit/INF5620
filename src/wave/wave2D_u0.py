@@ -67,9 +67,6 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     else:
         advance = compiled_loops.advance
 
-    import time                # measure CPU time
-    t0 = time.clock()
-
     x = linspace(0, Lx, Nx+1)  # mesh points in x dir
     y = linspace(0, Ly, Ny+1)  # mesh points in y dir
     dx = x[1] - x[0]
@@ -105,7 +102,9 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     u_2 = zeros((Nx+1,Ny+1), order=order)   # solution at t-2*dt
     f_a = zeros((Nx+1,Ny+1), order=order)   # for compiled loops
 
-    # Set initial condition
+    import time; t0 = time.clock()          # for measuring CPU time
+
+    # Load initial condition into u_1
     if version == 'scalar':
         for i in range(0, Nx+1):
             for j in range(0, Ny+1):
