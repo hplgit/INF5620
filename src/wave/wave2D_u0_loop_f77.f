@@ -1,8 +1,7 @@
-      subroutine advance(u, u_1, u_2, f, x, y, t, Cx2, Cy2, dt2,
-     &                   Nx, Ny, N)
-      integer Nx, Ny, N
+      subroutine advance(u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny)
+      integer Nx, Ny
       real*8 u(0:Nx,0:Ny), u_1(0:Nx,0:Ny), u_2(0:Nx,0:Ny)
-      real*8 f(0:Nx, 0:Ny), x(0:Nx), y(0:Ny), t(0:N), Cx2, Cy2, dt2
+      real*8 f(0:Nx, 0:Ny), Cx2, Cy2, dt2
       integer i, j
 Cf2py intent(in, out) u
 
@@ -35,5 +34,3 @@ C     Boundary conditions
       end do
       return
       end
-
-
