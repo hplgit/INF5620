@@ -10,9 +10,6 @@ cpdef advance(
     np.ndarray[DT, ndim=2, mode='c'] u_1,
     np.ndarray[DT, ndim=2, mode='c'] u_2,
     np.ndarray[DT, ndim=2, mode='c'] f,
-    np.ndarray[DT, ndim=1, mode='c'] x,
-    np.ndarray[DT, ndim=1, mode='c'] y,
-    np.ndarray[DT, ndim=1, mode='c'] t,
     double Cx2, double Cy2, double dt2):
 
     cdef int Nx, Ny, i, j

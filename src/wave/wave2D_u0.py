@@ -34,6 +34,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         try:
             #import pyximport; pyximport.install()
             import wave2D_u0_loop_cy as compiled_loops
+            advance = compiled_loops.advance
         except ImportError, e:
             print 'No module wave2D_u0_loop_cy. Run make_wave2D.sh!'
             print e
@@ -41,31 +42,27 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     elif version == 'f77':
         try:
             import wave2D_u0_loop_f77 as compiled_loops
+            advance = compiled_loops.advance
         except ImportError:
             print 'No module wave2D_u0_loop_f77. Run make_wave2D.sh!'
             sys.exit(1)
     elif version == 'c_f2py':
         try:
             import wave2D_u0_loop_c_f2py as compiled_loops
+            advance = compiled_loops.advance
         except ImportError:
             print 'No module wave2D_u0_loop_c_f2py. Run make_wave2D.sh!'
             sys.exit(1)
     elif version == 'c_cy':
         try:
             import wave2D_u0_loop_c_cy as compiled_loops
+            advance = compiled_loops.advance_cwrap
         except ImportError, e:
             print 'No module wave2D_u0_loop_c_cy. Run make_wave2D.sh!'
             print e
             sys.exit(1)
-
-    if version == 'scalar':
-        advance = advance_scalar
     elif version == 'vectorized':
         advance = advance_vectorized
-    elif version == 'c_cy':
-        advance = compiled_loops.advance_cwrap
-    else:
-        advance = compiled_loops.advance
 
     x = linspace(0, Lx, Nx+1)  # mesh points in x dir
     y = linspace(0, Ly, Ny+1)  # mesh points in y dir
@@ -153,10 +150,11 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     for n in range(1, N):
         if version == 'scalar':
             # use f(x,y,t) function
-            u = advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2)
+            u = advance_scalar(u, u_1, u_2, f, x, y, t, n,
+                               Cx2, Cy2, dt2)
         else:
             f_a[:,:] = f(xv, yv, t[n])  # precompute, size as u
-            u = advance(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2)
+            u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
 
         if version == 'f77':
             for a in 'u', 'u_1', 'u_2', 'f_a':
@@ -192,7 +190,7 @@ def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2):
     for j in range(0, Ny+1): u[i,j] = 0
     return u
 
-def advance_vectorized(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2):
+def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt2):
     u[1:-1,1:-1] = 2*u_1[1:-1,1:-1] - u_2[1:-1,1:-1] + \
          Cx2*(u_1[:-2,1:-1] - 2*u_1[1:-1,1:-1] + u_1[2:,1:-1]) + \
          Cy2*(u_1[1:-1,:-2] - 2*u_1[1:-1,1:-1] + u_1[1:-1,2:]) + \

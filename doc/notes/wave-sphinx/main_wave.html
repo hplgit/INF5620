@@ -62,7 +62,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 10, 2012</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 11, 2012</td>
 </tr>
 </tbody>
 </table>
@@ -1807,7 +1807,7 @@ scheme</p>
 &amp;\qquad\quad\frac{1}{2}(q_{i,j-1,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j-1,k})) + \\
 &amp;= \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \frac{1}{2}(q_{i,j,k} + q_{i,j,k+1})(u^{n}_{i,j,k+1} - u^{n}_{i,j,k}) -\\
 &amp;\qquad\quad \frac{1}{2}(q_{i,j,k-1} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j,k-1})) + \\
-+ &amp;\qquad f^n_{i,j,k}
++ &amp;\qquad \Delta t^2 f^n_{i,j,k}
 \thinspace .\end{split}\]</div>
 <p>Also here we need to develop a special formula for <span class="math">\(u^1_{i,j,k}\)</span>
 by combining the scheme for <span class="math">\(n=0\)</span> with the discrete initial condition
@@ -1878,8 +1878,8 @@ program:</p>
 <div class="math" id="equation-wave:2D3D:impl1:2Du0:ueq:discrete">
 <span class="eqno">(26)</span>\[     u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + C_x^2(
      u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
-     (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + f_{i,j}^n,\]</div>
-<p>for all internal mesh points <span class="math">\(i=0,\ldots,N_x-1\)</span> and
+     (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,\]</div>
+<p>for all interior mesh points <span class="math">\(i=0,\ldots,N_x-1\)</span> and
 <span class="math">\(j=0,\ldots,N_y-1\)</span>, and for <span class="math">\(n=1,\ldots, N\)</span>.
 The constants <span class="math">\(C_x\)</span> and <span class="math">\(C_y\)</span> are defined as</p>
 <div class="math">
@@ -1888,10 +1888,14 @@ The constants <span class="math">\(C_x\)</span> and <span class="math">\(C_y\)</
 <p>At the boundary we simply set <span class="math">\(u^{n+1}_{i,j}=0\)</span> for
 <span class="math">\(i=0\)</span>, <span class="math">\(j=0,\ldots,N_y\)</span>; <span class="math">\(i=N_x\)</span>, <span class="math">\(j=0,\ldots,N_y\)</span>;
 <span class="math">\(j=0\)</span>, <span class="math">\(i=0,\ldots,N_x\)</span>; and <span class="math">\(j=N_y\)</span>, <span class="math">\(i=0,\ldots,N_i\)</span>.
-For the first step, <span class="math">\(n=0\)</span>, <a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(26)</a>
+For the first step, <span class="math">\(n=0\)</span>, <a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(27)</a>
 is combined with the discretization of the initial condition <span class="math">\(u_t=V\)</span>,
 <span class="math">\([D_{2t} u = V]^0_{i,j}\)</span> to obtain a special formula for
-<span class="math">\(u^1_{i,j}\)</span> at the interior mesh points.</p>
+<span class="math">\(u^1_{i,j}\)</span> at the interior mesh points:</p>
+<div class="math" id="equation-wave:2D3D:impl1:2Du0:ueq:discrete">
+<span class="eqno">(27)</span>\[     u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \frac{1}{2}C_x^2(
+     u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
+     (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,\]</div>
 <div class="section" id="scalar-computations">
 <h2>Scalar computations<a class="headerlink" href="#scalar-computations" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">solver</span></tt> function for a 2D case with constant wave velocity and
@@ -2138,9 +2142,6 @@ computing in Cython. Let us first list the code:</p>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u_1</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u_2</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">f</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">x</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">y</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
     <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">):</span>
 
     <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Nx</span><span class="p">,</span> <span class="nf">Ny</span><span class="p">,</span> <span class="nf">i</span><span class="p">,</span> <span class="nf">j</span>
@@ -2302,17 +2303,17 @@ one-dimensional. Let us also mention that
 the Fortran compilers
 build on 60 years of intensive research on how to optimize loops with
 array computations.</p>
-<div class="section" id="the-fortran-subroutine">
-<h3>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="index-21"></span><div class="section" id="the-fortran-subroutine">
+<span id="index-22"></span><h3>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h3>
 <p>We write a Fortran subroutine <tt class="docutils literal"><span class="pre">advance</span></tt> in a file
-<tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.f</span></tt> for implementing the updating formula
-<a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(26)</a> and setting the solution to zero
+<a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_f77.f">wave2D_u0_loop_f77.f</a>
+for implementing the updating formula
+<a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(27)</a> and setting the solution to zero
 at the boundaries:</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">subroutine </span><span class="nv">advance</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span>
-     <span class="p">&amp;</span>                   <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">,</span> <span class="nv">N</span><span class="p">)</span>
-      <span class="kt">integer </span><span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">,</span> <span class="nv">N</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">subroutine </span><span class="nv">advance</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span> <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">)</span>
+      <span class="kt">integer </span><span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span>
       <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">u_1</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">u_2</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">)</span>
-      <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">f</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">x</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">),</span> <span class="nv">y</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">N</span><span class="p">),</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span>
+      <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">f</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span>
       <span class="kt">integer </span><span class="nv">i</span><span class="p">,</span> <span class="nv">j</span>
 <span class="nv">Cf2py</span> <span class="k">intent</span><span class="p">(</span><span class="nv">in</span><span class="p">,</span> <span class="nv">out</span><span class="p">)</span> <span class="nv">u</span>
 
@@ -2351,7 +2352,7 @@ at the boundaries:</p>
 line, which here specifies that <tt class="docutils literal"><span class="pre">u</span></tt> is both an input argument <em>and</em>
 an object to be returned from the <tt class="docutils literal"><span class="pre">advance</span></tt> routine. Or more
 precisely, Fortran is not able return an array from a function,
-but we need a C wrapper code for the Fortran subroutine to enable
+but we need a <em>wrapper code</em> in C for the Fortran subroutine to enable
 calling it from Python, and in this wrapper code one can return <tt class="docutils literal"><span class="pre">u</span></tt>
 to the calling Python code.
 It is not strictly necessary to return <tt class="docutils literal"><span class="pre">u</span></tt> to the calling Python
@@ -2373,9 +2374,11 @@ The necessary commands to run are</p>
 </div>
 <p>First, <tt class="docutils literal"><span class="pre">f2py</span></tt> interprets the Fortran code and makes a Fortran 90
 specification of the extension module in the file
-<tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.pyf</span></tt>. Second, <tt class="docutils literal"><span class="pre">f2py</span></tt> compiles our Fortran
-code and builds the module, here using the specified subdirectory <tt class="docutils literal"><span class="pre">build_f77</span></tt>
-(where files can be inspected if something goes wrong).
+<tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.pyf</span></tt>. Second, <tt class="docutils literal"><span class="pre">f2py</span></tt> generates all necessary
+wrapper code, compiles our Fortran file and the wrapper code,
+and finally builds the module.
+The build process takes place in the specified subdirectory <tt class="docutils literal"><span class="pre">build_f77</span></tt>
+so that files can be inspected if something goes wrong.
 The option <tt class="docutils literal"><span class="pre">-DF2PY_REPORT_ON_ARRAY_COPY=1</span></tt> makes <tt class="docutils literal"><span class="pre">f2py</span></tt> write a message
 for every array that is copied in the communication between Fortran and Python,
 which is very useful for avoiding unnecessary array copying (see below).
@@ -2414,23 +2417,24 @@ return objects back to Python. Let us take a closer look at
 the documentation <tt class="docutils literal"><span class="pre">f2py</span></tt> has generated for our Fortran <tt class="docutils literal"><span class="pre">advance</span></tt>
 subroutine:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">wave2D_u0_loop_f77</span><span class="o">.</span><span class="n">advance</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="go">This module &#39;wave2D_u0_loop_f77&#39; is auto-generated with f2py</span>
+<span class="go">Functions:</span>
+<span class="go">  u = advance(u,u_1,u_2,f,cx2,cy2,dt2,</span>
+<span class="go">              nx=(shape(u,0)-1),ny=(shape(u,1)-1))</span>
+<span class="go">.</span>
 <span class="go">advance - Function signature:</span>
-<span class="go">  u = advance(u,u_1,u_2,f,x,y,t,cx2,cy2,dt2,[nx,ny,n])</span>
+<span class="go">  u = advance(u,u_1,u_2,f,cx2,cy2,dt2,[nx,ny])</span>
 <span class="go">Required arguments:</span>
 <span class="go">  u : input rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
 <span class="go">  u_1 : input rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
 <span class="go">  u_2 : input rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
 <span class="go">  f : input rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
-<span class="go">  x : input rank-1 array(&#39;d&#39;) with bounds (nx + 1)</span>
-<span class="go">  y : input rank-1 array(&#39;d&#39;) with bounds (ny + 1)</span>
-<span class="go">  t : input rank-1 array(&#39;d&#39;) with bounds (n + 1)</span>
 <span class="go">  cx2 : input float</span>
 <span class="go">  cy2 : input float</span>
 <span class="go">  dt2 : input float</span>
 <span class="go">Optional arguments:</span>
 <span class="go">  nx := (shape(u,0)-1) input int</span>
 <span class="go">  ny := (shape(u,1)-1) input int</span>
-<span class="go">  n := (len(t)-1) input int</span>
 <span class="go">Return objects:</span>
 <span class="go">  u : rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
 </pre></div>
@@ -2441,9 +2445,9 @@ Fortran are optional arguments that can be omitted when calling
 documentation of <em>every</em> Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.</p>
-<span class="target" id="index-21"></span><span class="target" id="index-22"></span><span class="target" id="index-23"></span></div>
+<span class="target" id="index-23"></span><span class="target" id="index-24"></span><span class="target" id="index-25"></span></div>
 <div class="section" id="how-to-avoid-array-copying">
-<span id="index-24"></span><h3>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h3>
+<span id="index-26"></span><h3>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h3>
 <p>Multi-dimensional arrays are stored as a stream of numbers in memory.
 For a two-dimensional array consisting of rows and columns there are
 two ways of creating such a stream: <em>row-major ordering</em>, which means
@@ -2453,16 +2457,15 @@ All programming languages inherited from C, including Python, apply
 the row-major ordering, but Fortran uses column-major storage.
 Thinking of a two-dimensional array as a matrix, it means that Fortran
 works with the transposed matrix.</p>
-<p>Fortunately, <tt class="docutils literal"><span class="pre">f2py</span></tt> creates extra code so that
-accessing <tt class="docutils literal"><span class="pre">u(i,j)</span></tt> in
+<p>Fortunately, <tt class="docutils literal"><span class="pre">f2py</span></tt> creates extra code so that accessing <tt class="docutils literal"><span class="pre">u(i,j)</span></tt> in
 the Fortran subroutine corresponds to the element <tt class="docutils literal"><span class="pre">u[i,j]</span></tt> in the
 underlying <tt class="docutils literal"><span class="pre">numpy</span></tt> array (without the extra code, <tt class="docutils literal"><span class="pre">u(i,j)</span></tt> in Fortran
-would access <tt class="docutils literal"><span class="pre">u[j,i]</span></tt> in the <tt class="docutils literal"><span class="pre">numpy</span></tt> array).
-Technically, <tt class="docutils literal"><span class="pre">f2py</span></tt> takes a copy of our <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays and reorders
-the data before sending the arrays to Fortran. Such copying can be
-costly. For 2D wave simulations on a <span class="math">\(60\times 60\)</span> grid the overhead
-of copying is a factor of 5, which means that almost the whole
-performance gain of Fortran over vectorized <tt class="docutils literal"><span class="pre">numpy</span></tt> code is lost!</p>
+would access <tt class="docutils literal"><span class="pre">u[j,i]</span></tt> in the <tt class="docutils literal"><span class="pre">numpy</span></tt> array).  Technically, <tt class="docutils literal"><span class="pre">f2py</span></tt>
+takes a copy of our <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays and reorders the data before
+sending the arrays to Fortran. Such copying can be costly. For 2D wave
+simulations on a <span class="math">\(60\times 60\)</span> grid the overhead of copying is a
+factor of 5, which means that almost the whole performance gain of
+Fortran over vectorized <tt class="docutils literal"><span class="pre">numpy</span></tt> code is lost!</p>
 <p>To avoid having <tt class="docutils literal"><span class="pre">f2py</span></tt> to copy
 arrays with C storage to the corresponding Fortran storage, we can declare
 the arrays with Fortran storage:</p>
@@ -2478,17 +2481,17 @@ an extra option for making <tt class="docutils literal"><span class="pre">f2py</
 <span class="go">          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f</span>
 </pre></div>
 </div>
-<p>It can sometimes be a challenge
-to track down which array that causes a copying. There are
-two principal reasons for copying array data: either the array does not have
-Fortran storage or the element types do not match those declared in the
-Fortran code. The latter cause is usually effectively eliminated by
-using <tt class="docutils literal"><span class="pre">real*8</span></tt> data in the Fortran code and <tt class="docutils literal"><span class="pre">float64</span></tt> (the default <tt class="docutils literal"><span class="pre">float</span></tt>
-type in <tt class="docutils literal"><span class="pre">numpy</span></tt>) in the arrays on the Python side. The former reason
-is more common, and to check whether an array before a Fortran call
-has the right storage one can print the result of <tt class="docutils literal"><span class="pre">isfortran(a)</span></tt>, which
-is <tt class="docutils literal"><span class="pre">True</span></tt> if the array <tt class="docutils literal"><span class="pre">a</span></tt> has Fortran storage. A typical problem
-in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code is to set</p>
+<p>It can sometimes be a challenge to track down which array that causes
+a copying. There are two principal reasons for copying array data:
+either the array does not have Fortran storage or the element types do
+not match those declared in the Fortran code. The latter cause is
+usually effectively eliminated by using <tt class="docutils literal"><span class="pre">real*8</span></tt> data in the Fortran
+code and <tt class="docutils literal"><span class="pre">float64</span></tt> (the default <tt class="docutils literal"><span class="pre">float</span></tt> type in <tt class="docutils literal"><span class="pre">numpy</span></tt>) in the arrays
+on the Python side. The former reason is more common, and to check
+whether an array before a Fortran call has the right storage one can
+print the result of <tt class="docutils literal"><span class="pre">isfortran(a)</span></tt>, which is <tt class="docutils literal"><span class="pre">True</span></tt> if the array <tt class="docutils literal"><span class="pre">a</span></tt>
+has Fortran storage. A typical problem in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code is
+to set</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">f_a</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -2521,17 +2524,53 @@ done in Python.</p>
 </div>
 <div class="section" id="migrating-loops-to-c-via-cython">
 <h2>Migrating loops to C via Cython<a class="headerlink" href="#migrating-loops-to-c-via-cython" title="Permalink to this headline">¶</a></h2>
-<p>Explain how <tt class="docutils literal"><span class="pre">u[i,j]</span></tt> is stored in memory, i.e., how it looks as a 1D array.
-Derive the <tt class="docutils literal"><span class="pre">idx</span></tt> formula.</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
-
-<span class="cp">#define idx(i,j) (i)*(Ny+1) + j</span>
-<span class="c1">// (i) is essential, otherwise idx(i-1,j) becomes i-1*(Ny+1)+j!</span>
+<p>The computationally intensive loops can alternatively be implemented
+in C code. Just as Fortran calls for care regarding the storage of
+two-dimensional arrays, working with two-dimensional arrays in C
+is a bit tricky. The reason is that
+<tt class="docutils literal"><span class="pre">numpy</span></tt> arrays are viewed as one-dimensional arrays when
+transferred to C, while C programmers will think of <tt class="docutils literal"><span class="pre">u</span></tt>, <tt class="docutils literal"><span class="pre">u_1</span></tt>, and
+<tt class="docutils literal"><span class="pre">u_2</span></tt> as two dimensional arrays and index them like <tt class="docutils literal"><span class="pre">u[i][j]</span></tt>.
+The C code must declare <tt class="docutils literal"><span class="pre">u</span></tt> as <tt class="docutils literal"><span class="pre">double*</span> <span class="pre">u</span></tt> and translate an index
+pair <tt class="docutils literal"><span class="pre">[i][j]</span></tt> to a corresponding single index when <tt class="docutils literal"><span class="pre">u</span></tt> is
+viewed as one-dimensional. This translation requires knowledge of
+how the numbers in <tt class="docutils literal"><span class="pre">u</span></tt> are stored in memory.</p>
+<div class="section" id="translating-of-index-pairs-to-single-indices">
+<h3>Translating of index pairs to single indices<a class="headerlink" href="#translating-of-index-pairs-to-single-indices" title="Permalink to this headline">¶</a></h3>
+<p>Two-dimensional <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays with the default C storage are stored
+row by row. In general, multi-dimensional arrays with C storage are
+stored such that the last index has the fastest variation, then the
+next last index, and so on, ending up with the slowest variation
+in the first index. For a two-dimensional <tt class="docutils literal"><span class="pre">u</span></tt> declared as
+<tt class="docutils literal"><span class="pre">zeros((Nx+1,Ny+1))</span></tt> in Python, the individual elements are stored
+in the following order:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">Ny</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span>
+<span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">Ny</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Viewing <tt class="docutils literal"><span class="pre">u</span></tt> as one-dimensional, the index pair <span class="math">\((i,j)\)</span> translates
+to <tt class="docutils literal"><span class="pre">i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt>. Where a C programmer would naturally write
+an index <tt class="docutils literal"><span class="pre">u[i][j]</span></tt>, the indexing must read <tt class="docutils literal"><span class="pre">u[i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j]</span></tt>.
+This is tedious to write, so it can be handy to define a C macro,</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#define idx(i,j) (i)*(Ny+1) + j</span>
+</pre></div>
+</div>
+<p>so that we can write <tt class="docutils literal"><span class="pre">u[idx(i,j)]</span></tt>, which reads much better and is
+easier to debug. Macros perform simple text substitutions:
+<tt class="docutils literal"><span class="pre">idx(hello,world)</span></tt> is expanded to <tt class="docutils literal"><span class="pre">(hello)*(Ny+1)</span> <span class="pre">+</span> <span class="pre">world</span></tt>.
+The parenthesis in <tt class="docutils literal"><span class="pre">(i)</span></tt> are essential - with natural mathematical
+formula <tt class="docutils literal"><span class="pre">i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt> in the macro definition,
+<tt class="docutils literal"><span class="pre">idx(i-1,j)</span></tt> would expand to <tt class="docutils literal"><span class="pre">i-1*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt>, which is the wrong
+formula. Macros are handy, but requires careful use.</p>
+</div>
+<div class="section" id="the-complete-c-code">
+<h3>The complete C code<a class="headerlink" href="#the-complete-c-code" title="Permalink to this headline">¶</a></h3>
+<p>The C version of function <tt class="docutils literal"><span class="pre">advance</span></tt> can be coded as follows.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#define idx(i,j) (i)*(Ny+1) + j</span>
 
 <span class="kt">void</span> <span class="nf">advance</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_1</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_2</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">f</span><span class="p">,</span>
-             <span class="kt">double</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span>
              <span class="kt">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">dt2</span><span class="p">,</span>
-             <span class="kt">int</span> <span class="n">Nx</span><span class="p">,</span> <span class="kt">int</span> <span class="n">Ny</span><span class="p">,</span> <span class="kt">int</span> <span class="n">N</span><span class="p">)</span>
+             <span class="kt">int</span> <span class="n">Nx</span><span class="p">,</span> <span class="kt">int</span> <span class="n">Ny</span><span class="p">)</span>
 <span class="p">{</span>
   <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">;</span>
   <span class="cm">/* Scheme at interior points */</span>
@@ -2541,13 +2580,10 @@ Derive the <tt class="docutils literal"><span class="pre">idx</span></tt> formul
         <span class="n">Cx2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">)])</span> <span class="o">+</span>
         <span class="n">Cy2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span> <span class="o">+</span>
         <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)];</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">j</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-          <span class="c1">//printf(&quot;u[%d,%d]=%g, u_1[i,j]=%g %d\nu_1[i-1,j]=%g %d\nu_1[i+1,j]=%g %d\nu_1[i,j-1]=%g %d\nu_1[i,j+1]=%g %d\n&quot;, i,j,u[idx(i,j)], u_1[idx(i,j)], idx(i,j), u_1[idx(i-1,j)], idx(i-1,j), u_1[idx(i+1,j)], idx(i+1,j), u_1[idx(i,j-1)], idx(i,j-1), u_1[idx(i,j+1)], idx(i,j+1));</span>
         <span class="p">}</span>
     <span class="p">}</span>
   <span class="p">}</span>
   <span class="cm">/* Boundary conditions */</span>
-
   <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">Nx</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">u</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="n">j</span> <span class="o">=</span> <span class="n">Ny</span><span class="p">;</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">Nx</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">u</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="k">for</span> <span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">j</span><span class="o">&lt;=</span><span class="n">Ny</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="n">u</span><span class="p">[</span><span class="n">idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -2555,16 +2591,22 @@ Derive the <tt class="docutils literal"><span class="pre">idx</span></tt> formul
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Cython interface:</p>
+</div>
+<div class="section" id="the-cython-interface-file">
+<h3>The Cython interface file<a class="headerlink" href="#the-cython-interface-file" title="Permalink to this headline">¶</a></h3>
+<p>All the code above appears in a file <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c.c">wave2D_u0_loop_c.c</a>.
+We need to compile this file together with C wrapper code such that
+<tt class="docutils literal"><span class="pre">advance</span></tt> can be called from Python. Cython can be used to interface
+our C code. The Cython code, placed in a file with extension <tt class="docutils literal"><span class="pre">.pyx</span></tt>, here
+<a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c_cy.pyx">wave2D_u0_loop_c_cy.pyx</a>, looks like</p>
 <div class="highlight-cython"><div class="highlight"><pre><span class="k">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="k">cimport</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="k">cimport</span> <span class="nn">cython</span>
 
 <span class="k">cdef</span> <span class="kr">extern</span> <span class="k">from</span> <span class="s">&quot;wave2D_u0_loop_c.h&quot;</span><span class="p">:</span>
     <span class="n">void</span> <span class="n">advance</span><span class="p">(</span><span class="n">double</span><span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">double</span><span class="o">*</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">double</span><span class="o">*</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">double</span><span class="o">*</span> <span class="n">f</span><span class="p">,</span>
-                 <span class="n">double</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">double</span><span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="n">double</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span>
                  <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">,</span>
-                 <span class="nb">int</span> <span class="n">Nx</span><span class="p">,</span> <span class="nb">int</span> <span class="n">Ny</span><span class="p">,</span> <span class="nb">int</span> <span class="n">N</span><span class="p">)</span>
+                 <span class="nb">int</span> <span class="n">Nx</span><span class="p">,</span> <span class="nb">int</span> <span class="n">Ny</span><span class="p">)</span>
 
 <span class="nd">@cython</span><span class="o">.</span><span class="n">boundscheck</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
 <span class="nd">@cython</span><span class="o">.</span><span class="n">wraparound</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
@@ -2573,18 +2615,36 @@ Derive the <tt class="docutils literal"><span class="pre">idx</span></tt> formul
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u_1</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">u_2</span><span class="p">,</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">f</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">x</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">y</span><span class="p">,</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">double</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">t</span><span class="p">,</span>
     <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">):</span>
     <span class="n">advance</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="mf">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">u_1</span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="mf">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">u_2</span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="mf">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="mf">0</span><span class="p">],</span>
-            <span class="o">&amp;</span><span class="n">x</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">y</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">[</span><span class="mf">0</span><span class="p">],</span>
             <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span>
-            <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">)</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">setup.py</span></tt> file:</p>
+<p>Here, we first declare the C functions to be interfaced.
+These must also appear in a C header file, <a class="reference external" href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c.h">wave2D_u0_loop_c.h</a>,</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="k">extern</span> <span class="kt">void</span> <span class="n">advance</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_1</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_2</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">f</span><span class="p">,</span>
+                    <span class="kt">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">dt2</span><span class="p">,</span>
+                    <span class="kt">int</span> <span class="n">Nx</span><span class="p">,</span> <span class="kt">int</span> <span class="n">Ny</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The next step is to write a Cython function with Python objects as arguments.
+The name <tt class="docutils literal"><span class="pre">advance</span></tt> is already used for the C function so the function
+to be called from Python is named <tt class="docutils literal"><span class="pre">advance_cwrap</span></tt>. The contents of
+this function is simply a call to the <tt class="docutils literal"><span class="pre">advance</span></tt> version in C. To this end,
+the right information from the Python objects must be passed on as
+arguments to <tt class="docutils literal"><span class="pre">advance</span></tt>. Arrays are sent with their C pointers to the
+first element, obtained in Cython as <tt class="docutils literal"><span class="pre">&amp;u[0,0]</span></tt> (the <tt class="docutils literal"><span class="pre">&amp;</span></tt> takes the
+address of a C variable). The <tt class="docutils literal"><span class="pre">Nx</span></tt> and <tt class="docutils literal"><span class="pre">Ny</span></tt> arguments in <tt class="docutils literal"><span class="pre">advance</span></tt> are
+easily obtained from the shape of the <tt class="docutils literal"><span class="pre">numpy</span></tt> array <tt class="docutils literal"><span class="pre">u</span></tt>.
+Finally, <tt class="docutils literal"><span class="pre">u</span></tt> must be returned such that we can set <tt class="docutils literal"><span class="pre">u</span> <span class="pre">=</span> <span class="pre">advance(...)</span></tt>
+in Python.</p>
+</div>
+<div class="section" id="id13">
+<h3>Building the extension module<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>It remains to build the extension module. An appropriate
+<tt class="docutils literal"><span class="pre">setup.py</span></tt> file</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">distutils.core</span> <span class="kn">import</span> <span class="n">setup</span>
 <span class="kn">from</span> <span class="nn">distutils.extension</span> <span class="kn">import</span> <span class="n">Extension</span>
 <span class="kn">from</span> <span class="nn">Cython.Distutils</span> <span class="kn">import</span> <span class="n">build_ext</span>
@@ -2600,29 +2660,106 @@ Derive the <tt class="docutils literal"><span class="pre">idx</span></tt> formul
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>All we need to specify is the <tt class="docutils literal"><span class="pre">.c</span></tt> file(s) and the <tt class="docutils literal"><span class="pre">.pyx</span></tt> interface
+file. Cython is automatically run to generate the necessary wrapper
+code. Files are then compiled and linked to an extension module
+residing in the file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_c_cy.so</span></tt>. This module can
+be imported in Python,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wave2D_u0_loop_c_cy</span> <span class="kn">as</span> <span class="nn">m</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="go">[&#39;__builtins__&#39;, &#39;__doc__&#39;, &#39;__file__&#39;, &#39;__name__&#39;, &#39;__package__&#39;,</span>
+<span class="go"> &#39;__test__&#39;, &#39;advance_cwrap&#39;, &#39;np&#39;]</span>
+</pre></div>
+</div>
+<p>The call to the C version of <tt class="docutils literal"><span class="pre">advance</span></tt> can go like this in Python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_c_cy</span><span class="o">.</span><span class="n">advance_cwrap</span>
+<span class="n">f_a</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>Efficiency<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>In this example, the C and Fortran code runs at the same speed, and there
+are no significant differences in the efficiency of the wrapper code.
+The overhead implied by the wrapper code is negligible as long as
+we do not work with very small meshes and consequently little numerical
+work in the <tt class="docutils literal"><span class="pre">advance</span></tt> function.</p>
+</div>
 </div>
 <div class="section" id="migrating-loops-to-c-via-f2py">
 <h2>Migrating loops to C via f2py<a class="headerlink" href="#migrating-loops-to-c-via-f2py" title="Permalink to this headline">¶</a></h2>
-<p>Same C code as above.</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">subroutine </span><span class="nv">advance</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span>
-     <span class="p">&amp;</span>                   <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">,</span> <span class="nv">N</span><span class="p">)</span>
+<p>As an alternative to using Cython for interfacing C code, we can apply
+<tt class="docutils literal"><span class="pre">f2py</span></tt>. The C code is the same, just the details of specifying how
+it is to be called from Python differ. The <tt class="docutils literal"><span class="pre">f2py</span></tt> tool requires
+the call specification to be a Fortran 90 module defined in a <tt class="docutils literal"><span class="pre">.pyf</span></tt>
+file. This file was automatically generated when we interfaced a
+Fortran subroutine. With a C function we need to write this module
+ourselves, or we can use a trick and let <tt class="docutils literal"><span class="pre">f2py</span></tt> generate it for us.
+The trick consists in writing the signature of the C function with
+Fortran syntax and place it in a Fortran file, here
+<tt class="docutils literal"><span class="pre">wave2D_u0_loop_c_f2py_signature.f</span></tt>:</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">subroutine </span><span class="nv">advance</span><span class="p">(</span><span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span> <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">)</span>
 <span class="nv">Cf2py</span> <span class="k">intent</span><span class="p">(</span><span class="nv">c</span><span class="p">)</span> <span class="nv">advance</span>
       <span class="kt">integer </span><span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">,</span> <span class="nv">N</span>
       <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">u</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">u_1</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">u_2</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">)</span>
-      <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">f</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">x</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">),</span> <span class="nv">y</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">t</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">N</span><span class="p">),</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span>
+      <span class="kt">real</span><span class="o">*</span><span class="mi">8</span> <span class="nv">f</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="nv">Nx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="nv">Ny</span><span class="p">),</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span>
 <span class="nv">Cf2py</span> <span class="k">intent</span><span class="p">(</span><span class="nv">in</span><span class="p">,</span> <span class="nv">out</span><span class="p">)</span> <span class="nv">u</span>
-<span class="nv">Cf2py</span> <span class="k">intent</span><span class="p">(</span><span class="nv">c</span><span class="p">)</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">,</span> <span class="nv">t</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span> <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span><span class="p">,</span> <span class="nv">N</span>
+<span class="nv">Cf2py</span> <span class="k">intent</span><span class="p">(</span><span class="nv">c</span><span class="p">)</span> <span class="nv">u</span><span class="p">,</span> <span class="nv">u_1</span><span class="p">,</span> <span class="nv">u_2</span><span class="p">,</span> <span class="nv">f</span><span class="p">,</span> <span class="nv">Cx2</span><span class="p">,</span> <span class="nv">Cy2</span><span class="p">,</span> <span class="nv">dt2</span><span class="p">,</span> <span class="nv">Nx</span><span class="p">,</span> <span class="nv">Ny</span>
       <span class="k">return</span>
 <span class="k">      end</span>
 </pre></div>
 </div>
+<p>Since <tt class="docutils literal"><span class="pre">f2py</span></tt> is just concerned with the signature and not the
+complete contents of the function body, it can generate the
+Fortran 90 module specification:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; f2py -m wave2D_u0_loop_c_f2py \</span>
+<span class="go">          -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature \</span>
+<span class="go">          wave2D_u0_loop_c_f2py_signature.f</span>
+</pre></div>
+</div>
+<p>The compile and build step is as for the Fortran code, except that we
+list C file(s) instead of Fortran file(s):</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; f2py -c wave2D_u0_loop_c_f2py.pyf \</span>
+<span class="go">          --build-dir tmp_build_c \</span>
+<span class="go">          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_c.c</span>
+</pre></div>
+</div>
+<p>As when interfacing Fortran code with <tt class="docutils literal"><span class="pre">f2py</span></tt>, we need to print out
+the doc string to see the exact call syntax from the Python side.
+This doc string is identical for the C and Fortran versions of
+<tt class="docutils literal"><span class="pre">advance</span></tt>.</p>
 </div>
 <div class="section" id="migrating-loops-to-c-via-instant">
 <h2>Migrating loops to C via Instant<a class="headerlink" href="#migrating-loops-to-c-via-instant" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="id13">
-<h2>Migrating loops to C++ via f2py<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
-<p>Use a very simple home-made array wrapper class for plain arrays.</p>
+<div class="section" id="id15">
+<h2>Migrating loops to C++ via f2py<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<p>C++ is a much more versatile language than C or Fortran and has over
+the last two decades become very popular for numerical computing.
+Many will therefore prefer to migrate compute-intensive Python code
+to C++. This is, in principle, easy: just write the desired C++ code
+and use some tool for interfacing it from Python. A tool like
+<a class="reference external" href="http://swig.org/">SWIG</a> can interpret the C++ code and generate
+interfaces for Python, Perl, Ruby, Java, and a wide range of
+languages. However, SWIG is a comprehensive tool with a correspondingly
+non-trivial learning curve. Alternative tools, such as
+<a class="reference external" href="http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html">Boost Python</a> and <a class="reference external" href="http://riverbankcomputing.co.uk/software/sip/intro">SIP</a>,
+are similarly comprehensive.</p>
+<p>A technically much easier way of interfacing C++ code is to drop the
+possibility to use C++ classes directly from Python, but instead
+make a C interface to the C++ code. The C interface can be handled
+by <tt class="docutils literal"><span class="pre">f2py</span></tt> as shown in the example with pure C code. Such a solution
+means that classes in Python and C++ cannot be mixed and that only
+primitive data types like numbers, strings, and arrays can be
+transferred between Python and C++. Actually, this is often a very
+good solution because it forces the C++ code to work on array data,
+which usually gives faster code than if fancy data structures with
+classes are used. The arrays coming from Python, and looking like
+plain C/C++ arrays, can be efficiently wrapped in more user-friendly
+C++ array classes in the C++ code, if desired.</p>
+<p><em>Remaining.</em> Use some array class. Key issue: <tt class="docutils literal"><span class="pre">extern</span> <span class="pre">&quot;C&quot;</span></tt> declaration of C++
+function in the C file with the interface we want to wrap.</p>
 </div>
 <div class="section" id="using-classes-to-implement-a-simulator">
 <h2>Using classes to implement a simulator<a class="headerlink" href="#using-classes-to-implement-a-simulator" title="Permalink to this headline">¶</a></h2>
@@ -2634,20 +2771,23 @@ classes work with arrays</li>
 </ul>
 </div></blockquote>
 </div>
+<div class="section" id="callbacks-to-python-from-fortran-or-c">
+<h2>Callbacks to Python from Fortran or C<a class="headerlink" href="#callbacks-to-python-from-fortran-or-c" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 <div class="section" id="analysis-of-the-continuous-and-discrete-solutions">
 <h1>Analysis of the continuous and discrete solutions<a class="headerlink" href="#analysis-of-the-continuous-and-discrete-solutions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="properties-of-the-solution-of-the-wave-equation">
 <span id="wave-pde1-properties"></span><h2>Properties of the solution of the wave equation<a class="headerlink" href="#properties-of-the-solution-of-the-wave-equation" title="Permalink to this headline">¶</a></h2>
-<p id="index-25">The wave equation</p>
+<p id="index-27">The wave equation</p>
 <div class="math">
 \[\frac{\partial^2 u}{\partial t^2} =
 c^2 \frac{\partial^2 u}{\partial x^2}\]</div>
 <p>has solutions of the form</p>
 <div class="math" id="equation-wave:pde1:gensol">
-<span class="eqno">(27)</span>\[     u(x,t) = g_R(x-ct) + g_L(x+ct),\]</div>
+<span class="eqno">(28)</span>\[     u(x,t) = g_R(x-ct) + g_L(x+ct),\]</div>
 <p>for any functions <span class="math">\(g_R\)</span> and <span class="math">\(g_L\)</span> sufficiently smooth to be differentiated
-twice. The result follows from inserting <a href="#equation-wave:pde1:gensol">(27)</a>
+twice. The result follows from inserting <a href="#equation-wave:pde1:gensol">(28)</a>
 in the wave equation. A function of the form <span class="math">\(g_R(x-ct)\)</span> represents a
 signal
 moving to the right in time with constant velocity <span class="math">\(c\)</span>.
@@ -2664,25 +2804,25 @@ is a function initially with shape <span class="math">\(g_L(x)\)</span> that mov
 <p>With the particular initial conditions</p>
 <div class="math">
 \[u(x,0)=I(x),\quad \frac{\partial}{\partial t}u(x,0) =0,\]</div>
-<p>we get, with <span class="math">\(u\)</span> as in <a href="#equation-wave:pde1:gensol">(27)</a>,</p>
+<p>we get, with <span class="math">\(u\)</span> as in <a href="#equation-wave:pde1:gensol">(28)</a>,</p>
 <div class="math">
 \[g_R(x) + g_L(x) = I(x),\quad -cg_R'(x) + cg_L'(x) = 0,\]</div>
 <p>which have the solution <span class="math">\(g_R=g_L=I/2\)</span>, and consequently</p>
 <div class="math" id="equation-wave:pde1:gensol2">
-<span class="eqno">(28)</span>\[     u(x,t) = \half I(x-ct) + \half I(x+ct) \thinspace .\]</div>
-<p>The interpretation of <a href="#equation-wave:pde1:gensol2">(28)</a> is that
+<span class="eqno">(29)</span>\[     u(x,t) = \half I(x-ct) + \half I(x+ct) \thinspace .\]</div>
+<p>The interpretation of <a href="#equation-wave:pde1:gensol2">(29)</a> is that
 the initial shape of <span class="math">\(u\)</span> is split into two parts, each with the same
 shape as <span class="math">\(I\)</span> but half
 of the initial amplitude. One part is traveling to the left and the
 other one to the right.</p>
-<p>The solution <a href="#equation-wave:pde1:gensol2">(28)</a> will be influenced by
+<p>The solution <a href="#equation-wave:pde1:gensol2">(29)</a> will be influenced by
 boundary conditions when the parts
 <span class="math">\(\half I(x-ct)\)</span> and <span class="math">\(\half I(x+ct)\)</span> hit the boundaries and get, e.g.,
 reflected back into the domain. However, when <span class="math">\(I(x)\)</span> is nonzero
 only in a small part in the middle
 of the spatial domain <span class="math">\([0,L]\)</span>, which means that the
 boundaries are placed far away from the initial disturbance of <span class="math">\(u\)</span>,
-the solution <a href="#equation-wave:pde1:gensol2">(28)</a> is very clearly observed
+the solution <a href="#equation-wave:pde1:gensol2">(29)</a> is very clearly observed
 in a simulation.</p>
 <p>A useful representation of solutions of wave equations is a linear
 combination of sine and/or cosine waves. Such a sum of waves is a
@@ -2708,12 +2848,12 @@ component <span class="math">\(e^{ikx}\)</span> of the solution.</p>
 <p>Letting the number of <span class="math">\(k\)</span> values in <span class="math">\(K\)</span> tend to infinity makes the sum
 <a href="#equation-wave:Fourier:I">(?)</a> converge to <span class="math">\(I(x)\)</span>, and this sum is known as a
 <em>Fourier series</em> representation of <span class="math">\(I(x)\)</span>.  Looking at
-<a href="#equation-wave:pde1:gensol2">(28)</a>, we see that the solution <span class="math">\(u(x,t)\)</span>, when
+<a href="#equation-wave:pde1:gensol2">(29)</a>, we see that the solution <span class="math">\(u(x,t)\)</span>, when
 <span class="math">\(I(x)\)</span> is represented as in <a href="#equation-wave:Fourier:I">(?)</a>, is also built of
 basic complex exponential wave components of the form <span class="math">\(e^{ik(x\pm
 ct)}\)</span> according to</p>
 <div class="math" id="equation-wave:Fourier:u1">
-<span class="eqno">(30)</span>\[     u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
+<span class="eqno">(31)</span>\[     u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
      + \half \sum_{k\in K} b_k e^{ik(x + ct)} \thinspace .\]</div>
 <p>It is common to introduce the frequency in time <span class="math">\(\omega = kc\)</span> and
 assume that <span class="math">\(u(x,t)\)</span> is a sum of basic wave components
@@ -2725,9 +2865,9 @@ traveling to the left.</p>
 </div>
 <div class="section" id="analysis-of-the-finite-difference-scheme">
 <span id="wave-pde1-analysis"></span><h2>Analysis of the finite difference scheme<a class="headerlink" href="#analysis-of-the-finite-difference-scheme" title="Permalink to this headline">¶</a></h2>
-<p id="index-26">The scheme</p>
+<p id="index-28">The scheme</p>
 <div class="math" id="equation-wave:pde1:analysis:scheme">
-<span class="eqno">(31)</span>\[     [D_tD_t u = c^2 D_xD_x u]^n_p\]</div>
+<span class="eqno">(32)</span>\[     [D_tD_t u = c^2 D_xD_x u]^n_p\]</div>
 <p>for the wave equation <span class="math">\(u_t = c^2u_{xx}\)</span> allows basic wave components
 <span class="math">\(e^{i(kx - \tilde\omega t)}\)</span> as solution, but it turns out that
 the frequency in time, <span class="math">\(\tilde\omega\)</span>, is not equal to
@@ -2752,7 +2892,7 @@ wave component:</p>
 \[[D_xD_x e^{ikx}]_p = -\frac{4}{\Delta x^2}\sin^2\left(
 \frac{k\Delta x}{2}\right)e^{ikp\Delta x} \thinspace .\]</div>
 <p>Inserting a basic wave component <span class="math">\(u=e^{i(kx-\tilde\omega t)}\)</span> in
-<a href="#equation-wave:pde1:analysis:scheme">(31)</a> results in the need to
+<a href="#equation-wave:pde1:analysis:scheme">(32)</a> results in the need to
 evaluate two expressions:</p>
 <div class="math">
 \[\begin{split}\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p &amp;= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikp\Delta x}\nonumber\\ &amp;= -\frac{4}{\Delta t^2}\sin^2\left(
@@ -2770,20 +2910,20 @@ frequency <span class="math">\(\tilde\omega\)</span>
 = c^2 \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),\]</div>
 <p>or</p>
 <div class="math" id="equation-wave:pde1:analysis:sineq1">
-<span class="eqno">(32)</span>\[     \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+<span class="eqno">(33)</span>\[     \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
      = C^2\sin^2\left(\frac{k\Delta x}{2}\right),\]</div>
 <p>where</p>
-<div class="math" id="index-27">
+<div class="math" id="index-29">
 \[C = \frac{c\Delta t}{\Delta x}\]</div>
 <p>is the Courant number.
-Taking the square root of <a href="#equation-wave:pde1:analysis:sineq1">(32)</a> yields</p>
+Taking the square root of <a href="#equation-wave:pde1:analysis:sineq1">(33)</a> yields</p>
 <div class="math" id="equation-wave:pde1:analysis:sineq2">
-<span class="eqno">(33)</span>\[     \sin\left(\frac{\tilde\omega\Delta t}{2}\right)
+<span class="eqno">(34)</span>\[     \sin\left(\frac{\tilde\omega\Delta t}{2}\right)
      = C\sin\left(\frac{k\Delta x}{2}\right),\]</div>
 <p>Since the exact <span class="math">\(\omega\)</span> is real it is reasonable to look for a real
-solution <span class="math">\(\tilde\omega\)</span> of <a href="#equation-wave:pde1:analysis:sineq2">(33)</a>.
+solution <span class="math">\(\tilde\omega\)</span> of <a href="#equation-wave:pde1:analysis:sineq2">(34)</a>.
 The right-hand side of
-<a href="#equation-wave:pde1:analysis:sineq2">(33)</a> must then be in <span class="math">\([-1,1]\)</span> because
+<a href="#equation-wave:pde1:analysis:sineq2">(34)</a> must then be in <span class="math">\([-1,1]\)</span> because
 the sine function on the left-hand side has values in <span class="math">\([-1,1]\)</span>
 for real <span class="math">\(\tilde\omega\)</span>. The sine function on
 the right-hand side can attain the value 1 when</p>
@@ -2798,19 +2938,19 @@ are irrelevant since these waves are too short to be represented
 on a mesh with spacing <span class="math">\(\Delta x\)</span>.
 For the shortest possible wave in the mesh, <span class="math">\(\sin\left(k\Delta x/2\right)=1\)</span>
 and we must require</p>
-<span class="target" id="index-28"></span><div class="math" id="equation-wave:pde1:stability">
-<span id="index-29"></span><span class="eqno">(34)</span>\[     C\leq 1 \thinspace .\]</div>
+<span class="target" id="index-30"></span><div class="math" id="equation-wave:pde1:stability">
+<span id="index-31"></span><span class="eqno">(35)</span>\[     C\leq 1 \thinspace .\]</div>
 <p>For smoother wave components with longer wave lengths per length <span class="math">\(\Delta x\)</span>,
-<a href="#equation-wave:pde1:stability">(34)</a> can in theory be relaxed. However,
+<a href="#equation-wave:pde1:stability">(35)</a> can in theory be relaxed. However,
 small round-off errors are always present in a numerical solution and these
 vary arbitrarily from mesh point to mesh point and can be viewed as
 unavoidable noise with wavelength <span class="math">\(2\Delta x\)</span>. As we shall see below, <span class="math">\(C&gt;1\)</span>
 will for this very small noise lead to exponential growth of
 the shortest possible wave component in the mesh. This noise will
 therefore grow with time and destroy the whole solution.</p>
-<p>Consider a right-hand side in <a href="#equation-wave:pde1:analysis:sineq2">(33)</a> of
+<p>Consider a right-hand side in <a href="#equation-wave:pde1:analysis:sineq2">(34)</a> of
 magnitude larger
-than unity. The solution <span class="math">\(\tilde\omega\)</span> of <a href="#equation-wave:pde1:analysis:sineq2">(33)</a>
+than unity. The solution <span class="math">\(\tilde\omega\)</span> of <a href="#equation-wave:pde1:analysis:sineq2">(34)</a>
 .. see the chapter <em class="xref std std-ref">sec:ode:o:eq1:analysis</em></p>
 <p>must then be a complex number <span class="math">\(\tilde\omega = \tilde\omega_r + i\tilde\omega_i\)</span>.
 One can show that for any <span class="math">\(\omega_i\)</span>  there will also be a
@@ -2818,17 +2958,17 @@ corresponding solution with <span class="math">\(-\omega_i\)</span>. The compone
 gives an amplification factor <span class="math">\(e^{\omega_it}\)</span> that grows exponentially
 in time. We cannot allow this and must therefore require <span class="math">\(C\leq 1\)</span>
 as a <em>stability criterion</em>.</p>
-<p>Equation <a href="#equation-wave:pde1:analysis:sineq2">(33)</a> can be solved with respect
+<p>Equation <a href="#equation-wave:pde1:analysis:sineq2">(34)</a> can be solved with respect
 to <span class="math">\(\tilde\omega\)</span>:</p>
 <div class="math" id="equation-wave:pde1:disprel">
-<span class="eqno">(35)</span>\[     \tilde\omega = \frac{2}{\Delta t}
+<span class="eqno">(36)</span>\[     \tilde\omega = \frac{2}{\Delta t}
      \sin^{-1}\left( C\sin\left(\frac{k\Delta x}{2}\right)\right) \thinspace .\]</div>
 <p>The relation between the numerical frequency <span class="math">\(\tilde\omega\)</span> and
 the other parameters <span class="math">\(k\)</span>, <span class="math">\(c\)</span>, <span class="math">\(\Delta x\)</span>, and <span class="math">\(\Delta t\)</span> is called
 a <em>numerical dispersion relation</em>. Correspondingly,
 <span class="math">\(\omega =kc\)</span> is the <em>analytical dispersion relation</em>.</p>
 <p>The special case <span class="math">\(C=1\)</span> deserves attention since then the right-hand side
-of <a href="#equation-wave:pde1:disprel">(35)</a> reduces to</p>
+of <a href="#equation-wave:pde1:disprel">(36)</a> reduces to</p>
 <div class="math">
 \[\frac{2}{\Delta t}\frac{k\Delta x}{2} = \frac{1}{\Delta t}
 \frac{\omega\Delta x}{c} = \frac{\omega}{C} = \omega \thinspace .\]</div>
@@ -2853,7 +2993,7 @@ Note that the symbol <span class="math">\(p\)</span>, previously used as index, 
 another meaning.
 We may introduce the function <span class="math">\(r(C, p)=\tilde c/c\)</span>:</p>
 <div class="math" id="equation-wave:pde1:disprel2">
-<span class="eqno">(36)</span>\[     r(C, p) = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right), \quad C\in (0,1],\ p\in (0,\pi/2] \thinspace .\]</div>
+<span class="eqno">(37)</span>\[     r(C, p) = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right), \quad C\in (0,1],\ p\in (0,\pi/2] \thinspace .\]</div>
 <p>This function is very well suited for plotting since it combines several
 parameters in the problem into a dependence on two non-dimensional
 numbers <span class="math">\(C\)</span> and <span class="math">\(p\)</span>.</p>
@@ -3054,7 +3194,7 @@ we have that</p>
 <p>which upon division by <span class="math">\(\Delta x\)</span> and introducing the density
 <span class="math">\(\varrho_i = m_i/\Delta x\)</span> becomes</p>
 <div class="math" id="equation-wave:app:string:model0">
-<span class="eqno">(37)</span>\[     \varrho_i u_i''(t) = T\frac{1}{\Delta x^2}
+<span class="eqno">(38)</span>\[     \varrho_i u_i''(t) = T\frac{1}{\Delta x^2}
      \left( u_{i+1} - 2u_i + u_{i-1}\right)\]\[     \thinspace .\]</div>
 <p>We can now choose to approximate <span class="math">\(u_i''\)</span> by a finite difference in time
 and get the discretized wave equation,</p>
@@ -3065,15 +3205,15 @@ T\frac{1}{\Delta x^2}
 \left( u_{i+1} - 2u_i + u_{i-1}\right),\]</div>
 <p>or we may go to the continuum limit <span class="math">\(\Delta x\rightarrow 0\)</span> and
 replace <span class="math">\(u_i(t)\)</span> by <span class="math">\(u(x,t)\)</span>, <span class="math">\(\varrho_i\)</span> by <span class="math">\(\varrho(x)\)</span>, and
-recognize that the right-hand side of <a href="#equation-wave:app:string:model0">(37)</a>
+recognize that the right-hand side of <a href="#equation-wave:app:string:model0">(38)</a>
 approaches <span class="math">\(\partial^2 u/\partial x^2\)</span> as <span class="math">\(\Delta x\rightarrow 0\)</span>.
 We end up with the continuous model for waves on a string:</p>
 <div class="math" id="equation-wave:app:string:model1">
-<span class="eqno">(38)</span>\[     \varrho\frac{\partial^2 u}{\partial t^2} = T\frac{\partial^2 u}{\partial x^2}\]\[     \thinspace .\]</div>
+<span class="eqno">(39)</span>\[     \varrho\frac{\partial^2 u}{\partial t^2} = T\frac{\partial^2 u}{\partial x^2}\]\[     \thinspace .\]</div>
 <p>Note that the density <span class="math">\(\varrho\)</span> may change along the string, while the
 tension <span class="math">\(T\)</span> is a constant. With variable wave velocity <span class="math">\(c(x) = \sqrt{T/\varrho(x)}\)</span> we can write the wave equation in the more standard form</p>
 <div class="math" id="equation-wave:app:string:model2">
-<span class="eqno">(39)</span>\[     \frac{\partial^2 u}{\partial t^2} = c^2(x)\frac{\partial^2 u}{\partial x^2}\]\[     \thinspace .\]</div>
+<span class="eqno">(40)</span>\[     \frac{\partial^2 u}{\partial t^2} = c^2(x)\frac{\partial^2 u}{\partial x^2}\]\[     \thinspace .\]</div>
 <p>Because of the way <span class="math">\(\varrho\)</span> enters the equations, the variable wave
 velocity does <em>not</em> appear inside the derivatives as in many other
 versions of the wave equation. However, most strings of interest have
@@ -3086,8 +3226,8 @@ constant <span class="math">\(\varrho\)</span>.</p>
 Say we have a vertical force <span class="math">\(\tilde f_i\pmb{j}\)</span> acting on mass <span class="math">\(m_i\)</span>.
 This force affects the vertical component of Newton&#8217;s law
 and gives rise to an extra term <span class="math">\(\tilde f(x,t)\)</span> on the right-hand side of
-<a href="#equation-wave:app:string:model1">(38)</a>. In the model
-<a href="#equation-wave:app:string:model2">(39)</a> we would add a term
+<a href="#equation-wave:app:string:model1">(39)</a>. In the model
+<a href="#equation-wave:app:string:model2">(40)</a> we would add a term
 <span class="math">\(f(x,t) = \tilde f(x,y)/\varrho(x)\)</span>.</p>
 </div>
 <div class="section" id="modeling-the-tension-via-springs">
@@ -3124,7 +3264,7 @@ through the rod. A mathematical model for longitudinal waves along
 an elastic rod starts with the general equation for deformations
 and stresses in an elastic medium,</p>
 <div class="math" id="equation-wave:app:elastic:rod:eqmotion">
-<span class="eqno">(40)</span>\[     \varrho\pmb{u}_{tt} = \nabla\cdot\pmb{\sigma} + \varrho\pmb{f},\]</div>
+<span class="eqno">(41)</span>\[     \varrho\pmb{u}_{tt} = \nabla\cdot\pmb{\sigma} + \varrho\pmb{f},\]</div>
 <p>where <span class="math">\(\varrho\)</span> is the density, <span class="math">\(\pmb{u}\)</span> the displacement field, <span class="math">\(\pmb{\sigma}\)</span> the
 stress tensor, and <span class="math">\(\pmb{f}\)</span> body forces. The latter has normally no impact
 on elastic waves.</p>
@@ -3134,10 +3274,10 @@ stress components are zero. Moreover, <span class="math">\(\pmb{u} = u(x)\pmb{i}
 The parameter <span class="math">\(E\)</span> is known as Young&#8217;s modulus.
 Assuming that this simple stress and deformation field, which is exact
 in the stationary case, is a good approximation in the transient
-case with wave motion, <a href="#equation-wave:app:elastic:rod:eqmotion">(40)</a> simplifies
+case with wave motion, <a href="#equation-wave:app:elastic:rod:eqmotion">(41)</a> simplifies
 to</p>
 <div class="math" id="equation-wave:app:elastic:rod:eq">
-<span class="eqno">(41)</span>\[     \varrho\frac{\partial^2 u}{\partial t^2} = \frac{\partial}{\partial x}
+<span class="eqno">(42)</span>\[     \varrho\frac{\partial^2 u}{\partial t^2} = \frac{\partial}{\partial x}
      \left( E\frac{\partial u}{\partial x}\right)\]\[     \thinspace .\]</div>
 <p>The associated boundary conditions are <span class="math">\(u\)</span> or <span class="math">\(\sigma_{xx}\)</span> known, typically
 <span class="math">\(u=0\)</span> for a clamped end and <span class="math">\(\sigma_{xx}=0\)</span> for a free end.</p>
@@ -3150,11 +3290,11 @@ elastic medium where sound is propagated by small elastic
 vibrations. The general mathematical model for deformations
 in an elastic medium is based on Newton&#8217;s second law,</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:eqmotion">
-<span class="eqno">(42)</span>\[     \varrho\pmb{u}_{tt} = \nabla\cdot\pmb{\sigma} + \varrho\pmb{f},\]</div>
+<span class="eqno">(43)</span>\[     \varrho\pmb{u}_{tt} = \nabla\cdot\pmb{\sigma} + \varrho\pmb{f},\]</div>
 <p>and a constitutive law relating <span class="math">\(\pmb{\sigma}\)</span> to <span class="math">\(\pmb{u}\)</span>, often Hooke&#8217;s
 generalized law,</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:Hooke">
-<span class="eqno">(43)</span>\[     \pmb{\sigma} = K\nabla\cdot\pmb{u}\, \pmb{I}  + G(\nabla\pmb{u} + (\nabla\pmb{u})^T - \frac{2}{3}\nabla\cdot\pmb{u}\, \pmb{I})\]\[     \thinspace .\]</div>
+<span class="eqno">(44)</span>\[     \pmb{\sigma} = K\nabla\cdot\pmb{u}\, \pmb{I}  + G(\nabla\pmb{u} + (\nabla\pmb{u})^T - \frac{2}{3}\nabla\cdot\pmb{u}\, \pmb{I})\]\[     \thinspace .\]</div>
 <p>Here, <span class="math">\(\pmb{u}\)</span> is the displacement field, <span class="math">\(\pmb{\sigma}\)</span> is the stress tensor,
 <span class="math">\(\pmb{I}\)</span> is the identity tensor,
 <span class="math">\(\varrho\)</span> is the medium&#8217;s density, <span class="math">\(\pmb{f}\)</span> are body forces (such as gravity),
@@ -3167,13 +3307,13 @@ deformations that give rise to shear stresses, can be neglected.
 This assumption can be interpreted as approximating the geological
 medium by a fluid.
 Neglecting also the body forces <span class="math">\(\pmb{f}\)</span>,
-<a href="#equation-wave:app:acoustic:seismic:eqmotion">(42)</a> becomes</p>
+<a href="#equation-wave:app:acoustic:seismic:eqmotion">(43)</a> becomes</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:eqmotion2">
-<span class="eqno">(44)</span>\[     \varrho\pmb{u}_{tt} = \nabla (K\nabla\cdot\pmb{u} )\]</div>
+<span class="eqno">(45)</span>\[     \varrho\pmb{u}_{tt} = \nabla (K\nabla\cdot\pmb{u} )\]</div>
 <p>Introducing <span class="math">\(p\)</span> as a pressure via</p>
 <div class="math">
 \[p=-K\cdot\nabla\pmb{u},\]</div>
-<p>and dividing <a href="#equation-wave:app:acoustic:seismic:eqmotion2">(44)</a> by <span class="math">\(\varrho\)</span>,
+<p>and dividing <a href="#equation-wave:app:acoustic:seismic:eqmotion2">(45)</a> by <span class="math">\(\varrho\)</span>,
 we get</p>
 <div class="math">
 \[\pmb{u}_{tt} = -\frac{1}{\varrho}\nabla p
@@ -3181,15 +3321,15 @@ we get</p>
 <p>Taking the divergence of this equation, using <span class="math">\(\nabla\cdot\pmb{u} = -p/K\)</span>,
 gives the <em>acoustic approximation to elastic waves</em>:</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:accoustic1">
-<span class="eqno">(45)</span>\[     p_{tt} = K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right)
+<span class="eqno">(46)</span>\[     p_{tt} = K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right)
      \thinspace .\]</div>
 <p>This is a standard, linear wave equation with variable coefficients.
 It is common to add a source term <span class="math">\(s(x,y,z,t)\)</span>
 to model the generation of sound waves:</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:accoustic">
-<span class="eqno">(46)</span>\[     p_{tt} = K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right) + s
+<span class="eqno">(47)</span>\[     p_{tt} = K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right) + s
      \thinspace .\]</div>
-<p>A common further approximation of <a href="#equation-wave:app:acoustic:seismic:accoustic">(46)</a>
+<p>A common further approximation of <a href="#equation-wave:app:acoustic:seismic:accoustic">(47)</a>
 is based on using the chain rule on the right-hand side,</p>
 <div class="math">
 \[K\nabla\cdot\left(\frac{1}{\varrho}\nabla p\right)
@@ -3199,7 +3339,7 @@ is based on using the chain rule on the right-hand side,</p>
 = -\varrho^{-2}\nabla\varrho\)</span> to be small. This results
 in</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:accoustic1">
-<span class="eqno">(47)</span>\[     p_{tt} = \frac{K}{\varrho}\nabla^2 p + s
+<span class="eqno">(48)</span>\[     p_{tt} = \frac{K}{\varrho}\nabla^2 p + s
      \thinspace .\]</div>
 <p>The acoustic approximations to seismic waves are used for sound
 waves in the ground, and the Earth&#8217;s surface is then a boundary
@@ -3214,9 +3354,9 @@ compacted such that the properties in the horizontal and vertical
 direction differ. With <span class="math">\(z\)</span> as the vertical coordinate, we can
 introduce a vertical wave velocity <span class="math">\(c_z\)</span> and a horizontal
 wave velocity <span class="math">\(c_h\)</span>, and
-generalize <a href="#equation-wave:app:acoustic:seismic:accoustic1">(47)</a> to</p>
+generalize <a href="#equation-wave:app:acoustic:seismic:accoustic1">(48)</a> to</p>
 <div class="math" id="equation-wave:app:acoustic:seismic:accoustic1a">
-<span class="eqno">(48)</span>\[     p_{tt} = c_z^2 p_{zz} + c_h^2 (p_{xx} + p_{yy}) + s
+<span class="eqno">(49)</span>\[     p_{tt} = c_z^2 p_{zz} + c_h^2 (p_{xx} + p_{yy}) + s
      \thinspace .\]</div>
 </div>
 </div>
@@ -3325,14 +3465,14 @@ terms of <span class="math">\(v(r,t)\)</span> now becomes</p>
 <p>In the case of constant wave velocity <span class="math">\(c\)</span>, this equation reduces to
 the wave equation in a single Cartesian coordinate:</p>
 <div class="math" id="equation-wave:app:rsymm:Cart">
-<span class="eqno">(49)</span>\[\begin{split}     \frac{\partial^2u}{\partial t^2}=
+<span class="eqno">(50)</span>\[\begin{split}     \frac{\partial^2u}{\partial t^2}=
      \frac{\partial}{\partial r}
      \left(c^2(r)\frac{\partial v}{\partial t}\right)
      + rf(r),\quad r\in (0,R),\ t&gt;0
      \thinspace .\end{split}\]</div>
 <p>That is, any program for solving the one-dimensional wave equation
 in a Cartesian coordinate system can be used to
-solve <a href="#equation-wave:app:rsymm:Cart">(49)</a>, provided the source term is
+solve <a href="#equation-wave:app:rsymm:Cart">(50)</a>, provided the source term is
 multiplied by the coordinate, and that we divide the Cartesian mesh
 solution by <span class="math">\(r\)</span> to get the spherically symmetric solution.
 Moreover, if <span class="math">\(r=0\)</span> is included in the
@@ -3404,7 +3544,7 @@ is independent of <span class="math">\(t\)</span>. Third, eliminate <span class=
 with the aid of the other two differentiated equations. These manipulations
 results in a standard, linear wave equation for <span class="math">\(\eta\)</span>:</p>
 <div class="math" id="equation-wave:app:sw:2D:eta:2ndoeq">
-<span class="eqno">(50)</span>\[     \eta_{tt} = (gH\eta_x)_x + (gH\eta_y)_y = \nabla\cdot (gH\nabla\eta)\]\[     \thinspace .\]</div>
+<span class="eqno">(51)</span>\[     \eta_{tt} = (gH\eta_x)_x + (gH\eta_y)_y = \nabla\cdot (gH\nabla\eta)\]\[     \thinspace .\]</div>
 <p>In the case we have an initial non-flat water surface at rest, the
 initial conditions become <span class="math">\(\eta =I(x,y)\)</span> and <span class="math">\(\eta_t=0\)</span>.
 The latter follows from (<em class="xref std std-ref">wave:app:sw:2D:eeq</em>) if <span class="math">\(u=v=0\)</span>, or
@@ -3421,15 +3561,15 @@ introducing <span class="math">\(z=H_0\)</span> as the still-water level, <span 
 the time- and space-varying bottom topography, so that <span class="math">\(H=H_0-B(x,y,t)\)</span>.
 In the elimination of <span class="math">\(u\)</span> and <span class="math">\(v\)</span> one may assume that the dependence of
 <span class="math">\(H\)</span> on <span class="math">\(t\)</span> can be neglected in the terms <span class="math">\((Hu)_{xt}\)</span> and <span class="math">\((Hv)_{yt}\)</span>.
-We then end up with a source term in <a href="#equation-wave:app:sw:2D:eta:2ndoeq">(50)</a>,
+We then end up with a source term in <a href="#equation-wave:app:sw:2D:eta:2ndoeq">(51)</a>,
 because of the moving (accelerating) bottom:</p>
 <div class="math" id="equation-wave:app:sw:2D:eta:2ndoeq:Ht">
-<span class="eqno">(51)</span>\[     \eta_{tt} = \nabla\cdot(gH\nabla\eta) + B_{tt}\]\[     \thinspace .\]</div>
-<p>The reduction of <a href="#equation-wave:app:sw:2D:eta:2ndoeq:Ht">(51)</a> to 1D, for long waves
+<span class="eqno">(52)</span>\[     \eta_{tt} = \nabla\cdot(gH\nabla\eta) + B_{tt}\]\[     \thinspace .\]</div>
+<p>The reduction of <a href="#equation-wave:app:sw:2D:eta:2ndoeq:Ht">(52)</a> to 1D, for long waves
 in a straight channel, or for approximately plane waves in the ocean, is
 trivial by assuming no change in <span class="math">\(y\)</span> direction (<span class="math">\(\partial/\partial y=0\)</span>):</p>
 <div class="math" id="equation-wave:app:sw:1D:eta:2ndoeq:Ht">
-<span class="eqno">(52)</span>\[     \eta_t = (gH\eta_x)_x + B_{tt}\]\[     \thinspace .\]</div>
+<span class="eqno">(53)</span>\[     \eta_t = (gH\eta_x)_x + B_{tt}\]\[     \thinspace .\]</div>
 <div class="section" id="wind-drag-on-the-surface">
 <h3>Wind drag on the surface<a class="headerlink" href="#wind-drag-on-the-surface" title="Permalink to this headline">¶</a></h3>
 <p>Surface waves are influenced by the drag of the wind, and if the
@@ -3505,7 +3645,7 @@ of blood.</p>
 A third equation is needed to relate the flow to
 the deformations of the wall. A common form for this equation is</p>
 <div class="math" id="equation-wave:app:blood:const">
-<span class="eqno">(53)</span>\[     \frac{\partial P}{\partial t} + \frac{1}{C}
+<span class="eqno">(54)</span>\[     \frac{\partial P}{\partial t} + \frac{1}{C}
      \frac{\partial Q}{\partial x} =0,\]</div>
 <p>where <span class="math">\(C\)</span> is the compliance of the wall, given by the constitutive
 relation</p>
@@ -3540,7 +3680,7 @@ fit with experiments, is</p>
 (<em class="xref std std-ref">wave:app:blood:mom</em>) and also the quadratic term
 with <span class="math">\(Q^2\)</span> on the left-hand side. The reduced equations
 (<em class="xref std std-ref">wave:app:blood:mom</em>)
-and <a href="#equation-wave:app:blood:const">(53)</a> form a first-order
+and <a href="#equation-wave:app:blood:const">(54)</a> form a first-order
 linear wave equation system:</p>
 <div class="math">
 \[\begin{split}C\frac{\partial P}{\partial t} &amp;= - \frac{\partial Q}{\partial x},\\
@@ -3593,11 +3733,11 @@ and can hence be solved independently.</p>
 </div>
 </div>
 <div class="section" id="wave-app-exer">
-<span id="id14"></span><h1>Exercises<a class="headerlink" href="#wave-app-exer" title="Permalink to this headline">¶</a></h1>
+<span id="id16"></span><h1>Exercises<a class="headerlink" href="#wave-app-exer" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="exercise-11-simulate-elastic-waves-in-a-rod">
 <span id="wave-app-exer-rod"></span><h2>Exercise 11: Simulate elastic waves in a rod<a class="headerlink" href="#exercise-11-simulate-elastic-waves-in-a-rod" title="Permalink to this headline">¶</a></h2>
 <p>A hammer hits the end of an elastic rod. The exercise is to simulate
-the resulting wave motion using the model <a href="#equation-wave:app:elastic:rod:eq">(41)</a>
+the resulting wave motion using the model <a href="#equation-wave:app:elastic:rod:eq">(42)</a>
 from the section <a class="reference internal" href="#wave-app-elastic-rod"><em>Elastic waves in a rod</em></a>. Let the rod have length
 <span class="math">\(L\)</span> and let the boundary <span class="math">\(x=L\)</span> be stress free so that <span class="math">\(\sigma_{xx}=0\)</span>,
 implying that <span class="math">\(\partial u/\partial x=0\)</span>. The left end <span class="math">\(x=0\)</span> is
@@ -3670,37 +3810,37 @@ the simulation.</p>
 </div>
 <div class="section" id="exercise-14-implement-an-open-boundary-condition">
 <span id="wave-app-exer-tsunami1d-radiation"></span><h2>Exercise 14: Implement an open boundary condition<a class="headerlink" href="#exercise-14-implement-an-open-boundary-condition" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="index-30"></span><p id="index-31">To enable the right-going wave in <a class="reference internal" href="#wave-app-exer-tsunami1d"><em>Exercise 13: Earthquake-generated tsunami in a 1D model</em></a>
+<span class="target" id="index-32"></span><p id="index-33">To enable the right-going wave in <a class="reference internal" href="#wave-app-exer-tsunami1d"><em>Exercise 13: Earthquake-generated tsunami in a 1D model</em></a>
 to leave the computational domain and travel undisturbed through
 the boundary, one can in a one-dimensional problem impose the
 following condition, called a <em>radiation condition</em> or
 <em>open boundary condition</em>:</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:radiation:eq">
-<span class="eqno">(54)</span>\[     \frac{\partial\eta}{\partial t} + c\frac{\partial\eta}{\partial x} = 0,\]</div>
+<span class="eqno">(55)</span>\[     \frac{\partial\eta}{\partial t} + c\frac{\partial\eta}{\partial x} = 0,\]</div>
 <p>at the right boundary <span class="math">\(x=x_R\)</span>. The parameter <span class="math">\(c\)</span> is the wave velocity,
 which for the model in <a class="reference internal" href="#wave-app-exer-tsunami1d"><em>Exercise 13: Earthquake-generated tsunami in a 1D model</em></a>
 is <span class="math">\(c=\sqrt{gH(x_R)}\)</span>.</p>
-<p>Show that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(54)</a> accepts
+<p>Show that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(55)</a> accepts
 a solution <span class="math">\(\eta = g_R(x-ct)\)</span>, but not <span class="math">\(\eta = g_L(x+ct)\)</span>. This means
-that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(54)</a> will allow any
+that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(55)</a> will allow any
 right-going wave <span class="math">\(g_R(x-ct)\)</span> pass through the boundary.</p>
-<p>The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(54)</a> can be
+<p>The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(55)</a> can be
 discretized by centered differences at the spatial end point <span class="math">\(i=N_x\)</span>,
 corresponding to <span class="math">\(x=x_R\)</span>:</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:radiation:eq:op">
-<span class="eqno">(55)</span>\[     [D_{2t}\eta + cD_{2x}\eta =0]^n_{N_x}\]\[     \thinspace .\]</div>
+<span class="eqno">(56)</span>\[     [D_{2t}\eta + cD_{2x}\eta =0]^n_{N_x}\]\[     \thinspace .\]</div>
 <p>Eliminate the fictitious value <span class="math">\(\eta_{N_x+1}^n\)</span> by using
 the discrete equation at the same point <span class="math">\((n,N_x)\)</span>.
 The equation for the first step, <span class="math">\(\eta_i^1\)</span>, is in principal affected,
 but we can then use the condition <span class="math">\(\eta^1_{N_x}=0\)</span> since the wave
 has not yet reached the right boundary.</p>
 <p>Modify the <tt class="docutils literal"><span class="pre">solver</span></tt> function in the <tt class="docutils literal"><span class="pre">wave1D.py</span></tt> program to
-incorporate the condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq:op">(55)</a>.
+incorporate the condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq:op">(56)</a>.
 Demonstrate that the tsunami travels through the domain and out of
 the right boundary without leaving any reflections behind.
 Make a nose test for checking that after a certain time <span class="math">\(T\)</span>, the surface is
 flat.</p>
-<p><em>Remark 1.</em> The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(54)</a>
+<p><em>Remark 1.</em> The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(55)</a>
 works perfectly in 1D when <span class="math">\(c\)</span> is known. In 2D and 3D, however, the
 condition reads <span class="math">\(\eta_t + c_x\eta_x + c_y\eta_y=0\)</span>, where <span class="math">\(c_x\)</span> and
 <span class="math">\(c_y\)</span> are the wave speeds in the <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions, and estimating
@@ -3708,7 +3848,7 @@ these components (i.e., the direction of the wave) is often
 challenging. Other methods are normally used in 2D and 3D to
 let waves move out of a computational domain.</p>
 <p><em>Remark 2.</em> A radiation or open boundary condition at the left
-boundary takes the same form as <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(54)</a>,
+boundary takes the same form as <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(55)</a>,
 except that there is a minus sign in front of the <span class="math">\(c\eta_x\)</span>
 term. One can easily show that with this sign, the condition accepts
 left-going waves of the form <span class="math">\(\eta = g_L(x+ct)\)</span>.
@@ -3727,24 +3867,24 @@ shallow water above the hill.</p>
 <p>One possible form of the
 hill is a Gaussian function,</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:Gauss">
-<span class="eqno">(56)</span>\[     B(x;B_0,B_a,B_m,B_s) =
+<span class="eqno">(57)</span>\[     B(x;B_0,B_a,B_m,B_s) =
      B_0 + B_a\exp{\left(-\left(\frac{x-B_m}{B_s}\right)^2\right)},\]</div>
 <p>but many other shapes are also possible, e.g., a &#8220;cosine hat&#8221; where</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:cohat">
-<span class="eqno">(57)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a\cos{\left( \pi\frac{x-B_m}{2B_s}\right)},\]</div>
+<span class="eqno">(58)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a\cos{\left( \pi\frac{x-B_m}{2B_s}\right)},\]</div>
 <p>when <span class="math">\(x\in [B_m - B_s, B_m + B_s]\)</span> while <span class="math">\(B=B_0\)</span> outside this
 interval.</p>
 <p>Also an abrupt construction may be tried:</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:box">
-<span class="eqno">(58)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a,\]</div>
+<span class="eqno">(59)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a,\]</div>
 <p>for <span class="math">\(x\in [B_m - B_s, B_m + B_s]\)</span> while <span class="math">\(B=B_0\)</span> outside this
 interval.</p>
 <p>Visualize both the bottom topography and the
 water surface elevation (this requires modifying <tt class="docutils literal"><span class="pre">plot_u</span></tt>).
 Allow for a flexible choice of bottom shape,
-<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(56)</a>,
-<a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(57)</a>,
-<a href="#equation-wave:app:exer:tsunami1D:hill:box">(58)</a>, or <span class="math">\(B(x)=B_0\)</span> (flat)
+<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(57)</a>,
+<a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(58)</a>,
+<a href="#equation-wave:app:exer:tsunami1D:hill:box">(59)</a>, or <span class="math">\(B(x)=B_0\)</span> (flat)
 and see if the waves become
 qualitatively different. Also investigate the amount of numerical
 noise that is triggered by rapid changes in the bottom function
@@ -3784,13 +3924,13 @@ for <span class="math">\(u_{tt}=c^2(u_{xx}+u_{yy})\)</span> in the spatial domai
 <span class="math">\([0,L_x]\times [0,L_y]\)</span>, with <span class="math">\(\partial u/\partial n\)</span> on the boundary
 (cf. <a class="reference internal" href="#wave-app-exer-wave2d-neumann"><em>Exercise 16: Implement Neumann conditions in 2D</em></a>):</p>
 <div class="math" id="equation-wave:app:exer:standing:waves">
-<span class="eqno">(59)</span>\[     u_{\small\mbox{e}}(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),\]</div>
+<span class="eqno">(60)</span>\[     u_{\small\mbox{e}}(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),\]</div>
 <p>Here, <span class="math">\(m_x\)</span> and <span class="math">\(m_y\)</span> are freely chosen integers such that
 the wave lengths in the <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions become <span class="math">\(2L_x/m_x\)</span> and
 <span class="math">\(2L_y/m_y\)</span>, respectively. The parameter <span class="math">\(\omega\)</span> is calculated
-by inserting <a href="#equation-wave:app:exer:standing:waves">(59)</a> in the wave equation.
+by inserting <a href="#equation-wave:app:exer:standing:waves">(60)</a> in the wave equation.
 The solution
-<a href="#equation-wave:app:exer:standing:waves">(59)</a> is a <em>standing wave</em>
+<a href="#equation-wave:app:exer:standing:waves">(60)</a> is a <em>standing wave</em>
 with <span class="math">\(\partial u/\partial n=0\)</span>.
 This <span class="math">\(u_{\small\mbox{e}}\)</span> is not an exact solution of the discrete equations so the
 test must be based on empirical analysis of the convergence.
@@ -3814,7 +3954,7 @@ Filename: <tt class="docutils literal"><span class="pre">wave2D_n2.py</span></tt
 <span id="wave-app-exer-tsunami2d-hill"></span><h2>Exercise 18: Earthquake-generated tsunami over a 3D hill<a class="headerlink" href="#exercise-18-earthquake-generated-tsunami-over-a-3d-hill" title="Permalink to this headline">¶</a></h2>
 <p>This exercise extends <a class="reference internal" href="#wave-app-exer-tsunami1d-hill"><em>Exercise 15: Earthquake-generated tsunami over a subsea hill</em></a>
 to a three-dimensional wave phenomenon, governed by the 2D PDE
-<a href="#equation-wave:app:sw:2D:eta:2ndoeq">(50)</a>. We assume that the earthquake
+<a href="#equation-wave:app:sw:2D:eta:2ndoeq">(51)</a>. We assume that the earthquake
 arise from a fault along the line <span class="math">\(x=0\)</span> in the <span class="math">\(xy\)</span>-plane so that
 the initial lift of the surface can be taken as <span class="math">\(I(x)\)</span> in
 <a class="reference internal" href="#wave-app-exer-tsunami1d-hill"><em>Exercise 15: Earthquake-generated tsunami over a subsea hill</em></a>. That is, a plan wave is
@@ -3823,24 +3963,24 @@ the bottom.</p>
 <p>The bottom shape is now a function of <span class="math">\(x\)</span> and <span class="math">\(y\)</span>.
 An &#8220;elliptic&#8221; Gauss function in two dimensions, with its peak
 at <span class="math">\((B_{mx}, B_{my})\)</span>, generalizes
-<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(56)</a>:</p>
+<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(57)</a>:</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:Gauss">
-<span class="eqno">(60)</span>\[     B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
+<span class="eqno">(61)</span>\[     B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
      B_0 + B_a\exp{\left(-\left(\frac{x-B_{mx}}{B_s}\right)^2
      -\left(\frac{y-B_{my}}{bB_s}\right)^2\right)},\]</div>
 <p>where <span class="math">\(b\)</span> is a scaling parameter: <span class="math">\(b=1\)</span> gives a circular Gaussian
 function with circular contour lines, while <span class="math">\(b\neq 1\)</span> gives an elliptic
 shape with elliptic contour lines.</p>
-<p>The &#8220;cosine hat&#8221; <a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(57)</a> can also be
+<p>The &#8220;cosine hat&#8221; <a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(58)</a> can also be
 generalized to</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:cohat">
-<span class="eqno">(61)</span>\[     B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
+<span class="eqno">(62)</span>\[     B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
      B_0 + B_a\cos{\left( \pi\frac{x-B_{mx}}{2B_s}\right)}
      \cos{\left( \pi\frac{y-B_{my}}{2B_s}\right)},\]</div>
 <p>when <span class="math">\(0 \leq \sqrt{x^2+y^2} \leq B_s\)</span> and <span class="math">\(B=B_0\)</span> outside this circle.</p>
 <p>A box-shaped obstacle means that</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:box">
-<span class="eqno">(62)</span>\[     B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a\]</div>
+<span class="eqno">(63)</span>\[     B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a\]</div>
 <p>for <span class="math">\(x\)</span> and <span class="math">\(y\)</span> inside a rectangle</p>
 <div class="math">
 \[B_{mx}-B_s \leq  x \leq B_{mx} + B_s,\quad
@@ -3929,7 +4069,7 @@ there is significant difference between the harmonic mean
 arithmetic mean (<em class="xref std std-ref">wave:pde2:var:c:mean:arithmetic</em>).
 Use extreme cases for the investigations where the subsea hill is
 close to the flat surface. Pay particular attention to the
-box-shaped obstruction <a href="#equation-wave:app:exer:tsunami1D:hill:box">(58)</a> since
+box-shaped obstruction <a href="#equation-wave:app:exer:tsunami1D:hill:box">(59)</a> since
 it has discontinuities.</p>
 <p>Repeat the investigations for the case of a box-shaped obstruction
 in the 2D model from <a class="reference internal" href="#wave-app-exer-tsunami2d-hill"><em>Exercise 18: Earthquake-generated tsunami over a 3D hill</em></a>.</p>
@@ -3942,7 +4082,7 @@ Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_harmonic
 <div class="section" id="exercise-26-simulate-seismic-waves-in-2d">
 <span id="wave-app-exer-seismic2d"></span><h2>Exercise 26: Simulate seismic waves in 2D<a class="headerlink" href="#exercise-26-simulate-seismic-waves-in-2d" title="Permalink to this headline">¶</a></h2>
 <p>The goal of this exercise is to simulate seismic waves using the
-PDE model <a href="#equation-wave:app:acoustic:seismic:accoustic1a">(48)</a> in a
+PDE model <a href="#equation-wave:app:acoustic:seismic:accoustic1a">(49)</a> in a
 2D <span class="math">\(xz\)</span> domain with geological layers.
 Introduce <span class="math">\(m\)</span> horizontal layers of thickness <span class="math">\(h_i\)</span>, <span class="math">\(i=0,\ldots,m-1\)</span>.
 Inside layer number <span class="math">\(i\)</span> we have a vertical wave velocity <span class="math">\(c_{z,i}\)</span>
@@ -4097,11 +4237,19 @@ at the upper boundary.</p>
 <li><a class="reference internal" href="#id12">Efficiency</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#migrating-loops-to-c-via-cython">Migrating loops to C via Cython</a></li>
+<li><a class="reference internal" href="#migrating-loops-to-c-via-cython">Migrating loops to C via Cython</a><ul>
+<li><a class="reference internal" href="#translating-of-index-pairs-to-single-indices">Translating of index pairs to single indices</a></li>
+<li><a class="reference internal" href="#the-complete-c-code">The complete C code</a></li>
+<li><a class="reference internal" href="#the-cython-interface-file">The Cython interface file</a></li>
+<li><a class="reference internal" href="#id13">Building the extension module</a></li>
+<li><a class="reference internal" href="#id14">Efficiency</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#migrating-loops-to-c-via-f2py">Migrating loops to C via f2py</a></li>
 <li><a class="reference internal" href="#migrating-loops-to-c-via-instant">Migrating loops to C via Instant</a></li>
-<li><a class="reference internal" href="#id13">Migrating loops to C++ via f2py</a></li>
+<li><a class="reference internal" href="#id15">Migrating loops to C++ via f2py</a></li>
 <li><a class="reference internal" href="#using-classes-to-implement-a-simulator">Using classes to implement a simulator</a></li>
+<li><a class="reference internal" href="#callbacks-to-python-from-fortran-or-c">Callbacks to Python from Fortran or C</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#analysis-of-the-continuous-and-discrete-solutions">Analysis of the continuous and discrete solutions</a><ul>

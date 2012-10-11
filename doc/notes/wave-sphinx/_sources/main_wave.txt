@@ -6,7 +6,7 @@ Finite difference methods for wave motion
 
 :Author: Hans Petter Langtangen
 
-:Date: Oct 10, 2012
+:Date: Oct 11, 2012
 
 Note: **VERY PRELIMINARY VERSION!** (Expect lots of typos!)
 
@@ -2615,7 +2615,7 @@ scheme
         &\qquad\quad\frac{1}{2}(q_{i,j-1,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j-1,k})) + \\
         &= \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \frac{1}{2}(q_{i,j,k} + q_{i,j,k+1})(u^{n}_{i,j,k+1} - u^{n}_{i,j,k}) -\\
         &\qquad\quad \frac{1}{2}(q_{i,j,k-1} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j,k-1})) + \\
-        + &\qquad f^n_{i,j,k}
+        + &\qquad \Delta t^2 f^n_{i,j,k}
         \thinspace .
         
 
@@ -2725,11 +2725,11 @@ program:
         
         u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + C_x^2(
         u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
-        (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + f_{i,j}^n,
+        (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,
         
         
 
-for all internal mesh points :math:`i=0,\ldots,N_x-1` and
+for all interior mesh points :math:`i=0,\ldots,N_x-1` and
 :math:`j=0,\ldots,N_y-1`, and for :math:`n=1,\ldots, N`.
 The constants :math:`C_x` and :math:`C_y` are defined as
 
@@ -2745,7 +2745,18 @@ At the boundary we simply set :math:`u^{n+1}_{i,j}=0` for
 For the first step, :math:`n=0`, :eq:`wave:2D3D:impl1:2Du0:ueq:discrete`
 is combined with the discretization of the initial condition :math:`u_t=V`,
 :math:`[D_{2t} u = V]^0_{i,j}` to obtain a special formula for
-:math:`u^1_{i,j}` at the interior mesh points.
+:math:`u^1_{i,j}` at the interior mesh points:
+
+
+.. math::
+   :label: wave:2D3D:impl1:2Du0:ueq:discrete
+        
+        u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \frac{1}{2}C_x^2(
+        u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
+        (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,
+        
+        
+
 
 
 Scalar computations
@@ -3068,9 +3079,6 @@ computing in Cython. Let us first list the code:
             np.ndarray[DT, ndim=2, mode='c'] u_1,
             np.ndarray[DT, ndim=2, mode='c'] u_2,
             np.ndarray[DT, ndim=2, mode='c'] f,
-            np.ndarray[DT, ndim=1, mode='c'] x,
-            np.ndarray[DT, ndim=1, mode='c'] y,
-            np.ndarray[DT, ndim=1, mode='c'] t,
             double Cx2, double Cy2, double dt2):
         
             cdef int Nx, Ny, i, j
@@ -3283,22 +3291,29 @@ the Fortran compilers
 build on 60 years of intensive research on how to optimize loops with
 array computations.
 
+
+.. index:: wrapper code
+
+
+.. index:: Fortran subroutine
+
+
 The Fortran subroutine
 ~~~~~~~~~~~~~~~~~~~~~~
 
 We write a Fortran subroutine ``advance`` in a file
-``wave2D_u0_loop_f77.f`` for implementing the updating formula
+`wave2D_u0_loop_f77.f <https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_f77.f>`_
+for implementing the updating formula
 :eq:`wave:2D3D:impl1:2Du0:ueq:discrete` and setting the solution to zero
 at the boundaries:
 
 
 .. code-block:: fortran
 
-        subroutine advance(u, u_1, u_2, f, x, y, t, Cx2, Cy2, dt2,
-             &                   Nx, Ny, N)
-              integer Nx, Ny, N
+        subroutine advance(u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny)
+              integer Nx, Ny
               real*8 u(0:Nx,0:Ny), u_1(0:Nx,0:Ny), u_2(0:Nx,0:Ny)
-              real*8 f(0:Nx, 0:Ny), x(0:Nx), y(0:Ny), t(0:N), Cx2, Cy2, dt2
+              real*8 f(0:Nx, 0:Ny), Cx2, Cy2, dt2
               integer i, j
         Cf2py intent(in, out) u
         
@@ -3336,7 +3351,7 @@ This code is plain Fortran 77, except for the special ``Cf2py`` comment
 line, which here specifies that ``u`` is both an input argument *and*
 an object to be returned from the ``advance`` routine. Or more
 precisely, Fortran is not able return an array from a function,
-but we need a C wrapper code for the Fortran subroutine to enable
+but we need a *wrapper code* in C for the Fortran subroutine to enable
 calling it from Python, and in this wrapper code one can return ``u``
 to the calling Python code.
 It is not strictly necessary to return ``u`` to the calling Python
@@ -3362,9 +3377,11 @@ The necessary commands to run are
 
 First, ``f2py`` interprets the Fortran code and makes a Fortran 90
 specification of the extension module in the file
-``wave2D_u0_loop_f77.pyf``. Second, ``f2py`` compiles our Fortran
-code and builds the module, here using the specified subdirectory ``build_f77``
-(where files can be inspected if something goes wrong).
+``wave2D_u0_loop_f77.pyf``. Second, ``f2py`` generates all necessary
+wrapper code, compiles our Fortran file and the wrapper code,
+and finally builds the module.
+The build process takes place in the specified subdirectory ``build_f77``
+so that files can be inspected if something goes wrong.
 The option ``-DF2PY_REPORT_ON_ARRAY_COPY=1`` makes ``f2py`` write a message
 for every array that is copied in the communication between Fortran and Python,
 which is very useful for avoiding unnecessary array copying (see below).
@@ -3411,23 +3428,24 @@ subroutine:
 .. code-block:: python
 
         >>> print wave2D_u0_loop_f77.advance.__doc__
+        This module 'wave2D_u0_loop_f77' is auto-generated with f2py
+        Functions:
+          u = advance(u,u_1,u_2,f,cx2,cy2,dt2,
+                      nx=(shape(u,0)-1),ny=(shape(u,1)-1))
+        .
         advance - Function signature:
-          u = advance(u,u_1,u_2,f,x,y,t,cx2,cy2,dt2,[nx,ny,n])
+          u = advance(u,u_1,u_2,f,cx2,cy2,dt2,[nx,ny])
         Required arguments:
           u : input rank-2 array('d') with bounds (nx + 1,ny + 1)
           u_1 : input rank-2 array('d') with bounds (nx + 1,ny + 1)
           u_2 : input rank-2 array('d') with bounds (nx + 1,ny + 1)
           f : input rank-2 array('d') with bounds (nx + 1,ny + 1)
-          x : input rank-1 array('d') with bounds (nx + 1)
-          y : input rank-1 array('d') with bounds (ny + 1)
-          t : input rank-1 array('d') with bounds (n + 1)
           cx2 : input float
           cy2 : input float
           dt2 : input float
         Optional arguments:
           nx := (shape(u,0)-1) input int
           ny := (shape(u,1)-1) input int
-          n := (len(t)-1) input int
         Return objects:
           u : rank-2 array('d') with bounds (nx + 1,ny + 1)
 
@@ -3464,16 +3482,15 @@ the row-major ordering, but Fortran uses column-major storage.
 Thinking of a two-dimensional array as a matrix, it means that Fortran
 works with the transposed matrix.
 
-Fortunately, ``f2py`` creates extra code so that
-accessing ``u(i,j)`` in
+Fortunately, ``f2py`` creates extra code so that accessing ``u(i,j)`` in
 the Fortran subroutine corresponds to the element ``u[i,j]`` in the
 underlying ``numpy`` array (without the extra code, ``u(i,j)`` in Fortran
-would access ``u[j,i]`` in the ``numpy`` array).
-Technically, ``f2py`` takes a copy of our ``numpy`` arrays and reorders
-the data before sending the arrays to Fortran. Such copying can be
-costly. For 2D wave simulations on a :math:`60\times 60` grid the overhead
-of copying is a factor of 5, which means that almost the whole
-performance gain of Fortran over vectorized ``numpy`` code is lost!
+would access ``u[j,i]`` in the ``numpy`` array).  Technically, ``f2py``
+takes a copy of our ``numpy`` arrays and reorders the data before
+sending the arrays to Fortran. Such copying can be costly. For 2D wave
+simulations on a :math:`60\times 60` grid the overhead of copying is a
+factor of 5, which means that almost the whole performance gain of
+Fortran over vectorized ``numpy`` code is lost!
 
 To avoid having ``f2py`` to copy
 arrays with C storage to the corresponding Fortran storage, we can declare
@@ -3499,17 +3516,18 @@ an extra option for making ``f2py`` report on array copying:
                   -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f
 
 
-It can sometimes be a challenge
-to track down which array that causes a copying. There are
-two principal reasons for copying array data: either the array does not have
-Fortran storage or the element types do not match those declared in the
-Fortran code. The latter cause is usually effectively eliminated by
-using ``real*8`` data in the Fortran code and ``float64`` (the default ``float``
-type in ``numpy``) in the arrays on the Python side. The former reason
-is more common, and to check whether an array before a Fortran call
-has the right storage one can print the result of ``isfortran(a)``, which
-is ``True`` if the array ``a`` has Fortran storage. A typical problem
-in the ``wave2D_u0.py`` code is to set
+It can sometimes be a challenge to track down which array that causes
+a copying. There are two principal reasons for copying array data:
+either the array does not have Fortran storage or the element types do
+not match those declared in the Fortran code. The latter cause is
+usually effectively eliminated by using ``real*8`` data in the Fortran
+code and ``float64`` (the default ``float`` type in ``numpy``) in the arrays
+on the Python side. The former reason is more common, and to check
+whether an array before a Fortran call has the right storage one can
+print the result of ``isfortran(a)``, which is ``True`` if the array ``a``
+has Fortran storage. A typical problem in the ``wave2D_u0.py`` code is
+to set
+
 
 .. code-block:: python
 
@@ -3550,21 +3568,67 @@ done in Python.
 Migrating loops to C via Cython
 -------------------------------
 
-Explain how ``u[i,j]`` is stored in memory, i.e., how it looks as a 1D array.
-Derive the ``idx`` formula.
+The computationally intensive loops can alternatively be implemented
+in C code. Just as Fortran calls for care regarding the storage of
+two-dimensional arrays, working with two-dimensional arrays in C
+is a bit tricky. The reason is that
+``numpy`` arrays are viewed as one-dimensional arrays when
+transferred to C, while C programmers will think of ``u``, ``u_1``, and
+``u_2`` as two dimensional arrays and index them like ``u[i][j]``.
+The C code must declare ``u`` as ``double* u`` and translate an index
+pair ``[i][j]`` to a corresponding single index when ``u`` is
+viewed as one-dimensional. This translation requires knowledge of
+how the numbers in ``u`` are stored in memory.
+
+Translating of index pairs to single indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two-dimensional ``numpy`` arrays with the default C storage are stored
+row by row. In general, multi-dimensional arrays with C storage are
+stored such that the last index has the fastest variation, then the
+next last index, and so on, ending up with the slowest variation
+in the first index. For a two-dimensional ``u`` declared as
+``zeros((Nx+1,Ny+1))`` in Python, the individual elements are stored
+in the following order:
+
+
+.. code-block:: python
+
+        u[0,0], u[0,1], u[0,2], ..., u[0,Ny], u[1,0], u[1,1], ...,
+        u[1,Ny], u[2,0], ..., u[Nx,0], u[Nx,1], ..., u[Nx, Ny]
+
+
+Viewing ``u`` as one-dimensional, the index pair :math:`(i,j)` translates
+to ``i*(Ny+1) + j``. Where a C programmer would naturally write
+an index ``u[i][j]``, the indexing must read ``u[i*(Ny+1) + j]``.
+This is tedious to write, so it can be handy to define a C macro,
 
 
 .. code-block:: c
 
-        #include <stdio.h>
-        
         #define idx(i,j) (i)*(Ny+1) + j
-        // (i) is essential, otherwise idx(i-1,j) becomes i-1*(Ny+1)+j!
+
+so that we can write ``u[idx(i,j)]``, which reads much better and is
+easier to debug. Macros perform simple text substitutions:
+``idx(hello,world)`` is expanded to ``(hello)*(Ny+1) + world``.
+The parenthesis in ``(i)`` are essential - with natural mathematical
+formula ``i*(Ny+1) + j`` in the macro definition,
+``idx(i-1,j)`` would expand to ``i-1*(Ny+1) + j``, which is the wrong
+formula. Macros are handy, but requires careful use.
+
+The complete C code
+~~~~~~~~~~~~~~~~~~~
+
+The C version of function ``advance`` can be coded as follows.
+
+
+.. code-block:: c
+
+        #define idx(i,j) (i)*(Ny+1) + j
         
         void advance(double* u, double* u_1, double* u_2, double* f,
-                     double* x, double* y, double* t,
         	     double Cx2, double Cy2, double dt2,
-        	     int Nx, int Ny, int N)
+        	     int Nx, int Ny)
         {
           int i, j;
           /* Scheme at interior points */
@@ -3574,13 +3638,10 @@ Derive the ``idx`` formula.
                 Cx2*(u_1[idx(i-1,j)] - 2*u_1[idx(i,j)] + u_1[idx(i+1,j)]) +
                 Cy2*(u_1[idx(i,j-1)] - 2*u_1[idx(i,j)] + u_1[idx(i,j+1)]) +
                 dt2*f[idx(i,j)];
-        	if (i==1 && j==1) {
-        	  //printf("u[%d,%d]=%g, u_1[i,j]=%g %d\nu_1[i-1,j]=%g %d\nu_1[i+1,j]=%g %d\nu_1[i,j-1]=%g %d\nu_1[i,j+1]=%g %d\n", i,j,u[idx(i,j)], u_1[idx(i,j)], idx(i,j), u_1[idx(i-1,j)], idx(i-1,j), u_1[idx(i+1,j)], idx(i+1,j), u_1[idx(i,j-1)], idx(i,j-1), u_1[idx(i,j+1)], idx(i,j+1));
         	}
             }
           }
           /* Boundary conditions */
-        
           j = 0;  for (i=0; i<=Nx; i++) u[idx(i,j)] = 0;
           j = Ny; for (i=0; i<=Nx; i++) u[idx(i,j)] = 0;
           i = 0;  for (j=0; j<=Ny; j++) u[idx(i,j)] = 0;
@@ -3588,7 +3649,14 @@ Derive the ``idx`` formula.
         }
 
 
-Cython interface:
+The Cython interface file
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All the code above appears in a file `wave2D_u0_loop_c.c <https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c.c>`_.
+We need to compile this file together with C wrapper code such that
+``advance`` can be called from Python. Cython can be used to interface
+our C code. The Cython code, placed in a file with extension ``.pyx``, here
+`wave2D_u0_loop_c_cy.pyx <https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c_cy.pyx>`_, looks like
 
 
 .. code-block:: cython
@@ -3599,9 +3667,8 @@ Cython interface:
         
         cdef extern from "wave2D_u0_loop_c.h":
             void advance(double* u, double* u_1, double* u_2, double* f,
-                         double* x, double* y, double* t,
                          double Cx2, double Cy2, double dt2,
-                         int Nx, int Ny, int N)
+                         int Nx, int Ny)
         
         @cython.boundscheck(False)
         @cython.wraparound(False)
@@ -3610,18 +3677,39 @@ Cython interface:
             np.ndarray[double, ndim=2, mode='c'] u_1,
             np.ndarray[double, ndim=2, mode='c'] u_2,
             np.ndarray[double, ndim=2, mode='c'] f,
-            np.ndarray[double, ndim=1, mode='c'] x,
-            np.ndarray[double, ndim=1, mode='c'] y,
-            np.ndarray[double, ndim=1, mode='c'] t,
             double Cx2, double Cy2, double dt2):
             advance(&u[0,0], &u_1[0,0], &u_2[0,0], &f[0,0],
-                    &x[0], &y[0], &t[0],
                     Cx2, Cy2, dt2,
-                    u.shape[0]-1, u.shape[1]-1, t.shape[0]-1)
+                    u.shape[0]-1, u.shape[1]-1)
             return u
 
+Here, we first declare the C functions to be interfaced.
+These must also appear in a C header file, `wave2D_u0_loop_c.h <https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c.h>`_,
 
-The ``setup.py`` file:
+
+.. code-block:: c++
+
+        extern void advance(double* u, double* u_1, double* u_2, double* f,
+        		    double Cx2, double Cy2, double dt2,
+        		    int Nx, int Ny);
+
+The next step is to write a Cython function with Python objects as arguments.
+The name ``advance`` is already used for the C function so the function
+to be called from Python is named ``advance_cwrap``. The contents of
+this function is simply a call to the ``advance`` version in C. To this end,
+the right information from the Python objects must be passed on as
+arguments to ``advance``. Arrays are sent with their C pointers to the
+first element, obtained in Cython as ``&u[0,0]`` (the ``&`` takes the
+address of a C variable). The ``Nx`` and ``Ny`` arguments in ``advance`` are
+easily obtained from the shape of the ``numpy`` array ``u``.
+Finally, ``u`` must be returned such that we can set ``u = advance(...)``
+in Python.
+
+Building the extension module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It remains to build the extension module. An appropriate
+``setup.py`` file
 
 
 .. code-block:: python
@@ -3640,27 +3728,91 @@ The ``setup.py`` file:
           cmdclass={'build_ext': build_ext},
         )
 
+All we need to specify is the ``.c`` file(s) and the ``.pyx`` interface
+file. Cython is automatically run to generate the necessary wrapper
+code. Files are then compiled and linked to an extension module
+residing in the file ``wave2D_u0_loop_c_cy.so``. This module can
+be imported in Python,
 
+
+.. code-block:: python
+
+        >>> import wave2D_u0_loop_c_cy as m
+        >>> dir(m)
+        ['__builtins__', '__doc__', '__file__', '__name__', '__package__',
+         '__test__', 'advance_cwrap', 'np']
+
+The call to the C version of ``advance`` can go like this in Python:
+
+
+.. code-block:: python
+
+        advance = wave2D_u0_loop_c_cy.advance_cwrap
+        f_a[:,:] = f(xv, yv, t[n])
+        u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
+
+
+Efficiency
+~~~~~~~~~~
+
+In this example, the C and Fortran code runs at the same speed, and there
+are no significant differences in the efficiency of the wrapper code.
+The overhead implied by the wrapper code is negligible as long as
+we do not work with very small meshes and consequently little numerical
+work in the ``advance`` function.
 
 Migrating loops to C via f2py
 -----------------------------
 
-Same C code as above.
+As an alternative to using Cython for interfacing C code, we can apply
+``f2py``. The C code is the same, just the details of specifying how
+it is to be called from Python differ. The ``f2py`` tool requires
+the call specification to be a Fortran 90 module defined in a ``.pyf``
+file. This file was automatically generated when we interfaced a
+Fortran subroutine. With a C function we need to write this module
+ourselves, or we can use a trick and let ``f2py`` generate it for us.
+The trick consists in writing the signature of the C function with
+Fortran syntax and place it in a Fortran file, here
+``wave2D_u0_loop_c_f2py_signature.f``:
 
 
 .. code-block:: fortran
 
-        subroutine advance(u, u_1, u_2, f, x, y, t, Cx2, Cy2, dt2,
-             &                   Nx, Ny, N)
+        subroutine advance(u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny)
         Cf2py intent(c) advance
               integer Nx, Ny, N
               real*8 u(0:Nx,0:Ny), u_1(0:Nx,0:Ny), u_2(0:Nx,0:Ny)
-              real*8 f(0:Nx, 0:Ny), x(0:Nx), y(0:Ny), t(0:N), Cx2, Cy2, dt2
+              real*8 f(0:Nx, 0:Ny), Cx2, Cy2, dt2
         Cf2py intent(in, out) u
-        Cf2py intent(c) u, u_1, u_2, f, x, y, t, Cx2, Cy2, dt2, Nx, Ny, N
+        Cf2py intent(c) u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny
               return
               end
 
+Since ``f2py`` is just concerned with the signature and not the
+complete contents of the function body, it can generate the
+Fortran 90 module specification:
+
+
+.. code-block:: console
+
+        Terminal> f2py -m wave2D_u0_loop_c_f2py \
+                  -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature \
+                  wave2D_u0_loop_c_f2py_signature.f
+
+The compile and build step is as for the Fortran code, except that we
+list C file(s) instead of Fortran file(s):
+
+
+.. code-block:: console
+
+        Terminal> f2py -c wave2D_u0_loop_c_f2py.pyf \
+                  --build-dir tmp_build_c \
+                  -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_c.c
+
+As when interfacing Fortran code with ``f2py``, we need to print out
+the doc string to see the exact call syntax from the Python side.
+This doc string is identical for the C and Fortran versions of
+``advance``.
 
 Migrating loops to C via Instant
 --------------------------------
@@ -3668,7 +3820,33 @@ Migrating loops to C via Instant
 Migrating loops to C++ via f2py
 -------------------------------
 
-Use a very simple home-made array wrapper class for plain arrays.
+C++ is a much more versatile language than C or Fortran and has over
+the last two decades become very popular for numerical computing.
+Many will therefore prefer to migrate compute-intensive Python code
+to C++. This is, in principle, easy: just write the desired C++ code
+and use some tool for interfacing it from Python. A tool like
+`SWIG <http://swig.org/>`_ can interpret the C++ code and generate
+interfaces for Python, Perl, Ruby, Java, and a wide range of
+languages. However, SWIG is a comprehensive tool with a correspondingly
+non-trivial learning curve. Alternative tools, such as
+`Boost Python <http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html>`_ and `SIP <http://riverbankcomputing.co.uk/software/sip/intro>`_,
+are similarly comprehensive.
+
+A technically much easier way of interfacing C++ code is to drop the
+possibility to use C++ classes directly from Python, but instead
+make a C interface to the C++ code. The C interface can be handled
+by ``f2py`` as shown in the example with pure C code. Such a solution
+means that classes in Python and C++ cannot be mixed and that only
+primitive data types like numbers, strings, and arrays can be
+transferred between Python and C++. Actually, this is often a very
+good solution because it forces the C++ code to work on array data,
+which usually gives faster code than if fancy data structures with
+classes are used. The arrays coming from Python, and looking like
+plain C/C++ arrays, can be efficiently wrapped in more user-friendly
+C++ array classes in the C++ code, if desired.
+
+*Remaining.* Use some array class. Key issue: ``extern "C"`` declaration of C++
+function in the C file with the interface we want to wrap.
 
 Using classes to implement a simulator
 --------------------------------------
@@ -3677,6 +3855,11 @@ Using classes to implement a simulator
 
  * communicate with compiled code by ensuring that
    classes work with arrays
+
+Callbacks to Python from Fortran or C
+-------------------------------------
+
+
 
 Analysis of the continuous and discrete solutions
 =================================================
