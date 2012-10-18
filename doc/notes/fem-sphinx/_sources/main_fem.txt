@@ -36,7 +36,7 @@ popular.
 
 
 
-.. ========= Approximation of functions =========
+.. ========= Principles and machinery for approximating functions =========
 
 
 
@@ -245,9 +245,12 @@ Differentiating :eq:`fem:vec:E` with respect to :math:`c_0` gives
 
 
 .. math::
+   :label: fem:vec:dEdc0:v1
         
         \frac{\partial E}{\partial c_0} = -2(\pmb{f},\pmb{\varphi}_0) + 2c_0 (\pmb{\varphi}_0,\pmb{\varphi}_0)
-        \thinspace . 
+        \thinspace .
+        
+        
 
 Setting the above expression equal to zero and solving for :math:`c_0` gives
 
@@ -265,6 +268,31 @@ which in the present case with :math:`\pmb{\varphi}_0=(a,b)` results in
 .. math::
         
         c_0 = \frac{3a + 5b}{a^2 + b^2}\thinspace . 
+
+
+For later, it is worth mentioning that setting
+the key equation :eq:`fem:vec:dEdc0:v1` to zero can be rewritten
+as
+
+
+.. math::
+        
+        (\pmb{f}-c0\pmb{\varphi}_0,\pmb{\varphi}_0) = 0,
+        
+
+or
+
+
+.. math::
+   :label: fem:vec:dEdc0:Galerkin
+        
+        (\pmb{e}, \pmb{\varphi}_0) = 0
+        \thinspace .
+        
+        
+
+
+
 
 
 
@@ -328,6 +356,11 @@ the space :math:`V`:
         
 
 The latter equation gives :eq:`fem:vec:c0` for :math:`c_0`.
+Furthermore, the latter equation also arose
+from least squares computations in
+:eq:`fem:vec:dEdc0:Galerkin`.
+
+
 
 
 .. _fem:approx:vec:Np1dim:
@@ -448,7 +481,8 @@ It then follows that setting
 
 
 .. math::
-         \frac{\partial E}{\partial c_i} = 0,\quad i=0,\ldots,N,
+        
+        \frac{\partial E}{\partial c_i} = 0,\quad i=0,\ldots,N,
 
 leads to a linear system
 for :math:`c_0,\ldots,c_N`:
@@ -519,7 +553,22 @@ we must require that each term in the sum vanishes,
         
 
 These :math:`N+1` equations result in the same linear system as
-:eq:`fem:approx:vec:Np1dim:eqsys`. Instead of differentiating the
+:eq:`fem:approx:vec:Np1dim:eqsys`:
+
+
+.. math::
+         (\pmb{f} - \sum_{j=0}^Nc_j\pmb{\varphi}_j, \pmb{\varphi}_i) = (\pmb{f}, \pmb{\varphi}_i) - \sum_{j=0}^N
+        (\pmb{\varphi}_i,\pmb{\varphi}_j)c_j = 0,
+
+and hence
+
+
+.. math::
+         \sum_{j=0}^N (\pmb{\varphi}_i,\pmb{\varphi}_j)c_j = (\pmb{f}, \pmb{\varphi}_i),\quad i=0,\ldots, N
+        \thinspace .
+        
+
+So, instead of differentiating the
 :math:`E(c_0,\ldots,c_N)` function, we could simply use
 :eq:`fem:approx:vec:Np1dim:Galerkin` as the principle for
 determining :math:`c_0,\ldots,c_N`, resulting in the :math:`N+1`
@@ -538,8 +587,8 @@ used the approach to solve differential equations.
 
 .. _fem:approx:global:
 
-Global basis functions
-======================
+Approximation of functions
+==========================
 
 .. index::
    single: approximation; of functions
@@ -631,8 +680,10 @@ through similar steps as used for the result
 
 Minimizing this function of :math:`N+1` scalar variables
 :math:`c_0,\ldots,c_N` requires differentiation
-with respect to :math:`c_i`, for :math:`i=0,\ldots,N`. This action
-gives a linear system of the form :eq:`fem:approx:vec:Np1dim:eqsys`, with
+with respect to :math:`c_i`, for :math:`i=0,\ldots,N`. The resulting
+equations are very similar to those we had in the vector case,
+and we hence end up with a
+linear system of the form :eq:`fem:approx:vec:Np1dim:eqsys`, with
 
 
 .. math::
@@ -646,6 +697,10 @@ gives a linear system of the form :eq:`fem:approx:vec:Np1dim:eqsys`, with
 
 The Galerkin method
 -------------------
+
+
+.. index:: Galerkin method
+
 
 As in the section :ref:`fem:approx:vec:Np1dim`, the minimization of :math:`(e,e)`
 is equivalent to
@@ -661,8 +716,6 @@ is equivalent to
 This is known as the Galerkin method for approximating functions.
 Using the same reasoning as
 in
-.. index:: Galerkin method
-
 :eq:`fem:approx:vec:Np1dim:Galerkin`-:eq:`fem:approx:vec:Np1dim:Galerkin0`,
 it follows that :eq:`fem:Galerkin` is equivalent to
 
@@ -674,15 +727,18 @@ it follows that :eq:`fem:Galerkin` is equivalent to
         
         
 
-Since :eq:`fem:Galerkin` and :eq:`fem:Galerkin0`
-are equivalent to minimizing :math:`(e,e)`, the coefficient matrix and
-right-hand side implied by
-:eq:`fem:Galerkin0` are given by
-(:ref:`fem:Aij`) and (:ref:`fem:bi`).
+Inserting :math:`e=f-u` in this equation and ordering terms, as in the
+multi-dimensional vector case, we end up with a linear
+system with a coefficient matrix (:ref:`fem:Aij`) and
+right-hand side vector (:ref:`fem:bi`).
+
+Whether we work with vectors in the plane, general vectors, or
+functions in function spaces, the least squares principle and
+the Galerkin method are equivalent.
 
 .. _fem:approx:global:linear:
 
-Example: Linear approximation
+Example: linear approximation
 -----------------------------
 
 Let us apply the theory in the previous section to a simple problem:
@@ -735,11 +791,11 @@ and consequently
         
         u(x) = 10x - \frac{38}{3}\thinspace . 
 
-Figure :ref:`fem:approx:global:linear:fig1` displays the
+Figure :ref:`fem:approx:global:fig:parabola:linear` displays the
 parabola and its best approximation in the space of all linear functions.
 
 
-.. _fem:approx:global:linear:fig1:
+.. _fem:approx:global:fig:parabola:linear:
 
 .. figure:: fig-fem/parabola_ls_linear.png
    :width: 400
@@ -962,7 +1018,7 @@ returns a plain zero.
 .. _fem:approx:global:fig:illconditioning:
 
 .. figure:: fig-fem/ill_conditioning.png
-   :width: 400
+   :width: 600
 
    The 15 first basis functions :math:`x^i`, :math:`i=0,\ldots,14`
 
@@ -1027,19 +1083,62 @@ the section :ref:`fem:approx:global:linear` can then be computed by the
         u = least_squares(f, phi, Omega)
         comparison_plot(f, u, Omega)
 
-Figure :ref:`fem:approx:global:linear:fig2` (left) shows the oscillatory approximation
+Figure :ref:`fem:approx:global:fig:parabola:sine1` (left) shows the oscillatory approximation
 of :math:`\sum_{j=0}^{N}c_j\sin ((j+1)\pi x)` when :math:`N=3`.
 Changing :math:`N` to 11 improves the approximation considerably, see
-Figure :ref:`fem:approx:global:linear:fig2` (right).
+Figure :ref:`fem:approx:global:fig:parabola:sine1` (right).
 
 
-.. _fem:approx:global:linear:fig2:
+.. _fem:approx:global:fig:parabola:sine1:
 
 .. figure:: fig-fem/parabola_ls_sines4_12.png
    :width: 800
 
    *Best approximation of a parabola by a sum of 3 (left) and 11 (right) sine functions*
 
+
+There is an error :math:`f(0)-u(0)=9` at :math:`x=0` in Figure :ref:`fem:approx:global:fig:parabola:sine1` regardless of how large :math:`N` is, because all :math:`\varphi_i(0)=0` and hence
+:math:`u(0)=0`. We may help the approximation to be correct at :math:`x=0` by
+seeking
+
+
+.. math::
+        
+        u(x) = f(0) + \sum_{j=0}^N c_j\varphi_j(x)
+        \thinspace .
+        
+
+However, this adjustments introduces a new problem at :math:`x=1` since
+we now get an error :math:`f(1)-u(1)=f(1)-0=-1` at this point. A more
+clever adjustment is to replace the :math:`f(0)` term by a term that
+is :math:`f(0)` at :math:`x=0` and :math:`f(1)` at :math:`x=1`. A simple linear combination
+:math:`f(0)(1-x) + xf(1)` does the job:
+
+.. math::
+        
+        u(x) = f(0)(1-x) + xf(1) + \sum_{j=0}^N c_j\varphi_j(x)
+        \thinspace .
+        
+
+This adjustment of :math:`u` alters the linear system slightly as we get an extra
+term :math:`-(f(0)(1-x) + xf(1),\varphi_i)` on the right-hand side.
+Figure :ref:`fem:approx:global:fig:parabola:sine2` shows the result
+of ensuring right boundary values: even 3 sines can now adjust the
+:math:`f(0)(1-x) + xf(1)` term such that :math:`u` approximates the parabola really
+well, at least visually.
+
+
+.. _fem:approx:global:fig:parabola:sine2:
+
+.. figure:: fig-fem/parabola_ls_sines4_12_wfterm.png
+   :width: 800
+
+   *Best approximation of a parabola by a sum of 3 (left) and 11 (right) sine functions with a boundary term*
+
+
+
+Orthogonal basis functions
+--------------------------
 
 The choice of sine functions :math:`\varphi_i(x)=\sin ((i+1)\pi x)` has a great
 computational advantage: on :math:`\Omega=[0,1]` these basis functions are
@@ -1575,7 +1674,7 @@ of basis functions are fundamental in the *finite element method*.
 .. _fem:approx:fe:fig:u:sin:
 
 .. figure:: fig-fem/u_example_sin.png
-   :width: 400
+   :width: 600
 
    *Approximation based on sine basis functions*
 
@@ -1584,7 +1683,7 @@ of basis functions are fundamental in the *finite element method*.
 .. _fem:approx:fe:fig:u:fe:
 
 .. figure:: fig-fem/u_example_fe.png
-   :width: 400
+   :width: 600
 
    *Approximation based on local piecewise linear (hat) functions*
 
@@ -2843,7 +2942,7 @@ Applications
 
 With the aid of the ``approximate`` function in the ``fe_approx1D``
 module we can easily investigate the quality of various finite element
-approximations to some given functions. Figure :ref:`fem:appro:fe:x9:sin`
+approximations to some given functions. Figure :ref:`fem:approx:fe:x9:sin`
 shows how linear and quadratic elements approximates the polynomial
 :math:`f(x)=x(1-x)^8` on :math:`\Omega =[0,1]`, using equal-sized elements.
 The results arise from the program
@@ -2867,7 +2966,7 @@ we refined the mesh.
 
 
 
-.. _fem:appro:fe:x9:sin:
+.. _fem:approx:fe:x9:sin:
 
 .. figure:: fig-fem/fe_p1_p2_x9_248e.png
    :width: 800
@@ -2906,7 +3005,26 @@ the assembled coefficient matrix has only a few diagonals different
 from zero. More precisely, :math:`2d+1` diagonals are different from
 zero. With a different numbering of global nodes, say a random
 ordering, the diagonal structure is lost, but the number of
-nonzero elements is unaltered.
+nonzero elements is unaltered. Figures :ref:`fem:approx:fe:sparsity:P1`
+and :ref:`fem:approx:fe:sparsity:P3` exemplifies sparsity patterns.
+
+
+.. _fem:approx:fe:sparsity:P1:
+
+.. figure:: fig-fem/sparsity_pattern_1D_30.png
+   :width: 800
+
+   *Matrix sparsity pattern for left-to-right numbering (left) and random numbering (right) of nodes in P1 elements*
+
+
+
+.. _fem:approx:fe:sparsity:P3:
+
+.. figure:: fig-fem/sparsity_pattern_1DP3_30.png
+   :width: 800
+
+   *Matrix sparsity pattern for left-to-right numbering (left) and random numbering (right) of nodes in P3 elements*
+
 
 .. 2DO:
 
@@ -3334,6 +3452,82 @@ Approximation of vector-valued functions
 Approximation of functions in 2D
 ================================
 
+
+.. _fem:approx:fe:2D:fig:rectP1:
+
+.. figure:: fig-fem/mesh2D_rect_P1.png
+   :width: 800
+
+   *Examples on 2D P1 elements*
+
+
+
+.. _fem:approx:fe:2D:fig:circP1:
+
+.. figure:: fig-fem/mesh2D_quarter_circle.png
+   :width: 400
+
+   *Examples on 2D P1 elements in a deformed geometry*
+
+
+
+.. _fem:approx:fe:2D:fig:rectQ1:
+
+.. figure:: fig-fem/mesh2D_rect_Q1.png
+   :width: 400
+
+   *Examples on 2D Q1 elements*
+
+
+
+.. _fem:approx:fe:2D:fig:P12D:
+
+.. figure:: fig-fem/fenics-book/elements/P1_2d.png
+   :width: 100
+
+   *2D P1 element*
+
+
+
+.. _fem:approx:fe:2D:fig:P12D:
+
+.. figure:: fig-fem/fenics-book/elements/P2_2d.png
+   :width: 100
+
+   *2D P2 element*
+
+
+
+.. _fem:approx:fe:2D:fig:P162D:
+
+.. figure:: fig-fem/fenics-book/elements/P1-6_2d.png
+   :width: 400
+
+   *2D P1, P2, P3, P4, P5, and P6 elements*
+
+
+
+.. _fem:approx:fe:2D:fig:P1:123D:
+
+.. figure:: fig-fem/fenics-book/elements/P1-1d2d3d.png
+   :width: 400
+
+   *P1 elements in 1D, 2D, and 3D*
+
+
+
+.. _fem:approx:fe:2D:fig:P2:123D:
+
+.. figure:: fig-fem/fenics-book/elements/P2-1d2d3d.png
+   :width: 400
+
+   *P2 elements in 1D, 2D, and 3D*
+
+
+
+
+
+
 Exercises
 =========
 
@@ -3536,7 +3730,7 @@ Try a remedy:
 
 Now :math:`u(0)=f(0)`.
 Plot the approximations for :math:`N=4` and :math:`N=12` together with :math:`f`.
-Is the approximation better than the ones in Figure :ref:`fem:approx:global:linear:fig2`?
+Is the approximation better than the ones in Figure :ref:`fem:approx:global:fig:parabola:sine1`?
 Filename: ``parabola_by_sines.py``.
 
 .. --- end of exercise

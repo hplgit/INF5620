@@ -2,6 +2,7 @@ import scitools.std as plt
 from fe_approx1D import mesh
 
 def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
+    """Illustrate elements and nodes in a finite element mesh."""
     plt.hold('on')
     all_x_L = [nodes[elements[e][0]] for e in range(len(elements))]
     element_boundaries = all_x_L + [nodes[-1]]
@@ -47,6 +48,7 @@ def fe_basis_function_figure(d, target_elm=[1], n_e=3,
     plt.savefig(filename)
 
 def draw_basis_functions():
+    """Illustrate P1, P2, and P3 basis functions on an element."""
     for ext in 'pdf', 'png':
         fe_basis_function_figure(d=1, target_elm=1, n_e=4,
                                  filename='fe_basis_p1_4e.%s' % ext)
@@ -64,20 +66,81 @@ def draw_basis_functions():
                                  filename='fe_basis_p3_5e.%s' % ext)
 
 def draw_sparsity_pattern(elements, num_nodes):
+    """Illustrate the matrix sparsity pattern."""
     import matplotlib.pyplot as plt
     sparsity_pattern = {}
     for e in elements:
         for i in range(len(e)):
-            for j in range(i, len(e)):
-                sparsity_pattern[(i,j)] = 1
-    x = [i for i, j in sparsity_pattern]
-    y = [j for i, j in sparsity_pattern]
-    plt.pyplot(x, y, 'bo')
-    plt.axis([0, num_nodes-1, 0, num_nodes])
-    plt.savefig('tmp.pdf')
-    plt.savefig('tmp.png')
+            for j in range(len(e)):
+                sparsity_pattern[(e[i],e[j])] = 1
+    y = [i for i, j in sorted(sparsity_pattern)]
+    x = [j for i, j in sorted(sparsity_pattern)]
+    y.reverse()
+    plt.plot(x, y, 'bo')
+    ax = plt.gca()
+    ax.set_aspect('equal')
+    plt.axis('off')
+    plt.plot([-1, num_nodes, num_nodes, -1, -1], [-1, -1, num_nodes, num_nodes, -1], 'k-')
+    plt.savefig('tmp_sparsity_pattern.pdf')
+    plt.savefig('tmp_sparsity_pattern.png')
+    plt.show()
+
+
+def u_sines():
+    """
+    Plot sine basis functions and a resulting u to
+    illustrate what it means to use global basis functions.
+    """
+    import matplotlib.pyplot as plt
+    x = np.linspace(0, 4, 1001)
+    phi0 = np.sin(2*np.pi/4*x)
+    phi1 = np.sin(2*np.pi*x)
+    phi2 = np.sin(2*np.pi*4*x)
+    u = 4*phi0 - 0.5*phi1 - 0*phi2
+    plt.plot(x, phi0, 'r-', label=r"$\varphi_0$")
+    plt.plot(x, phi1, 'g-', label=r"$\varphi_1$")
+    #plt.plot(x, phi2, label=r"$\varphi_2$")
+    plt.plot(x, u, 'b-', label=r"u")
+    plt.legend()
+    plt.savefig('tmp_u_sines.pdf')
+    plt.savefig('tmp_u_sines.png')
+    plt.show()
+
+def u_P1():
+    """
+    Plot P1 basis functions and a resulting u to
+    illustrate what it means to use finite elements.
+    """
+    import matplotlib.pyplot as plt
+    x = [0, 1.5, 2.5, 3.5, 4]
+    phi = [np.zeros(len(x)) for i in range(len(x)-2)]
+    for i in range(len(phi)):
+        phi[i][i+1] = 1
+    #u = 5*x*np.exp(-0.25*x**2)*(4-x)
+    u = [0, 8, 5, 4, 0]
+    for i in range(len(phi)):
+        plt.plot(x, phi[i], 'r-')  #, label=r'$\varphi_%d$' % i)
+        plt.text(x[i+1], 1.2, r'$\varphi_%d$' % i)
+    plt.plot(x, u, 'b-', label='$u$')
+    plt.legend(loc='upper left')
+    plt.axis([0, x[-1], 0, 9])
+    plt.savefig('tmp_u_P1.png')
+    plt.savefig('tmp_u_P1.pdf')
+    # Mark elements
+    for xi in x[1:-1]:
+        plt.plot([xi, xi], [0, 9], 'm--')
+    # Mark nodes
+    #plt.plot(x, np.zeros(len(x)), 'ro', markersize=4)
+    plt.savefig('tmp_u_P1_welms.png')
+    plt.savefig('tmp_u_P1_welms.pdf')
+    plt.show()
+
 
 if __name__ == '__main__':
+    import sys
+    if len(sys.argv) == 1:
+        print 'Usage: %s phi | pattern | u_sines | u_P1 [num_elements] [d] [uniform | random]' % sys.argv[0]
+        sys.exit(1)
     if sys.argv[1] == 'phi':
         draw_basis_functions()
     elif sys.argv[1] == 'pattern':
@@ -91,8 +154,12 @@ if __name__ == '__main__':
         if uniform == 'random':
             global_node_numbering = range(0, num_nodes)
             import random
-            random.shuffl(global_node_numbering)
+            random.shuffle(global_node_numbering)
             for e in range(len(elements)):
-                for r in range(len(e)):
+                for r in range(len(elements[e])):
                     elements[e][r] = global_node_numbering[elements[e][r]]
-        draw_sparsity_pattern(elements, num_elements)
+        draw_sparsity_pattern(elements, num_nodes)
+    elif sys.argv[1] == 'u_sines':
+        u_sines()
+    elif sys.argv[1] == 'u_P1':
+        u_P1()

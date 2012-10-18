@@ -160,9 +160,9 @@ def comparison_plot(f, u, Omega, filename='tmp.eps',
     # lambdify'ed functions without the modules="numpy"
     exact  = f(xcoor)
     approx = u(xcoor)
-    plot(xcoor, approx)
+    plot(xcoor, approx, '-')
     hold('on')
-    plot(xcoor, exact)
+    plot(xcoor, exact, '-')
     legend(['approximation', 'exact'])
     title(plot_title)
     xlabel('x')

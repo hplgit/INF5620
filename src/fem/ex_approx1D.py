@@ -32,7 +32,7 @@ def run_linear():
     phi = [1, x]
     Omega = [1, 2]
     u = least_squares(f, phi, Omega)
-    comparison_plot(f, u, Omega, 'parabola_ls_linear.eps')
+    comparison_plot(f, u, Omega, 'parabola_ls_linear.pdf')
 
 def run_linear2(N=2):
     """
@@ -45,7 +45,7 @@ def run_linear2(N=2):
     # of the systems
     print 'f:', sm.expand(f)
     print 'u:', sm.expand(u)
-    comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d.eps' % N)
+    comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d.pdf' % N)
 
 def run_sines(help=False):
     for N in (4, 12):
@@ -53,11 +53,14 @@ def run_sines(help=False):
         phi = sines(x, N)
         Omega = [0, 1]
         if help:  # u = 9 + sum
-            u = 9 + least_squares_orth(f-9, phi, Omega)
+            f0 = 9; f1 = -1
+            term = f0*(1-x) + x*f1
+            u = term + least_squares_orth(f-term, phi, Omega)
         else:
             u = least_squares_orth(f, phi, Omega)
         figure()
-        comparison_plot(f, u, Omega, 'parabola_ls_sines%d.eps' % N)
+        comparison_plot(f, u, Omega, 'parabola_ls_sines%d%s.pdf' %
+                        (N, '_wfterm' if help else ''))
 
 
 def run_sine_by_powers(N):
@@ -84,7 +87,7 @@ def run_Lagrange_sin(N):
     phi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
     u = least_squares(f, phi, Omega)
-    comparison_plot(f, u, Omega, filename='Lagrange_ls_sin_%d.eps' % (N+1),
+    comparison_plot(f, u, Omega, filename='Lagrange_ls_sin_%d.pdf' % (N+1),
                     plot_title='Least squares approximation by '\
                     'Lagrange polynomials of degree %d' % N)
 
@@ -95,7 +98,7 @@ def run_Lagrange_abs(N):
     phi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
     u = least_squares(f, phi, Omega)
-    comparison_plot(f, u, Omega, filename='Lagrange_ls_abs_%d.eps' % (N+1),
+    comparison_plot(f, u, Omega, filename='Lagrange_ls_abs_%d.pdf' % (N+1),
                     plot_title='Least squares approximation by '\
                     'Lagrange polynomials of degree %d' % N)
 
@@ -105,7 +108,7 @@ def run_linear_interpolation1():
     Omega = [1, 2]
     points = [1 + sm.Rational(1,3), 1 + sm.Rational(2,3)]
     u = interpolation(f, phi, points)
-    comparison_plot(f, u, Omega, 'parabola_interp1_linear.eps')
+    comparison_plot(f, u, Omega, 'parabola_interp1_linear.pdf')
 
 
 def run_linear_interpolation2():
@@ -114,7 +117,7 @@ def run_linear_interpolation2():
     Omega = [1, 2]
     points = [1, 2]
     u = interpolation(f, phi, points)
-    comparison_plot(f, u, Omega, 'parabola_interp2_linear.eps')
+    comparison_plot(f, u, Omega, 'parabola_interp2_linear.pdf')
 
 
 def run_poly_interp_sin(N):
@@ -124,7 +127,7 @@ def run_poly_interp_sin(N):
     import numpy as np
     points = np.linspace(1, 2, N+1)
     u = interpolation(f, phi, points)
-    comparison_plot(f, u, Omega, 'sin_interp_poly%d.eps' % N)
+    comparison_plot(f, u, Omega, 'sin_interp_poly%d.pdf' % N)
 
 
 def run_Lagrange_interp_sin(N):
@@ -132,7 +135,7 @@ def run_Lagrange_interp_sin(N):
     phi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, phi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_sin_%d.eps' % (N+1),
+                    filename='Lagrange_interp_sin_%d.pdf' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N)
 
@@ -141,7 +144,7 @@ def run_Lagrange_interp_poly(n, N):
     phi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, phi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_p%d_%d.eps' % (n, N+1),
+                    filename='Lagrange_interp_p%d_%d.pdf' % (n, N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N)
 
@@ -150,7 +153,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     phi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, phi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_abs_%d.eps' % (N+1),
+                    filename='Lagrange_interp_abs_%d.pdf' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
     # Make figures of Lagrange polynomials (phi)
@@ -165,7 +168,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
         plot(points, [fn(xc) for xc in points], 'ro')
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
-    savefig('Lagrange_basis_%d.eps' % (N+1))
+    savefig('Lagrange_basis_%d.pdf' % (N+1))
 
 def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     f = abs(1-2*x)
@@ -173,7 +176,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
                                       point_distribution='Chebyshev')
     u = interpolation(f, phi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_abs_Cheb_%d.eps' % (N+1),
+                    filename='Lagrange_interp_abs_Cheb_%d.pdf' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
 
