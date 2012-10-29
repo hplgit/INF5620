@@ -93,7 +93,7 @@ def exemplify_element_matrix_vector(f, d, symbolic=True, numint=False):
     try:
         b_e = element_vector(f, phi, Omega_e=Omega_e,
                              symbolic=symbolic, numint=numint)
-    except NameError, e:
+    except NameError as e:
         raise NameError(integration_msg % e)
     print 'Element matrix:\n', A_e
     print 'Element vector:\n', b_e
@@ -160,7 +160,7 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
     if symbolic:
         try:
             nodes, elements = mesh_symbolic(n_e, d, Omega)
-        except NameError, e:
+        except NameError as e:
             raise NameError(integration_msg % e)
     else:
         nodes, elements = mesh(n_e, d, Omega)
@@ -187,7 +187,7 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
     f = sm.lambdify([x], f, modules='numpy')
     try:
         f_at_nodes = [f(xc) for xc in nodes]
-    except NameError, e:
+    except NameError as e:
         raise NameError('numpy does not support special function:\n%s' % e)
     print f_at_nodes
     if not symbolic and filename is not None:

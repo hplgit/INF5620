@@ -61,8 +61,36 @@ def phi_r(r, X, d, point_distribution='uniform'):
             # X is numeric: use floats for nodes
             nodes = np.linspace(-1, 1, d+1)
     elif point_distribution == 'Chebyshev':
+        # assue X is not sm.Symbol, just numeric
         nodes = Chebyshev_nodes(-1, 1, d)
     return Lagrange_polynomial(X, r, nodes)
+
+def dphi_r(r, X, d, point_distribution='uniform'):
+    """
+    Return the derivative of local basis function phi_r at
+    local point X in a 1D element with d+1 nodes.
+    point_distribution can be 'uniform' or 'Chebyshev'.
+    """
+    if isinstance(X, np.ndarray):
+        z = np.zeros(len(X))
+    if d == 0:
+        return 0 + z
+    elif d == 1:
+        if r == 0:
+            return -0.5 + z
+        elif r == 1:
+            return 0.5 + z
+    elif d == 2:
+        if r == 0:
+            return X - 0.5
+        elif r == 1:
+            return -2*X
+        elif r == 2:
+            return X + 0.5
+    else:
+        print 'dphi_r only supports d=0,1,2, not %d' % d
+        return None
+
 
 def basis(d=1):
     """Return the finite element basis in 1D of degree d."""
@@ -90,7 +118,8 @@ def locate_element_vectorized(x, elements, nodes):
 # vectorized version for locating elements: numpy.searchsorted
 #http://www.astropython.org/snippet/2010/11/Interpolation-without-SciPy
 
-def phi_glob(i, elements, nodes, resolution_per_element=41):
+def phi_glob(i, elements, nodes, resolution_per_element=41,
+             derivative=0):
     """
     Compute (x, y) coordinates of the curve y = phi_i(x),
     where i is a global node number (used for plotting, e.g.).
@@ -107,7 +136,12 @@ def phi_glob(i, elements, nodes, resolution_per_element=41):
         X = np.linspace(-1, 1, resolution_per_element)
         if i in local_nodes:
             r = local_nodes.index(i)
-            phi = phi_r(r, X, d)
+            if derivative == 0:
+                phi = phi_r(r, X, d)
+            elif derivative == 1:
+                phi = dphi_r(r, X, d)
+                if phi is None:
+                    return None, None
             phi_patches.append(phi)
             x = affine_mapping(X, Omega_e)
             x_patches.append(x)
@@ -241,7 +275,7 @@ def approximate(f, symbolic=False, d=1, n_e=4,
     f = sm.lambdify([x], f, modules='numpy')
     try:
         f_at_nodes = [f(xc) for xc in nodes]
-    except NameError, e:
+    except NameError as e:
         raise NameError('numpy does not support special function:\n%s' % e)
     print f_at_nodes
 

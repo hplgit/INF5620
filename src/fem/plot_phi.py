@@ -1,5 +1,5 @@
 import scitools.std as plt
-from fe_approx1D import mesh
+from fe_approx1D import mesh, phi_glob
 
 def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     """Illustrate elements and nodes in a finite element mesh."""
@@ -11,11 +11,12 @@ def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     plt.plot(nodes, [0]*len(nodes), 'ro2')
 
 def fe_basis_function_figure(d, target_elm=[1], n_e=3,
-                             filename='tmp.pdf'):
+                             derivative=0, filename='tmp.pdf',
+                             labels=False):
     """
-    Draw all basis functions, of degree d, associated with
-    element target_elm (may be list of elements).  Add a mesh with n_e
-    elements.
+    Draw all basis functions (or their derivative), of degree d,
+    associated with element target_elm (may be list of elements).
+    Add a mesh with n_e elements.
     """
     nodes, elements = mesh(n_e, d)
     """
@@ -34,12 +35,25 @@ def fe_basis_function_figure(d, target_elm=[1], n_e=3,
     for e in target_elm:
         for i in elements[e]:
             if not i in phi_drawn:
-                x, y = phi_glob(i, elements, nodes)
+                x, y = phi_glob(i, elements, nodes,
+                                derivative=derivative)
+                if x is None and y is None:
+                    return  # abort
                 ymax = max(ymax, max(y))
                 ymin = min(ymin, min(y))
                 plt.plot(x, y, '-')
                 plt.hold('on')
-                #legend(r'\phi_%d' % i)
+                if labels:
+                    if plt.backend == 'gnuplot':
+                        if derivative == 0:
+                            plt.legend(r'basis function no. %d' % i)
+                        else:
+                            plt.legend(r'derivative of basis function no. %d' % i)
+                    elif plt.backend == 'matplotlib':
+                        if derivative == 0:
+                            plt.legend(r'\varphi_%d' % i)
+                        else:
+                            plt.legend(r"\varphi_%d'(x)" % i)
                 phi_drawn.append(i)
 
     plt.axis([nodes[0], nodes[-1], ymin-0.1, ymax+0.1])
@@ -50,20 +64,35 @@ def fe_basis_function_figure(d, target_elm=[1], n_e=3,
 def draw_basis_functions():
     """Illustrate P1, P2, and P3 basis functions on an element."""
     for ext in 'pdf', 'png':
-        fe_basis_function_figure(d=1, target_elm=1, n_e=4,
-                                 filename='fe_basis_p1_4e.%s' % ext)
-        figure()
-        fe_basis_function_figure(d=2, target_elm=1, n_e=4,
-                                 filename='fe_basis_p2_4e.%s' % ext)
-        figure()
-        fe_basis_function_figure(d=1, target_elm=1, n_e=5,
-                                 filename='fe_basis_p1_5e.%s' % ext)
-        figure()
-        fe_basis_function_figure(d=3, target_elm=1, n_e=4,
-                                 filename='fe_basis_p3_4e.%s' % ext)
-        figure()
-        fe_basis_function_figure(d=3, target_elm=2, n_e=5,
-                                 filename='fe_basis_p3_5e.%s' % ext)
+        for derivative in (0, 1):
+            for labels in True, False:
+                deriv = '' if derivative == 0 else 'd'
+                philab = '' if not labels else '_lab'
+
+                fe_basis_function_figure(
+                    d=1, target_elm=1, n_e=4, derivative=derivative,
+                    filename='fe_%sbasis_p1_4e%s.%s' % (deriv, philab, ext),
+                    labels=labels)
+                plt.figure()
+                fe_basis_function_figure(
+                    d=2, target_elm=1, n_e=4, derivative=derivative,
+                    filename='fe_%sbasis_p2_4e%s.%s' % (deriv, philab, ext),
+                    labels=labels)
+                plt.figure()
+                fe_basis_function_figure(
+                    d=1, target_elm=1, n_e=5, derivative=derivative,
+                    filename='fe_%sbasis_p1_5e%s.%s' % (deriv, philab, ext),
+                    labels=labels)
+                plt.figure()
+                fe_basis_function_figure(
+                    d=3, target_elm=1, n_e=4, derivative=derivative,
+                    filename='fe_%sbasis_p3_4e%s.%s' % (deriv, philab, ext),
+                    labels=labels)
+                plt.figure()
+                fe_basis_function_figure(
+                    d=3, target_elm=2, n_e=5, derivative=derivative,
+                    filename='fe_%sbasis_p3_5e%s.%s' % (deriv, philab, ext),
+                    labels=labels)
 
 def draw_sparsity_pattern(elements, num_nodes):
     """Illustrate the matrix sparsity pattern."""

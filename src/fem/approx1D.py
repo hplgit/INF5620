@@ -66,11 +66,12 @@ def least_squares(f, phi, Omega):
         print 'numpy.linalg.solve, %s:' % \
               ('float64' if floating_point_calc ==2 else 'float32'), c
 
-    u = 0
-    for i in range(len(phi)):
-        u += c[i,0]*phi[i]
+    # c is a sympy Matrix object, numbers are in c[i,0]
+    #u = 0
+    #for i in range(len(phi)):
+    #    u += c[i,0]*phi[i]
     # Alternative:
-    # u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    u = sum(c[i,0]*phi[i] for i in range(len(phi)))
     print 'approximation:', u
     return u
 
@@ -116,7 +117,7 @@ def interpolation(f, phi, points):
     x = sm.Symbol('x')
     phi = [sm.lambdify([x], phi[i]) for i in range(N+1)]
     f = sm.lambdify([x], f)
-    print '...evaluating matrix...',
+    print '...evaluating matrix...'
     for i in range(N+1):
         for j in range(N+1):
             print '(%d,%d)' % (i, j)
@@ -136,8 +137,9 @@ def interpolation(f, phi, points):
 
 collocation = interpolation  # synonym in this module
 
-def comparison_plot(f, u, Omega, filename='tmp.eps',
+def comparison_plot(f, u, Omega, filename='tmp.pdf',
                     plot_title='', ymin=None, ymax=None):
+    """Compare f(x) and u(x) for x in Omega in a plot."""
     x = sm.Symbol('x')
     print 'f:', f
 

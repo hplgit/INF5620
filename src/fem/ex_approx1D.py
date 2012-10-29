@@ -1,6 +1,6 @@
 """
 Examples on approximating functions by global basis functions,
-using the least_squares_1D.py module.
+using the approx1D.py module.
 """
 from approx1D import *
 from Lagrange import *

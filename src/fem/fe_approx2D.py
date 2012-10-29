@@ -48,6 +48,7 @@ def mesh(nx, ny, x=[0,1], y=[0,1], diagonal='right'):
 
     cell = 0
     if diagonal is None:
+        # Quadrilateral elements
         for iy in xrange(ny):
             for ix in xrange(nx):
                 v0 = iy*(nx + 1) + ix
@@ -132,20 +133,23 @@ def plot_mesh(vertices, cells, materials=None, plotfile='tmp.png'):
     plt.savefig(plotfile + '.pdf')
     plt.show()
 
-nx = 8; ny = 20
+def demo():
+    nx = 8; ny = 20
 
-vertices, cells = mesh(nx, ny, x=[1,2], y=[0,1], diagonal='crossed')
-Theta = np.pi/2
-x = vertices[:,0]*np.cos(Theta*vertices[:,1])
-y = vertices[:,0]*np.sin(Theta*vertices[:,1])
-vertices[:,0] = x
-vertices[:,1] = y
-plot_mesh(vertices, cells, materials=np.zeros(cells.shape[0], dtype=np.int), plotfile='tmp_circle')
-import sys
-sys.exit(0)
+    vertices, cells = mesh(nx, ny, x=[1,2], y=[0,1], diagonal='crossed')
+    Theta = np.pi/2
+    x = vertices[:,0]*np.cos(Theta*vertices[:,1])
+    y = vertices[:,0]*np.sin(Theta*vertices[:,1])
+    vertices[:,0] = x
+    vertices[:,1] = y
+    plot_mesh(vertices, cells, materials=np.zeros(cells.shape[0], dtype=np.int), plotfile='tmp_circle')
+    import sys
+    sys.exit(0)
 
-nx = 4; ny = 3
-for diagonal in None, 'right', 'left', 'right/left', 'left/right', 'crossed':
-    vertices, cells = mesh(nx, ny, x=[0,3], y=[0,1], diagonal=diagonal)
-    plot_mesh(vertices, cells, materials=np.zeros(cells.shape[0], dtype=np.int), plotfile=str('tmp_' + str(diagonal)).replace('/', '_'))
+    nx = 4; ny = 3
+    for diagonal in None, 'right', 'left', 'right/left', 'left/right', 'crossed':
+        vertices, cells = mesh(nx, ny, x=[0,3], y=[0,1], diagonal=diagonal)
+        plot_mesh(vertices, cells, materials=np.zeros(cells.shape[0], dtype=np.int), plotfile=str('tmp_' + str(diagonal)).replace('/', '_'))
 
+if __name__ == '__main__':
+    demo()
