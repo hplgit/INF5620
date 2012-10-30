@@ -149,7 +149,7 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Oct 29, 2012</h4></center> <!-- date -->
+<center><h4>Oct 30, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>QUITE PRELIMINARY VERSION</b>
 
@@ -234,9 +234,11 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:exer:tanh"> Exercise 7: Approximate a \( \tanh \) function by Lagrange polynomials </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:defmesh"> Exercise 8: Define finite element meshes </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:Asinwt:symbolic"> Exercise 9: Perform symbolic finite element computations </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:Asinwt:interpol:error"> Exercise 10: Investigate the approximation errors in finite elements </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:Heaviside"> Exercise 11: Approximate a step function by finite elements </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:2Dsines:symbolic"> Exercise 12: 2D approximation with orthogonal functions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:exer:tanh"> Exercise 10: Approximate a \( \tanh \) function by P1 and P2 elements </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:exer:tanh2"> Exercise 11: Approximate a \( \tanh \) function by P3 and P4 elements </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:Asinwt:interpol:error"> Exercise 12: Investigate the approximation errors in finite elements </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:Heaviside"> Exercise 13: Approximate a step function by finite elements </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:exer:2Dsines:symbolic"> Exercise 14: 2D approximation with orthogonal functions </a><br>
 
 <p>
 <p>
@@ -2937,15 +2939,18 @@ right-hand side <tt>sympy</tt> may face difficulties with certain types of
 expressions <tt>f</tt>. The result of the integral is then an <tt>Integral</tt>
 object and not a number as when symbolic integration is successful.
 It may therefore be wise to introduce a fallback on numerical
-integration:
+integration. The symbolic integration can also take much time
+before an unsuccessful conclusion so we may introduce a parameter
+<tt>symbolic</tt> and set it to <tt>False</tt> to avoid symbolic integration:
 
 <p>
 <p>
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">element_vector</span>(f, phi, Omega_e, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
         <span style="color: #666666">...</span>
-        I <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>integrate(f<span style="color: #666666">*</span>phi[r]<span style="color: #666666">*</span>detJ, (X, <span style="color: #666666">-1</span>, <span style="color: #666666">1</span>))
-        <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(I, sm<span style="color: #666666">.</span>Integral):
+        <span style="color: #AA22FF; font-weight: bold">if</span> symbolic:
+            I <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>integrate(f<span style="color: #666666">*</span>phi[r]<span style="color: #666666">*</span>detJ, (X, <span style="color: #666666">-1</span>, <span style="color: #666666">1</span>))
+        <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF; font-weight: bold">not</span> symbolic <span style="color: #AA22FF; font-weight: bold">or</span> <span style="color: #AA22FF">isinstance</span>(I, sm<span style="color: #666666">.</span>Integral):
             h <span style="color: #666666">=</span> Omega_e[<span style="color: #666666">1</span>] <span style="color: #666666">-</span> Omega_e[<span style="color: #666666">0</span>]  <span style="color: #008800; font-style: italic"># Ensure h is numerical</span>
             detJ <span style="color: #666666">=</span> h<span style="color: #666666">/2</span>
             integrand <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>lambdify([X], f<span style="color: #666666">*</span>phi[r]<span style="color: #666666">*</span>detJ)
@@ -2974,9 +2979,12 @@ takes the following form
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">assemble</span>(nodes, elements, phi, f, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
     n_n, n_e <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(nodes), <span style="color: #AA22FF">len</span>(elements)
-    zeros <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>zeros <span style="color: #AA22FF; font-weight: bold">if</span> symbolic <span style="color: #AA22FF; font-weight: bold">else</span> np<span style="color: #666666">.</span>zeros
-    A <span style="color: #666666">=</span> zeros((n_n, n_n))
-    b <span style="color: #666666">=</span> zeros((n_n, <span style="color: #666666">1</span>))
+    <span style="color: #AA22FF; font-weight: bold">if</span> symbolic:
+        A <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>zeros((n_n, n_n))
+        b <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>zeros((n_n, <span style="color: #666666">1</span>))    <span style="color: #008800; font-style: italic"># note: (n_n, 1) matrix</span>
+    <span style="color: #AA22FF; font-weight: bold">else</span>:
+        A <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros((n_n, n_n))
+        b <span style="color: #666666">=</span> np<span style="color: #666666">.</span>zeros(n_n)
     <span style="color: #AA22FF; font-weight: bold">for</span> e <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(n_e):
         Omega_e <span style="color: #666666">=</span> [nodes[elements[e][<span style="color: #666666">0</span>]], nodes[elements[e][<span style="color: #666666">-1</span>]]]
 
@@ -4667,13 +4675,15 @@ $$
 for \( i=0,1,\ldots,N\rightarrow\infty \).
 
 <p>
-Choose a specific function
-\( f(x) \), calculate the coefficients in the Fourier expansion by
-solving the linear system, arising from the least squares
-method, by hand. Plot
+Choose \( f(x) = \tanh(s(x-\half)) \) on \( \Omega=[0,1] \), which is
+a smooth function, but with considerable steepness around \( x=1/2 \)
+as \( s \) grows in size.
+Calculate the coefficients in the Fourier expansion by
+solving the linear system, arising from the least squares or Galerkin
+methods, by hand. Plot
 some truncated versions of the series together with \( f(x) \) to show how
-the series expansion converges.
-Filename: <tt>tanh_approx.py</tt>.
+the series expansion converges for \( s=10 \) and \( s=100 \).
+Filename: <tt>Fourier_approx.py</tt>.
 
 <p>
 <!-- --- end of exercise -->
@@ -4689,7 +4699,7 @@ Filename: <tt>tanh_approx.py</tt>.
 
 <p>
 
-<h3>Exercise 7: Approximate a \( \tanh \) function by Lagrange polynomials <a name="fem:approx:exer:tanh"></a></h3>
+<h3>Exercise 7: Approximate a \( \tanh \) function by Lagrange polynomials  <a name="___sec71"></a></h3>
 <p>
 
 <p>
@@ -4701,7 +4711,7 @@ $$
 \begin{equation*} f(x) = \tanh(s(x-\half))\end{equation*}
 $$
 by Lagrange polynomials for \( s=10,100 \) and \( N=3,6,9,11 \).
-Filename: <tt>tanh_approx.py</tt>.
+Filename: <tt>tanh_Lagrange_approx.py</tt>.
 
 <p>
 <!-- --- end of exercise -->
@@ -4749,12 +4759,24 @@ Filename: <tt>fe_numberings.py.</tt>.
 <p>
 
 <p>
-Find the coefficient matrix and right-hand side
-for approximating \( f(x) = A\sin (\omega x) \) on
-\( \Omega=[0, 2\pi/\omega] \) by P1 elements of size \( h \).
-Perform the calculations in software.
-Solve the system in case of two elements.
-Filename: <tt>Asinwt_approx_P1.py</tt>.
+Find formulas for the coefficient matrix and right-hand side
+when approximating \( f(x) = sin (x) \) on
+\( \Omega=[0, \pi] \) by two P1 elements of size \( \pi/2 \).
+Solve the system and compare \( u(\pi/2 \) with
+the exact value 1.
+
+<p>
+<!-- Hint: wolframalpha or sympy can help with (1-x)*sin(a*x+b), -->
+<!-- which is the integral -->
+<!-- that arises on the right-hand side. -->
+
+<p>
+<!-- solution: -->
+<!-- from fe_approx1D_numint import * -->
+<!-- c = approximate(sm.sin(x), symbolic=True, d=1, n_e=2, numint=None, -->
+<!-- Omega=[0,sm.pi]) -->
+<!-- print sm.simplify(c[1,0].subs('h', sm.pi/2)) -->
+Filename: <tt>sin_approx_P1.py</tt>.
 
 <p>
 <!-- --- end of exercise -->
@@ -4770,7 +4792,61 @@ Filename: <tt>Asinwt_approx_P1.py</tt>.
 
 <p>
 
-<h3>Exercise 10: Investigate the approximation errors in finite elements <a name="fem:approx:fe:exer:Asinwt:interpol:error"></a></h3>
+<h3>Exercise 10: Approximate a \( \tanh \) function by P1 and P2 elements <a name="fem:approx:exer:tanh"></a></h3>
+<p>
+
+<p>
+Given
+
+<p>
+$$
+\begin{equation*} f(x) = \tanh(s(x-\half))\end{equation*}
+$$
+use the Galerkin or least squares method with finite elements to find
+an approximate function \( u(x) \). Choose \( s=40 \) and try
+\( n_e=4,8,16 \) P1 elements and
+\( n_e=2,4,8 \) P2 elements.
+Integrate \( f\basphi_i \) numerically.
+Filename: <tt>tanh_fe_P1P2_approx.py</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 11: Approximate a \( \tanh \) function by P3 and P4 elements <a name="fem:approx:exer:tanh2"></a></h3>
+<p>
+
+<p>
+Solve <a href="#fem:approx:exer:tanh">Exercise 10: Approximate a \( \tanh \) function by P1 and P2 elements</a> using \( n_e=1,2,4 \) P3 and P4
+elements. How will a collocation (interpolation) method work in
+this case with the same number of nodes?
+Filename: <tt>tanh_fe_P3P4_approx.py</tt>.
+
+<p>
+<!-- --- end of exercise -->
+
+<p>
+
+<p>
+
+<p>
+
+<p>
+<!-- --- begin exercise -->
+
+<p>
+
+<h3>Exercise 12: Investigate the approximation errors in finite elements <a name="fem:approx:fe:exer:Asinwt:interpol:error"></a></h3>
 <p>
 
 <p>
@@ -4798,7 +4874,7 @@ Filename: <tt>Asinwt_interpolation_error.py</tt>.
 
 <p>
 
-<h3>Exercise 11: Approximate a step function by finite elements <a name="fem:approx:fe:exer:Heaviside"></a></h3>
+<h3>Exercise 13: Approximate a step function by finite elements <a name="fem:approx:fe:exer:Heaviside"></a></h3>
 <p>
 
 <p>
@@ -4843,7 +4919,7 @@ caluclations by hand.
 
 <p>
 
-<h3>Exercise 12: 2D approximation with orthogonal functions <a name="fem:approx:fe:exer:2Dsines:symbolic"></a></h3>
+<h3>Exercise 14: 2D approximation with orthogonal functions <a name="fem:approx:fe:exer:2Dsines:symbolic"></a></h3>
 <p>
 
 <p>

@@ -1,4 +1,5 @@
 from fe_approx1D import *
+import sys
 
 # Extended versions with numerical integration (Midpoint, Trap., Simpson)
 # (note that these functions overwrite those imported above!)
@@ -58,14 +59,23 @@ def element_vector(f, phi, Omega_e, symbolic=True, numint=None):
     detJ = h/2
     if numint is None:
         for r in range(n):
-            I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
-            if isinstance(I, sm.Integral):
-                print 'numerical integration of', f*phi[r]*detJ
+            if symbolic:
+                I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
+            if not symbolic or isinstance(I, sm.Integral):
                 # Ensure h is numerical
                 h = Omega_e[1] - Omega_e[0]
                 detJ = h/2
+                #integrand = sm.lambdify([X], f*phi[r]*detJ, modules='sympy')
                 integrand = sm.lambdify([X], f*phi[r]*detJ)
-                I = sm.mpmath.quad(integrand, [-1, 1])
+                #integrand = integrand.subs(sm.pi, np.pi)
+                # integrand may still contain symbols like sm.pi that
+                # prevents numerical evaluation...
+                try:
+                    I = sm.mpmath.quad(integrand, [-1, 1])
+                except Exception as e:
+                    print 'Could not integrate f*phi[r] numerically:'
+                    print e
+                    sys.exit(0)
             b_e[r] = I
     else:
         #phi = [sm.lambdify([X], phi[r]) for r in range(n)]
@@ -134,6 +144,7 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
                       [sm.Rational(5,9), sm.Rational(8,9),
                        sm.Rational(5,9)]]
         else:
+            print 'Numerical rule %s is not supported' % numint
             numint = None
     else:
         if numint == 'Trapezoidal':
@@ -148,6 +159,7 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
             numint = [[-sqrt(3./5), 0, sqrt(3./5)],
                       [5./9, 8./9, 5./9]]
         else:
+            print 'Numerical rule %s is not supported' % numint
             numint = None
 
     phi = basis(d)
@@ -182,14 +194,19 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
 
     print 'c:\n', c
 
-    print 'Plain interpolation/collocation:'
-    x = sm.Symbol('x')
-    f = sm.lambdify([x], f, modules='numpy')
-    try:
-        f_at_nodes = [f(xc) for xc in nodes]
-    except NameError as e:
-        raise NameError('numpy does not support special function:\n%s' % e)
-    print f_at_nodes
+    if not symbolic:
+        print 'Plain interpolation/collocation:'
+        x = sm.Symbol('x')
+        f = sm.lambdify([x], f, modules='numpy')
+        try:
+            f_at_nodes = [f(xc) for xc in nodes]
+            print f_at_nodes
+        except Exception as e:
+            print 'could not evaluate f numerically:'
+            print e
+    # else: nodes are symbolic so f(nodes[i]) only makes sense
+    # in the non-symbolic case
+
     if not symbolic and filename is not None:
         xf = np.linspace(Omega[0], Omega[1], 10001)
         U = np.asarray(c)
@@ -199,6 +216,7 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
              xf, f(xf), 'b-',
              legend=('u', 'f'),
              savefig=filename)
+    return c
 
 
 if __name__ == '__main__':

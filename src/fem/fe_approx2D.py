@@ -1,3 +1,5 @@
+# Preliminary functions for 2D finite element approximation
+
 from scitools.std import plot, savefig, hold, axis, legend
 import numpy as np
 import sympy as sm

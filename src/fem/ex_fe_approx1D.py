@@ -69,24 +69,32 @@ def approx(functionclass='intro'):
             approximate(sin(pi*x)**2,     symbolic=False,
                         d=2, n_e=4, filename='fe_p2_sin2_4e.%s' % ext)
         elif functionclass == 'medium':
-            approximate(tanh(40*(x-0.5)), symbolic=False,
+            steepness = 40
+            arg = steepness*(x-0.5)
+            approximate(tanh(arg), symbolic=False,
                         d=1, n_e=4, filename='fe_p1_tanh_4e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
+            approximate(tanh(arg), symbolic=False,
                         d=1, n_e=8, filename='fe_p1_tanh_8e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
-                        d=1, n_e=20, filename='fe_p1_tanh_20e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
+            approximate(tanh(arg), symbolic=False,
+                        d=1, n_e=16, filename='fe_p1_tanh_16e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
                         d=2, n_e=2, filename='fe_p2_tanh_2e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
+            approximate(tanh(arg), symbolic=False,
                         d=2, n_e=4, filename='fe_p2_tanh_4e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
-                        d=4, n_e=1, filename='fe_p4_tanh_1e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
-                        d=4, n_e=4, filename='fe_p4_tanh_4e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
+            approximate(tanh(arg), symbolic=False,
                         d=2, n_e=8, filename='fe_p2_tanh_8e.%s' % ext)
-            approximate(tanh(40*(x-0.5)), symbolic=False,
-                        d=4, n_e=8, filename='fe_p4_tanh_8e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=3, n_e=1, filename='fe_p3_tanh_1e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=3, n_e=2, filename='fe_p3_tanh_2e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=3, n_e=4, filename='fe_p3_tanh_4e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=4, n_e=1, filename='fe_p4_tanh_1e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=4, n_e=2, filename='fe_p4_tanh_2e.%s' % ext)
+            approximate(tanh(arg), symbolic=False,
+                        d=4, n_e=4, filename='fe_p4_tanh_4e.%s' % ext)
 
 import sys
 try:

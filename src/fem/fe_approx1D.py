@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sm
+import sys
 
 def mesh(n_e, d, Omega=[0,1]):
     """
@@ -206,8 +207,9 @@ def element_vector(f, phi, Omega_e, symbolic=True):
     f = f.subs('x', x)  # or subs(sm.Symbol('x'), x)?
     detJ = h/2  # dx/dX
     for r in range(n):
-        I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
-        if isinstance(I, sm.Integral):
+        if symbolic:
+            I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
+        if not symbolic or isinstance(I, sm.Integral):
             print 'numerical integration of', f*phi[r]*detJ
             # Ensure h is numerical
             h = Omega_e[1] - Omega_e[0]
@@ -232,13 +234,18 @@ def exemplify_element_matrix_vector(f, d, symbolic=True):
 
 def assemble(nodes, elements, phi, f, symbolic=True):
     n_n, n_e = len(nodes), len(elements)
-    zeros = sm.zeros if symbolic else np.zeros
-    A = zeros((n_n, n_n))
-    b = zeros((n_n, 1))
+    if symbolic:
+        A = sm.zeros((n_n, n_n))
+        b = sm.zeros((n_n, 1))    # note: (n_n, 1) matrix
+    else:
+        A = np.zeros((n_n, n_n))
+        b = np.zeros(n_n)
     for e in range(n_e):
         Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
+
         A_e = element_matrix(phi, Omega_e, symbolic)
         b_e = element_vector(f, phi, Omega_e, symbolic)
+
         for r in range(len(elements[e])):
             for s in range(len(elements[e])):
                 A[elements[e][r],elements[e][s]] += A_e[r,s]

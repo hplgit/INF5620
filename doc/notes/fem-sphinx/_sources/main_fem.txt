@@ -6,7 +6,7 @@ Basic finite element methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Oct 29, 2012
+:Date: Oct 30, 2012
 
 Note: **QUITE PRELIMINARY VERSION**
 
@@ -2644,15 +2644,18 @@ right-hand side ``sympy`` may face difficulties with certain types of
 expressions ``f``. The result of the integral is then an ``Integral``
 object and not a number as when symbolic integration is successful.
 It may therefore be wise to introduce a fallback on numerical
-integration:
+integration. The symbolic integration can also take much time
+before an unsuccessful conclusion so we may introduce a parameter
+``symbolic`` and set it to ``False`` to avoid symbolic integration:
 
 
 .. code-block:: python
 
         def element_vector(f, phi, Omega_e, symbolic=True):
                 ...
-                I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
-                if isinstance(I, sm.Integral):
+                if symbolic:
+                    I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
+                if not symbolic or isinstance(I, sm.Integral):
                     h = Omega_e[1] - Omega_e[0]  # Ensure h is numerical
                     detJ = h/2
                     integrand = sm.lambdify([X], f*phi[r]*detJ)
@@ -2679,9 +2682,12 @@ takes the following form
 
         def assemble(nodes, elements, phi, f, symbolic=True):
             n_n, n_e = len(nodes), len(elements)
-            zeros = sm.zeros if symbolic else np.zeros
-            A = zeros((n_n, n_n))
-            b = zeros((n_n, 1))
+            if symbolic:
+                A = sm.zeros((n_n, n_n))
+                b = sm.zeros((n_n, 1))    # note: (n_n, 1) matrix
+            else:
+                A = np.zeros((n_n, n_n))
+                b = np.zeros(n_n)
             for e in range(n_e):
                 Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
         
@@ -4298,13 +4304,15 @@ the section :ref:`fem:approx:global:Fourier`). You may choose
 
 for :math:`i=0,1,\ldots,N\rightarrow\infty`.
 
-Choose a specific function
-:math:`f(x)`, calculate the coefficients in the Fourier expansion by
-solving the linear system, arising from the least squares
-method, by hand. Plot
+Choose :math:`f(x) = \tanh(s(x-\frac{1}{2}))` on :math:`\Omega=[0,1]`, which is
+a smooth function, but with considerable steepness around :math:`x=1/2`
+as :math:`s` grows in size.
+Calculate the coefficients in the Fourier expansion by
+solving the linear system, arising from the least squares or Galerkin
+methods, by hand. Plot
 some truncated versions of the series together with :math:`f(x)` to show how
-the series expansion converges.
-Filename: ``tanh_approx.py``.
+the series expansion converges for :math:`s=10` and :math:`s=100`.
+Filename: ``Fourier_approx.py``.
 
 .. --- end of exercise
 
@@ -4314,8 +4322,6 @@ Filename: ``tanh_approx.py``.
 
 .. --- begin exercise
 
-
-.. _fem:approx:exer:tanh:
 
 Exercise 7: Approximate a :math:`\tanh` function by Lagrange polynomials
 ------------------------------------------------------------------------
@@ -4328,7 +4334,7 @@ points and Chebychev nodes to approximate
          f(x) = \tanh(s(x-\frac{1}{2}))
 
 by Lagrange polynomials for :math:`s=10,100` and :math:`N=3,6,9,11`.
-Filename: ``tanh_approx.py``.
+Filename: ``tanh_Lagrange_approx.py``.
 
 .. --- end of exercise
 
@@ -4368,12 +4374,76 @@ Filename: ``fe_numberings.py.``.
 Exercise 9: Perform symbolic finite element computations
 --------------------------------------------------------
 
-Find the coefficient matrix and right-hand side
-for approximating :math:`f(x) = A\sin (\omega x)` on
-:math:`\Omega=[0, 2\pi/\omega]` by P1 elements of size :math:`h`.
-Perform the calculations in software.
-Solve the system in case of two elements.
-Filename: ``Asinwt_approx_P1.py``.
+Find formulas for the coefficient matrix and right-hand side
+when approximating :math:`f(x) = sin (x)` on
+:math:`\Omega=[0, \pi]` by two P1 elements of size :math:`\pi/2`.
+Solve the system and compare :math:`u(\pi/2` with
+the exact value 1.
+
+.. Hint: wolframalpha or sympy can help with (1-x)*sin(a*x+b),
+
+.. which is the integral
+
+.. that arises on the right-hand side.
+
+
+.. solution:
+
+.. from fe_approx1D_numint import *
+
+.. c = approximate(sm.sin(x), symbolic=True, d=1, n_e=2, numint=None,
+
+.. Omega=[0,sm.pi])
+
+.. print sm.simplify(c[1,0].subs('h', sm.pi/2))
+
+Filename: ``sin_approx_P1.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _fem:approx:exer:tanh:
+
+Exercise 10: Approximate a :math:`\tanh` function by P1 and P2 elements
+-----------------------------------------------------------------------
+
+Given
+
+
+.. math::
+         f(x) = \tanh(s(x-\frac{1}{2}))
+
+use the Galerkin or least squares method with finite elements to find
+an approximate function :math:`u(x)`. Choose :math:`s=40` and try
+:math:`n_e=4,8,16` P1 elements and
+:math:`n_e=2,4,8` P2 elements.
+Integrate :math:`f\varphi_i` numerically.
+Filename: ``tanh_fe_P1P2_approx.py``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _fem:approx:exer:tanh2:
+
+Exercise 11: Approximate a :math:`\tanh` function by P3 and P4 elements
+-----------------------------------------------------------------------
+
+Solve :ref:`fem:approx:exer:tanh` using :math:`n_e=1,2,4` P3 and P4
+elements. How will a collocation (interpolation) method work in
+this case with the same number of nodes?
+Filename: ``tanh_fe_P3P4_approx.py``.
 
 .. --- end of exercise
 
@@ -4386,7 +4456,7 @@ Filename: ``Asinwt_approx_P1.py``.
 
 .. _fem:approx:fe:exer:Asinwt:interpol:error:
 
-Exercise 10: Investigate the approximation errors in finite elements
+Exercise 12: Investigate the approximation errors in finite elements
 --------------------------------------------------------------------
 
 A fundamental question is how accurate the finite element approximation
@@ -4410,7 +4480,7 @@ Filename: ``Asinwt_interpolation_error.py``.
 
 .. _fem:approx:fe:exer:Heaviside:
 
-Exercise 11: Approximate a step function by finite elements
+Exercise 13: Approximate a step function by finite elements
 -----------------------------------------------------------
 
 Approximate the step function
@@ -4450,7 +4520,7 @@ caluclations by hand.
 
 .. _fem:approx:fe:exer:2Dsines:symbolic:
 
-Exercise 12: 2D approximation with orthogonal functions
+Exercise 14: 2D approximation with orthogonal functions
 -------------------------------------------------------
 
 Assume we have basis functions :math:`\varphi_i(x,y)` in 2D that are
