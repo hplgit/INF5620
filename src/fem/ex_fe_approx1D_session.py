@@ -12,18 +12,7 @@ print c
 c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Simpson',
                 Omega=[0,sm.pi])
 print c
-
 sys.exit(0)
-
-# The integration does not work with sin(pi*x), but works fine with
-# sin(x) on [0,pi] instead.
-#approximate(sm.sin(sm.pi*x), symbolic=True, d=1, n_e=3, numint=None,
-#            Omega=[0,1])
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=2, numint=None,
-                Omega=[0,sm.pi])
-print sm.simplify(c[1,0].subs('h', sm.pi/2))
-
-
 from fe_approx1D import *
 
 # "Hand"-integration of element matrix and vector
@@ -82,4 +71,20 @@ f = x*(1-x)
 nodes, elements = mesh_symbolic(n_e, d, Omega)
 A, b = assemble(nodes, elements, phi, f, symbolic=True)
 A
+
+from fe_approx1D_numint import *
+c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Trapezoidal',
+                Omega=[0,sm.pi])
+print c
+c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Simpson',
+                Omega=[0,sm.pi])
+print c
+
+# The integration does not work with sin(pi*x), but works fine with
+# sin(x) on [0,pi] instead.
+#approximate(sm.sin(sm.pi*x), symbolic=True, d=1, n_e=3, numint=None,
+#            Omega=[0,1])
+c = approximate(sm.sin(x), symbolic=True, d=1, n_e=2, numint=None,
+                Omega=[0,sm.pi])
+print sm.simplify(c[1,0].subs('h', sm.pi/2))
 

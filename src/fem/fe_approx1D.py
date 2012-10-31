@@ -2,7 +2,7 @@ import numpy as np
 import sympy as sm
 import sys
 
-def mesh(n_e, d, Omega=[0,1]):
+def mesh_uniform(n_e, d, Omega=[0,1]):
     """
     Return a 1D finite element mesh on Omega with n_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
@@ -13,7 +13,7 @@ def mesh(n_e, d, Omega=[0,1]):
                 for e in range(n_e)]
     return nodes, elements
 
-def mesh_symbolic(n_e, d, Omega=[0,1]):
+def mesh_uniform_symbolic(n_e, d, Omega=[0,1]):
     """
     Return a 1D finite element mesh on Omega with n_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
@@ -131,7 +131,7 @@ def phi_glob(i, elements, nodes, resolution_per_element=41,
     x_patches = []
     phi_patches = []
     for e in range(len(elements)):
-        Omega_e = (nodes[elements[e][0]], nodes[elements[e][-1]])
+        Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
         local_nodes = elements[e]
         d = len(local_nodes) - 1
         X = np.linspace(-1, 1, resolution_per_element)
@@ -158,7 +158,7 @@ def u_glob(U, elements, nodes, resolution_per_element=51):
     """
     Compute (x, y) coordinates of a curve y = u(x), where u is a
     finite element function: u(x) = sum_i of U_i*phi_i(x).
-    Method: Run through each element and compute cordinates
+    Method: Run through each element and compute curve coordinates
     over the element.
     """
     x_patches = []
@@ -258,9 +258,9 @@ def approximate(f, symbolic=False, d=1, n_e=4,
     print 'phi basis (reference element):\n', phi
 
     if symbolic:
-        nodes, elements = mesh_symbolic(n_e, d, Omega)
+        nodes, elements = mesh_uniform_symbolic(n_e, d, Omega)
     else:
-        nodes, elements = mesh(n_e, d, Omega)
+        nodes, elements = mesh_uniform(n_e, d, Omega)
     A, b = assemble(nodes, elements, phi, f, symbolic=symbolic)
 
     print 'nodes:', nodes

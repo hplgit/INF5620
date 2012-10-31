@@ -4,7 +4,7 @@ import sys
 # Extended versions with numerical integration (Midpoint, Trap., Simpson)
 # (note that these functions overwrite those imported above!)
 
-def mesh2(n_e, d, Omega=[0,1]):
+def mesh_uniform(n_e, d, Omega=[0,1]):
     """
     Return a 1D finite element mesh on Omega with n_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
@@ -13,10 +13,21 @@ def mesh2(n_e, d, Omega=[0,1]):
     mapping (dof_map).
     """
     vertices = np.linspace(Omega[0], Omega[1], n_e + 1).tolist()
-    doc_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
+    dof_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
     cells = [[e, e+1] for e in range(n_e)]
     return vertices, cells, dof_map
-    # Not yet used
+
+def mesh_uniform_symbolic(n_e, d, Omega=[0,1]):
+    """
+    As mesh, but use using symbols for the coordinates
+    (rational expressions with h as the uniform element length).
+    """
+    h = sm.Symbol('h')  # element length
+    dx = h*sm.Rational(1, d)  # node spacing
+    vertices = [Omega[0] + i*dx for i in range(n_e + 1)]
+    dof_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
+    cells = [[e, e+1] for e in range(n_e)]
+    return vertices, cells, dof_map
 
 def element_matrix(phi, Omega_e, symbolic=True, numint=None):
     n = len(phi)
@@ -109,21 +120,27 @@ def exemplify_element_matrix_vector(f, d, symbolic=True, numint=False):
     print 'Element vector:\n', b_e
 
 
-def assemble(nodes, elements, phi, f, symbolic=True, numint=None):
-    n_n, n_e = len(nodes), len(elements)
-    zeros = sm.zeros if symbolic else np.zeros
-    A = zeros((n_n, n_n))
-    b = zeros((n_n, 1))
+def assemble(vertices, cells, dof_map, phi, f,
+             symbolic=True, numint=None):
+    import sets
+    n_n = len(list(set(np.array(dof_map).ravel())))
+    n_e = len(cells)
+    if symbolic:
+        A = sm.zeros((n_n, n_n))
+        b = sm.zeros((n_n, 1))    # note: (n_n, 1) matrix
+    else:
+        A = np.zeros((n_n, n_n))
+        b = np.zeros(n_n)
     for e in range(n_e):
-        Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
-        A_e = element_matrix(phi, Omega_e, symbolic, numint)
-        b_e = element_vector(f, phi, Omega_e, symbolic, numint)
+        Omega_e = [vertices[cells[e][0]], vertices[cells[e][1]]]
+        A_e = element_matrix(phi[e], Omega_e, symbolic, numint)
+        b_e = element_vector(f, phi[e], Omega_e, symbolic, numint)
         #print 'element', e
         #print b_e
-        for r in range(len(elements[e])):
-            for s in range(len(elements[e])):
-                A[elements[e][r],elements[e][s]] += A_e[r,s]
-            b[elements[e][r]] += b_e[r]
+        for r in range(len(dof_map[e])):
+            for s in range(len(dof_map[e])):
+                A[dof_map[e][r],dof_map[e][s]] += A_e[r,s]
+            b[dof_map[e][r]] += b_e[r]
     return A, b
 
 def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
@@ -162,26 +179,26 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
             print 'Numerical rule %s is not supported' % numint
             numint = None
 
-    phi = basis(d)
-    print 'phi basis (reference element):\n', phi
-    integration_msg = """
-    Symbolic integration failed, and then numerical integration
-    encountered an undefined symbol (because of the symbolic expressions):
-    %s"""
 
     if symbolic:
-        try:
-            nodes, elements = mesh_symbolic(n_e, d, Omega)
-        except NameError as e:
-            raise NameError(integration_msg % e)
+        vertices, cells, dof_map = mesh_uniform_symbolic(n_e, d, Omega)
     else:
-        nodes, elements = mesh(n_e, d, Omega)
+        vertices, cells, dof_map = mesh_uniform(n_e, d, Omega)
 
-    A, b = assemble(nodes, elements, phi, f,
+    # phi is a list where phi[e] holds the basis in cell no e
+    # (this is required by assemble, which can work with
+    # meshes with different types of elements).
+    # len(dof_map[e]) is the number of nodes in cell e,
+    # and the degree of the polynomial is len(dof_map[e])-1
+    phi = [basis(len(dof_map[e])-1) for e in range(n_e)]
+
+    print 'phi basis (reference element):\n', phi
+    A, b = assemble(vertices, cells, dof_map, phi, f,
                     symbolic=symbolic, numint=numint)
 
-    print 'nodes:', nodes
-    print 'elements:', elements
+    print 'cells:', cells
+    print 'vertices:', vertices
+    print 'dof_map:', dof_map
     print 'A:\n', A
     print 'b:\n', b
     #print sm.latex(A, mode='plain')
@@ -199,8 +216,8 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
         x = sm.Symbol('x')
         f = sm.lambdify([x], f, modules='numpy')
         try:
-            f_at_nodes = [f(xc) for xc in nodes]
-            print f_at_nodes
+            f_at_vertices = [f(xc) for xc in vertices]
+            print f_at_vertices
         except Exception as e:
             print 'could not evaluate f numerically:'
             print e
@@ -208,16 +225,48 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
     # in the non-symbolic case
 
     if not symbolic and filename is not None:
+        title = 'P%d, n_e=%d' % (d, n_e)
+        if numint is None:
+            title += ', exact integration'
+        else:
+            title += ', integration: %s' % numint
         xf = np.linspace(Omega[0], Omega[1], 10001)
         U = np.asarray(c)
-        xu, u = u_glob(U, elements, nodes)
+        xu, u = u_glob(U, vertices, cells, dof_map, 51)
         from scitools.std import plot
         plot(xu, u, 'r-',
              xf, f(xf), 'b-',
              legend=('u', 'f'),
-             savefig=filename)
+             title=title)
+        savefig(filename + '.pdf')
+        savefig(filename + '.png')
     return c
 
+def u_glob(U, vertices, cells, dof_map,
+           resolution_per_element=51):
+    """
+    Compute (x, y) coordinates of a curve y = u(x), where u is a
+    finite element function: u(x) = sum_i of U_i*phi_i(x).
+    Method: Run through each element and compute curve coordinates
+    over the element.
+    """
+    x_patches = []
+    u_patches = []
+    for e in range(len(cells)):
+        Omega_e = [vertices[cells[e][0]], vertices[cells[e][1]]]
+        local_nodes = dof_map[e]
+        d = len(local_nodes) - 1
+        X = np.linspace(-1, 1, resolution_per_element)
+        x = affine_mapping(X, Omega_e)
+        x_patches.append(x)
+        u_element = 0
+        for r in range(len(local_nodes)):
+            i = local_nodes[r]  # global node number
+            u_element += U[i]*phi_r(r, X, d)
+        u_patches.append(u_element)
+    x = np.concatenate(x_patches)
+    u = np.concatenate(u_patches)
+    return x, u
 
 if __name__ == '__main__':
     import sys

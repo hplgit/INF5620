@@ -9,10 +9,71 @@ http://www.holoborodko.com/pavel/?page_id=679 (pavel@holoborodko.com).
 Copyright (c)2007-2010 Pavel Holoborodko
 All rights reserved.
 """
+import numpy as np
+
+def GaussLegendre(num_points):
+    """Return points and weights for Gauss-Legendre rules on [-1,1]."""
+    n = num_points
+    points  = np.zeros(n)
+    weights = np.zeros(n)
+
+    if n > 1:
+        try:
+            x[n]
+        except KeyError:
+            raise ValueError(
+                'Gauss-Legendre rule with %d points not available' % n)
+
+    if n == 1:
+        points[0] = 0
+        weights[0] = 2
+    elif n % 2 == 0:
+        for i in range(len(x[n])):
+            points[n/2+i] = x[n][i]
+            points[n/2-1-i] = -x[n][i]
+            weights[n/2+i] = w[n][i]
+            weights[n/2-1-i] = w[n][i]
+    else:
+        for i in range(len(x[n])):
+            points[n/2+i] = x[n][i]
+            points[n/2-i] = -x[n][i]
+            weights[n/2+i] = w[n][i]
+            weights[n/2-i] = w[n][i]
+    return points, weights
+
+def NewtonCotes(num_points):
+    """Return points and weights for Newton-Cotes rules on [-1,1]."""
+    n = num_points
+    points  = np.zeros(n)
+    weights = np.zeros(n)
+    if n == 1:
+        # Midpoint rule
+        points[0] = 0
+        weights[0] = 2
+    elif n == 2:
+        # Trapezoidal rule
+        points[:] = [-1, 1]
+        weights[:] = [1, 1]
+    elif n == 3:
+        # Simpson's rule
+        points[:] = [-1, 0, 1]
+        weights[:] = [1./3, 4./3, 1/3.]
+    elif n == 4:
+        # Simpson's 3/8 rule
+        points[:] = [-1, -1./3, 1./3, 1]
+        weights[:] = [1./4, 3./4, 3/4., 1./4]
+    elif n == 5:
+        # Boole's rule
+        points[:] = [-1, -0.5, 0, 0.5, 1]
+        weights[:] = 1./45*np.array([7, 32, 12, 32, 7], float)
+    else:
+        raise ValueError('Newton-Cotes formula with %d>5 not implemented' % n)
+    return points, weights
+
 x = {}
 w = {}
-x[1] = {0.5773502691896257645091488};
-w[1] = {1.0000000000000000000000000};
+x[2] = [0.5773502691896257645091488]
+w[2] = [1.0000000000000000000000000]
 
 x[4] = [0.3399810435848562648026658,0.8611363115940525752239465]
 w[4] = [0.6521451548625461426269361,0.3478548451374538573730639]
