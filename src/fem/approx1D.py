@@ -7,7 +7,6 @@ import sympy as sm
 from scitools.std import plot, hold, legend, savefig, linspace, \
      title, xlabel, axis
 
-
 def least_squares(f, phi, Omega):
     """
     Given a function f(x) on an interval Omega (2-list)
@@ -41,11 +40,24 @@ def least_squares(f, phi, Omega):
         b[i,0] = I
     print
     print 'A:\n', A, '\nb:\n', b
-    c = A.LUsolve(b)
+    c = A.LUsolve(b)  # symbolic solve
     print 'coeff:', c
 
-    floating_point_calc = 0  # 0: symbolic, 1: sympy, 2: numpy, 3: numpy single
-    if floating_point_calc == 1:
+    # c is a sympy Matrix object, numbers are in c[i,0]
+    u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    print 'approximation:', u
+    return u
+
+def numerical_linsys_solve(A, b, floating_point_calc='sumpy'):
+    """
+    Given a linear system Au=b as sympy arrays, solve the
+    system using different floating-point software.
+    floating_point_calc may be 'sympy', 'numpy.float64',
+    'numpy.float32'.
+    This function is used to investigate ill-conditioning
+    of linear systems arising from approximation methods.
+    """
+    if floating_point_calc == 'sympy':
         #sm.mpmath.mp.dsp = 10  # does not affect the computations here
         A = sm.mpmath.fp.matrix(A)
         b = sm.mpmath.fp.matrix(b)
@@ -53,27 +65,17 @@ def least_squares(f, phi, Omega):
         c = sm.mpmath.fp.lu_solve(A, b)
         #c = sm.mpmath.lu_solve(A, b) # more accurate
         print 'sympy.mpmath.fp.lu_solve:', c
-    elif floating_point_calc >= 2:
+    elif floating_point_calc.startswith('numpy'):
         import numpy as np
         # Double precision (float64) by default
         A = np.array(A.evalf())
         b = np.array(b.evalf())
-        if floating_point_calc == 3:
+        if floating_point_calc == 'numpy.float32':
             # Single precision
             A = A.astype(np.float32)
             b = b.astype(np.float32)
         c = np.linalg.solve(A, b)
-        print 'numpy.linalg.solve, %s:' % \
-              ('float64' if floating_point_calc ==2 else 'float32'), c
-
-    # c is a sympy Matrix object, numbers are in c[i,0]
-    #u = 0
-    #for i in range(len(phi)):
-    #    u += c[i,0]*phi[i]
-    # Alternative:
-    u = sum(c[i,0]*phi[i] for i in range(len(phi)))
-    print 'approximation:', u
-    return u
+        print 'numpy.linalg.solve, %s:' % floating_point_calc, c
 
 
 def least_squares_orth(f, phi, Omega):
@@ -89,9 +91,17 @@ def least_squares_orth(f, phi, Omega):
     print '...evaluating matrix...',
     for i in range(N+1):
         print '(%d,%d)' % (i, i)
-        # Note: no fallback on numerics if symbolic integration fails...
         A[i] = sm.integrate(phi[i]**2, (x, Omega[0], Omega[1]))
-        b[i] = sm.integrate(phi[i]*f,  (x, Omega[0], Omega[1]))
+
+        # Fallback on numerical integration if f*phi is too difficult
+        # to integrate
+        integrand = phi[i]*f
+        I = sm.integrate(integrand,  (x, Omega[0], Omega[1]))
+        if isinstance(I, sm.Integral):
+            print 'numerical integration of', integrand
+            integrand = sm.lambdify([x], integrand)
+            I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
+        b[i] = I
     print 'A:\n', A, '\nb:\n', b
     c = [b[i]/A[i] for i in range(len(b))]
     print 'coeff:', c
@@ -138,7 +148,8 @@ def interpolation(f, phi, points):
 collocation = interpolation  # synonym in this module
 
 def comparison_plot(f, u, Omega, filename='tmp.pdf',
-                    plot_title='', ymin=None, ymax=None):
+                    plot_title='', ymin=None, ymax=None,
+                    u_legend='approximation'):
     """Compare f(x) and u(x) for x in Omega in a plot."""
     x = sm.Symbol('x')
     print 'f:', f
@@ -165,7 +176,7 @@ def comparison_plot(f, u, Omega, filename='tmp.pdf',
     plot(xcoor, approx, '-')
     hold('on')
     plot(xcoor, exact, '-')
-    legend(['approximation', 'exact'])
+    legend([u_legend, 'exact'])
     title(plot_title)
     xlabel('x')
     if ymin is not None and ymax is not None:

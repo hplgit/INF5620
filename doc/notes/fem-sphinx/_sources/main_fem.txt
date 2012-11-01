@@ -3344,7 +3344,7 @@ expressed with operator notation as
 
 .. math::
         
-        [u + \frac{h^2}{6} Dx Dx u = f]_i\thinspace . 
+        [u + \frac{h^2}{6} D_x D_x u = f]_i\thinspace . 
 
 As :math:`h\rightarrow 0`, the extra term proportional to :math:`u''` goes to zero,
 and the two methods are then equal.
@@ -3354,7 +3354,7 @@ With the Simpson's rule, we may say that we solve
 
 .. math::
         
-        [u + \frac{h^2}{6} Dx Dx u = \bar f]_i,
+        [u + \frac{h^2}{6} D_x D_x u = \bar f]_i,
         
 
 where :math:`\bar f_i` means the average :math:`\frac{1}{3}(f_{i-1/2} + f_i + f_{i+1/2})`.
@@ -4565,10 +4565,16 @@ Exercise 1: Linear algebra refresher I
 
 Look up the topic of *vector space* in your favorite linear algebra
 book or search for the term at Wikipedia.
-Prove that vectors in the plane (:math:`a,b`) form a vector space
+Prove that vectors in the plane :math:`(a,b)` form a vector space
 by showing that all the axioms of a vector space
 are satisfied. Similarly,
-prove that all linear functions of the form :math:`ax+b` constitute a vector space.
+prove that all linear functions of the form :math:`ax+b` constitute a vector space,
+:math:`a,b\in\mathbb{R}`.
+
+On the contrary,
+show that all quadratic functions of the form :math:`1 + ax^2 + bx` *do not*
+constitute a vector space.
+Filename: ``linalg1``.
 
 .. --- end of exercise
 
@@ -4585,10 +4591,11 @@ Exercise 2: Linear algebra refresher II
 ---------------------------------------
 
 As an extension of :ref:`fem:approx:exer:linalg1`, check out
-the topic of *inner vector spaces*. Show that both examples
-of spaces in :ref:`fem:approx:exer:linalg1` can be equipped with an
-inner product and show that the choice of inner product satisfied the
+the topic of *inner product spaces*. Suggest a possible inner product
+for the space of all linear functions of the form :math:`ax+b`, :math:`a,b\in\mathbb{R}`.
+Show that this inner product satisfies the
 general requirements of an inner product in a vector space.
+Filename: ``linalg2``.
 
 .. --- end of exercise
 
@@ -4607,7 +4614,7 @@ Exercise 3: Approximate a three-dimensional vector in a plane
 Given :math:`\pmb{f} = (1,1,1)` in :math:`\mathbb{R}^3`, find the best approximation vector
 :math:`\pmb{u}` in the plane spanned by the unit vectors :math:`(1,0)` and :math:`(0,1)`.
 Repeat the calculations using the vectors :math:`(2,1)` and :math:`(1,2)`.
-Filename: ``vec111_approx.py``.
+Filename: ``vec111_approx``.
 
 .. --- end of exercise
 
@@ -4618,17 +4625,22 @@ Filename: ``vec111_approx.py``.
 .. --- begin exercise
 
 
-.. _fem:approx:exer:exp:powers:
+.. _fem:approx:exer:sin:powers:
 
 Exercise 4: Approximate the exponential function by power functions
 -------------------------------------------------------------------
 
 Let :math:`V` be a function space with basis functions
-:math:`x^k`, :math:`k=0,1,\ldots,N`.
-Find the best approximation to :math:`f(x)=e^x` among all functions in :math:`V`,
-using :math:`N=8` and the ``least_squares`` function from
-the section :ref:`fem:approx:global`.
-Filename: ``exp_by_powers.py``.
+:math:`x^{2i+1}`, :math:`i=0,1,\ldots,N`.
+Find the best approximation to :math:`f(x)=\sin(x)` among all functions in :math:`V`,
+using :math:`N=4` for a domain that includes more and more half-periods of
+the sine function: :math:`\Omega = [0, k\pi/2]`, :math:`k=2,3,\ldots,12`.
+How does a Taylor series of :math:`\sin(x)` around :math:`x` up to degree 9
+behave for the largest domain?
+Filename: ``sin_powers.py``.
+
+*Hint.* One can make a loop over :math:`k` and call the ``least_squares`` and
+``comparison_plot`` from the ``approx1D`` module.
 
 .. --- end of exercise
 
@@ -4639,21 +4651,26 @@ Filename: ``exp_by_powers.py``.
 .. --- begin exercise
 
 
-.. _fem:approx:exer:sine:hibylow:
+.. _fem:approx:exer:tanh:sine1:
 
-Exercise 5: Approximate a high frequency sine function by lower frequency sines
--------------------------------------------------------------------------------
+Exercise 5: Approximate a steep function by sines
+-------------------------------------------------
 
-Find the best approximation of :math:`f(x) = \sin (20x)` on :math:`[0, 2\pi]` in
-the space :math:`V` with basis
+Find the best approximation of :math:`f(x) = \tanh (s(x-\pi))` on
+:math:`[0, 2\pi]` in the space :math:`V` with basis
+:math:`\varphi_i(x) = sin((2i+1)x)`, :math:`i=0,\ldots,N`.
+Make a movie showing how :math:`u=\sum_{j=0}^Nc_j\varphi_j(x)`
+approximates :math:`f(x)` as :math:`N` grows. Choose :math:`s` such that :math:`f` is
+steep (:math:`s=20` may be appropriate).
+Filename: ``tanh_sines_approx1.py``.
 
-
-.. math::
-         \{ \sin x,\ \sin 2x, \sin 3x \},
-
-using the ``least_squares_orth`` function from
-the section :ref:`fem:approx:global:Fourier`. Plot :math:`f(x)` and its approximation.
-Filename: ``hilow_sine_approx.py``.
+*Hint.* One may naively call the ``least_squares_orth`` and ``comparison_plot``
+from the ``approx1D`` module in a loop and extend the basis with
+one new element in each pass. This approach
+implies a lot of recomputations.
+A more efficient strategy is to let ``least_squares_orth``
+compute with only one basis function at a time and accumulate
+the corresponding ``u`` in the total solution.
 
 .. --- end of exercise
 
@@ -4714,8 +4731,8 @@ Filename: ``Fourier_approx.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 7: Approximate a :math:`\tanh` function by Lagrange polynomials
-------------------------------------------------------------------------
+Exercise 7: Approximate a steep function by Lagrange polynomials
+----------------------------------------------------------------
 
 Use interpolation (or collocation) with uniformly distributed
 points and Chebychev nodes to approximate
@@ -4829,8 +4846,8 @@ Filename: ``sin_approx_P1.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 11: Approximate a :math:`\tanh` function by P1 and P2 elements
------------------------------------------------------------------------
+Exercise 11: Approximate a steep function by P1 and P2 elements
+---------------------------------------------------------------
 
 Given
 
@@ -4914,7 +4931,7 @@ Approximate the step function
 
 by 2, 4, and 8 P1 and P2 elements. Compare
 approximations visually.
-Filename: ```Heaviside_approx_P1P2.py``.`.
+Filename: ``Heaviside_approx_P1P2.py.``.
 
 *Hint.* This :math:`f` can also be expressed in terms of the Heaviside function :math:`H(x)`:
 :math:`f(x) = H(x-{1/2})`.
