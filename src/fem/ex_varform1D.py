@@ -79,8 +79,6 @@ def case1(N, basis='sines'):
 
     f = 2
     D = 0; L = 1
-    def u_exact(x):
-        return x*(D + L - x)
 
     def integrand_lhs_LS(phi, i, j):
         return -phi[2][i]*phi[2][j]
@@ -112,6 +110,7 @@ def case1(N, basis='sines'):
     u['LS'] = solve(integrand_lhs_LS, integrand_rhs_LS, phi, Omega)
     u['G1'] = solve(integrand_lhs_G1, integrand_rhs_G1, phi, Omega)
     u['G2'] = solve(integrand_lhs_G2, integrand_rhs_G2, phi, Omega)
+    u['exact'] = x*(D + L - x)
     # Test different collocation points
     points = []
     if N == 0:
@@ -124,11 +123,11 @@ def case1(N, basis='sines'):
     for k, p in enumerate(points):
         u['co'+str(k)] = collocation(term_lhs_co, term_rhs_co, phi, p)
     import pprint; pprint.pprint(u)
-    comparison_plot(u, u_exact, [0, 1])
+    comparison_plot(u, [0, 1])
 
 def case2(N):
     """
-    Solve -u''=f(x) on [0,1], u'(0)=E, u(1)=D.
+    Solve -u''=f(x) on [0,1], u'(0)=C, u(1)=D.
     Method: Galerkin only.
     """
     x = sm.Symbol('x')
@@ -136,14 +135,29 @@ def case2(N):
     D = 2; E = 3;
     L = 1  # basis function factory restricted to [0,1]
     D = sm.Symbol('D')
-    E = sm.Symbol('E')
-    def u_exact(x):
-        return L**2 - x**2 + E*(x-L) + D
+    C = sm.Symbol('C')
+
+    # u exact
+    f1 = sm.integrate(f, x)
+    f2 = sm.integrate(f1, x)
+    C1, C2 = sm.symbols('C1 C2')
+    u = -f2 + C1*x + C2
+    BC1 = sm.diff(u,x).subs(x, 0) - C
+    BC2 = u.subs(x,1) - D
+    s = sm.solve([BC1, BC2], [C1, C2])
+    u_e = -f2 + s[C1]*x + s[C2]
+
+    def diff_eq(u, x):
+        return {'eq': sm.simplify(-sm.diff(u, x, x) - f),
+                'BC1': sm.diff(u, x).subs(x, 0) - C,
+                'BC2': u.subs(x, L) - D}
+
+    print 'Check of exact solution:', diff_eq(u_e, x)
 
     def integrand_lhs(phi, i, j):
         return phi[1][i]*phi[1][j]
 
-    B = D/L*x
+    B = D*x/L
     dBdx = sm.diff(B, x)
 
     def integrand_rhs(phi, i):
@@ -152,24 +166,27 @@ def case2(N):
     boundary_lhs = None # not used here
 
     def boundary_rhs(phi, i):
-        return -E*phi[0][i].subs(x, 0)
+        return -C*phi[0][i].subs(x, 0)
 
     Omega = [0, L]
     phi = phi_factory('poly3', N, 1)
     #phi = phi_factory('Lagrange', N, 1)
     print phi[0]
     u = {'G1': solve(integrand_lhs, integrand_rhs, phi, Omega,
-                     boundary_lhs, boundary_rhs) + B}
-    print 'Numerical solution:', u['G1']
-    print 'Simplified:', sm.simplify(u['G1'])
+                     boundary_lhs, boundary_rhs, verbose=True) + B,
+         'exact': u_e}
+    print 'numerical solution:', u['G1']
+    print 'simplified:', sm.simplify(u['G1'])
+    print 'u exact', u['exact']
     # Change from symblic to numerical computing for plotting.
-    # That is, replace D and E symbols by numbers
+    # That is, replace C and D symbols by numbers
     # (comparison_plot takes the expressions with x to functions of x
-    # so D and E must have numbers).
-    u['G1'] = u['G1'].subs(D, 2)
-    u['G1'] = u['G1'].subs(E, -2)
-    D = 2;  E = -2  # Note that these are also remembered by u_exact
-    comparison_plot(u, u_exact, [0, 1])
+    # so C and D must have numbers).
+    for name in u:
+        u[name] = u[name].subs(C, 2).subs(D, -2)
+    print 'u:', u
+    C = 2;  D = -2  # Note that these are also remembered by u_e
+    comparison_plot(u, [0, 1])
 
 def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
           basis='poly', numint=False, B_type='linear'):
@@ -215,7 +232,9 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
         f2 = sm.integrate(f1, x)
         C1, C2 = sm.symbols('C1 C2')
         u = -f2 + C1*x + C2
-        s = sm.solve([u.subs(x,0) - 1, u.subs(x,1) - 0], [C1, C2])
+        BC1 = u.subs(x,0) - 1
+        BC2 = u.subs(x,1) - 0
+        s = sm.solve([BC1, BC2], [C1, C2])
         u_exact = -f2 + s[C1]*x + s[C2]
     print 'u_exact:', u_exact
 
@@ -258,11 +277,11 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
                     numint=numint)
     print 'sum c_j*phi_j:', phi_sum
     name = 'numerical, N=%d' % N
-    u = {name: phi_sum + B}
+    u = {name: phi_sum + B, 'exact': sm.simplify(u_exact)}
     print 'Numerical solution:', u[name]
     if verbose:
         print '...simplified to', sm.simplify(u[name])
-        print '...exact solution:', sm.simplify(u_exact)
+        print '...exact solution:', sm.simplify(u['exact'])
 
     f_str = str(f).replace(' ', '')
     a_str = str(a).replace(' ', '')
@@ -276,13 +295,12 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
             value = all_symbols[s]
             print 'symbol', s, 'gets value', value
             u[name] = u[name].subs(s, value)
-            u_exact = u_exact.subs(s, value)
+            u['exact'] = u['exact'].subs(s, value)
     print 'Numerical u_exact formula before plot:', u_exact
-    u_exact = sm.lambdify([x], u_exact, modules='numpy')
-    comparison_plot(u, u_exact, [0, 1], filename)
+    comparison_plot(u, [0, 1], filename)
 
 
-def comparison_plot(u, u_e, Omega, filename='tmp.eps'):
+def comparison_plot(u, Omega, filename='tmp.eps'):
     """
     Plot the solution u(x) (a sympy expression with x as the only
     symbol - all other symbols must have been substituted by numbers)
@@ -297,7 +315,6 @@ def comparison_plot(u, u_e, Omega, filename='tmp.eps'):
         u[name] = sm.lambdify([x], u[name], modules="numpy")
         u[name] = u[name](xcoor)
     legends = []
-    u['exact'] = u_e(xcoor)
     for name in u:
         plot(xcoor, u[name])
         hold('on')
@@ -320,6 +337,6 @@ case3(N=3, a=sm.exp(b*x), f=0, basis='Lagrange', numint=False,
 
 #case0(f=b, N=1)
 #case0(f=x**6, N=7)
-case0(f=sm.sin(sm.pi*x), N=2)
+case2(1)
 
 

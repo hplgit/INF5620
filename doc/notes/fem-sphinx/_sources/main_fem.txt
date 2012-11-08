@@ -6,7 +6,7 @@ Basic finite element methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Nov 1, 2012
+:Date: Nov 8, 2012
 
 Note: **QUITE PRELIMINARY VERSION**
 
@@ -4627,8 +4627,8 @@ Filename: ``vec111_approx``.
 
 .. _fem:approx:exer:sin:powers:
 
-Exercise 4: Approximate the exponential function by power functions
--------------------------------------------------------------------
+Exercise 4: Approximate the sine function by power functions
+------------------------------------------------------------
 
 Let :math:`V` be a function space with basis functions
 :math:`x^{2i+1}`, :math:`i=0,1,\ldots,N`.
@@ -4637,10 +4637,10 @@ using :math:`N=4` for a domain that includes more and more half-periods of
 the sine function: :math:`\Omega = [0, k\pi/2]`, :math:`k=2,3,\ldots,12`.
 How does a Taylor series of :math:`\sin(x)` around :math:`x` up to degree 9
 behave for the largest domain?
-Filename: ``sin_powers.py``.
 
 *Hint.* One can make a loop over :math:`k` and call the ``least_squares`` and
 ``comparison_plot`` from the ``approx1D`` module.
+Filename: ``sin_powers.py``.
 
 .. --- end of exercise
 
@@ -4662,7 +4662,6 @@ Find the best approximation of :math:`f(x) = \tanh (s(x-\pi))` on
 Make a movie showing how :math:`u=\sum_{j=0}^Nc_j\varphi_j(x)`
 approximates :math:`f(x)` as :math:`N` grows. Choose :math:`s` such that :math:`f` is
 steep (:math:`s=20` may be appropriate).
-Filename: ``tanh_sines_approx1.py``.
 
 *Hint.* One may naively call the ``least_squares_orth`` and ``comparison_plot``
 from the ``approx1D`` module in a loop and extend the basis with
@@ -4671,6 +4670,7 @@ implies a lot of recomputations.
 A more efficient strategy is to let ``least_squares_orth``
 compute with only one basis function at a time and accumulate
 the corresponding ``u`` in the total solution.
+Filename: ``tanh_sines_approx1.py``.
 
 .. --- end of exercise
 
@@ -4734,15 +4734,17 @@ Filename: ``Fourier_approx.py``.
 Exercise 7: Approximate a steep function by Lagrange polynomials
 ----------------------------------------------------------------
 
-Use interpolation (or collocation) with uniformly distributed
+Use interpolation/collocation with uniformly distributed
 points and Chebychev nodes to approximate
 
 
 .. math::
-         f(x) = \tanh(s(x-\frac{1}{2}))
+         f(x) = -\tanh(s(x-\frac{1}{2}))
 
 by Lagrange polynomials for :math:`s=10,100` and :math:`N=3,6,9,11`.
-Filename: ``tanh_Lagrange_approx.py``.
+Make separate plots of the approximation for each combination of
+:math:`s`, point type (Chebyshev or uniform), and :math:`N`.
+Filename: ``tanh_Lagrange.py``.
 
 .. --- end of exercise
 
@@ -4764,13 +4766,14 @@ Exercise 8: Define finite element meshes
 Consider a domain :math:`\Omega =[0,2]` divided into the three elements
 :math:`[0,1]`, :math:`[1,1.2]`, and :math:`[1.2,2]`, with two nodes in each element
 (P1 elements).
-Suggest two different element numberings and global node numberings
-for this mesh and set up the corresponding ``nodes`` and ``elements``
-lists in each case.
+Set up the list of coordinates and nodes (``nodes``) and the
+numbers of the nodes that belong to each element (``elements``) in
+two cases: 1) nodes and elements numbered from left to right, and 2)
+nodes and elements numbered from right to left.
 
 Thereafter, subdivide the element :math:`[1.2,2]` into two new equal-sized elements.
-Add the new node and the two new elements to each of the ``nodes`` and
-``elements`` lists.
+Add the new node and the two new elements to the data structures created above,
+and try to minimize the modifications.
 Filename: ``fe_numberings.py.``.
 
 .. --- end of exercise
@@ -4791,10 +4794,10 @@ Exercise 9: Construct matrix sparsity patterns
 with a total of five elements, but with two different element and
 node orderings. For each of the two orderings,
 make a :math:`5\times 5` matrix and fill in the entries that will be nonzero.
-Filename: ``fe_sparsity_pattern.pdf``.
 
 *Hint.* A matrix entry :math:`(i,j)` is nonzero if :math:`i` and :math:`j` are nodes in the
 same element.
+Filename: ``fe_sparsity_pattern.pdf``.
 
 .. --- end of exercise
 
@@ -4931,7 +4934,6 @@ Approximate the step function
 
 by 2, 4, and 8 P1 and P2 elements. Compare
 approximations visually.
-Filename: ``Heaviside_approx_P1P2.py.``.
 
 *Hint.* This :math:`f` can also be expressed in terms of the Heaviside function :math:`H(x)`:
 :math:`f(x) = H(x-{1/2})`.
@@ -4944,6 +4946,7 @@ when converting ``f`` to a Python function (for plotting) since
 ``Heaviside`` is not an available function in ``numpy``. It is better to make
 special-purpose code for this case or perform all
 caluclations by hand.
+Filename: ``Heaviside_approx_P1P2.py.``.
 
 .. --- end of exercise
 
@@ -4981,11 +4984,11 @@ on :math:`\Omega = [0,1]\times [0,1]` via basis functions
         \thinspace .
         
 
-Filename: ``approx2D_lsorth_sin.py``.
 
 *Hint.* Get ideas from the function ``least_squares_orth`` in
 the section :ref:`fem:approx:global:orth` and
 file `approx1D.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/fem/fe_approx1D.py>`_.
+Filename: ``approx2D_lsorth_sin.py``.
 
 .. --- end of exercise
 
@@ -5469,14 +5472,34 @@ This statement can also be expressed as a weighted residual method
 
 where :math:`w_i=1` for :math:`x\in\Omega_i` and :math:`w_i=0` otherwise.
 
+
 .. _fem:deq:1D:ex:sines:
 
 Examples on using the principles
 --------------------------------
 
-
 Let us now apply global basis functions to illustrate the principles
-for minimizing :math:`R`. Our choice of basis functions :math:`\varphi_i`
+for minimizing :math:`R`.
+
+The model problem
+~~~~~~~~~~~~~~~~~
+
+We consider the differential equation problem
+
+
+.. math::
+   :label: fem:deq:1D:model1
+        
+        -u''(x) = f(x),\quad x\in\Omega=[0,L],\quad u(0)=0,\ u(L)=0
+        \thinspace .
+        
+        
+
+
+Basis functions
+~~~~~~~~~~~~~~~
+
+Our choice of basis functions :math:`\varphi_i`
 for :math:`V` is
 
 
@@ -5487,8 +5510,18 @@ for :math:`V` is
         
         
 
-The following property of these functions becomes useful in the
-forthcoming calculations:
+
+An important property of these functions is that :math:`\varphi_i(0)=\varphi_i(L)=0`,
+which means that the boundary conditions on :math:`u` are fulfilled:
+
+
+.. math::
+         u(0) = \sum_jc_j\varphi_j(0) = 0,\quad u(L) = \sum_jc_j\varphi_j(L)
+        \thinspace .
+
+
+Another nice property is that the chosen sine functions
+are orthogonal on :math:`\Omega`:
 
 
 .. math::
@@ -5500,14 +5533,6 @@ forthcoming calculations:
 
 provided :math:`i` and :math:`j` are integers.
 
-
-We address the model problem :eq:`fem:deq:1D:model1`. One immediate
-difficulty is that with the above choice of basis functions,
-:math:`u(1)=\sum_j c_j \sin((i+1)\pi)=0` regardless of the coefficients
-:math:`c_0,\ldots,c_N`. We therefore set :math:`u(L)=D=0` so that :math:`u(x)` fulfills the
-boundary conditions :math:`u(0)=u(L)=0`. Later, in
-the section :ref:`fem:deq:1D:essBC`, we shall see how we can deal with the
-condition :math:`u(L)=D\neq 0`.
 
 The residual
 ~~~~~~~~~~~~
@@ -5540,6 +5565,7 @@ in the least squares method require an expression for
         \frac{\partial R}{\partial c_i} =
         \frac{\partial}{\partial c_i}
         \left(\sum_{j=0}^N c_j\varphi_j''(x) + f(x)\right)
+        = \sum_{j=0}^N \frac{\partial c_j}{\partial c_i}\varphi_j''(x)
         = \varphi_i''(x)\thinspace . 
 
 The governing equations for :math:`c_0,\ldots,c_N` are then
@@ -5926,7 +5952,7 @@ the trial function. For example, the statement
 
 
 .. math::
-         \int_{\Omega} u' v'dx = \int_Omega fvdx\quad\hbox{or}\quad (u',v') = (f,v)
+         \int_{\Omega} u' v'dx = \int_{Omega} fvdx\quad\hbox{or}\quad (u',v') = (f,v)
         \quad\forall v\in V
 
 can be written in abstract form: *find :math:`u` such that*
@@ -6012,18 +6038,23 @@ must then fulfill :math:`B(0)=C` and :math:`B(L)=D`. How :math:`B` varies in bet
 
 
 .. math::
-         B(x) = xD + (L-x)C
+         B(x) = C + \frac{1}{L}(D-C)x
         \thinspace .
         
 
 
-A Galerkin formulation is obtained by inserting the expression for :math:`u`
-and demanding the residual to be orthogonal to all :math:`v\in V`:
+The residual arises by inserting our :math:`u` in the differential equation:
+
+
+.. math::
+         R = -\frac{d}{dx}\left( a\frac{du}{dx}\right) -f\thinspace .
+
+Galerkin's method is
 
 
 .. math::
         
-        (-\frac{d}{dx}\left( a\frac{du}{dx}\right) -f, v) = 0,\quad \forall v\in V,
+        (R, v) = 0,\quad \forall v\in V,
         
 
 or written with explicit integrals,
@@ -6051,11 +6082,11 @@ term vanishes. The variational formulation is then
 .. math::
         
         \int_{\Omega} a(x)\frac{du}{dx}\frac{dv}{dx}dx = \int_{\Omega} f(x)vdx,\quad
-        \forall v\in V,
+        \forall v\in V\thinspace .
         
 
-or using the inner product notation and more compact notation for
-derivatives:
+The variational formulation can alternatively be written in a more
+compact form:
 
 
 .. math::
@@ -6076,10 +6107,10 @@ with
          a(u,v)= (au',v'),\quad L(v)=(f,v) \thinspace . 
 
 Note that the :math:`a` in the notation :math:`a(\cdot,\cdot)` is not to be mixed with the
-variable coefficient :math:`a` in the differential equation.
+variable coefficient :math:`a(x)` in the differential equation.
 
-We may insert :math:`u` and :math:`v` expressed by basis functions to derive the
-linear system. Insertion gives
+We may insert :math:`u=B + \sum_jc_j\varphi_j` and :math:`v=\varphi_i` to
+derive the linear system:
 
 
 .. math::
@@ -6088,17 +6119,18 @@ linear system. Insertion gives
         (f,\varphi_i), \quad i=0,\ldots,N \thinspace .
         
 
-We then isolate the :math:`c_j` coefficients on the left-hand side and move all
-known terms to the right-hand side:
+Isolating everything with the :math:`c_j` coefficients on the left-hand side
+and all known terms on the right-hand side
+gives
 
 
 .. math::
          \sum_{j=0}^N (a\varphi_j', \varphi_i)c_j  =
-        (f-(D-C),\varphi_i), \quad i=0,\ldots,N
+        (f,\varphi_i) + (CL^{-1}, \varphi_i'), \quad i=0,\ldots,N
         \thinspace .
         
 
-This equation is recognized as a linear system :math:`\sum_j A_{i,j}c_j=b_i`
+This is nothing but a linear system :math:`\sum_j A_{i,j}c_j=b_i`
 with
 
 
@@ -6106,7 +6138,8 @@ with
         
         A_{i,j} &= (a\varphi_j', \varphi_i) = \int_{\Omega} a(x)\varphi_j'(x),
         \varphi_i(x)dx,\\
-        b_i &= (f+C-D,\varphi_i) = \int_{\Omega} (f(x) + C- D)\varphi_i(x)dx
+        b_i &= (f,\varphi_i) + (CL^{-1},\varphi_i')=
+        \int_{\Omega} \left(f(x)\varphi_i(x) + \frac{C}{L}\varphi_i'(x)\right) dx
         \thinspace .
         
 
@@ -6127,14 +6160,14 @@ The new features are a first-order derivative :math:`u'` in the equation
 and the boundary
 condition involving the derivative: :math:`u'(L)=E`.
 Since we have a Dirichlet condition at :math:`x=0`,
-we force :math:`\varphi_i(0)=0` and use a boundary function :math:`B(x)=C(L-x)`
+we force :math:`\varphi_i(0)=0` and use a boundary function :math:`B(x)=C(L-x)/L`
 to take care of the condition :math:`u(0)=C`. Because there is no Dirichlet
 condition on :math:`x=L` we do not make any requirements to :math:`\varphi_i(L)`.
 The expansion for :math:`u` becomes
 
 
 .. math::
-         u = C(1-x) + \sum_{j=0}^N c_j \varphi_i(x)
+         u = \frac{C}{L}(L-x) + \sum_{j=0}^N c_j \varphi_i(x)
         \thinspace .
         
 
@@ -6180,7 +6213,7 @@ The variational form now reads
 
 
 .. math::
-         (u',v') + (bu',v) = (f+C,v) + E v(L), \quad\forall v\in V \thinspace .
+         (u',v') + (bu',v) = (f,v) + E v(L), \quad\forall v\in V \thinspace .
 
 In the abstract notation we have
 
@@ -6191,31 +6224,26 @@ In the abstract notation we have
 with the particular formulas
 
 .. math::
-         a(u,v)=(u',v') + (bu',v),\quad L(v)= (f+C,v) + E v(L)\thinspace .
+         a(u,v)=(u',v') + (bu',v),\quad L(v)= (f,v) + E v(L)\thinspace .
 
 
-The expressions for the matrix and right-hand side entries in the
-associated linear system can be directly found from the :math:`a(u,v)` and
-:math:`L(v)` formulas as explained in the section :ref:`fem:deq:1D:varform:abstract`:
+The associated linear system is derived by inserting :math:`u=B+\sum_jc_j\varphi_j`
+and replacing :math:`v` by :math:`\varphi_i` for :math:`i=0,\ldots,N`. Some algebra results in
 
 
 .. math::
-         A_{i,j} = a(\varphi_j,\varphi_i) = (\varphi_j',\varphi_i') +
-        (b\varphi_j',\varphi_i),
+         \sum_{j=0}^N \underbrace{((\varphi_j',\varphi_i') + (b\varphi_j',\varphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\varphi_i) + (C/L,\varphi_i') + E \varphi_i(L)}_{b_i}
+        \thinspace .
+        
 
-and
-
-.. math::
-         b_i = L(\varphi_i) = (f+C,\varphi_i) + E\varphi_i(L)\thinspace .
-
-Observe that in this case, the coefficient matrix is not symmetric,
-because
+Observe that in this problem, the coefficient matrix is not symmetric,
+because of the term
 
 
 .. math::
         
-        A_{i,j}= (b\varphi_j',\varphi_i)=\int_{\Omega} b\varphi_j'\varphi_i dx
-         \neq \int_{\Omega} b \varphi_i' \varphi_jdx = (\varphi_i',b\varphi_j)=A_{j,i}
+        (b\varphi_j',\varphi_i)=\int_{\Omega} b\varphi_j'\varphi_i dx
+         \neq \int_{\Omega} b \varphi_i' \varphi_jdx = (\varphi_i',b\varphi_j)
         \thinspace .
         
 
@@ -6228,19 +6256,39 @@ are numbered from left to right in 1D so that :math:`x_{N}=L`.
 Example on handling Dirichlet and Neumann conditions
 ----------------------------------------------------
 
+.. ex_varform1D.py: case2
+
+
 Let perform the necessary calculations to solve
 
 
 .. math::
-         -u''(x)=f(x),\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D,
+         -u''(x)=2,\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D,
 
 using a global polynomial basis :math:`\varphi_i\sim x^i`.
 The requirements on :math:`\varphi_i` is that :math:`\varphi_i(1)=0`, because :math:`u` is
 specified at :math:`x=1`, so a proper set of polynomial basis functions are
 :math:`\varphi_i(x)=(1-x)^{i+1}`, :math:`i=0,\ldots,N`. A suitable :math:`B(x)` function
-to handle the boundary condition :math:`u(1)=D` is :math:`B(x)=D x`.
-The variational formulation
-is given by :eq:`fem:deq:1D:natBC`. With :math:`N=1` we can calculate
+to handle the boundary condition :math:`u(1)=D` is :math:`B(x)=Dx`.
+The variational formulation becomes
+
+
+.. math::
+         (u',v') = (2,v) - Cv(0)\quad\forall v\in V\thinspace .
+
+The entries in the linear system are then
+
+
+.. math::
+        
+        A_{i,j} &= (\varphi_j,\varphi_i) = \int_{0}^1 \varphi_i'(x)\varphi_j'(x)dx
+        = \int_0^1 (i+1)(j+1)(1-x)^{i+j}dx,\\
+        b_i &= (2,\varphi_i) - (D,\varphi_i') -C\varphi_i(0)
+        = \int_0^1\left( 2\varphi_i(x) - D\varphi_i'(x)\right)dx -C\varphi_i(0)
+        = \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\varphi_i(0)
+        
+
+With :math:`N=1` we can calculate
 the global matrix system to be
 
 
@@ -6256,17 +6304,17 @@ the global matrix system to be
         \end{array}\right)
         =
         \left(\begin{array}{c}
-        1+D-E\\
-        2/3 + D - E
+        -C+D+1\\
+        2/3 -C + D
         \end{array}\right)
         
 
-The solution becomes :math:`c_0=2+D-E` and :math:`c_1=-1`, resulting in
+The solution becomes :math:`c_0=-C+D+2` and :math:`c_1=-1`, resulting in
 
 
 .. math::
         
-        u(x) = x D + (2+D-E)(1-x) - (1-x^2),
+        u(x) = 1 -x^2 + D + C(x-1),
         
 
 
@@ -6274,12 +6322,34 @@ The exact solution is easily obtained by
 integrating twice and applying the boundary conditions:
 
 
-.. math::
-         u_{\small\mbox{e}} (x) = 1 - x^2 + E(x-1) + D\thinspace . 
+.. code-block:: python
+
+        >>> from sympy import *
+        >>> x, C, D = symbols('x C D')
+        >>> f = 2
+        >>> f1 = integrate(f, x)
+        >>> f2 = integrate(f1, x)
+        >>> C1, C2 = symbols('C1 C2')       # integration constants
+        >>> u = -f2 + C1*x + C2
+        >>> BC1 = diff(u,x).subs(x, 0) - C  # x=0 condition
+        >>> BC2 = u.subs(x,1) - D           # x=1 condition
+        >>> s = solve([BC1, BC2], [C1, C2])
+        >>> u_e = -f2 + s[C1]*x + s[C2]
+        >>> print u_e
+        C*x - C + D - x**2 + 1
+        >>> simplify(-diff(u, x, x) - f)  # check diff.eq.
+        0
+        >>> diff(u, x).subs(x, 0) - C     # check x=0 condition
+        0
+        >>> u.subs(x, L) - D              # check x=L condition
+        0
+
 
 We observe that the numerical solution coincides with the exact one, which
 is to be expected since the expansion for :math:`u` contains the
 exact solution as special case.
+
+.. [[[ corrected so far
 
 
 Nonlinear terms
@@ -8238,7 +8308,7 @@ Exercises  (2)
 
 .. string with load
 
-.. hanging cable, see ideas articles about that (nonlinear)
+.. hanging cable, see ideas/5620 articles about that (nonlinear)
 
 
 
@@ -8260,7 +8330,7 @@ Solve
 
 .. math::
         
-        T w''(x) = ell(x),
+        T w''(x) = \ell(x),
         
 
 where :math:`T` is the tension in the cable
@@ -8281,13 +8351,14 @@ the scaled problem for the dimensionless vertical deflection :math:`u`:
 Introduce the function space spanned by :math:`\varphi_i=\sin ((i+1)\pi x/2)`,
 :math:`i=1,\ldots,N`.
 Use a Galerkin and a least squares method to find the coefficients
-:math:`c_j` in :math:`u(x)=\sum_j c_j\varphi_j`.
+:math:`c_j` in :math:`u(x)=\sum_j c_j\varphi_j`. Find how fast the coefficients
+decrease in magnitude by looking at :math:`c_j/c_{j-1}`.
 Find the error in the maximum deflection at :math:`x=1` when only one
 basis function is used (:math:`N=0`).
 
 What happens if we choose basis functions
 :math:`\varphi_i=\sin ((i+1)\pi x)`?
-Filename: ``cable_sin.pdf``.
+Filename: ``cable_sin``.
 
 .. --- end of exercise
 
@@ -8307,7 +8378,7 @@ Consider the Galerkin method for the problem involving :math:`u`
 in :ref:`fem:deq:exer:tension:cable`.
 Show that the formulas for :math:`c_j` are independent of whether we perform
 integration by parts or not.
-Filename: ``integr_by_parts.pdf``.
+Filename: ``cable_integr_by_parts``.
 
 .. --- end of exercise
 
@@ -8325,7 +8396,7 @@ Exercise 19: Compute the deflection of a cable with 2 P1 elements
 
 Solve the problem for :math:`u` in :ref:`fem:deq:exer:tension:cable`
 using two P1 linear elements.
-Filename: ``cable_2P1.pdf``.
+Filename: ``cable_2P1``.
 
 .. --- end of exercise
 
@@ -8342,8 +8413,8 @@ Exercise 20: Compute the deflection of a cable with 1 P2 element
 ----------------------------------------------------------------
 
 Solve the problem for :math:`u` in :ref:`fem:deq:exer:tension:cable`
-using one P2 linear element.
-Filename: ``cable_1P2.pdf``.
+using one P2 element with quadratic basis functions.
+Filename: ``cable_1P2``.
 
 .. --- end of exercise
 
@@ -8360,10 +8431,20 @@ Exercise 21: Compute the deflection of a cable with a step load
 ---------------------------------------------------------------
 
 We consider the deflection of a tension cable as described in
-:ref:`fem:deq:exer:tension:cable`. Now the load is :math:`\ell_1`
-for :math:`x<L/2` and :math:`\ell_2` for :math:`x\geq L/2`. This load is not symmetric
+:ref:`fem:deq:exer:tension:cable`. Now the load is
+
+
+.. math::
+         \ell (x) =\left\lbrace\begin{array}{ll}
+        \ell_1, & x <L/2,\\
+        \ell_2, & x \geq L/2
+        \end{array}\right.\quad x\in [0,L]
+        \thinspace .
+        
+
+This load is not symmetric
 with respect to the midpoint :math:`x=L/2` so the solution loses its symmetry
-and we must solve
+and we must solve the scaled problem
 
 
 .. math::
@@ -8374,7 +8455,6 @@ and we must solve
         \quad x\in (0,1),\quad u(0)=0,\ u(1)=0
         \thinspace .
 
-Filename: ``cable_discont_load.pdf``.
 
 
 *a)* Use :math:`\varphi_i = \sin((i+1)\pi x)`, :math:`i=0,\ldots,N` and the Galerkin method
@@ -8384,6 +8464,9 @@ Plot how fast the coefficients :math:`c_j` tend to zero (on a log scale).
 
 *b)* Solve the problem with P1 finite elements.
 Plot the solution for :math:`n_e=2,4,8` elements.
+
+Filename: ``cable_discont_load``.
+
 .. --- end of exercise
 
 
@@ -8405,12 +8488,15 @@ one can assemble the matrix system with :math:`u(x)=\sum_{j=0}^{N}
 c_j\varphi_j` and afterwards replace the rows corresponding to known
 :math:`c_j` values by the boundary conditions.
 The purpose of this exercise is to show the equivalence of these two
-approaches. Consider 1) the system :eq:`fem:deq:1D:ex1:Ab:glob3`
-modified for the boundary value :math:`u(L)=D` as explained in
-the section :ref:`fem:deq:1D:essBC:Bfunc`, and 2) the system
-:eq:`fem:deq:1D:ex1:Ab:glob3` where all :math:`c_0,\ldots,c_N` are
+approaches.
+
+Consider the system :eq:`fem:deq:1D:ex1:Ab:glob`
+modified for the boundary value :math:`u(L)=D`, as explained in
+the section :ref:`fem:deq:1D:essBC:Bfunc`, and the system
+:eq:`fem:deq:1D:ex1:Ab:glob3`, where all :math:`c_0,\ldots,c_N` are
 involved. Show that eliminating :math:`c_1` and :math:`c_N` from
-:eq:`fem:deq:1D:ex1:Ab:glob3` results in the other system.
+:eq:`fem:deq:1D:ex1:Ab:glob3` results in the other system
+:eq:`fem:deq:1D:ex1:Ab:glob`.
 
 .. --- end of exercise
 
@@ -8437,6 +8523,7 @@ arising from a finite difference method. Repeat the reasoning for
 the finite difference formula :math:`u''(x_i) \approx [D_x D_x u]_i` and
 use it to find a natural discretization of :math:`u''(x_i)` on a non-uniform
 mesh.
+Filename: ``nonuniform_P1.pdf``.
 
 .. --- end of exercise
 
@@ -8452,7 +8539,7 @@ mesh.
 Exercise 24: Solve a 1D finite element problem by hand
 ------------------------------------------------------
 
-The following 1D problem is a very simple, yet relevant, model
+The following scaled 1D problem is a very simple, yet relevant, model
 for convective transport in fluids:
 
 
@@ -8471,7 +8558,6 @@ for convective transport in fluids:
 
 .. Could have shooting method as a project
 
-Filename: ``convdiff1D_P1.pdf``.
 
 
 *a)* Find the analytical solution to this problem.
@@ -8498,6 +8584,81 @@ of the differential equation using
 *f)* Compute the numerical solution and plot it together with the exact solution
 for a mesh with 20 elements and
 :math:`\epsilon=0.1, 0.01`.
+
+Filename: ``convdiff1D_P1``.
+
+.. --- end of exercise
+
+
+
+
+
+.. --- begin exercise
+
+
+.. _fem:deq:exer:1D:Poisson:polar:
+
+Exercise 25: Compare finite elements and differences for a radially symmetric Poisson equation
+----------------------------------------------------------------------------------------------
+
+We consider the Poisson problem in a disk with radius :math:`R` with
+Dirichlet conditions at the boundary.
+Given that the solution is radially symmetric and hence dependent only on
+the radial coordinate (:math:`r=\sqrt{x^2+y^2}`), we can reduce the problem
+to a 1D Poisson equation
+
+
+.. math::
+   :label: fem:deq:exer:1D:Poisson:polar:eq
+        
+        -\frac{1}{r}\frac{d}{dr}\left( r\frac{du}{dr}\right) = f(r),\quad r\in (0,R),\
+        u'(0)=0,\ u(R)=U_R
+        \thinspace .
+        
+        
+
+
+
+*a)* Use a uniform mesh partition with P1 elements and show what the
+resulting set of equations becomes. Integrate the matrix entries
+exact by hand, but use a Trapezoidal rule to integrate the :math:`f` term.
+
+*b)* Explain that a natural
+finite difference method applied to :eq:`fem:deq:exer:1D:Poisson:polar:eq`
+gives
+
+
+.. math::
+        
+        \frac{1}{r_i}\frac{1}{h^2}\left( r_{i+\frac{1}{2}}(u_{i+1}-u_i) -
+        r_{i-\frac{1}{2}}(u_{i}-u_{i-1})\right) = f_i,\quad i=rh
+        \thinspace .
+        
+
+
+For :math:`i=0` the factor :math:`1/r_i` seemingly becomes problematic. One must always
+have :math:`u'(0)=0`, because of the radial symmetry, which implies
+:math:`u_{-1}=u_1`, if we allow introduction of a fictitious value :math:`u_{-1}`.
+Using this :math:`u_{-1}` in the difference equation for :math:`i=0` gives
+
+
+.. math::
+        
+        \frac{1}{r_0}\frac{1}{h^2}\left( r_{\frac{1}{2}}(u_{1}-u_0) -
+        r_{-\frac{1}{2}}(u_{0}-u_{1})\right) =
+        \frac{1}{r_0}\frac{1}{2h^2}\left( (r_0 + r_1)(u_{1}-u_0) -
+        (r_{-1} + r_0)(u_{0}-u_{1})\right) \approx
+        2(u_1-u_0),
+        
+
+if we use :math:`r_{-1}+r_1\approx 2r_0`.
+
+Set up the complete set of equations for the finite difference method
+and compare to the finite element method in case a Trapezoidal rule
+is used to integrate the :math:`f` term in the latter method.
+
+Filename: ``radial_Poisson1D_P1.pdf``.
+
 .. --- end of exercise
 
 
@@ -8509,7 +8670,7 @@ for a mesh with 20 elements and
 
 .. _fem:deq:exer:1D:gen:problem2:
 
-Exercise 25: Compute with variable coefficients and P1 elements by hand
+Exercise 26: Compute with variable coefficients and P1 elements by hand
 -----------------------------------------------------------------------
 
 Consider the problem
@@ -8528,14 +8689,7 @@ We choose :math:`a(x)=1+x^2`. Then
          u(x) = \alpha + \beta(1+L^2)\tan^{-1}(x),
         
 
-is an exact solution if
-
-.. math::
-        
-        f(x) = \gamma u
-        \thinspace .
-        
-
+is an exact solution if :math:`f(x) = \gamma u`.
 
 Derive a variational formulation and compute general expressions for the
 element matrix and vector in an arbitrary element, using P1 elements
@@ -8543,7 +8697,7 @@ and a uniform partitioning of :math:`[0,L]`. The right-hand side
 integral is challenging and can be computed by a numerical integration
 rule. The Trapezoidal rule :eq:`fem:approx:fe:numint1:trapez`
 gives particularly simple expressions.
-Filename: ``tanh1D_P1.pdf``.
+Filename: ``atan1D_P1.pdf``.
 
 .. --- end of exercise
 
@@ -8556,7 +8710,7 @@ Filename: ``tanh1D_P1.pdf``.
 
 .. _fem:deq:exer:2D:torsion:xy:sin:
 
-Exercise 26: Solve a 2D Poisson equation using polynomials and sines
+Exercise 27: Solve a 2D Poisson equation using polynomials and sines
 --------------------------------------------------------------------
 
 The classical problem of applying a torque to the ends of a rod
@@ -8576,7 +8730,6 @@ use a single basis function to obtain an approximate answer.
 
 We assume for simplicity that the cross section is the unit square:
 :math:`\Omega = [0,1]\times [0,1]`.
-Filename: ``torsion_sin_xy.pdf``.
 
 
 *a)* We consider the basis
@@ -8597,5 +8750,8 @@ Which choice of a single basis function is best,
 In order to answer the question,
 it is necessary to search the web or the literature for an accurate
 estimate of the maximum :math:`u` value at :math:`x=y=1/2`.
+
+Filename: ``torsion_sin_xy.pdf``.
+
 .. --- end of exercise
 
