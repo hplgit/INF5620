@@ -1,5 +1,5 @@
 import scitools.std as plt
-from fe_approx1D import mesh, phi_glob
+from fe_approx1D import mesh_uniform, phi_glob
 
 def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     """Illustrate elements and nodes in a finite element mesh."""
@@ -18,7 +18,7 @@ def fe_basis_function_figure(d, target_elm=[1], n_e=3,
     associated with element target_elm (may be list of elements).
     Add a mesh with n_e elements.
     """
-    nodes, elements = mesh(n_e, d)
+    nodes, elements = mesh_uniform(n_e, d)
     """
     x = 1.1
     print locate_element_vectorized(x, elements, nodes)
@@ -176,7 +176,7 @@ if __name__ == '__main__':
         num_elements = int(sys.argv[2])
         d = int(sys.argv[3])
         uniform = sys.argv[4]
-        nodes, elements = mesh(num_elements, d, [0, 1])
+        nodes, elements = mesh_uniform(num_elements, d, [0, 1])
         num_nodes = len(nodes)
 
         # Shuffle nodes in random order if necessary

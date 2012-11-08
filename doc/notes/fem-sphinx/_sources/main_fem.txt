@@ -4633,7 +4633,7 @@ Exercise 4: Approximate the sine function by power functions
 Let :math:`V` be a function space with basis functions
 :math:`x^{2i+1}`, :math:`i=0,1,\ldots,N`.
 Find the best approximation to :math:`f(x)=\sin(x)` among all functions in :math:`V`,
-using :math:`N=4` for a domain that includes more and more half-periods of
+using :math:`N=8` for a domain that includes more and more half-periods of
 the sine function: :math:`\Omega = [0, k\pi/2]`, :math:`k=2,3,\ldots,12`.
 How does a Taylor series of :math:`\sin(x)` around :math:`x` up to degree 9
 behave for the largest domain?
@@ -6115,7 +6115,7 @@ derive the linear system:
 
 .. math::
         
-        (aB' + a\sum_{j=0}^N c_j \varphi_j', \varphi_i) =
+        (aB' + a\sum_{j=0}^N c_j \varphi_j', \varphi_i') =
         (f,\varphi_i), \quad i=0,\ldots,N \thinspace .
         
 
@@ -6125,8 +6125,8 @@ gives
 
 
 .. math::
-         \sum_{j=0}^N (a\varphi_j', \varphi_i)c_j  =
-        (f,\varphi_i) + (CL^{-1}, \varphi_i'), \quad i=0,\ldots,N
+         \sum_{j=0}^N (a\varphi_j', \varphi_i')c_j  =
+        (f,\varphi_i) + (aCL^{-1}, \varphi_i'), \quad i=0,\ldots,N
         \thinspace .
         
 
@@ -6136,10 +6136,10 @@ with
 
 .. math::
         
-        A_{i,j} &= (a\varphi_j', \varphi_i) = \int_{\Omega} a(x)\varphi_j'(x),
-        \varphi_i(x)dx,\\
-        b_i &= (f,\varphi_i) + (CL^{-1},\varphi_i')=
-        \int_{\Omega} \left(f(x)\varphi_i(x) + \frac{C}{L}\varphi_i'(x)\right) dx
+        A_{i,j} &= (a\varphi_j', \varphi_i') = \int_{\Omega} a(x)\varphi_j'(x),
+        \varphi_i'(x)dx,\\
+        b_i &= (f,\varphi_i) + (aCL^{-1},\varphi_i')=
+        \int_{\Omega} \left(f(x)\varphi_i(x) + a(x)\frac{C}{L}\varphi_i'(x)\right) dx
         \thinspace .
         
 
@@ -6232,7 +6232,7 @@ and replacing :math:`v` by :math:`\varphi_i` for :math:`i=0,\ldots,N`. Some alge
 
 
 .. math::
-         \sum_{j=0}^N \underbrace{((\varphi_j',\varphi_i') + (b\varphi_j',\varphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\varphi_i) + (C/L,\varphi_i') + E \varphi_i(L)}_{b_i}
+         \sum_{j=0}^N \underbrace{((\varphi_j',\varphi_i') + (b\varphi_j',\varphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\varphi_i) + (bCL^{-1},\varphi_i') + E \varphi_i(L)}_{b_i}
         \thinspace .
         
 
@@ -6253,8 +6253,8 @@ For finite element basis functions, it is worth noticing that the boundary term
 :math:`\varphi_i`, :math:`i\neq N`, are zero at :math:`x=L`, provided the degrees of freedom
 are numbered from left to right in 1D so that :math:`x_{N}=L`.
 
-Example on handling Dirichlet and Neumann conditions
-----------------------------------------------------
+Example on computing with Dirichlet and Neumann conditions
+----------------------------------------------------------
 
 .. ex_varform1D.py: case2
 
@@ -6348,8 +6348,6 @@ integrating twice and applying the boundary conditions:
 We observe that the numerical solution coincides with the exact one, which
 is to be expected since the expansion for :math:`u` contains the
 exact solution as special case.
-
-.. [[[ corrected so far
 
 
 Nonlinear terms
@@ -6788,7 +6786,7 @@ Expressing these entries in matrix and vector notation, we have
 .. math::
    :label: fem:deq:1D:ex1:Ab:elm
         
-        \tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{cc}
+        \tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{rr}
         1 & -1\\
         -1 & 1
         \end{array}\right),\quad
@@ -7023,7 +7021,7 @@ The complete matrix system, involving all degrees of freedom, takes the form
         \vdots \\
         \vdots \\
         \vdots \\
-        2h\vdots\\
+        2h\\
         h
         \end{array}
         \right)
@@ -7191,7 +7189,7 @@ is known and the modification becomes
    :label: fem:deq:1D:ex1:Ab:elm:bc:0
         
         \tilde A^{(0)} =
-        A = \frac{1}{h}\left(\begin{array}{cc}
+        A = \frac{1}{h}\left(\begin{array}{rr}
         1 & 0\\
         -1 & 1
         \end{array}\right),\quad
@@ -7209,7 +7207,7 @@ In the last cell we set
    :label: fem:deq:1D:ex1:Ab:elm:bc:N
         
         \tilde A^{(N-1)} =
-        A = \frac{1}{h}\left(\begin{array}{cc}
+        A = \frac{1}{h}\left(\begin{array}{rr}
         1 & -1\\
         0 & 1
         \end{array}\right),\quad
@@ -7230,7 +7228,7 @@ becomes
    :label: fem:deq:1D:ex1:Ab:elm:bc:N:symm
         
         \tilde A^{(N-1)} =
-        A = \frac{1}{h}\left(\begin{array}{cc}
+        A = \frac{1}{h}\left(\begin{array}{rr}
         1 & 0\\
         0 & 1
         \end{array}\right),\quad
@@ -7410,7 +7408,7 @@ Only :math:`\tilde\varphi_0(-1)\neq 0` so we are left with the contribution
    :label: fem:deq:1D:ex1:Ab:elm:bc:nat
         
         \tilde A^{(0)} =
-        A = \frac{1}{h}\left(\begin{array}{cc}
+        A = \frac{1}{h}\left(\begin{array}{rr}
         1 & 1\\
         -1 & 1
         \end{array}\right),\quad

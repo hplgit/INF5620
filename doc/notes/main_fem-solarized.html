@@ -273,7 +273,7 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:varform:ex"> More examples on variational formulations </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec108"> Variable coefficient </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec109"> First-order derivative in the equation and boundary condition </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec110"> Example on handling Dirichlet and Neumann conditions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec110"> Example on computing with Dirichlet and Neumann conditions </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec111"> Nonlinear terms </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:optimization"> Variational problems and optimization of functionals </a><br>
 <a href="#fem:deq:1D:fem1"> Computing with finite elements </a><br>
@@ -4959,7 +4959,7 @@ Filename: <tt>vec111_approx</tt>.
 Let \( V \) be a function space with basis functions
 \( x^{2i+1} \), \( i=0,1,\ldots,N \).
 Find the best approximation to \( f(x)=\sin(x) \) among all functions in \( V \),
-using \( N=4 \) for a domain that includes more and more half-periods of
+using \( N=8 \) for a domain that includes more and more half-periods of
 the sine function: \( \Omega = [0, k\pi/2] \), \( k=2,3,\ldots,12 \).
 How does a Taylor series of \( \sin(x) \) around \( x \) up to degree 9
 behave for the largest domain?
@@ -6436,7 +6436,7 @@ derive the linear system:
 
 <p>
 $$
-(aB' + a\sum_{j=0}^N c_j \basphi_j', \basphi_i) =
+(aB' + a\sum_{j=0}^N c_j \basphi_j', \basphi_i') =
 (f,\basphi_i), \quad i=0,\ldots,N \thinspace .
 $$
 Isolating everything with the \( c_j \) coefficients on the left-hand side
@@ -6444,8 +6444,8 @@ and all known terms on the right-hand side
 gives
 
 <p>
-$$ \sum_{j=0}^N (a\basphi_j', \basphi_i)c_j  =
-(f,\basphi_i) + (CL^{-1}, \basphi_i'), \quad i=0,\ldots,N
+$$ \sum_{j=0}^N (a\basphi_j', \basphi_i')c_j  =
+(f,\basphi_i) + (aCL^{-1}, \basphi_i'), \quad i=0,\ldots,N
 \thinspace .
 $$
 This is nothing but a linear system \( \sum_j A_{i,j}c_j=b_i \)
@@ -6454,10 +6454,10 @@ with
 <p>
 $$
 \begin{align*}
-A_{i,j} &= (a\basphi_j', \basphi_i) = \int_{\Omega} a(x)\basphi_j'(x),
-\basphi_i(x)dx,\\
-b_i &= (f,\basphi_i) + (CL^{-1},\basphi_i')=
-\int_{\Omega} \left(f(x)\basphi_i(x) + \frac{C}{L}\basphi_i'(x)\right) dx
+A_{i,j} &= (a\basphi_j', \basphi_i') = \int_{\Omega} a(x)\basphi_j'(x),
+\basphi_i'(x)dx,\\
+b_i &= (f,\basphi_i) + (aCL^{-1},\basphi_i')=
+\int_{\Omega} \left(f(x)\basphi_i(x) + a(x)\frac{C}{L}\basphi_i'(x)\right) dx
 \thinspace .
 \end{align*}
 $$
@@ -6537,7 +6537,7 @@ The associated linear system is derived by inserting \( u=B+\sum_jc_j\basphi_j \
 and replacing \( v \) by \( \basphi_i \) for \( i=0,\ldots,N \). Some algebra results in
 
 <p>
-$$ \sum_{j=0}^N \underbrace{((\basphi_j',\basphi_i') + (b\basphi_j',\basphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\basphi_i) + (C/L,\basphi_i') + E \basphi_i(L)}_{b_i}
+$$ \sum_{j=0}^N \underbrace{((\basphi_j',\basphi_i') + (b\basphi_j',\basphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\basphi_i) + (bCL^{-1},\basphi_i') + E \basphi_i(L)}_{b_i}
 \thinspace .
 $$
 Observe that in this problem, the coefficient matrix is not symmetric,
@@ -6558,7 +6558,7 @@ are numbered from left to right in 1D so that \( \xno{N}=L \).
 
 <p>
 
-<h3>Example on handling Dirichlet and Neumann conditions  <a name="___sec111"></a></h3>
+<h3>Example on computing with Dirichlet and Neumann conditions  <a name="___sec111"></a></h3>
 <p>
 <!-- ex_varform1D.py: case2 -->
 
@@ -6655,7 +6655,6 @@ is to be expected since the expansion for \( u \) contains the
 exact solution as special case.
 
 <p>
-<!-- [[[ corrected so far -->
 
 <p>
 
@@ -7071,7 +7070,7 @@ Expressing these entries in matrix and vector notation, we have
 <p>
 $$
 \begin{equation}
-\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{cc}
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{rr}
 1 & -1\\
 -1 & 1
 \end{array}\right),\quad
@@ -7306,7 +7305,7 @@ h \\
 \vdots \\
 \vdots \\
 \vdots \\
-2h\vdots\\
+2h\\
 h
 \end{array}
 \right)
@@ -7477,7 +7476,7 @@ is known and the modification becomes
 $$
 \begin{equation}
 \tilde A^{(0)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & 0\\
 -1 & 1
 \end{array}\right),\quad
@@ -7494,7 +7493,7 @@ In the last cell we set
 $$
 \begin{equation}
 \tilde A^{(N-1)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & -1\\
 0 & 1
 \end{array}\right),\quad
@@ -7515,7 +7514,7 @@ becomes
 $$
 \begin{equation}
 \tilde A^{(N-1)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & 0\\
 0 & 1
 \end{array}\right),\quad
@@ -7691,7 +7690,7 @@ Only \( \refphi_0(-1)\neq 0 \) so we are left with the contribution
 $$
 \begin{equation}
 \tilde A^{(0)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & 1\\
 -1 & 1
 \end{array}\right),\quad

@@ -3588,7 +3588,7 @@ $$
 $$
 
 <p>
-This is called a <em>variational formulation</em>.
+This is called a <em>variational formulation</em> of the differential equation problem.
 
 <p>
 \( \forall v\in V \) means for all basis functions:
@@ -3654,7 +3654,7 @@ $$ c_0=2L^2/\pi^2 $$
 <p>
 
 <ul>
- <p><li> Let's use finite elements!
+ <p><li> Next step: finite elements
  <p><li> Problem: \( \basphi_i' \) is discontinuous (at cell boundaries)
    and we need \( \basphi_i'' \) in the Galerkin or least squares methods
  <p><li> Remedy: integrate by parts - then we only need \( \basphi_i' \)
@@ -3871,7 +3871,7 @@ $$
 $$
 
 <p>
-Can alternatively express this imore compactly as
+Alternative, compact notation:
 
 <p>
 $$
@@ -3892,12 +3892,12 @@ name).
 <p>
 
 <p>
-Can derive linear system by inserting \( u=B + \sum_jc_j\basphi_j \) and
+Can derive the linear system by inserting \( u=B + \sum_jc_j\basphi_j \) and
 \( v=\basphi_i \):
 
 <p>
-$$ \sum_{j=0}^N (a\basphi_j', \basphi_i)c_j  =
-(f,\basphi_i) + (CL^{-1},\basphi_i'),
+$$ \sum_{j=0}^N (a\basphi_j', \basphi_i')c_j  =
+(f,\basphi_i) + (aCL^{-1},\basphi_i'),
 \quad i=0,\ldots,N,
 $$
 or \( \sum_j A_{i,j}c_j=b_i \) with
@@ -3905,10 +3905,10 @@ or \( \sum_j A_{i,j}c_j=b_i \) with
 <p>
 $$
 \begin{align*}
-A_{i,j} &= (a\basphi_j', \basphi_i) = \int_{\Omega} a(x)\basphi_j'(x),
-\basphi_i(x)dx,\\
-b_i &= (f,\basphi_i) + (CL^{-1},\basphi_i')=
-\int_{\Omega} \left(f(x)\basphi_i(x) + \frac{C}{L}\basphi_i'(x)\right)dx
+A_{i,j} &= (a\basphi_j', \basphi_i') = \int_{\Omega} a(x)\basphi_j'(x),
+\basphi_i'(x)dx,\\
+b_i &= (f,\basphi_i) + (aCL^{-1},\basphi_i')=
+\int_{\Omega} \left(f(x)\basphi_i(x) + a(x)\frac{C}{L}\basphi_i'(x)\right)dx
 \thinspace .
 \end{align*}
 $$
@@ -3942,7 +3942,7 @@ Initial steps:
 <p>
 
 <ul>
- <p><li> Must force \( \basphi_i(0)=0 \) (Dirichlet condition at \( x=0 \))
+ <p><li> Must force \( \basphi_i(0)=0 \) because of Dirichlet condition at \( x=0 \)
  <p><li> Boundary function: \( B(x)=C(L-x)/L \)
  <p><li> No requirements on \( \basphi_i(L) \) (no Dirichlet condition at \( x=L \))
 </ul>
@@ -3959,11 +3959,11 @@ by parts.
 $$  (-u'' + bu' - f, v) = 0,\quad\forall v\in V$$
 
 <p>
-$$ (u' + bu',v') = (f,v) + [u' v]_0^L, \quad\forall v\in V \thinspace .$$
+$$ (u' + bu',v') = (f,v) + [u' v]_0^L, \quad\forall v\in V,$$
 
 <p>
 $$ (u' + bu',v') = (f,v) + Ev(L), \quad\forall v\in V,$$
-because \( [u' v]_0^L = u'(L)v(L) = E v(L) \) because
+when \( [u' v]_0^L = u'(L)v(L) = E v(L) \) because
 \( v(0)=0 \) and \( u'(L)=E \).
 
 <p>
@@ -3972,8 +3972,8 @@ Important:
 <p>
 
 <ul>
-  <p><li> The boundary term can be used to implement Neumann conditions!
-  <p><li> Forgetting the boundary term implies the condition \( u'=0 \)!
+  <p><li> The boundary term can be used to implement Neumann conditions
+  <p><li> Forgetting the boundary term implies the condition \( u'=0 \) (!)
   <p><li> Such conditions are called <em>natural boundary conditions</em>
 </ul>
 
@@ -3988,7 +3988,7 @@ $$ a(u,v)=(u',v') + (bu',v),\quad L(v)= (f+C,v) + E v(L)\thinspace .$$
 Linear system: insert \( u=B+\sum_jc_j\basphi_j \) and \( v=\basphi_i \),
 
 <p>
-$$ \sum_{j=0}^N \underbrace{((\basphi_j',\basphi_i') + (b\basphi_j',\basphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\basphi_i) + (C/L,\basphi_i') + E \basphi_i(L)}_{b_i}
+$$ \sum_{j=0}^N \underbrace{((\basphi_j',\basphi_i') + (b\basphi_j',\basphi_i))}_{A_{i,j}} c_j = \underbrace{(f,\basphi_i) + (bCL^{-1},\basphi_i') + E \basphi_i(L)}_{b_i}
 \thinspace .
 $$
 
@@ -4004,7 +4004,7 @@ $$
 
 <p>
 
-<h3>Example on handling Dirichlet and Neumann conditions  <a name="___sec87"></a></h3>
+<h3>Example on computing with Dirichlet and Neumann conditions  <a name="___sec87"></a></h3>
 <p>
 Let us solve
 
@@ -4019,19 +4019,22 @@ $$
  <p><li> Use a <em>global</em> polynomial basis \( \basphi_i\sim x^i \) on \( [0,1] \)
  <p><li> Because of \( u(1)=D \): \( \basphi_i(1)=0 \)
  <p><li> Basis: \( \basphi_i(x)=(1-x)^{i+1} \), \( i=0,\ldots,N \)
- <p><li> \( B(x)=Dx/L \)
+ <p><li> \( B(x)=Dx \)
 </ul>
 
-The linear system becomes
+We have
+
+<p>
+$$ A_{i,j} = (\basphi_j,\basphi_i) = \int_{0}^1 \basphi_i'(x)\basphi_j'(x)dx
+= \int_0^1 (i+1)(j+1)(1-x)^{i+j} dx,
+$$
+and
 
 <p>
 $$
 \begin{align*}
-A_{i,j} &= (\basphi_j,\basphi_i) = \int_{0}^1 \basphi_i'(x)\basphi_j'(x)dx
-= \int_0^1 (i+1)(j+1)(1-x)^{i+j}dx,\\
-b_i &= (2,\basphi_i) - (D,\basphi_i') -C\basphi_i(0)
-= \int_{0^1\left( 2\basphi_i(x) - D\basphi_i'(x)\right)dx -C\basphi_i(0)
-= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\basphi_i(0)
+b_i &= (2,\basphi_i) - (D,\basphi_i') -C\basphi_i(0)\\
+&= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\basphi_i(0)
 \end{align*}
 $$
 
@@ -4066,31 +4069,10 @@ This is also the exact solution (as expected when \( V \) contains second-degree
 polynomials).
 
 <p>
-<!-- [[[ corrected so far -->
 
 <p>
 
-<h3>Variational problems and optimization of functionals <a name="fem:deq:1D:optimization"></a></h3>
-<p>
-If \( a(u,v)=a(v,u) \), it can be shown that the variational statement
-\( a(u,v)=L(v) \) $\forall v\in V$ is equivalent to minimizing the functional
-
-<p>
-$$ F(v) = \frac{1}{2}a(v,v) - L(v) $$
-That is, find \( u \) such that
-
-<p>
-$$ F(u)\leq F(v)\quad\forall v\in V\thinspace .$$
-
-<p>
-Traditional use of finite elements often starts with \( F(v) \) and
-then derives \( a(u,v)=L(v) \).
-
-<p>
-
-<p>
-
-<h4>Nonlinear terms  <a name="___sec89"></a></h4>
+<h4>Nonlinear terms  <a name="___sec88"></a></h4>
 <p>
 The techniques used to derive variational
 forms also apply in nonlinear cases.
@@ -4108,18 +4090,18 @@ $$
 Using the Galerkin principle, we multiply by \( v\in V \) and integrate,
 
 <p>
-$$ -\int_0^L \frac{d}{dx}\left(a(u)\frac{du}{dx}\right)vdx =
-\int_0^L f(u)vdx\quad\forall v\in V
+$$ -\int_0^L \frac{d}{dx}\left(a(u)\frac{du}{dx}\right)v\, dx =
+\int_0^L f(u)v\, dx\quad\forall v\in V
 \thinspace .
 $$
 Integration by parts is not affected by \( a(u) \):
 
 <p>
-$$ \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}vdx =
-\int_0^L f(u)vdx + [vu']_0^L\quad\forall v\in V
+$$ \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}v\, dx =
+\int_0^L f(u)v\, dx + [vu']_0^L\quad\forall v\in V
 \thinspace .
 $$
-\( v(0)=0 \) since \( u(0) \) is known. \( v(L)u'(L)=v(L)E \).
+\( [vu']_0^L=v(L)E \) since \( v(0)=0 \) and \( u'(L)=E \).
 
 <p>
 $$ (a(u)u', v') = (f(u),v) + vE\quad\forall v\in V
@@ -4127,12 +4109,13 @@ $$ (a(u)u', v') = (f(u),v) + vE\quad\forall v\in V
 $$
 
 <p>
-Since the problem is nonlinear, we cannot identify \( a(u,v) \) and \( L(v) \).
+Since the problem is nonlinear, we cannot identify a <em>bilinear</em> form
+\( a(u,v) \) and a <em>linear</em> form \( L(v) \).
 An abstract notation is typically <em>find \( u \) such that</em>
 
 <p>
 $$ F(u;v) = 0\quad\forall v\in V,$$
-with
+here with
 $$ F(u;v) = (a(u)u', v') - (f(u),v) - vE
 \thinspace .
 $$
@@ -4146,10 +4129,32 @@ methods are Picard iteration and Newton's method.
 
 <p>
 
+<p>
+
+<h3>Variational problems and optimization of functionals <a name="fem:deq:1D:optimization"></a></h3>
+<p>
+If \( a(u,v)=a(v,u) \), it can be shown that the variational statement
+\( a(u,v)=L(v)\ \forall v\in V \) is equivalent to minimizing the functional
+
+<p>
+$$ F(v) = \frac{1}{2}a(v,v) - L(v) $$
+That is, find \( u \) such that
+
+<p>
+$$ F(u)\leq F(v)\quad\forall v\in V\thinspace .$$
+
+<p>
+Traditional use of finite elements, especially in structural analysis,
+often starts with \( F(v) \) and
+then derives \( a(u,v)=L(v) \).
+
+<p>
+
+<p>
+
 <h2>Computing with finite elements <a name="fem:deq:1D:fem1"></a></h2>
 <p>
-The purpose of this section is to demonstrate in detail how
-the finite method can the be applied to the model problem
+Given
 
 <p>
 $$ -u''(x) = 2,\quad x\in (0,L),\ u(0)=u(L)=0,$$
@@ -4159,12 +4164,19 @@ with variational formulation
 $$ (u',v') = (2,v)\quad\forall v\in V\thinspace . $$
 
 <p>
-Exclude \( c_0 \) and \( c_N \) from the unknowns since we know \( c_0=c_N=0 \):
+Tasks:
 
 <p>
-Since \( u \) is known to be zero
-at the end points of the interval, we can utilize a sum over
-the basis functions associated with internal nodes only:
+
+<ul>
+ <p><li> Solve for \( u \) using finite elements
+ <p><li> show all details
+ <p><li> Uniformly spaced nodes
+ <p><li> P1 elements
+</ul>
+
+Since \( u(0)=0 \) and \( u(L)=0 \), \( c_0=c_N=0 \), and we can use a
+sum over basis functions associated with internal nodes only:
 
 <p>
 $$
@@ -4175,10 +4187,7 @@ $$
 
 <p>
 
-<ul>
- <p><li> Uniformly spaced nodes
- <p><li> P1 elements
-</ul>
+<p>
 
 <h3>Computation in the global physical domain  <a name="___sec91"></a></h3>
 <p>
@@ -4280,7 +4289,7 @@ c_{N-1}
 $$
 
 <p>
-$c_j=u(\xno{j}) so we introduce \( c_j=u_j \) to easily compare with
+\( c_j=u(\xno{j}) \) so we introduce \( u_j=c_j \) to easily compare with
 the finite difference method. The equation corresponding to row \( i \):
 
 <p>
@@ -4329,7 +4338,7 @@ $$
 
 <p>
 \( \refphi_r(X) \) are known as functions of \( X \), but
-we need \( d\refphi_r(X)/dx \)!
+we need \( d\refphi_r(X)/dx \).
 
 <p>
 Given
@@ -4409,7 +4418,7 @@ In matrix/vector notation:
 <p>
 $$
 \begin{equation}
-\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{cc}
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{rr}
 1 & -1\\
 -1 & 1
 \end{array}\right),\quad
@@ -4441,6 +4450,14 @@ Must assemble - but first see how to incorporate boundary conditions.
 
 $$
 \begin{equation}
+B(x) = \sum_{j\in D} U_j\basphi_j(x), \end{equation}
+$$
+where \( D \) are the nodes with Dirichlet conditions and \( U_j \) the known values.
+
+<p>
+In 1D
+$$
+\begin{equation}
 B(x) = U_0\basphi_0(x) + U_N\basphi_N(x)\thinspace . \end{equation}
 $$
 
@@ -4457,7 +4474,7 @@ $$
 
 <h4>Example  <a name="___sec95"></a></h4>
 <p>
-$$ -u''=2, \quad u(0)=0$,\ u(L)=D\thinspace . $$
+$$ -u''=2, \quad u(0)=0,\ u(L)=D\thinspace . $$
 
 <p>
 The expansion for \( u(x) \) reads
@@ -4489,7 +4506,7 @@ for \( i,j = 1,\ldots,N-1 \).
  <p><li> We shall look at a less strict mathematical procedure that
    gives simpler impelementation
  <p><li> Step 1: compute everything as there were no Dirichlet conditions
- <p><li> Step 2: modify the linear system such that known \( c_j \) get
+ <p><li> Step 2: modify the linear system such that all known \( c_j \) get
    their right boundary values
 </ul>
 
@@ -4539,7 +4556,7 @@ h \\
 \vdots \\
 \vdots \\
 \vdots \\
-2h\vdots\\
+2h\\
 h
 \end{array}
 \right)
@@ -4553,8 +4570,7 @@ Actions:
 <p>
 
 <ul>
- <p><li> General: replace row \( i \) by \( c_i=K \) if \( u(\xno^{i})=K \) is a prescribed
-   Dirichlet condition
+ <p><li> General: replace row \( i \) by \( c_i=K \) if \( u \) at \( \xno^{i} \) is prescrined as \( K \)
  <p><li> Here: replace the first and last row by \( c_0=0 \) and \( c_N=D \)
 </ul>
 
@@ -4614,7 +4630,7 @@ $$
 <p>
 
 <ul>
- <p><li> The modification above destroys symmetry of the matrix
+ <p><li> The modification above destroys symmetry of the matrix (\( A_{0,1}\neq A_{1,0} \))
  <p><li> Symmetry is often important in 2D and 3D (faster computations)
  <p><li> A more complex modification preserves symmetry
 </ul>
@@ -4697,7 +4713,7 @@ Last degree of freedom in the last element is prescribed:
 $$
 \begin{equation}
 \tilde A^{(N-1)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & -1\\
 0 & 1
 \end{array}\right),\quad
@@ -4716,7 +4732,7 @@ Or symmetric modification:
 $$
 \begin{equation}
 \tilde A^{(N-1)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & 0\\
 0 & 1
 \end{array}\right),\quad
@@ -4732,7 +4748,7 @@ $$
 
 <h2>Boundary conditions: specified derivative <a name="fem:deq:1D:BC:nat"></a></h2>
 <p>
-Current focus: how to incorporate \( u'(0)=C \) with finite elements.
+Focus now: how to incorporate \( u'(0)=C \) with finite elements.
 
 <p>
 
@@ -4808,7 +4824,7 @@ first element:
 $$
 \begin{equation}
 \tilde A^{(0)} =
-A = \frac{1}{h}\left(\begin{array}{cc}
+A = \frac{1}{h}\left(\begin{array}{rr}
 1 & 1\\
 -1 & 1
 \end{array}\right),\quad
