@@ -6,7 +6,7 @@ Finite difference methods for wave motion
 
 :Author: Hans Petter Langtangen
 
-:Date: Oct 11, 2012
+:Date: Nov 14, 2012
 
 Note: **VERY PRELIMINARY VERSION!** (Expect lots of typos!)
 
@@ -313,7 +313,7 @@ use the boundary condition :eq:`wave:pde1:step3c` in combination with
 .. math::
    :label: wave:pde1:step4:1
         
-        u_i^1 = u^0_i - \half
+        u_i^1 = u^0_i - \frac{1}{2}
         C^2\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right)
         \thinspace .
         
@@ -435,8 +435,8 @@ for one-dimensional wave phenomena:
         
 
 
-Discretization
-~~~~~~~~~~~~~~
+Discretization  (1)
+~~~~~~~~~~~~~~~~~~~
 
 Sampling the PDE at :math:`(x_i,t_n)` and using the same finite difference
 approximations as above, yields
@@ -553,8 +553,8 @@ solutions (just set :math:`C=1`).
 
 .. _wave:pde1:impl:
 
-Implementation (1)
-==================
+Implementation  (1)
+===================
 
 .. index::
    single: wave equation; 1D, implementation
@@ -1155,8 +1155,8 @@ and the vectorized loops are included.
 .. index:: lambda function (Python)
 
 
-Verification
-~~~~~~~~~~~~
+Verification  (1)
+~~~~~~~~~~~~~~~~~
 
 We may reuse the quadratic solution :math:`u_{\small\mbox{e}}(x,t)=x(L-x)(1+\frac{1}{2}t)` for
 verifying also the vectorized code. A nose test can now test
@@ -1228,8 +1228,8 @@ effect!
 
 
 
-Exercises
-=========
+Exercises  (1)
+==============
 
 
 
@@ -1528,8 +1528,8 @@ the application of the standard scheme at a boundary point :math:`i=0` or :math:
 will be correct and ensure the solution is compatible with the
 boundary condition.
 
-Implementation
-~~~~~~~~~~~~~~
+Implementation  (2)
+~~~~~~~~~~~~~~~~~~~
 
 We may keep ``x`` as the array for the physical mesh points, but just add
 extra elements to ``u``,
@@ -2220,8 +2220,8 @@ In short, ``scitools.mist.function_UI`` makes all your desired functions
 in a program callable from the command line with two statements.
 This is especially useful during program testing.
 
-Exercises
-=========
+Exercises  (2)
+==============
 
 
 
@@ -2378,7 +2378,7 @@ Exercise 10: Investigate harmonic averaging in a 1D model
 
 Will harmonic averaging of the wave velocity give better numerical
 results for the case :math:`s_f=4` in :ref:`wave:app:exer:pulse1D`?
-Filenames: ``pulse1D_harmonic.pdf, ``.
+Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 
 .. --- end of exercise
 
@@ -2394,6 +2394,8 @@ various
 variants of the one-dimensional wave equation to two-dimensional (2D) and
 three-dimensional (3D) versions of the wave equation.
 
+.. _wave:2D3D:models:
+
 Multi-dimensional wave equations
 --------------------------------
 
@@ -2405,7 +2407,7 @@ can be written in the compact form
 .. math::
    :label: wave:2D3D:model1
         
-        \frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\hbox{ for }\pmb{x}\in\Omega\subset\mathbb{R}^d,\ t > 0 \thinspace .
+        \frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\hbox{ for }\pmb{x}\in\Omega\subset\mathbb{R}^d,\ t\in (0,T] \thinspace .
         
         
 
@@ -2432,7 +2434,7 @@ wave equation in :math:`d` dimensions is in this case written as
 .. math::
    :label: wave:2D3D:model2
         
-        \varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\hbox{ for }\pmb{x}\in\Omega\subset\mathbb{R}^d,\ t > 0,
+        \varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\hbox{ for }\pmb{x}\in\Omega\subset\mathbb{R}^d,\ t\in (0,T],
         
         
 
@@ -2534,8 +2536,8 @@ and write :math:`u^n_{i,j}`.
 
 .. _wave:2D3D:models:
 
-Discretization
---------------
+Discretization  (2)
+-------------------
 
 Two- and three-dimensional wave equations are easily discretized by
 assembling building blocks for discretization of
@@ -2680,8 +2682,8 @@ implementations.
 
 .. _wave:2D3D:impl:
 
-Implementation (2)
-==================
+Implementation  (3)
+===================
 
 
 .. index::
@@ -2987,8 +2989,8 @@ easy to, e.g., compute an exact 2D solution in the callback function
 and compute errors, through something like
 ``u - exact_solution(xv, yv, t[n])``.
 
-Verification
-------------
+Verification  (2)
+-----------------
 
 Testing a quadratic solution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3191,8 +3193,14 @@ the mathematics in mind.
 .. index:: C extension module
 
 
-Building the extension module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. index:: setup.py
+
+
+.. index:: distutils
+
+
+Building the extension module  (1)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a *C extension module*.
@@ -3234,6 +3242,13 @@ file acts as a normal Python module:
          '__package__', '__test__', 'advance', 'np']
 
 
+The ``setup.py`` file makes use of the ``distutils`` package in Python
+and Cython's extension of this package.
+These tools know how Python was built on the computer and will
+use compatible compiler(s) and options when building other code
+in Cython, C, or C++. Quite some experience with building large
+program systems is needed to do the build process manually.
+
 When there is no need to link the C code with special libraries,
 Cython offers a shortcut for generating and importing the extension
 module:
@@ -3265,8 +3280,8 @@ the Python program for the wave equation:
                                Cx2, Cy2, dt2)
 
 
-Efficiency
-~~~~~~~~~~
+Efficiency  (1)
+~~~~~~~~~~~~~~~
 
 For a mesh consisting of :math:`120\times 120` cells, the scalar Python code
 require 1370 CPU time units, the vectorized version requires 5.5,
@@ -3550,8 +3565,8 @@ or remaking the ``f(xv, yv, t[n])`` array,
         f_a = asarray(f(xv, yv, t[n]), order='Fortran')
 
 
-Efficiency
-~~~~~~~~~~
+Efficiency  (2)
+~~~~~~~~~~~~~~~
 
 The efficiency of this Fortran code is very similar to the Cython code.
 There is usually nothing more to gain, from a computational efficiency
@@ -3580,8 +3595,8 @@ pair ``[i][j]`` to a corresponding single index when ``u`` is
 viewed as one-dimensional. This translation requires knowledge of
 how the numbers in ``u`` are stored in memory.
 
-Translating of index pairs to single indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Translating index pairs to single indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two-dimensional ``numpy`` arrays with the default C storage are stored
 row by row. In general, multi-dimensional arrays with C storage are
@@ -3705,11 +3720,11 @@ easily obtained from the shape of the ``numpy`` array ``u``.
 Finally, ``u`` must be returned such that we can set ``u = advance(...)``
 in Python.
 
-Building the extension module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the extension module  (2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It remains to build the extension module. An appropriate
-``setup.py`` file
+``setup.py`` file is
 
 
 .. code-block:: python
@@ -3752,8 +3767,8 @@ The call to the C version of ``advance`` can go like this in Python:
         u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
 
 
-Efficiency
-~~~~~~~~~~
+Efficiency  (3)
+~~~~~~~~~~~~~~~
 
 In this example, the C and Fortran code runs at the same speed, and there
 are no significant differences in the efficiency of the wrapper code.
@@ -3929,7 +3944,7 @@ which have the solution :math:`g_R=g_L=I/2`, and consequently
 .. math::
    :label: wave:pde1:gensol2
         
-        u(x,t) = \half I(x-ct) + \half I(x+ct) \thinspace .
+        u(x,t) = \frac{1}{2} I(x-ct) + \frac{1}{2} I(x+ct) \thinspace .
         
         
 
@@ -3941,7 +3956,7 @@ other one to the right.
 
 The solution :eq:`wave:pde1:gensol2` will be influenced by
 boundary conditions when the parts
-:math:`\half I(x-ct)` and :math:`\half I(x+ct)` hit the boundaries and get, e.g.,
+:math:`\frac{1}{2} I(x-ct)` and :math:`\frac{1}{2} I(x+ct)` hit the boundaries and get, e.g.,
 reflected back into the domain. However, when :math:`I(x)` is nonzero
 only in a small part in the middle
 of the spatial domain :math:`[0,L]`, which means that the
@@ -3991,8 +4006,8 @@ ct)}` according to
 .. math::
    :label: wave:Fourier:u1
         
-        u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
-        + \half \sum_{k\in K} b_k e^{ik(x + ct)} \thinspace .
+        u(x,t) = \frac{1}{2} \sum_{k\in K} b_k e^{ik(x - ct)}
+        + \frac{1}{2} \sum_{k\in K} b_k e^{ik(x + ct)} \thinspace .
         
         
 
@@ -4238,6 +4253,13 @@ It appears that the most convenient expression to work with is :math:`\tilde c/c
         
 
 with :math:`p=k\Delta x/2` as a non-dimensional measure of spatial frequency.
+In essence, :math:`p` tells how many spatial mesh points we have per
+spatial period of the wave component with frequency :math:`k` (the period is
+:math:`2\pi/k`), i.e., how well the spatial variation of the wave component
+is resolved in the mesh. Wave components with wave length
+less than :math:`2\Delta x` (:math:`2\pi/k < 2\Delta x`) are not visible in the mesh,
+so it does not make sense to have :math:`p>\pi/2`.
+
 Note that the symbol :math:`p`, previously used as index, is here reused with
 another meaning.
 We may introduce the function :math:`r(C, p)=\tilde c/c`:
@@ -4296,12 +4318,13 @@ discretization parameter :math:`p`:
         p**4*(C - 1)*(C + 1)*(3*C - 1)*(3*C + 1)/120 +
         p**2*(C - 1)*(C + 1)/6 + 1
 
-We see that :math:`C=1` makes the two specific terms in (:ref:`wave:pde1:disprel:series`) cancel.
-Since we know that the numerical solution is exact for :math:`C=1`, the
+We see that :math:`C=1` makes all the terms in ``rs_factored`` vanish, except
+the last one.
+Since we already know that the numerical solution is exact for :math:`C=1`, the
 remaining terms in the Taylor series expansion
 will also contain factors of :math:`C-1` and cancel for :math:`C=1`.
 
-From (:ref:`wave:pde1:disprel:series`) we also see that the leading
+From ``rs_factored`` expression above we also see that the leading
 order terms in the error of this series expansion are
 
 
@@ -4314,8 +4337,12 @@ pointing to an error :math:`{\cal O}(\Delta t^2, \Delta x^2)`, which is
 compatible with the errors in the difference approximations (:math:`D_tD_t`
 and :math:`D_xD_x`).
 
-Test that the exact solution is there for :math:`K=\{ 1, 3, 7\}`! Give the
-:math:`k` values on the command line.
+.. 2DO
+
+.. Test that the exact solution is there for :math:`K=\{ 1, 3, 7\}`! Give the
+
+.. :math:`k` values on the command line.
+
 
 
 Extending the analysis to 2D and 3D
@@ -5455,8 +5482,8 @@ and can hence be solved independently.
 
 .. _wave:app:exer:
 
-Exercises
-=========
+Exercises  (3)
+==============
 
 
 

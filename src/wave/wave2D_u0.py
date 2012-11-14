@@ -35,7 +35,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
             #import pyximport; pyximport.install()
             import wave2D_u0_loop_cy as compiled_loops
             advance = compiled_loops.advance
-        except ImportError, e:
+        except ImportError as e:
             print 'No module wave2D_u0_loop_cy. Run make_wave2D.sh!'
             print e
             sys.exit(1)
@@ -57,7 +57,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         try:
             import wave2D_u0_loop_c_cy as compiled_loops
             advance = compiled_loops.advance_cwrap
-        except ImportError, e:
+        except ImportError as e:
             print 'No module wave2D_u0_loop_c_cy. Run make_wave2D.sh!'
             print e
             sys.exit(1)
