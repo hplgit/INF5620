@@ -68,7 +68,7 @@ $$
 \renewcommand{\u}{\pmb{u}}
 \renewcommand{\v}{\pmb{v}}
 \newcommand{\w}{\pmb{w}}
-\renewcommand{\u}{\pmb{u}}
+\newcommand{\V}{\pmb{V}}
 \newcommand{\e}{\pmb{e}}
 \newcommand{\f}{\pmb{f}}
 \newcommand{\F}{\pmb{F}}
@@ -130,18 +130,16 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Nov 8, 2012</h4></center> <!-- date -->
+<center><h4>Nov 21, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>QUITE PRELIMINARY VERSION</b>
 
 <p>
 
-<p>
 <h2>Table of contents</h2>
 
 <p>
 
-<p>
 <a href="#fem:approx:vec"> Approximation of vectors </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:vec:plane"> Approximation of planar vectors </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec2"> The least squares method </a><br>
@@ -185,9 +183,9 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:impl:ex2"> Applications </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:impl:sparse"> Sparse matrix storage and solution </a><br>
 <a href="#fem:approx:fe:fd"> Comparison of finite element and finite difference approximation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec43"> Collocation or interpolation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec44"> Finite difference approximation of given functions </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec45"> Finite difference interpretation of a finite element approximation </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:fd:colloc"> Collocation or interpolation </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:fd:fdproj"> Finite difference approximation of given functions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:approx:fe:fd:feproj"> Finite difference interpretation of a finite element approximation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec46"> Making finite elements behave as finite differences </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec47"> Elementwise computations </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec48"> Terminology </a><br>
@@ -252,16 +250,16 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:varform:ex"> More examples on variational formulations </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec108"> Variable coefficient </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec109"> First-order derivative in the equation and boundary condition </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec110"> Example on computing with Dirichlet and Neumann conditions </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec111"> Nonlinear terms </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec110"> Nonlinear terms </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec111"> Example on computing with Dirichlet and Neumann conditions </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:optimization"> Variational problems and optimization of functionals </a><br>
 <a href="#fem:deq:1D:fem1"> Computing with finite elements </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec114"> Computation in the global physical domain </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec115"> Elementwise computations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:comp:global"> Computation in the global physical domain </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:comp:elmwise"> Elementwise computations </a><br>
 <a href="#fem:deq:1D:essBC"> Boundary conditions: specified value </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:essBC:Bfunc"> General construction of a boundary function </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:fem:essBC:Bfunc"> General construction of a boundary function </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec118"> Example </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:essBC:Bfunc:modsys"> Modification of the linear system </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:deq:1D:fem:essBC:Bfunc:modsys"> Modification of the linear system </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec120"> Symmetric modification of the linear system </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec121"> Modification of the element matrix and vector </a><br>
 <a href="#fem:deq:1D:BC:nat"> Boundary conditions: specified derivative </a><br>
@@ -273,12 +271,36 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#___sec128"> Example: constant right-hand side </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec129"> Finite elements </a><br>
 <a href="#fem:deq:2D:varform"> Variational formulations in 2D and 3D </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec131"> Example </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec132"> Transformation to a reference cell in 2D and 3D </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec133"> Numerical integration </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec134"> Convenient formulas for P1 elements in 2D </a><br>
-<a href="#___sec135"> Summary </a><br>
-<a href="#___sec136"> Exercises </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec131"> Transformation to a reference cell in 2D and 3D </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec132"> Numerical integration </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec133"> Convenient formulas for P1 elements in 2D </a><br>
+<a href="#___sec134"> Summary </a><br>
+<a href="#___sec135"> Time-dependent problems </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec136"> Discretization in time by a Forward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec137"> Time discretization </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec138"> Space discretization </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec139"> Variational forms </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec140"> Linear systems </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec141"> Computational algorithm </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec142"> Comparison with the finite difference method </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec143"> Lumping the mass matrix </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec144"> Discretization in time by a Backward Euler scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec145"> Time discretization </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec146"> Variational forms </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec147"> Linear systems </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec148"> Analysis of the discrete equations </a><br>
+<a href="#fem:sys"> Systems of differential equations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:sys:vform"> Variational forms </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:sys:uT:ex"> A worked example </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec152"> Identical function spaces for the unknowns </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec153"> Variational form of each individual PDE </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec154"> Compound scalar variational form </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec155"> Decoupled linear systems </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec156"> Coupled linear systems </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec157"> Different function spaces for the unknowns </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec158"> Computations in 1D </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#fem:sys:up:1D"> Another example in 1D </a><br>
+<a href="#___sec160"> Exercises </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:exer:tension:cable"> Exercise 17: Compute the deflection of a cable with sine functions </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:exer:intg:parts"> Exercise 18: Check integration by parts </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:exer:intg:parts"> Exercise 19: Compute the deflection of a cable with 2 P1 elements </a><br>
@@ -292,17 +314,8 @@ Note: <b>QUITE PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#fem:deq:exer:2D:torsion:xy:sin"> Exercise 27: Solve a 2D Poisson equation using polynomials and sines </a><br>
 
 <p>
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
 The finite element method is a powerful tool for solving differential
 equations, especially in complicated domains and where higher-order
 approximations are desired. Figure <a href="#fem:motivation:fig:dolfin">1</a> shows
@@ -315,7 +328,6 @@ popular.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 1:  Domain for flow around a dolphin. <a name="fem:motivation:fig:dolfin"></a> </p></center>
@@ -324,11 +336,7 @@ popular.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- ========= Principles and machinery for approximating functions  <a name="___sec0"></a>========= -->
 
 <p>
@@ -400,7 +408,6 @@ the fundamental ideas are understood.
 
 <p>
 
-<p>
 The first method of approximation is called the <em>least squares method</em>
 and consists in finding \( c_i \) such that the difference \( u-f \), measured
 in some norm, is minimized. That is, we aim at finding the best
@@ -414,12 +421,10 @@ equations.
 
 <p>
 
-<p>
 
 <h3>Approximation of planar vectors <a name="fem:approx:vec:plane"></a></h3>
 <p>
 
-<p>
 Suppose we have given a vector \( \f = (3,5) \) in the \( xy \) plane
 and that we want to approximate this vector by a vector aligned
 in the direction of the vector \( (a,b) \). Figure <a href="#fem:approx:vec:plane:fig">2</a>
@@ -427,7 +432,6 @@ depicts the situation.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 2:  Approximation of a two-dimensional vector by a one-dimensional vector. <a name="fem:approx:vec:plane:fig"></a> </p></center>
@@ -436,7 +440,6 @@ depicts the situation.
 
 <p>
 
-<p>
 We introduce the vector space \( V \)
 spanned by the vector \( \phib_0=(a,b) \):
 
@@ -486,7 +489,6 @@ spaces.
 
 <p>
 
-<p>
 
 <h4>The least squares method  <a name="___sec3"></a></h4>
 <p>
@@ -590,13 +592,6 @@ $$
 
 <p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
 
 <h4>The Galerkin or projection method  <a name="___sec4"></a></h4>
 <p>
@@ -660,16 +655,11 @@ from least squares computations in
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h3>Approximation of general vectors <a name="fem:approx:vec:Np1dim"></a></h3>
 <p>
 
-<p>
 Let us generalize the vector approximation from the previous section
 to vectors in spaces with arbitrary dimension. Given some vector \( \f \),
 we want to find the best approximation to this vector in
@@ -880,7 +870,6 @@ differential equations, resulting in what is widely known as
 
 <p>
 
-<p>
 
 <h2>Approximation of functions <a name="fem:approx:global"></a></h2>
 <p>
@@ -991,7 +980,6 @@ $$
 <h3>The Galerkin or projection method  <a name="___sec10"></a></h3>
 <p>
 
-<p>
 As in the section <a href="#fem:approx:vec:Np1dim">Approximation of general vectors</a>, the minimization of \( (e,e) \)
 is equivalent to
 
@@ -1085,7 +1073,6 @@ parabola and its best approximation in the space of all linear functions.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 3:  Best approximation of a parabola by a straight line.  <a name="fem:approx:global:fig:parabola:linear"></a> </p></center>
@@ -1094,7 +1081,6 @@ parabola and its best approximation in the space of all linear functions.
 
 <p>
 
-<p>
 
 <h3>Implementation of the least squares method <a name="fem:approx:global:LS:code"></a></h3>
 <p>
@@ -1106,7 +1092,7 @@ the symbol <tt>x</tt>), <tt>phi</tt> is a list of \( \basphi_0,\ldots,\basphi_N 
 and <tt>Omega</tt> is a 2-tuple/list holding the domain \( \Omega \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">sm</span>
 
@@ -1142,7 +1128,7 @@ functional expression to a Python function for numerical
 computations:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">comparison_plot</span>(f, u, Omega, filename<span style="color: #666666">=</span><span style="color: #BB4444">&#39;tmp.pdf&#39;</span>):
     x <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>Symbol(<span style="color: #BB4444">&#39;x&#39;</span>)
@@ -1175,7 +1161,6 @@ The forthcoming examples on their use appear in
 
 <p>
 
-<p>
 
 <h3>Perfect approximation <a name="fem:approx:global:exact"></a></h3>
 <p>
@@ -1186,7 +1171,7 @@ the best approximation is if \( V \) is the space of all parabolic functions?
 The answer is quickly found by running
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #666666">&gt;&gt;&gt;</span> <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">approx1D</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
 <span style="color: #666666">&gt;&gt;&gt;</span> x <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>Symbol(<span style="color: #BB4444">&#39;x&#39;</span>)
@@ -1199,7 +1184,6 @@ The answer is quickly found by running
 </pre></div>
 <p>
 
-<p>
 Now, what if we use \( \phi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?
 The output from <tt>least_squares</tt> gives \( c_i=0 \) for \( i>2 \).
 In fact, we have a general result that
@@ -1251,18 +1235,18 @@ may produce \( c_j\neq 0 \) for \( j>2 \).
 
 <p>
 <table border="1">
-<tr><td align="center"><b>   exact   </b></td> <td align="center"><b>  <tt>sympy</tt>  </b></td> <td align="center"><b> <tt>numpy32</tt> </b></td> <td align="center"><b> <tt>numpy64</tt> </b></td> </tr>
-<tr><td align="right">   9            </td> <td align="right">   9.62         </td> <td align="right">   5.57         </td> <td align="right">   8.98         </td> </tr>
-<tr><td align="right">   -20          </td> <td align="right">   -23.39       </td> <td align="right">   -7.65        </td> <td align="right">   -19.93       </td> </tr>
-<tr><td align="right">   10           </td> <td align="right">   17.74        </td> <td align="right">   -4.50        </td> <td align="right">   9.96         </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   -9.19        </td> <td align="right">   4.13         </td> <td align="right">   -0.26        </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   5.25         </td> <td align="right">   2.99         </td> <td align="right">   0.72         </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   0.18         </td> <td align="right">   -1.21        </td> <td align="right">   -0.93        </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   -2.48        </td> <td align="right">   -0.41        </td> <td align="right">   0.73         </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   1.81         </td> <td align="right">   -0.013       </td> <td align="right">   -0.36        </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   -0.66        </td> <td align="right">   0.08         </td> <td align="right">   0.11         </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   0.12         </td> <td align="right">   0.04         </td> <td align="right">   -0.02        </td> </tr>
-<tr><td align="right">   0            </td> <td align="right">   -0.001       </td> <td align="right">   -0.02        </td> <td align="right">   0.002        </td> </tr>
+<tr><td align="center"><b>      exact       </b></td> <td align="center"><b>  <tt>sympy</tt>  </b></td> <td align="center"><b> <tt>numpy32</tt> </b></td> <td align="center"><b> <tt>numpy64</tt> </b></td> </tr>
+<tr><td align="right">   9                   </td> <td align="right">   9.62                </td> <td align="right">   5.57                </td> <td align="right">   8.98                </td> </tr>
+<tr><td align="right">   -20                 </td> <td align="right">   -23.39              </td> <td align="right">   -7.65               </td> <td align="right">   -19.93              </td> </tr>
+<tr><td align="right">   10                  </td> <td align="right">   17.74               </td> <td align="right">   -4.50               </td> <td align="right">   9.96                </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   -9.19               </td> <td align="right">   4.13                </td> <td align="right">   -0.26               </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   5.25                </td> <td align="right">   2.99                </td> <td align="right">   0.72                </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   0.18                </td> <td align="right">   -1.21               </td> <td align="right">   -0.93               </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   -2.48               </td> <td align="right">   -0.41               </td> <td align="right">   0.73                </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   1.81                </td> <td align="right">   -0.013              </td> <td align="right">   -0.36               </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   -0.66               </td> <td align="right">   0.08                </td> <td align="right">   0.11                </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   0.12                </td> <td align="right">   0.04                </td> <td align="right">   -0.02               </td> </tr>
+<tr><td align="right">   0                   </td> <td align="right">   -0.001              </td> <td align="right">   -0.02               </td> <td align="right">   0.002               </td> </tr>
 </table>
 <p>
 The exact value of \( c_j \), \( j=0,\ldots,10 \), appears in the first
@@ -1274,14 +1258,14 @@ by three different methods:
 <ul>
   <li> Column 2: The matrix and vector are converted to
     the data structure  <tt>sympy.mpmath.fp.matrix</tt> and the
-    <tt>sympy.mpmath.fp.lu_solve</tt> function is used to solve the system.
+    <tt>sympy.mpmath.fp.lu_solve</tt> function is used to solve the system.</li>
   <li> Column 3: The matrix and vector are converted to
     <tt>numpy</tt> arrays with data type <tt>numpy.float32</tt>
     (single precision floating-point number) and solved by
-    the <tt>numpy.linalg.solve</tt> function.
+    the <tt>numpy.linalg.solve</tt> function.</li>
   <li> Column 4: As column 3, but the data type is
     <tt>numpy.float64</tt> (double
-    precision floating-point number).
+    precision floating-point number).</li>
 </ul>
 
 We see from the numbers in the table that
@@ -1317,7 +1301,6 @@ returns a plain zero.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 4:  The 15 first basis functions \( x^i \), \( i=0,\ldots,14 \). <a name="fem:approx:global:fig:illconditioning"></a> </p></center>
@@ -1326,7 +1309,6 @@ returns a plain zero.
 
 <p>
 
-<p>
 On the other hand, the double precision <tt>numpy</tt> solver do run for
 \( N=100 \), resulting in answers that are not significantly worse than
 those in the table above, and large powers are
@@ -1373,7 +1355,7 @@ the section <a href="#fem:approx:global:linear">Example: linear approximation</a
 <tt>least_squares</tt> function from the section <a href="#fem:approx:global:LS:code">Implementation of the least squares method</a>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">N <span style="color: #666666">=</span> <span style="color: #666666">3</span>
 <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">import</span> sin, pi
@@ -1392,7 +1374,6 @@ Figure <a href="#fem:approx:global:fig:parabola:sine1">5</a> (right).
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 5:  Best approximation of a parabola by a sum of 3 (left) and 11 (right) sine functions.  <a name="fem:approx:global:fig:parabola:sine1"></a> </p></center>
@@ -1401,7 +1382,6 @@ Figure <a href="#fem:approx:global:fig:parabola:sine1">5</a> (right).
 
 <p>
 
-<p>
 There is an error \( f(0)-u(0)=9 \) at \( x=0 \) in Figure <a href="#fem:approx:global:fig:parabola:sine1">5</a> regardless of how large \( N \) is, because all \( \basphi_i(0)=0 \) and hence
 \( u(0)=0 \). We may help the approximation to be correct at \( x=0 \) by
 seeking
@@ -1433,7 +1413,6 @@ well, at least visually.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 6:  Best approximation of a parabola by a sum of 3 (left) and 11 (right) sine functions with a boundary term.  <a name="fem:approx:global:fig:parabola:sine2"></a> </p></center>
@@ -1442,9 +1421,6 @@ well, at least visually.
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Orthogonal basis functions <a name="fem:approx:global:orth"></a></h3>
 <p>
@@ -1454,7 +1430,7 @@ computational advantage: on \( \Omega=[0,1] \) these basis functions are
 result is realized by trying
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">integrate(sin(j<span style="color: #666666">*</span>pi<span style="color: #666666">*</span>x)<span style="color: #666666">*</span>sin(k<span style="color: #666666">*</span>pi<span style="color: #666666">*</span>x), x, <span style="color: #666666">0</span>, <span style="color: #666666">1</span>)
 </pre></div>
@@ -1487,7 +1463,7 @@ For orthogonal basis functions we can make the
 the matrix is diagonal and only the diagonal elements need to be computed:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">least_squares_orth</span>(f, phi, Omega):
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(phi) <span style="color: #666666">-</span> <span style="color: #666666">1</span>
@@ -1511,7 +1487,6 @@ This function is found in the file <tt>approx1D.py</tt>.
 <h3>The collocation (interpolation) method <a name="fem:approx:global:interp"></a></h3>
 <p>
 
-<p>
 The principle of minimizing the distance between \( u \) and \( f \) is
 an intuitive way of computing a best approximation \( u\in V \) to \( f \).
 However, there are other attractive approaches as well.
@@ -1556,7 +1531,7 @@ as a list <tt>phi</tt>, and a set of points \( x_0,\ldots,x_N \)  as a list or a
 for the coefficients \( c_0,\ldots,c_N \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">interpolation</span>(f, phi, points):
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(phi) <span style="color: #666666">-</span> <span style="color: #666666">1</span>
@@ -1599,7 +1574,7 @@ our parabola \( f(x)=10(x-1)^2-1 \) by a linear function on \( \Omega=[1,2] \),
 using two collocation points \( x_0=1+1/3 \) and \( x_1=1+2/3 \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">f <span style="color: #666666">=</span> <span style="color: #666666">10*</span>(x<span style="color: #666666">-1</span>)<span style="color: #666666">**2</span> <span style="color: #666666">-</span> <span style="color: #666666">1</span>
 phi <span style="color: #666666">=</span> [<span style="color: #666666">1</span>, x]
@@ -1638,7 +1613,6 @@ Figure <a href="#fem:approx:global:linear:interp:fig1">7</a> (right).
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 7:  Approximation of a parabola by linear functions computed by two interpolation points: 4/3 and 5/3 (left) versus 1 and 2 (right).  <a name="fem:approx:global:linear:interp:fig1"></a> </p></center>
@@ -1647,7 +1621,6 @@ Figure <a href="#fem:approx:global:linear:interp:fig1">7</a> (right).
 
 <p>
 
-<p>
 
 <h3>Lagrange polynomials <a name="fem:approx:global:Lagrange"></a></h3>
 <p>
@@ -1712,7 +1685,7 @@ The following function computes the Lagrange interpolating polynomial
 the list or array <tt>points</tt>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">Lagrange_polynomial</span>(x, i, points):
     p <span style="color: #666666">=</span> <span style="color: #666666">1</span>
@@ -1726,7 +1699,7 @@ The next function computes a complete basis using equidistant points throughout
 \( \Omega \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">Lagrange_polynomials_01</span>(x, N):
     <span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(x, sm<span style="color: #666666">.</span>Symbol):
@@ -1752,7 +1725,7 @@ A little interactive session illustrates the difference between symbolic
 and numerical computing of the basis functions and points:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; import sympy as sm
 &gt;&gt;&gt; x = sm.Symbol(&#39;x&#39;)
@@ -1782,7 +1755,7 @@ Trying out the Lagrange polynomial basis for approximating
 and the interpolation techniques can be done by
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>Symbol(<span style="color: #BB4444">&#39;x&#39;</span>)
 f <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>sin(<span style="color: #666666">2*</span>sm<span style="color: #666666">.</span>pi<span style="color: #666666">*</span>x)
@@ -1800,7 +1773,6 @@ technique. Increasing \( N \) gives visually better approximations.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 8:  Approximation via least squares (left) and interpolation (right) of a sine function by Lagrange interpolating polynomials of degree 4. <a name="fem:approx:global:Lagrange:fig:sine:ls:colloc"></a> </p></center>
@@ -1809,7 +1781,6 @@ technique. Increasing \( N \) gives visually better approximations.
 
 <p>
 
-<p>
 
 <h4>Less successful example  <a name="___sec21"></a></h4>
 <p>
@@ -1826,7 +1797,6 @@ a more detailed explanation on Wikipedia.
 
 <p>
 
-<p>
 
 <h4>Remedy for strong oscillations  <a name="___sec22"></a></h4>
 <p>
@@ -1845,7 +1815,7 @@ valid for any interval \( \Omega =[a,b] \) and with the possibility to generate
 both uniformly distributed points and Chebyshev nodes:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">Lagrange_polynomials</span>(x, N, Omega, point_distribution<span style="color: #666666">=</span><span style="color: #BB4444">&#39;uniform&#39;</span>):
     <span style="color: #AA22FF; font-weight: bold">if</span> point_distribution <span style="color: #666666">==</span> <span style="color: #BB4444">&#39;uniform&#39;</span>:
@@ -1881,7 +1851,6 @@ since \( f \) is piecewise linear.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 9:  Interpolation of an absolute value function by Lagrange polynomials and uniformly distributed interpolation points: degree 7 (left) and 14 (right).  <a name="fem:approx:global:Lagrange:fig:abs:Lag:unif:7:14"></a> </p></center>
@@ -1890,9 +1859,6 @@ since \( f \) is piecewise linear.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 10:  Illustration of the oscillatory behavior of two Lagrange polynomials for 12 uniformly spaced points (marked by circles).  <a name="fem:approx:global:Lagrange:fig:abs:Lag:unif:osc"></a> </p></center>
@@ -1901,9 +1867,6 @@ since \( f \) is piecewise linear.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 11:  Interpolation of an absolute value function by Lagrange polynomials and Chebyshev nodes as interpolation points: degree 7 (left) and 14 (right).  <a name="fem:approx:global:Lagrange:fig:abs:Lag:Cheb:7:14"></a> </p></center>
@@ -1912,7 +1875,6 @@ since \( f \) is piecewise linear.
 
 <p>
 
-<p>
 Unfortunately, <tt>sympy</tt> has problems integrating the \( f(x)=|1-2x| \)
 function times a polynomial. Other choices of \( f(x) \) can also
 make the symbolic integration fail. Therefore, we should extend
@@ -1925,7 +1887,7 @@ We can test on this type and utilize the <tt>mpmath</tt> module in
 Here is the code:<a name="fem:Integral:fallback"></a>
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">least_squares</span>(f, phi, Omega):
     N <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(phi) <span style="color: #666666">-</span> <span style="color: #666666">1</span>
@@ -1956,14 +1918,10 @@ Here is the code:<a name="fem:Integral:fallback"></a>
 </pre></div>
 <p>
 
-<p>
-
-<p>
 <!-- Convergence of Lagrange polynomials. -->
 
 <p>
 
-<p>
 <!-- Marius B: gratis github -->
 
 <p>
@@ -1971,13 +1929,13 @@ Here is the code:<a name="fem:Integral:fallback"></a>
 <h2>Finite element basis functions <a name="fem:approx:fe"></a></h2>
 <p>
 The specific basis functions exemplified in the section <a href="#fem:approx:global">Approximation of functions</a> are in general nonzero on the entire domain
-\( \Omega \), see Figure{fem:approx:fe:fig:u:sin} for an example. We shall
+\( \Omega \), see Figure <a href="#fem:approx:fe:fig:u:sin">12</a> for an example. We shall
 now turn the attention to basis functions that have <em>compact support</em>,
 meaning that they are nonzero on only a small portion of
 \( \Omega \). Moreover, we shall restrict the functions to be <em>piecewise
 polynomials</em>. This means that the domain is split into subdomains and
 the function is a polynomial on one or more subdomains, see Figure
-ref{fem:approx:fe:fig:u:sfe} for a sketch involving locally defined
+<a href="#fem:approx:fe:fig:u:fe">13</a> for a sketch involving locally defined
 hat functions that make \( u=\sum_jc_j\basphi_j \) piecewise linear. At
 the boundaries between subdomains one normally forces continuity of
 the function only so that when connecting two polynomials from two
@@ -1986,7 +1944,6 @@ of basis functions are fundamental in the <em>finite element method</em>.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 12:  Approximation based on sine basis functions. <a name="fem:approx:fe:fig:u:sin"></a> </p></center>
@@ -1995,9 +1952,6 @@ of basis functions are fundamental in the <em>finite element method</em>.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 13:  Approximation based on local piecewise linear (hat) functions. <a name="fem:approx:fe:fig:u:fe"></a> </p></center>
@@ -2006,7 +1960,6 @@ of basis functions are fundamental in the <em>finite element method</em>.
 
 <p>
 
-<p>
 We first introduce the concepts of elements and nodes in a simplistic fashion
 as often met in the literature. Later, we shall generalize the concept
 of an element, which is a necessary step to treat a wider class of
@@ -2065,7 +2018,7 @@ as indices. The <tt>nodes</tt> and <tt>elements</tt> lists for the sample mesh
 above take the form
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">nodes <span style="color: #666666">=</span> [<span style="color: #666666">0</span>, <span style="color: #666666">0.2</span>, <span style="color: #666666">0.4</span>, <span style="color: #666666">0.7</span>, <span style="color: #666666">1</span>]
 elements <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>, <span style="color: #666666">1</span>, <span style="color: #666666">2</span>], [<span style="color: #666666">2</span>, <span style="color: #666666">3</span>, <span style="color: #666666">4</span>]]
@@ -2092,11 +2045,11 @@ in element number \( e \).
   <li> If local node number \( r \) is not on the boundary of the element,
     take \( \basphi_i(x) \) to be the Lagrange
     polynomial that is 1 at the local node number \( r \) and zero
-    at all other nodes in the element. On all other elements, \( \basphi_i=0 \).
+    at all other nodes in the element. On all other elements, \( \basphi_i=0 \).</li>
   <li> If local node number \( r \) is on the boundary of the element,
     let \( \basphi_i \) be made up of the Lagrange polynomial that is 1 at this node
     in element number \( e \) and its neighboring element.
-    On all other elements, \( \basphi_i=0 \).
+    On all other elements, \( \basphi_i=0 \).</li>
 </ul>
 
 A visual impression of three such basis functions are given in
@@ -2107,9 +2060,6 @@ means the basis function \( \basphi_i(x) \) when \( x\in\Omega^{(e)} \), and
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 14:  Illustration of the piecewise quadratic basis functions associated with nodes in element 1.  <a name="fem:approx:fe:fig:P2"></a> </p></center>
@@ -2118,7 +2068,6 @@ means the basis function \( \basphi_i(x) \) when \( x\in\Omega^{(e)} \), and
 
 <p>
 
-<p>
 
 <h4>Properties of \( \basphi_i \)  <a name="___sec28"></a></h4>
 <p>
@@ -2160,9 +2109,9 @@ Second,
 <p>
 
 <ul>
- <li> \( \basphi_i(x) \neq 0 \) only on those elements that contain global node \( i \),
+ <li> \( \basphi_i(x) \neq 0 \) only on those elements that contain global node \( i \),</li>
  <li> \( \basphi_i(x)\basphi_j(x) \neq 0 \) if and only if \( i \) and \( j \) are global node
-   numbers in the same element.
+   numbers in the same element.</li>
 </ul>
 
 Since \( A_{i,j} \) is the integral of
@@ -2187,7 +2136,7 @@ three nodes.
 The <tt>nodes</tt> and <tt>elements</tt> lists in this particular example become
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">nodes <span style="color: #666666">=</span> [<span style="color: #666666">0</span>, <span style="color: #666666">0.125</span>, <span style="color: #666666">0.25</span>, <span style="color: #666666">0.375</span>, <span style="color: #666666">0.5</span>, <span style="color: #666666">0.625</span>, <span style="color: #666666">0.75</span>, <span style="color: #666666">0.875</span>, <span style="color: #666666">1.0</span>]
 elements <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>, <span style="color: #666666">1</span>, <span style="color: #666666">2</span>], [<span style="color: #666666">2</span>, <span style="color: #666666">3</span>, <span style="color: #666666">4</span>], [<span style="color: #666666">4</span>, <span style="color: #666666">5</span>, <span style="color: #666666">6</span>], [<span style="color: #666666">6</span>, <span style="color: #666666">7</span>, <span style="color: #666666">8</span>]]
@@ -2198,7 +2147,6 @@ element boundaries are marked with vertical dashed lines.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 15:  Illustration of the piecewise quadratic basis functions associated with nodes in element 1.  <a name="fem:approx:fe:fig:P2"></a> </p></center>
@@ -2207,7 +2155,6 @@ element boundaries are marked with vertical dashed lines.
 
 <p>
 
-<p>
 Let us explain in detail how the basis functions are constructed
 according to the principles.
 Consider element number 1 in Figure <a href="#fem:approx:fe:fig:P2">15</a>,
@@ -2224,16 +2171,16 @@ polynomials on this element:
 <li> The polynomial that is 1 at local node 1
    (\( x=0.375 \), global node 3) makes up the basis function
    \( \basphi_3(x) \) over this element,
-   with \( \basphi_3(x)=0 \) outside the element.
+   with \( \basphi_3(x)=0 \) outside the element.</li>
 <li> The Lagrange polynomial that is 1 at local node 0 is the "right
    part" of the global basis function
    \( \basphi_2(x) \). The "left part" of \( \basphi_2(x) \) consists of
    a Lagrange polynomial associated with local node 2 in
-   the neighboring element \( \Omega^{(0)}=[0, 0.25] \).
+   the neighboring element \( \Omega^{(0)}=[0, 0.25] \).</li>
 <li> Finally, the polynomial that is 1 at local node 2 (global node 4)
    is the "left part" of the global basis function \( \basphi_4(x) \).
    The "right part" comes from the Lagrange polynomial that is 1 at
-   local node 0 in the neighboring element \( \Omega^{(2)}=[0.5, 0.75] \).
+   local node 0 in the neighboring element \( \Omega^{(2)}=[0.5, 0.75] \).</li>
 </ol>
 
 As mentioned earlier,
@@ -2261,7 +2208,6 @@ elements are of the same length.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 16:  Illustration of the piecewise linear basis functions associated with nodes in element 1.  <a name="fem:approx:fe:fig:P1"></a> </p></center>
@@ -2270,7 +2216,6 @@ elements are of the same length.
 
 <p>
 
-<p>
 
 <h4>Example on linear \( \basphi_i \)  <a name="___sec30"></a></h4>
 <p>
@@ -2328,7 +2273,6 @@ $$
 
 <p>
 
-<p>
 
 <h4>Example on cubic \( \basphi_i \)  <a name="___sec31"></a></h4>
 <p>
@@ -2342,7 +2286,6 @@ neighboring elements.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 17:  Illustration of the piecewise cubic basis functions associated with nodes in element 1.  <a name="fem:approx:fe:fig:P3"></a> </p></center>
@@ -2351,10 +2294,9 @@ neighboring elements.
 
 <p>
 
-<p>
 We see that all the piecewise linear basis functions have the same
 "hat" shape. They are naturally referred to as <em>hat functions</em>,
-also called <em>chapau functions</em>.
+also called <em>chapeau functions</em>.
 The piecewise quadratic functions in Figure <a href="#fem:approx:fe:fig:P2">15</a>
 are seen to be of two types. "Rounded hats" associated with internal
 nodes in the elements and some more "sombrero" shaped hats associated
@@ -2364,7 +2306,6 @@ as illustrated in Figure <a href="#fem:approx:fe:fig:P3">17</a>.
 
 <p>
 
-<p>
 A common terminology is to speak about <em>linear elements</em> as
 elements with two local nodes and where the basis functions are
 piecewise linear. Similarly, <em>quadratic elements</em> and
@@ -2465,7 +2406,6 @@ approximation in the right part of Figure <a href="#fem:approx:fe:fig:ls:P1:2:4"
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 18:  Least squares approximation using 2 (left) and 4 (right) P1 elements. <a name="fem:approx:fe:fig:ls:P1:2:4"></a> </p></center>
@@ -2474,9 +2414,6 @@ approximation in the right part of Figure <a href="#fem:approx:fe:fig:ls:P1:2:4"
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Assembly of elementwise computations <a name="fem:approx:fe:elementwise"></a></h3>
 <p>
@@ -2509,7 +2446,6 @@ indices corresponding to the global node numbers in element number \( e \):
 
 <p>
 
-<p>
 $$
 \begin{equation*} \int_{\Omega^{(e)}}\basphi_{q(e,r)}\basphi_{q(e,s)}dx,\quad r,s=0,\ldots, d\thinspace .
 \end{equation*}
@@ -2552,9 +2488,6 @@ from left to right in the domain.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 19:  Illustration of matrix assembly.  <a name="fem:approx:fe:fig:assembly"></a> </p></center>
@@ -2563,7 +2496,6 @@ from left to right in the domain.
 
 <p>
 
-<p>
 The right-hand side of the linear system is also computed elementwise:
 
 <p>
@@ -2594,12 +2526,10 @@ $$
 
 <p>
 
-<p>
 
 <h3>Mapping to a reference element <a name="fem:approx:fe:mapping"></a></h3>
 <p>
 
-<p>
 Instead of computing the integrals
 
 <p>
@@ -2770,9 +2700,9 @@ $$
 &= \int_{-1}^1 f(x(X))\refphi_0(X)\frac{h}{2} dX\nonumber\\
 &= \int_{-1}^1 (x_m + \half hX)(1-(x_m + \half hX))
 \frac{1}{2}(1-X)\frac{h}{2} dX \nonumber\\
-&= - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m} - \frac{1}{12} h^{2} - \frac{1}{2} h x_{m}^{2} + \frac{1}{2} h x_{m}
-\tilde b^{(e)}_{1}\\
-&= \int_{-1}^1 f(x(X))\refphi_0(X)\frac{h}{2} dX\nonumber\\
+&= - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m} - \frac{1}{12} h^{2} - \frac{1}{2} h x_{m}^{2} + \frac{1}{2} h x_{m}\\
+\tilde b^{(e)}_{1}
+&= \int_{-1}^1 f(x(X))\refphi_1(X)\frac{h}{2} dX\nonumber\\
 &= \int_{-1}^1 (x_m + \half hX)(1-(x_m + \half hX))
 \frac{1}{2}(1+X)\frac{h}{2} dX \nonumber\\
 &= - \frac{1}{24} h^{3} - \frac{1}{6} h^{2} x_{m} + \frac{1}{12} h^{2} -
@@ -2788,7 +2718,7 @@ and higher-degree polynomials that very much more algebra, but <tt>sympy</tt>
 may help. For example,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; import sympy as sm
 &gt;&gt;&gt; x, x_m, h, X = sm.symbols(&#39;x x_m h X&#39;)
@@ -2802,11 +2732,11 @@ h/6
 -h**3/24 + h**2*x_m/6 - h**2/12 - h*x_m**2/2 + h*x_m/2
 </pre></div>
 <p>
-For inclusion of formulas in documents 9like the present one), <tt>sympy</tt> can print
+For inclusion of formulas in documents (like the present one), <tt>sympy</tt> can print
 expressions in LaTeX format:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; print sm.latex(b_0, mode=&#39;plain&#39;)
 - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m}
@@ -2815,7 +2745,6 @@ expressions in LaTeX format:
 </pre></div>
 <p>
 
-<p>
 
 <h2>Implementation <a name="fem:approx:fe:impl"></a></h2>
 <p>
@@ -2837,7 +2766,7 @@ defining \( \refphi_r(X) \) in terms of a Lagrange polynomial
 of degree <tt>d</tt>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">sm</span>
 <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
@@ -2874,7 +2803,7 @@ The complete basis \( \refphi_0(X),\ldots,\refphi_d(X) \)
 on the reference element is constructed by
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">basis</span>(d<span style="color: #666666">=1</span>):
     X <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>Symbol(<span style="color: #BB4444">&#39;X&#39;</span>)
@@ -2886,7 +2815,7 @@ Now we are in a position to write the function for computing
 the element matrix:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">element_matrix</span>(phi, Omega_e, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
     n <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(phi)
@@ -2913,7 +2842,7 @@ not symbols.
 This functionality can be demonstrated:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; from fe_approx1D import *
 &gt;&gt;&gt; phi = basis(d=1)
@@ -2928,12 +2857,11 @@ This functionality can be demonstrated:
 </pre></div>
 <p>
 
-<p>
 The computation of the element vector is done by a similar
 procedure:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">element_vector</span>(f, phi, Omega_e, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
     n <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(phi)
@@ -2967,7 +2895,7 @@ before an unsuccessful conclusion so we may introduce a parameter
 <tt>symbolic</tt> and set it to <tt>False</tt> to avoid symbolic integration:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">element_vector</span>(f, phi, Omega_e, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
         <span style="color: #666666">...</span>
@@ -2996,7 +2924,7 @@ for computing and assembling the elementwise contributions
 takes the following form
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">assemble</span>(nodes, elements, phi, f, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
     n_n, n_e <span style="color: #666666">=</span> <span style="color: #AA22FF">len</span>(nodes), <span style="color: #AA22FF">len</span>(elements)
@@ -3029,7 +2957,7 @@ we can compute the coefficients \( c_0,\ldots,c_N \) in the expansion
 system:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">if</span> symbolic:
     c <span style="color: #666666">=</span> A<span style="color: #666666">.</span>LUsolve(b)
@@ -3056,7 +2984,7 @@ two P1 elements (linear basis functions) on the domain \( \Omega=[0,1] \).
 Let us first work with a symbolic element length:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; h, x = sm.symbols(&#39;h x&#39;)
 &gt;&gt;&gt; nodes = [0, h, 2*h]
@@ -3084,7 +3012,7 @@ method, taking the nodes as collocation points.
 This is carried out by evaluating <tt>f</tt> numerically at the nodes:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; fn = sm.lambdify([x], f)
 &gt;&gt;&gt; c = [fn(xc) for xc in nodes]
@@ -3093,12 +3021,11 @@ This is carried out by evaluating <tt>f</tt> numerically at the nodes:
 </pre></div>
 <p>
 
-<p>
 The corresponding numerical computations, as done by <tt>sympy</tt> and
 still based on symbolic integration, goes as follows:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; nodes = [0, 0.5, 1]
 &gt;&gt;&gt; elements = [[0, 1], [1, 2]]
@@ -3122,7 +3049,6 @@ still based on symbolic integration, goes as follows:
 </pre></div>
 <p>
 
-<p>
 The <tt>fe_approx1D</tt> module contains functions for generating the
 <tt>nodes</tt> and <tt>elements</tt> lists for equal-sized elements with
 any number of nodes per element. The coordinates in <tt>nodes</tt>
@@ -3130,7 +3056,7 @@ can be expressed either through the element length symbol <tt>h</tt>
 or by real numbers. There is also a function
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">approximate</span>(f, symbolic<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>, d<span style="color: #666666">=1</span>, n_e<span style="color: #666666">=4</span>, filename<span style="color: #666666">=</span><span style="color: #BB4444">&#39;tmp.pdf&#39;</span>):
 </pre></div>
@@ -3158,7 +3084,7 @@ symbolic element matrices, expressed in terms of <tt>h</tt>, from
 several elements:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; d=1; n_e=8; Omega=[0,1]  # 8 linear elements on [0,1]
 &gt;&gt;&gt; phi = basis(d)
@@ -3184,7 +3110,6 @@ tridiagonal:
 
 <p>
 
-<p>
 $$
 \begin{equation}
 A = \frac{h}{6}
@@ -3208,7 +3133,6 @@ $$
 
 <p>
 
-<p>
 The structure of the right-hand side is more difficult to reveal since
 it involves an assembly of elementwise integrals of
 \( f(x(X))\refphi_r(X)h/2 \), which obviously depend on the
@@ -3307,7 +3231,7 @@ shows how linear and quadratic elements approximates the polynomial
 The results arise from the program
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">sm</span>
 <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">fe_approx1D</span> <span style="color: #AA22FF; font-weight: bold">import</span> approximate
@@ -3326,9 +3250,6 @@ we refined the mesh.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 20:  Comparison of the finite element approximations: 4 P1 elements with 5 nodes (upper left), 2 P2 elements with 5 nodes (upper right), 8 P1 elements with 9 nodes (lower left), and 4 P2 elements with 9 nodes (lower right).  <a name="fem:approx:fe:x9:sin"></a> </p></center>
@@ -3337,14 +3258,10 @@ we refined the mesh.
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Sparse matrix storage and solution <a name="fem:approx:fe:impl:sparse"></a></h3>
 <p>
 
-<p>
 Some of the examples in the preceding section took several minutes to
 compute, even on small meshes consisting of up to eight elements.
 The main explanation for slow computations is unsuccessful
@@ -3379,7 +3296,6 @@ and <a href="#fem:approx:fe:sparsity:P3">22</a> exemplifies sparsity patterns.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 21:  Matrix sparsity pattern for left-to-right numbering (left) and random numbering (right) of nodes in P1 elements. <a name="fem:approx:fe:sparsity:P1"></a> </p></center>
@@ -3388,9 +3304,6 @@ and <a href="#fem:approx:fe:sparsity:P3">22</a> exemplifies sparsity patterns.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 22:  Matrix sparsity pattern for left-to-right numbering (left) and random numbering (right) of nodes in P3 elements. <a name="fem:approx:fe:sparsity:P3"></a> </p></center>
@@ -3399,7 +3312,6 @@ and <a href="#fem:approx:fe:sparsity:P3">22</a> exemplifies sparsity patterns.
 
 <p>
 
-<p>
 <!-- 2DO: -->
 <!-- figure of diagonals vs random, exact examples on sparsity in 2D/3D? -->
 
@@ -3410,10 +3322,10 @@ and linear system solution.
 <p>
 
 <ul>
- <li> <tt>scipy.sparse.diags</tt> for matrix defined via diagonals
- <li> <tt>scipy.sparse.lil_matrix</tt> for creation via setting elements
+ <li> <tt>scipy.sparse.diags</tt> for matrix defined via diagonals</li>
+ <li> <tt>scipy.sparse.lil_matrix</tt> for creation via setting elements</li>
  <li> <tt>scipy.sparse.dok_matrix</tt> for creation via setting elements
-<!-- 2DO -->
+<!-- 2DO --></li>
 </ul>
 
 Examples to come....
@@ -3423,9 +3335,6 @@ Examples to come....
 
 <p>
 
-<p>
-
-<p>
 
 <h2>Comparison of finite element and finite difference approximation <a name="fem:approx:fe:fd"></a></h2>
 <p>
@@ -3438,7 +3347,7 @@ the finite difference method when representing a given function on a mesh.
 
 <p>
 
-<h3>Collocation or interpolation  <a name="___sec44"></a></h3>
+<h3>Collocation or interpolation <a name="fem:approx:fe:fd:colloc"></a></h3>
 <p>
 Let \( \xno{i} \), \( i=0,\ldots,N \), be the nodes in the mesh.
 Collocation means
@@ -3476,7 +3385,7 @@ methods are used to only a small extend when solving differential equations.
 
 <p>
 
-<h3>Finite difference approximation of given functions  <a name="___sec45"></a></h3>
+<h3>Finite difference approximation of given functions <a name="fem:approx:fe:fd:fdproj"></a></h3>
 <p>
 Approximating a given function \( f(x) \) on a mesh in a finite difference
 context will typically just sample \( f \) at the grid points. That is,
@@ -3492,7 +3401,7 @@ to be addressed next.
 
 <p>
 
-<h3>Finite difference interpretation of a finite element approximation  <a name="___sec46"></a></h3>
+<h3>Finite difference interpretation of a finite element approximation <a name="fem:approx:fe:fd:feproj"></a></h3>
 <p>
 We now limit the scope to P1 elements since this is the element type
 that gives formulas closest to what one gets from the finite difference
@@ -3543,7 +3452,7 @@ $$ h(u - \frac{h^2}{6}u''),$$
 or written as
 
 <p>
-$$ [h(u - \frac{h^2}{6}D_x D_x u]_i,$$
+$$ [h(u - \frac{h^2}{6}D_x D_x u)]_i,$$
 with difference operators.
 
 <p>
@@ -3741,7 +3650,6 @@ details.
 
 <p>
 
-<p>
 
 <h4>Terminology  <a name="___sec49"></a></h4>
 <p>
@@ -3758,16 +3666,11 @@ However, there are also examples where mass lumping destroys accuracy.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h2>A generalized element concept <a name="fem:approx:fe:element"></a></h2>
 <p>
 
-<p>
 So far, finite element computing has employed the <tt>nodes</tt> and
 <tt>element</tt> lists together with the definition of the basis functions
 in the reference element. Suppose we want to introduce a piecewise
@@ -3782,7 +3685,6 @@ cannot find the element boundaries from the <tt>nodes</tt> list.
 <h3>Cells, vertices, and degrees of freedom <a name="fem:approx:fe:element:terminology"></a></h3>
 <p>
 
-<p>
 We now introduce <em>cells</em> as the subdomains \( \Omega^{(e)} \) previously
 referred as elements. The cell boundaries are denoted as <em>vertices</em>.
 The reason for this name is that cells are recognized by their vertices
@@ -3811,20 +3713,19 @@ common, though. The popular cell types in 3D are tetrahedra and hexahedra.
 <h3>Extended finite element concept <a name="fem:approx:fe:element:def"></a></h3>
 <p>
 
-<p>
 The concept of a <em>finite element</em> is now
 
 <p>
 
 <ul>
-  <li> a <em>reference cell</em> in a local reference coordinate system;
-  <li> a set of <em>basis functions</em> \( \refphi_i \) defined on the cell;
+  <li> a <em>reference cell</em> in a local reference coordinate system;</li>
+  <li> a set of <em>basis functions</em> \( \refphi_i \) defined on the cell;</li>
   <li> a set of <em>degrees of freedom</em> that uniquely determine
     the basis functions such that \( \refphi_i=1 \) for degree of freedom
-    number \( i \) and \( \refphi_i=0 \) for all other degrees of freedom;
-  <li> a mapping between local and global degree of freedom numbers;
+    number \( i \) and \( \refphi_i=0 \) for all other degrees of freedom;</li>
+  <li> a mapping between local and global degree of freedom numbers;</li>
   <li> a <em>mapping</em> of the reference cell onto to cell in the physical
-    domain.
+    domain.</li>
 </ul>
 
 There must be a geometric description of a cell. This is trivial in 1D
@@ -3847,7 +3748,6 @@ before.
 
 <p>
 
-<p>
 The expansion of \( u \) over one cell is often used. In terms of reference
 coordinates we have
 
@@ -3862,22 +3762,20 @@ where the sum is taken over the numbers of the degrees of freedom and
 
 <p>
 
-<p>
 
 <h3>Implementation <a name="fem:approx:fe:element:impl"></a></h3>
 <p>
 
-<p>
 Implementationwise,
 
 <p>
 
 <ul>
-  <li> we replace <tt>nodes</tt> by <tt>vertices</tt>;
+  <li> we replace <tt>nodes</tt> by <tt>vertices</tt>;</li>
   <li> we introduce <tt>cells</tt> such that <tt>cell[e][r]</tt> gives the mapping
     from local vertex <tt>r</tt> in cell <tt>e</tt> to the global vertex number
-    in <tt>vertices</tt>;
-  <li> we replace <tt>elements</tt> by <tt>dof_map</tt> (the contents are the same).
+    in <tt>vertices</tt>;</li>
+  <li> we replace <tt>elements</tt> by <tt>dof_map</tt> (the contents are the same).</li>
 </ul>
 
 Consider the example from the section <a href="#fem:approx:fe:def:elements:nodes">Elements and nodes</a>
@@ -3890,7 +3788,7 @@ the value of \( u \) at three equally spaced points (nodes) in each
 cell. The data structures become
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">vertices <span style="color: #666666">=</span> [<span style="color: #666666">0</span>, <span style="color: #666666">0.4</span>, <span style="color: #666666">1</span>]
 cells <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>, <span style="color: #666666">1</span>], [<span style="color: #666666">1</span>, <span style="color: #666666">2</span>]]
@@ -3898,19 +3796,17 @@ dof_map <span style="color: #666666">=</span> [[<span style="color: #666666">0</
 </pre></div>
 <p>
 
-<p>
 If we would approximate \( f \) by piecewise constants, we simply
 introduce one point or node in an element, preferably \( X=0 \),
 and choose \( \refphi_0(X)=1 \). Only the <tt>dof_map</tt> is altered:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">dof_map <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>], [<span style="color: #666666">1</span>], [<span style="color: #666666">2</span>]]
 </pre></div>
 <p>
 
-<p>
 We use the <tt>cells</tt> and <tt>vertices</tt> lists to retrieve information
 on the geometry of a cell, while <tt>dof_map</tt> is used in the
 assembly of element matrices and vectors.
@@ -3918,7 +3814,7 @@ For example, the <tt>Omega_e</tt> variable (representing the cell interval)
 in previous code snippets must now be computed as
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Omega_e <span style="color: #666666">=</span> [vertices[cells[e][<span style="color: #666666">0</span>], vertices[cells[e][<span style="color: #666666">1</span>]]
 </pre></div>
@@ -3926,14 +3822,13 @@ in previous code snippets must now be computed as
 The assembly is done by
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">A[dof_map[e][r], dof_map[e][s]] <span style="color: #666666">+=</span> A_e[r,s]
 b[dof_map[e][r]] <span style="color: #666666">+=</span> b_e[r]
 </pre></div>
 <p>
 
-<p>
 We will hereafter work with <tt>cells</tt>, <tt>vertices</tt>, and <tt>dof_map</tt>.
 
 <p>
@@ -3958,21 +3853,21 @@ There are ready-made formulas for the cubic Hermite polynomials, but
 it is instructive to apply the principles for constructing basis
 functions in detail.
 Given a reference cell \( [-1,1] \), we seek cubic polynomials
-with the values of the function its first-order derivative at
+with the values of the <em>function</em> and its <em>first-order derivative</em> at
 \( X=-1 \) and \( X=1 \) as the four degrees of freedom. Let us number
 the degrees of freedom as
 
 <p>
 
 <ul>
-  <li> 0: value of function at \( X=-1 \)
-  <li> 1: value of first derivative at \( X=-1 \)
-  <li> 2: value of function at \( X=1 \)
-  <li> 3: value of first derivative at \( X=1 \)
+  <li> 0: value of function at \( X=-1 \)</li>
+  <li> 1: value of first derivative at \( X=-1 \)</li>
+  <li> 2: value of function at \( X=1 \)</li>
+  <li> 3: value of first derivative at \( X=1 \)</li>
 </ul>
 
 By having the derivatives as unknowns, we ensure that
-the derivative for the a basis function in two neighboring elements
+the derivative of a basis function in two neighboring elements
 is the same at the node points.
 
 <p>
@@ -3981,7 +3876,7 @@ $$ \refphi_i (X) = \sum_{j=0}^3 C_{i,j}X^j, $$
 with four coefficients \( C_{i,j} \), \( j=0,1,2,3 \), to be determined for
 each \( i \). The constraints
 that basis function number \( i \) must be 1 for degree of
-freedom number \( i \) and zero for the other three degrees of freedom
+freedom number \( i \) and zero for the other three degrees of freedom,
 gives four equations to determine \( C_{i,j} \) for each \( i \). In mathematical
 detail,
 $$
@@ -3993,7 +3888,7 @@ $$
 \thinspace .
 \end{align*}
 $$
-The 4 \( 4\times 4 \) linear equations can be solved, yielding these formulas
+These four \( 4\times 4 \) linear equations can be solved, yielding these formulas
 for the cubic basis functions:
 
 <p>
@@ -4015,9 +3910,9 @@ Remaining tasks:
 <p>
 
 <ul>
- <li> Global numbering of the dofs
- <li> <tt>dof_map</tt>
- <li> 4x4 element matrix
+ <li> Global numbering of the dofs</li>
+ <li> <tt>dof_map</tt></li>
+ <li> 4x4 element matrix</li>
 </ul>
 
 <h2>Numerical integration  <a name="___sec55"></a></h2>
@@ -4054,7 +3949,6 @@ which integrates linear functions exactly.
 <h3>Newton-Cotes rules <a name="fem:approx:fe:numint1"></a></h3>
 <p>
 
-<p>
 The <a href="http://en.wikipedia.org/wiki/Newton%E2%80%93Cotes_formulas">Newton-Cotes</a>
 rules are based on a fixed uniform distribution of the points.
 The first two formulas in this family is the well-known
@@ -4099,7 +3993,6 @@ to numerical integration of \( \int_{a}^{b}f(x)dx \).
 <h3>Gauss-Legendre rules with optimized points  <a name="___sec57"></a></h3>
 <p>
 
-<p>
 All these rules apply equally spaced points. More accurate rules, for
 a given \( M \), arise if the location of the points are optimized for
 polynomial integrands.  The <a href="http://en.wikipedia.org/wiki/Gaussian_quadrature">Gauss-Legendre rules</a> (also known as
@@ -4134,7 +4027,6 @@ The code <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/fem/numint
 
 <p>
 
-<p>
 
 <h2>Approximation of functions in 2D <a name="fem:approx:2D"></a></h2>
 <p>
@@ -4172,7 +4064,6 @@ $$
 
 <p>
 
-<p>
 
 <h4>Constructing 2D basis functions from 1D functions  <a name="___sec60"></a></h4>
 <p>
@@ -4228,7 +4119,7 @@ A_{1,0} &= (\basphi_1,\basphi_0) = \int_0^{L_y}\int_{0}^{L_x} x dxdy =
 A_{0,1} &= (\basphi_0,\basphi_1) = \int_0^{L_y}\int_{0}^{L_x} y dxdy =
 \frac{1}{2}L_y^2L_x,\\
 A_{0,1} &= (\basphi_0,\basphi_1) = \int_0^{L_y}\int_{0}^{L_x} xy dxdy =
-\int_0^{L_y}ydy \int_{0}^{L_x} xdx
+\int_0^{L_y}ydy \int_{0}^{L_x} xdx =
 \frac{1}{4}L_y^2L_x^2
 \thinspace .
 \end{align*}
@@ -4299,8 +4190,6 @@ for \( p,r=0,\ldots,N_x \) and \( q,s=0,\ldots,N_y \).
 
 <p>
 Corresponding reasoning for the right-hand side leads to
-
-<p>
 $$
 \begin{align*}
 b_i &= (\basphi_i,f) = \int_0^{L_y}\int_{0}^{L_x}\basphi_i f\,dxdx\\
@@ -4309,8 +4198,8 @@ b_i &= (\basphi_i,f) = \int_0^{L_y}\int_{0}^{L_x}\basphi_i f\,dxdx\\
 \int_0^{L_y}\hat\basphi_p(x) x^p (1+x^2)dx\\
 &= \int_0^{L_y} y^q (1+2y^2)dy
 \int_0^{L_y}x^p (1+x^2)dx\\
-&= (\frac{1}{q+1} L_y^{q+1} + \frac{2}{q+3}x^{q+3})
-(\frac{1}{p+1} L_y^{p+1} + \frac{2}{p+3}x^{p+3})
+&= (\frac{1}{q+1} L_y^{q+1} + \frac{2}{q+3}L_y^{q+3})
+(\frac{1}{p+1} L_x^{p+1} + \frac{2}{q+3}L_x^{p+3})
 \end{align*}
 $$
 
@@ -4329,7 +4218,7 @@ A =
 b = \left[\begin{array}{c}
 \frac{308}{9}\\\frac{140}{3}\\44\\60\end{array}\right],
 \quad c = \left[
-\begin{array}{c}
+\begin{array}{r}
 -\frac{1}{9}, \\
 \frac{4}{3}, \\
  - \frac{2}{3}, \\
@@ -4340,8 +4229,13 @@ $$
 Figure <a href="#fem:approx:fe:2D:fig:ubilinear">23</a> illustrates the result.
 
 <p>
+<!-- 2DO -->
 
 <p>
+<b>NOTE</b>: \( A \) and/or \( b \) are wrong, \( c \) is right.
+
+<p>
+
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 23:  Approximation of a 2D quadratic function (left) by a 2D bilinear function (right) using the Galerkin or least squares method. <a name="fem:approx:fe:2D:fig:ubilinear"></a> </p></center>
@@ -4350,11 +4244,7 @@ Figure <a href="#fem:approx:fe:2D:fig:ubilinear">23</a> illustrates the result.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h3>Implementation <a name="fem:approx:2D:global:code"></a></h3>
 <p>
@@ -4370,7 +4260,7 @@ by <tt>Omega = [[0, L_x], [0, L_y]]</tt>.
 Second, the symbolic integration must be extended to 2D:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">sm</span>
 
@@ -4385,7 +4275,7 @@ and <tt>y</tt>.
 The 2D version of numerical integration becomes
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">if</span> <span style="color: #AA22FF">isinstance</span>(I, sm<span style="color: #666666">.</span>Integral):
     integrand <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>lambdify([x,y], integrand)
@@ -4400,7 +4290,7 @@ The right-hand side integrals are modified in a similar way.
 Third, we must construct a list of 2D basis functions, e.g.,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">taylor</span>(x, y, Nx, Ny):
     <span style="color: #AA22FF; font-weight: bold">return</span> [x<span style="color: #666666">**</span>i<span style="color: #666666">*</span>y<span style="color: #666666">**</span>j <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(Nx<span style="color: #666666">+1</span>) <span style="color: #AA22FF; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(Ny<span style="color: #666666">+1</span>)]
@@ -4418,7 +4308,7 @@ The previous hand calculation where a quadratic \( f \) was approximated by
 a bilinear function can be computed symbolically by
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; f = (1+x**2)*(1+2*y**2)
 &gt;&gt;&gt; phi = taylor(x, y, 1, 1)
@@ -4434,7 +4324,7 @@ We may continue with adding higher powers to the basis and check that
 with \( N_x\geq 2 \) and \( N_y\geq 2 \) we recover the exact function \( f \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; phi = taylor(x, y, 2, 2)
 &gt;&gt;&gt; u = least_squares(f, phi, Omega)
@@ -4445,7 +4335,6 @@ with \( N_x\geq 2 \) and \( N_y\geq 2 \) we recover the exact function \( f \):
 </pre></div>
 <p>
 
-<p>
 
 <h2>Finite elements in 2D and 3D  <a name="___sec63"></a></h2>
 <p>
@@ -4462,7 +4351,6 @@ Higher-order elements can easily be defined.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 24:  Examples on 2D P1 elements. <a name="fem:approx:fe:2D:fig:rectP1"></a> </p></center>
@@ -4471,9 +4359,6 @@ Higher-order elements can easily be defined.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 25:  Examples on 2D P1 elements in a deformed geometry. <a name="fem:approx:fe:2D:fig:circP1"></a> </p></center>
@@ -4482,9 +4367,6 @@ Higher-order elements can easily be defined.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 26:  Examples on 2D Q1 elements. <a name="fem:approx:fe:2D:fig:rectQ1"></a> </p></center>
@@ -4493,7 +4375,6 @@ Higher-order elements can easily be defined.
 
 <p>
 
-<p>
 
 <h3>Basis functions over triangles in the physical domain  <a name="___sec64"></a></h3>
 <p>
@@ -4504,7 +4385,6 @@ Figure <a href="#fem:approx:fe:2D:fig:femfunc">27</a>.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 27:  Example on piecewise linear 2D functions defined on triangles. <a name="fem:approx:fe:2D:fig:femfunc"></a> </p></center>
@@ -4513,7 +4393,6 @@ Figure <a href="#fem:approx:fe:2D:fig:femfunc">27</a>.
 
 <p>
 
-<p>
 We give the vertices of the cells global and local numbers as in 1D.
 The degrees of freedom in the P1 element are the function values at
 a set of nodes, which are the three vertices.
@@ -4530,7 +4409,6 @@ tries to illustrate the shape of such a "pyramid"-like function.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 28:  Example on a piecewise linear 2D basis function over a patch of triangles. <a name="fem:approx:fe:2D:fig:basphi"></a> </p></center>
@@ -4539,7 +4417,6 @@ tries to illustrate the shape of such a "pyramid"-like function.
 
 <p>
 
-<p>
 
 <h4>Element matrices and vectors  <a name="___sec65"></a></h4>
 <p>
@@ -4559,9 +4436,6 @@ All details and code appear below.
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Basis functions over triangles in the reference cell  <a name="___sec66"></a></h3>
 <p>
@@ -4587,7 +4461,6 @@ element and the location of the nodes.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 29:  2D P1 element. <a name="fem:approx:fe:2D:fig:P12D"></a> </p></center>
@@ -4596,7 +4469,6 @@ element and the location of the nodes.
 
 <p>
 
-<p>
 Requiring \( \refphi_r=1 \) at node number \( r \) and
 \( \refphi_r=0 \) at the two other nodes, gives three linear equations to
 determine \( C_{r,0} \), \( C_{r,1} \), and \( C_{r,2} \). The result is
@@ -4618,7 +4490,6 @@ shows the location of the six nodes in the P2 element.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 30:  2D P2 element. <a name="fem:approx:fe:2D:fig:P22D"></a> </p></center>
@@ -4627,7 +4498,6 @@ shows the location of the six nodes in the P2 element.
 
 <p>
 
-<p>
 <!-- 2DO: write up local basis funcs for P2 -->
 
 <p>
@@ -4639,7 +4509,6 @@ degrees of freedom. The location of the nodes for
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 31:  2D P1, P2, P3, P4, P5, and P6 elements. <a name="fem:approx:fe:2D:fig:P162D"></a> </p></center>
@@ -4648,7 +4517,6 @@ degrees of freedom. The location of the nodes for
 
 <p>
 
-<p>
 The generalization to 3D is straightforward: the reference element is a
 <a href="http://en.wikipedia.org/wiki/Tetrahedron">tetrahedron</a>
 with vertices \( (0,0,0) \), \( (1,0,0) \), \( (0,1,0) \), and \( (0,0,1) \)
@@ -4661,7 +4529,6 @@ Figure <a href="#fem:approx:fe:2D:fig:P2:123D">33</a>.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 32:  P1 elements in 1D, 2D, and 3D. <a name="fem:approx:fe:2D:fig:P1:123D"></a> </p></center>
@@ -4670,9 +4537,6 @@ Figure <a href="#fem:approx:fe:2D:fig:P2:123D">33</a>.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 33:  P2 elements in 1D, 2D, and 3D. <a name="fem:approx:fe:2D:fig:P2:123D"></a> </p></center>
@@ -4681,9 +4545,6 @@ Figure <a href="#fem:approx:fe:2D:fig:P2:123D">33</a>.
 
 <p>
 
-<p>
-
-<p>
 The interval in 1D, the triangle in 2D, the tetrahedron in 3D, and
 its generalizations to higher space dimensions are known
 as <em>simplex</em> cells (the geometry) or <em>simplex</em> elements (the geometry,
@@ -4696,14 +4557,12 @@ has <em>edges</em>.
 
 <p>
 
-<p>
 <b>Acknowledgment.</b> Figures <a href="#fem:approx:fe:2D:fig:P12D">29</a> to <a href="#fem:approx:fe:2D:fig:P2:123D">33</a>
 are created by Anders Logg and taken from the <a href="https://launchpad.net/fenics-book">FEniCS book</a>: <em>Automated Solution of Differential Equations by the Finite Element Method</em>, edited by A. Logg, K.-A. Mardal, and G. N. Wells, published
 by <a href="http://www.springer.com/mathematics/computational+science+%26+engineering/book/978-3-642-23098-1">Springer</a>, 2012.
 
 <p>
 
-<p>
 
 <h3>Affine mapping of the reference cell  <a name="___sec67"></a></h3>
 <p>
@@ -4718,7 +4577,6 @@ then defined by
 
 <p>
 
-<p>
 $$
 \begin{equation}
 \x = \sum_{r} \refphi_r^{(1)}(\X)\xdno{q(e,r)},
@@ -4732,7 +4590,6 @@ be used for both P1 and higher-order elements.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 34:  Affine mapping of a P1 element. <a name="fem:approx:fe:map:fig:2DP1"></a> </p></center>
@@ -4741,16 +4598,11 @@ be used for both P1 and higher-order elements.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h3>Isoparametric mapping of the reference cell  <a name="___sec68"></a></h3>
 <p>
 
-<p>
 Instead of using the P1 basis functions in the mapping
 \eqref{fem:approx:fe:affine:map},
 we may use the basis functions of the actual element:
@@ -4775,7 +4627,6 @@ the physical coordinate system, see Figure <a href="#fem:approx:fe:map:fig:2DP2"
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 35:  Isoparametric mapping of a P2 element. <a name="fem:approx:fe:map:fig:2DP2"></a> </p></center>
@@ -4784,18 +4635,15 @@ the physical coordinate system, see Figure <a href="#fem:approx:fe:map:fig:2DP2"
 
 <p>
 
-<p>
 From \eqref{fem:approx:fe:affine:map} or
 \eqref{fem:approx:fe:isop:map} it is easy to realize that the
-vertices are correctly mapped. Consider a vertex with local number
-also a much used term when referring to this type of cells or elements$s$.
+vertices are correctly mapped. Consider a vertex with local number \( s \).
 Then \( \refphi_s=1 \) at this vertex and zero at the others.
 This means that only one term in the sum is nonzero and \( \x=\xdno{q(e,s)} \),
 which is the coordinate of this vertex in the global coordinate system.
 
 <p>
 
-<p>
 
 <h3>Computing integrals  <a name="___sec69"></a></h3>
 <p>
@@ -4852,9 +4700,6 @@ specific mathematical formulas in 2D and 3D are more complicated.
 <h2>Exercises  <a name="___sec70"></a></h2>
 <p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -4880,11 +4725,7 @@ Filename: <tt>linalg1</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -4903,11 +4744,7 @@ Filename: <tt>linalg2</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -4924,11 +4761,7 @@ Filename: <tt>vec111_approx</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -4953,11 +4786,7 @@ Filename: <tt>sin_powers.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -4986,11 +4815,7 @@ Filename: <tt>tanh_sines_approx1.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5008,8 +4833,8 @@ $$
 
 <p>
 Let an infinite-dimensional vector space \( V \) have the basis functions
-\( \cos j\frac{\pi x}{L} \) for \( j=0,1,\dots,\infty \) and \( \sin j\frac{\pi
-  x}{L} \) for \( j=1,\dots,\infty \).  Show that the least squares
+\( \cos j\frac{\pi x}{L} \) for \( j=0,1,\dots,\infty \) and
+\( \sin j\frac{\pi x}{L} \) for \( j=1,\dots,\infty \).  Show that the least squares
 approximation method from the section <a href="#fem:approx:global">Approximation of functions</a> leads to a
 linear system whose solution coincides with the standard formulas for
 the coefficients in a Fourier series of \( f(x) \) (see also
@@ -5038,11 +4863,7 @@ Filename: <tt>Fourier_approx.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5068,11 +4889,7 @@ Filename: <tt>tanh_Lagrange.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5101,11 +4918,7 @@ Filename: <tt>fe_numberings.py.</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5127,11 +4940,7 @@ Filename: <tt>fe_sparsity_pattern.pdf</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5162,11 +4971,7 @@ Filename: <tt>sin_approx_P1.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5191,11 +4996,7 @@ Filename: <tt>tanh_fe_P1P2_approx.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5212,11 +5013,7 @@ Filename: <tt>tanh_fe_P3P4_approx.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5238,11 +5035,7 @@ Filename: <tt>Asinwt_interpolation_error.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5281,11 +5074,7 @@ Filename: <tt>Heaviside_approx_P1P2.py.</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5322,11 +5111,7 @@ Filename: <tt>approx2D_lsorth_sin.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5347,7 +5132,6 @@ Filename: <tt>fe_trapez.pdf</tt>.
 
 <p>
 
-<p>
 
 <h2>Basic principles for approximating differential equations <a name="fem:deq:1D:principles"></a></h2>
 <p>
@@ -5501,7 +5285,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>Residual-minimizing principles <a name="fem:deq:1D:residual:min"></a></h3>
 <p>
@@ -5539,7 +5322,6 @@ The nonzero result,
 
 <p>
 
-<p>
 $$
 \begin{equation}
 R = {\cal L}(u) = {\cal L}(\sum_j c_j \basphi_j),
@@ -5670,7 +5452,6 @@ method with \( w_i = \partial R/\partial c_i \).
 
 <p>
 
-<p>
 
 <h4>Variational Formulation  <a name="___sec93"></a></h4>
 <p>
@@ -5689,7 +5470,6 @@ initial and/or boundary conditions.
 
 <p>
 
-<p>
 
 <h4>Test and Trial Functions  <a name="___sec94"></a></h4>
 <p>
@@ -5761,7 +5541,6 @@ and \eqref{fem:deq:1D:WRM} becomes equivalent to
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 36:  Approximation of delta functions by narrow Gaussian functions. <a name="fem:deq:1D:fig:Dirac"></a> </p></center>
@@ -5770,9 +5549,6 @@ and \eqref{fem:deq:1D:WRM} becomes equivalent to
 
 <p>
 
-<p>
-
-<p>
 
 <h4>The subdomain collocation method  <a name="___sec96"></a></h4>
 <p>
@@ -5795,7 +5571,6 @@ where \( w_i=1 \) for \( x\in\Omega_i \) and \( w_i=0 \) otherwise.
 
 <p>
 
-<p>
 
 <h3>Examples on using the principles <a name="fem:deq:1D:ex:sines"></a></h3>
 <p>
@@ -5813,7 +5588,7 @@ $$
 \begin{equation}
 -u''(x) = f(x),\quad x\in\Omega=[0,L],\quad u(0)=0,\ u(L)=0
 \thinspace .
-\label{fem:deq:1D:model1}
+\label{fem:deq:1D:model1b}
 \end{equation}
 $$
 
@@ -5856,7 +5631,6 @@ provided \( i \) and \( j \) are integers.
 
 <p>
 
-<p>
 
 <h4>The residual  <a name="___sec100"></a></h4>
 <p>
@@ -5970,12 +5744,11 @@ $$
 
 <p>
 
-<p>
 
 <h4>The Galerkin method  <a name="___sec102"></a></h4>
 <p>
 The Galerkin principle \eqref{fem:deq:1D:Galerkin0}
-applied to \eqref{fem:deq:1D:model1} consists of inserting
+applied to \eqref{fem:deq:1D:model1b} consists of inserting
 our special residual \eqref{fem:deq:1D:ex:sines:res} in
 \eqref{fem:deq:1D:Galerkin0}
 
@@ -6006,7 +5779,7 @@ $$
 (\sum_{j=0}^N c_j\basphi_j'', \basphi_i)=-(f,\basphi_i),\quad i=0,\ldots,N\thinspace . \end{equation}
 $$
 This equation can be rearranged to a form that explicitly shows
-that we get a linear system for the unknowns \( c_0,=\ldots,c_N \):
+that we get a linear system for the unknowns \( c_0,\ldots,c_N \):
 
 <p>
 $$
@@ -6032,7 +5805,7 @@ singular and non-invertible. This forces us to choose some other
 collocation points, e.g., random points or points uniformly distributed
 in the interior of \( \Omega \).
 Demanding the residual to vanish
-at these points leads, in our model problem \eqref{fem:deq:1D:model1}, to
+at these points leads, in our model problem \eqref{fem:deq:1D:model1b}, to
 the equations
 
 <p>
@@ -6060,7 +5833,6 @@ and hence \( c_0=2L^2/\pi^2 \).
 
 <p>
 
-<p>
 
 <h4>Comparison  <a name="___sec104"></a></h4>
 <p>
@@ -6076,16 +5848,12 @@ method.
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Integration by parts <a name="fem:deq:1D:varform"></a></h3>
 <p>
 
-<p>
 A problem arises if we want to use the finite element functions from
-the section <a href="#fem:approx:fe">Finite element basis functions</a> to solve our model problem \eqref{fem:deq:1D:model1}
+the section <a href="#fem:approx:fe">Finite element basis functions</a> to solve our model problem \eqref{fem:deq:1D:model1b}
 by the least squares, Galerkin, or collocation methods: the piecewise
 polynomials \( \basphi_i(x) \) have discontinuous derivatives at the
 cell boundaries which makes it problematic to compute
@@ -6102,7 +5870,7 @@ as a means for transforming a second-order derivative to a first-order
 one.
 
 <p>
-Consider the model problem \eqref{fem:deq:1D:model1} and its
+Consider the model problem \eqref{fem:deq:1D:model1b} and its
 Galerkin formulation
 
 <p>
@@ -6154,7 +5922,6 @@ vanish because \( \basphi_i=0 \) at such locations.
 
 <p>
 
-<p>
 Since the variational formulation after integration by parts make
 weaker demands on the differentiability of \( u \) and the basis
 functions \( \basphi_i \),
@@ -6172,11 +5939,8 @@ only first-order derivatives.
 
 <p>
 
-<p>
 
-<h3>Boundary function  <a name="___sec106"></a></h3>
-<a name="fem:deq:1D:essBC:Bfunc"></a>
-
+<h3>Boundary function <a name="fem:deq:1D:essBC:Bfunc"></a></h3>
 <p>
 So far we have assumed zero Dirichlet boundary conditions, typically
 \( u(0)=u(L)=0 \), and we have demanded that \( \basphi_i(0)\basphi_i(L)=0 \)
@@ -6279,7 +6043,7 @@ function, while \( L(v) \) is a <em>linear form</em> containing all the terms wi
 the trial function. For example, the statement
 
 <p>
-$$ \int_{\Omega} u' v'dx = \int_{Omega} fvdx\quad\hbox{or}\quad (u',v') = (f,v)
+$$ \int_{\Omega} u' v'dx = \int_{\Omega} fvdx\quad\hbox{or}\quad (u',v') = (f,v)
 \quad\forall v\in V$$
 can be written in abstract form: <em>find \( u \) such that</em>
 
@@ -6296,10 +6060,12 @@ The term <em>linear</em> means that \( L(\alpha_1 v_1 + \alpha_2 v_2)
 scalar parameters \( \alpha_1 \) and \( \alpha_2 \). Similarly, the term <em>bilinear</em>
 means that \( a(u,v) \) are linear in both its arguments:
 $$
-a(\alpha_1 u_1 + \alpha_2 u_2, v) = \alpha_1 u(u_1,v) + \alpha_2 a(u_2, v),
-\quad
-a(u, \alpha_1 v_1 + \alpha_2 v_2) = \alpha_1 u(u,v_1) + \alpha_2 a(u, v_2)
+\begin{align*}
+a(\alpha_1 u_1 + \alpha_2 u_2, v) &= \alpha_1 a(u_1,v) + \alpha_2 a(u_2, v),
+\\
+a(u, \alpha_1 v_1 + \alpha_2 v_2) &= \alpha_1 a(u,v_1) + \alpha_2 a(u, v_2)
 \thinspace .
+\end{align*}
 $$
 In nonlinear problems these linearity properties do not hold in general
 and the abstract notation is then \( F(u;v)=0 \).
@@ -6326,7 +6092,6 @@ frequently summarize variational forms using this notation.
 
 <p>
 
-<p>
 
 <h3>More examples on variational formulations <a name="fem:deq:1D:varform:ex"></a></h3>
 <p>
@@ -6424,7 +6189,7 @@ gives
 
 <p>
 $$ \sum_{j=0}^N (a\basphi_j', \basphi_i')c_j  =
-(f,\basphi_i) + (aCL^{-1}, \basphi_i'), \quad i=0,\ldots,N
+(f,\basphi_i) + (a(D-C)L^{-1}, \basphi_i'), \quad i=0,\ldots,N
 \thinspace .
 $$
 This is nothing but a linear system \( \sum_j A_{i,j}c_j=b_i \)
@@ -6435,8 +6200,8 @@ $$
 \begin{align*}
 A_{i,j} &= (a\basphi_j', \basphi_i') = \int_{\Omega} a(x)\basphi_j'(x),
 \basphi_i'(x)dx,\\
-b_i &= (f,\basphi_i) + (aCL^{-1},\basphi_i')=
-\int_{\Omega} \left(f(x)\basphi_i(x) + a(x)\frac{C}{L}\basphi_i'(x)\right) dx
+b_i &= (f,\basphi_i) + (a(D-C)L^{-1},\basphi_i')=
+\int_{\Omega} \left(f(x)\basphi_i(x) + a(x)\frac{D-C}{L}\basphi_i'(x)\right) dx
 \thinspace .
 \end{align*}
 $$
@@ -6486,7 +6251,6 @@ Neumann conditions</em>.
 
 <p>
 
-<p>
 Another very important result is that <em>omitting the boundary term</em>
 implies, in general, that we actually impose the condition \( u'=0 \) unless there
 is a Dirichlet condition at that point! This result has great
@@ -6537,107 +6301,7 @@ are numbered from left to right in 1D so that \( \xno{N}=L \).
 
 <p>
 
-<h3>Example on computing with Dirichlet and Neumann conditions  <a name="___sec111"></a></h3>
-<p>
-<!-- ex_varform1D.py: case2 -->
-
-<p>
-Let perform the necessary calculations to solve
-
-<p>
-$$
-\begin{equation*} -u''(x)=2,\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D,\end{equation*}
-$$
-using a global polynomial basis \( \basphi_i\sim x^i \).
-The requirements on \( \basphi_i \) is that \( \basphi_i(1)=0 \), because \( u \) is
-specified at \( x=1 \), so a proper set of polynomial basis functions are
-\( \basphi_i(x)=(1-x)^{i+1} \), \( i=0,\ldots,N \). A suitable \( B(x) \) function
-to handle the boundary condition \( u(1)=D \) is \( B(x)=Dx \).
-The variational formulation becomes
-
-<p>
-$$ (u',v') = (2,v) - Cv(0)\quad\forall v\in V\thinspace .$$
-The entries in the linear system are then
-
-<p>
-$$
-\begin{align*}
-A_{i,j} &= (\basphi_j,\basphi_i) = \int_{0}^1 \basphi_i'(x)\basphi_j'(x)dx
-= \int_0^1 (i+1)(j+1)(1-x)^{i+j}dx,\\
-b_i &= (2,\basphi_i) - (D,\basphi_i') -C\basphi_i(0)
-= \int_0^1\left( 2\basphi_i(x) - D\basphi_i'(x)\right)dx -C\basphi_i(0)
-= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\basphi_i(0)
-\end{align*}
-$$
-With \( N=1 \) we can calculate
-the global matrix system to be
-
-<p>
-$$
-\begin{equation*}
-\left(\begin{array}{cc}
-1 & 1\\
-1 & 4/3
-\end{array}\right)
-\left(\begin{array}{c}
-c_0\\
-c_1
-\end{array}\right)
-=
-\left(\begin{array}{c}
--C+D+1\\
-2/3 -C + D
-\end{array}\right)
-\end{equation*}
-$$
-The solution becomes \( c_0=-C+D+2 \) and \( c_1=-1 \), resulting in
-
-<p>
-$$
-\begin{equation}
-u(x) = 1 -x^2 + D + C(x-1),
-\end{equation}
-$$
-
-<p>
-The exact solution is easily obtained by
-integrating twice and applying the boundary conditions:
-
-<p>
-<p>
-
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; from sympy import *
-&gt;&gt;&gt; x, C, D = symbols(&#39;x C D&#39;)
-&gt;&gt;&gt; f = 2
-&gt;&gt;&gt; f1 = integrate(f, x)
-&gt;&gt;&gt; f2 = integrate(f1, x)
-&gt;&gt;&gt; C1, C2 = symbols(&#39;C1 C2&#39;)       # integration constants
-&gt;&gt;&gt; u = -f2 + C1*x + C2
-&gt;&gt;&gt; BC1 = diff(u,x).subs(x, 0) - C  # x=0 condition
-&gt;&gt;&gt; BC2 = u.subs(x,1) - D           # x=1 condition
-&gt;&gt;&gt; s = solve([BC1, BC2], [C1, C2])
-&gt;&gt;&gt; u_e = -f2 + s[C1]*x + s[C2]
-&gt;&gt;&gt; print u_e
-C*x - C + D - x**2 + 1
-&gt;&gt;&gt; simplify(-diff(u, x, x) - f)  # check diff.eq.
-0
-&gt;&gt;&gt; diff(u, x).subs(x, 0) - C     # check x=0 condition
-0
-&gt;&gt;&gt; u.subs(x, L) - D              # check x=L condition
-0
-</pre></div>
-<p>
-
-<p>
-We observe that the numerical solution coincides with the exact one, which
-is to be expected since the expansion for \( u \) contains the
-exact solution as special case.
-
-<p>
-
-<p>
-
-<h4>Nonlinear terms  <a name="___sec112"></a></h4>
+<h4>Nonlinear terms  <a name="___sec111"></a></h4>
 <p>
 Finally, we show that the techniques used above to derive variational
 forms also apply in nonlinear cases. Here is a model problem with
@@ -6657,8 +6321,8 @@ $$ -\int_0^L \frac{d}{dx}\left(a(u)\frac{du}{dx}\right)vdx =
 \int_0^L f(u)vdx\quad\forall v\in V
 \thinspace .
 $$
-The integration by parts does not differ from the case where we had an
-\( a(x) \) and not an \( a(u) \):
+The integration by parts does not differ from the case where we have
+\( a(x) \) instead of \( a(u) \):
 
 <p>
 $$ \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}vdx =
@@ -6697,7 +6361,105 @@ methods are Picard iteration and Newton's method.
 
 <p>
 
+
+<h3>Example on computing with Dirichlet and Neumann conditions  <a name="___sec112"></a></h3>
 <p>
+<!-- ex_varform1D.py: case2 -->
+
+<p>
+Let us perform the necessary calculations to solve
+
+<p>
+$$
+\begin{equation*} -u''(x)=2,\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D,\end{equation*}
+$$
+using a global polynomial basis \( \basphi_i\sim x^i \).
+The requirements on \( \basphi_i \) is that \( \basphi_i(1)=0 \), because \( u \) is
+specified at \( x=1 \), so a proper set of polynomial basis functions are
+\( \basphi_i(x)=(1-x)^{i+1} \), \( i=0,\ldots,N \). A suitable \( B(x) \) function
+to handle the boundary condition \( u(1)=D \) is \( B(x)=Dx \).
+The variational formulation becomes
+
+<p>
+$$ (u',v') = (2,v) - Cv(0)\quad\forall v\in V\thinspace .$$
+The entries in the linear system are then
+
+<p>
+$$
+\begin{align*}
+A_{i,j} &= (\basphi_j,\basphi_i) = \int_{0}^1 \basphi_i'(x)\basphi_j'(x)dx
+= \int_0^1 (i+1)(j+1)(1-x)^{i+j}dx,\\
+b_i &= (2,\basphi_i) - (D,\basphi_i') -C\basphi_i(0)\\
+&= \int_0^1\left( 2\basphi_i(x) - D\basphi_i'(x)\right)dx -C\basphi_i(0)\\
+&= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\basphi_i(0)
+\thinspace .
+\end{align*}
+$$
+With \( N=1 \) we can calculate
+the global matrix system to be
+
+<p>
+$$
+\begin{equation*}
+\left(\begin{array}{cc}
+1 & 1\\
+1 & 4/3
+\end{array}\right)
+\left(\begin{array}{c}
+c_0\\
+c_1
+\end{array}\right)
+=
+\left(\begin{array}{c}
+-C+D+1\\
+2/3 -C + D
+\end{array}\right)
+\end{equation*}
+$$
+The solution becomes \( c_0=-C+D+2 \) and \( c_1=-1 \), resulting in
+
+<p>
+$$
+\begin{equation}
+u(x) = 1 -x^2 + D + C(x-1),
+\end{equation}
+$$
+
+<p>
+The exact solution is easily obtained by
+integrating twice and applying the boundary conditions:
+
+<p>
+
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; from sympy import *
+&gt;&gt;&gt; x, C, D = symbols(&#39;x C D&#39;)
+&gt;&gt;&gt; f = 2
+&gt;&gt;&gt; f1 = integrate(f, x)
+&gt;&gt;&gt; f2 = integrate(f1, x)
+&gt;&gt;&gt; C1, C2 = symbols(&#39;C1 C2&#39;)       # integration constants
+&gt;&gt;&gt; u = -f2 + C1*x + C2
+&gt;&gt;&gt; BC1 = diff(u,x).subs(x, 0) - C  # x=0 condition
+&gt;&gt;&gt; BC2 = u.subs(x,1) - D           # x=1 condition
+&gt;&gt;&gt; s = solve([BC1, BC2], [C1, C2])
+&gt;&gt;&gt; u_e = -f2 + s[C1]*x + s[C2]
+&gt;&gt;&gt; print u_e
+C*x - C + D - x**2 + 1
+&gt;&gt;&gt; simplify(-diff(u, x, x) - f)  # check diff.eq.
+0
+&gt;&gt;&gt; diff(u, x).subs(x, 0) - C     # check x=0 condition
+0
+&gt;&gt;&gt; u.subs(x, L) - D              # check x=L condition
+0
+</pre></div>
+<p>
+
+We observe that the numerical solution coincides with the exact one, which
+is to be expected since the expansion for \( u \) contains the
+exact solution as special case.
+
+<p>
+
 
 <h3>Variational problems and optimization of functionals <a name="fem:deq:1D:optimization"></a></h3>
 <p>
@@ -6725,7 +6487,6 @@ in implementations.
 
 <p>
 
-<p>
 
 <h2>Computing with finite elements <a name="fem:deq:1D:fem1"></a></h2>
 <p>
@@ -6747,9 +6508,10 @@ the basis functions associated with internal nodes only:
 
 <p>
 $$
-\begin{equation*}
+\begin{equation}
 u(x) = \sum_{j=1}^{N-1}c_j\basphi_j(x)\thinspace .
-\end{equation*}
+\label{fem:deq:1D:fem1:ex:u}
+\end{equation}
 $$
 Observe that \( u(0) \) and \( u(L) \) are zero since
 \( \basphi_0 \) and \( \basphi_N \) are left out of the sum: the remaining
@@ -6770,8 +6532,9 @@ linear functions. The nodes then coincides with the cell vertices and
 
 <p>
 
-<h3>Computation in the global physical domain  <a name="___sec115"></a></h3>
+<h3>Computation in the global physical domain <a name="fem:deq:1D:comp:global"></a></h3>
 <p>
+
 We shall first perform a computation in the \( x \)
 coordinate system because the integrals can be easily computed
 here by simple, visual,
@@ -6815,7 +6578,6 @@ Figure <a href="#fem:approx:fe:fig:dP1">37</a> shows \( \basphi_1'(X) \) and \( 
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 37:  Illustration of the derivative of piecewise linear basis functions associated with nodes in cell 1.  <a name="fem:approx:fe:fig:dP1"></a> </p></center>
@@ -6824,7 +6586,6 @@ Figure <a href="#fem:approx:fe:fig:dP1">37</a> shows \( \basphi_1'(X) \) and \( 
 
 <p>
 
-<p>
 We realize that \( \basphi_i' \) and \( \basphi_j' \) has no overlap, and hence their
 product vanishes, unless \( i \) and \( j \) are nodes belonging to the same
 element. The only nonzero contributions to the coefficient matrix are
@@ -6838,7 +6599,11 @@ A_{i,i}&=\int_0^L\basphi_{i}'(x)^2 dx, \\
 A_{i,i+1}&=\int_0^L\basphi_{i}'(x)\basphi_{i+1}'(x) dx,
 \end{align*}
 $$
-for \( i=1,\ldots,N-1 \).
+for \( i=1,\ldots,N-1 \) (recall that we in \eqref{fem:deq:1D:fem1:ex:u}
+have excluded the end nodes
+because of the boundary conditions).
+
+<p>
 We see that \( \basphi_{i-1}'(x) \) and \( \basphi_i'(x) \) have overlap of one
 cell \( \Omega^{(i-1)}=[\xno{i-1},\xno{i}] \) and that their product
 then is \( -1/h^{2} \). The integrand is constant and therefore
@@ -6957,7 +6722,7 @@ the solution significantly, especially in time-dependent problems.
 
 <p>
 
-<h3>Elementwise computations  <a name="___sec116"></a></h3>
+<h3>Elementwise computations <a name="fem:deq:1D:comp:elmwise"></a></h3>
 <p>
 We now employ the element by element (or cell by cell)
 computational procedure as
@@ -6974,11 +6739,17 @@ $$
 \begin{equation*}
 A_{i,j}^{(e)}=\int_{\Omega^{(e)}} \basphi_i'(x)\basphi_j'(x) dx
 = \int_{-1}^1 \frac{d}{dx}\refphi_r(X)\frac{d}{dx}\refphi_s(X)
-\frac{h}{2} dX,\quad i=q(e,r),\ j=q(e,s),\ r,s=1,2
-\thinspace .
+\frac{h}{2} dX,
 \end{equation*}
 $$
-The basis functions \( \refphi_r(X) \) are known as functions of \( X \).
+where the global degree of freedom \( i \) is related to the local
+degree of freedom \( r \) through \( i=q(e,r) \). Similarly,
+\( j=q(e,s) \). The local degrees of freedom run as \( r,s=0,1 \) for a P1
+element.
+
+<p>
+There are simple formulas for the basis functions \( \refphi_r(X) \) as
+functions of \( X \).
 However, we now
 need to find the derivative of \( \refphi_r(X) \) with respect to \( x \).
 Given
@@ -7017,7 +6788,7 @@ The right-hand side is transformed according to
 <p>
 $$
 \begin{equation*} b_i^{(e)} = \int_{\Omega^{(e)}} 2\basphi_i(x) dx =
-\int_{-1}^12\refphi_r(X)\frac{h}{2} dX,\quad i=q(e,r),\ r=1,2
+\int_{-1}^12\refphi_r(X)\frac{h}{2} dX,\quad i=q(e,r),\ r=0,1
 \thinspace .
 \end{equation*}
 $$
@@ -7076,7 +6847,6 @@ The next sections deals with this issue.
 
 <p>
 
-<p>
 
 <h2>Boundary conditions: specified value <a name="fem:deq:1D:essBC"></a></h2>
 <p>
@@ -7087,11 +6857,10 @@ alternative, but mathematically equivalent, methods.
 
 <p>
 
-<p>
 
-<h3>General construction of a boundary function <a name="fem:deq:1D:essBC:Bfunc"></a></h3>
+<h3>General construction of a boundary function <a name="fem:deq:1D:fem:essBC:Bfunc"></a></h3>
 <p>
-In the section <a href="#fem:deq:1D:essBC:Bfunc">General construction of a boundary function</a> we introduced a boundary function \( B(x) \)
+In the section <a href="#fem:deq:1D:essBC:Bfunc">Boundary function</a> we introduce a boundary function \( B(x) \)
 to deal with nonzero Dirichlet boundary conditions for \( u \). The
 construction of such a function is not always trivial, especially not
 in multiple dimensions. However, a simple and general construction
@@ -7167,7 +6936,7 @@ for \( i,j = 1,\ldots,N-1 \).
 The integral \( D\int_0^L \basphi_N'(x))\basphi_i(x) dx \) can only get
 a nonzero contribution from the last cell, \( \Omega^{(N-1)}=[\xno{N-1},\xno{N}] \)
 since \( \basphi_N(x)=0 \) on all other cells. Moreover,
-\( \basphi_N'(x)\basphi_i(x) dx \) only for \( i=N-1 \) and \( i=N \), but the latter
+\( \basphi_N'(x)\basphi_i(x) dx \neq 0 \) only for \( i=N-1 \) and \( i=N \), but the latter
 value is not included anymore. From the explanations of the
 calculations in the section <a href="#fem:approx:global:linearsystem">Calculating the linear system</a> we find that
 \( \int_0^L \basphi_N(x))\basphi_{N-1}(x) dx \) must equal \( h/6 \), resulting
@@ -7192,9 +6961,8 @@ extra term \( -D h/6 \), as in the computations in the physical domain.
 
 <p>
 
-<p>
 
-<h3>Modification of the linear system <a name="fem:deq:1D:essBC:Bfunc:modsys"></a></h3>
+<h3>Modification of the linear system <a name="fem:deq:1D:fem:essBC:Bfunc:modsys"></a></h3>
 <p>
 From an implementational point of view, there is a convenient alternative
 to adding the \( B(x) \) function and considering only the \( c_i \) coefficients
@@ -7238,7 +7006,6 @@ $$
 
 <p>
 
-<p>
 The complete matrix system, involving all degrees of freedom, takes the form
 
 <p>
@@ -7371,9 +7138,17 @@ subtracting column number \( k \) in the coefficient matrix, i.e., \( A_{i,k} \)
 for \( i=0,\ldots,N \), times the boundary value \( K \), from the
 right-hand side: \( b_i \leftarrow b_i - A_{i,k}K \). Then we put
 zeroes in row number \( k \) <em>and</em> column number \( k \) in the coefficient matrix,
-and finally set \( b_k=K \).
+and finally set \( b_k=K \). The steps in algorithmic form becomes
 
 <p>
+
+<ol>
+ <li> \( b_i \leftarrow b_i - A_{i,k}K \) for \( i=0,\ldots,N \)</li>
+ <li> \( A_{i,k} = A_{k,i} = 0 \) for \( i=0,\ldots,N \)</li>
+ <li> \( A_{k,k}=1 \)</li>
+ <li> \( b_i = K \)</li>
+</ol>
+
 This modification goes as follows for the above system. First we
 subtract the first column in the coefficient matrix, times the boundary
 value, from the right-hand side. Because \( c_0=0 \), this subtraction
@@ -7564,7 +7339,7 @@ The variational formulation then becomes
 
 <p>
 $$
-\begin{equation*} \int_0^Lu'(x)\basphi_i'(x) dx + E\basphi_i(0) =
+\begin{equation*} \int_0^Lu'(x)\basphi_i'(x) dx + C\basphi_i(0) =
 \int_0^L f(x)\basphi_i(x) dx,\quad i=0,\ldots,N\thinspace . \end{equation*}
 $$
 Inserting
@@ -7584,7 +7359,7 @@ $$
 \sum_{j=0}^{N-1}\left(
 \int_0^L \basphi_i'(x)\basphi_j'(x) dx \right)c_j =
 \int_0^L\left(f(x)\basphi_i(x) -D\basphi_N'(x)\basphi_i(x)\right) dx
- - E\basphi_i(0),
+ - C\basphi_i(0),
 \label{fem:deq:1D:natBC}
 \end{equation}
 $$
@@ -7608,7 +7383,7 @@ $$
 \sum_{j=0}^{N}\left(
 \int_0^L \basphi_i'(x)\basphi_j'(x) dx \right)c_j =
 \int_0^L\left(f(x)\basphi_i(x)\right) dx
- - E\basphi_i(0),\quad i=0,\ldots,N
+ - C\basphi_i(0),\quad i=0,\ldots,N
 \thinspace .
 \label{fem:deq:1D:natBC2}
 \end{equation}
@@ -7616,7 +7391,6 @@ $$
 
 <p>
 
-<p>
 We now turn to actual computations with P1 finite elements.
 The focus is on how the linear system and
 the element matrices and vectors are modified by the
@@ -7634,20 +7408,20 @@ There are two differences compared to the extensively
 computed case where \( u(0)=0 \). Because we do not have a Dirichlet
 condition at the left boundary, we need to extend the linear system
 \eqref{fem:deq:1D:ex1:Ab:glob} with an equation corresponding to \( i=0 \).
-According to the section <a href="#fem:deq:1D:essBC:Bfunc:modsys">Modification of the linear system</a>, this
+According to the section <a href="#fem:deq:1D:fem:essBC:Bfunc:modsys">Modification of the linear system</a>, this
 consists of including \( A_{0,0}=1/h \), \( A_{0,1}=-1/h \), and \( b_0=h \).
 Second, we need to include
 the extra term
-\( -E\basphi_i(0) \) on the right-hand side. Since all \( \basphi_i(0)=0 \)
-for \( i=1,\ldots,N \), this term reduces to \( -E\basphi_0(0)=-E \) and
-affects only the first equation (\( i=0 \)). We simply add \( -E \) to \( b_0 \)
-such that \( b_0=h - E \).
+\( -C\basphi_i(0) \) on the right-hand side. Since all \( \basphi_i(0)=0 \)
+for \( i=1,\ldots,N \), this term reduces to \( -C\basphi_0(0)=-C \) and
+affects only the first equation (\( i=0 \)). We simply add \( -C \) to \( b_0 \)
+such that \( b_0=h - C \).
 
 <p>
 Next we consider the technique where we modify the linear system to
 incorporate Dirichlet conditions. The only difference from the
-case in the section <a href="#fem:deq:1D:essBC:Bfunc:modsys">Modification of the linear system</a> is simply the
-extra term \( -E \) in the \( b_0 \) entry so we can just add this
+case in the section <a href="#fem:deq:1D:fem:essBC:Bfunc:modsys">Modification of the linear system</a> is simply the
+extra term \( -C \) in the \( b_0 \) entry so we can just add this
 value and continue with modifying the last equation to incorporate
 \( c_N=D \).
 
@@ -7658,12 +7432,12 @@ value and continue with modifying the last equation to incorporate
 In the case we compute with one element at a time, we need to see how the
 \( u'(0)=C \) condition affects the element matrix and vector.
 As above for the case of forming a global system directly,
-the extra term \( -E\basphi_i(0) \) in the variational formulation
+the extra term \( -C\basphi_i(0) \) in the variational formulation
 only affects the element vector in the first element.
-On the reference cell, \( -E\basphi_i(0) \) is transformed to
-\( -E\refphi_r(-1) \), where \( r \) counts local degrees of freedom.
+On the reference cell, \( -C\basphi_i(0) \) is transformed to
+\( -C\refphi_r(-1) \), where \( r \) counts local degrees of freedom.
 Only \( \refphi_0(-1)\neq 0 \) so we are left with the contribution
-\( -E\refphi_0(-1)=-E \) to \( \tilde b^{(0)}_0 \):
+\( -C\refphi_0(-1)=-C \) to \( \tilde b^{(0)}_0 \):
 
 <p>
 $$
@@ -7674,7 +7448,7 @@ A = \frac{1}{h}\left(\begin{array}{rr}
 -1 & 1
 \end{array}\right),\quad
 \tilde b^{(0)} = \left(\begin{array}{c}
-h - E\\
+h - C\\
 h
 \end{array}\right)\thinspace .
 \label{fem:deq:1D:ex1:Ab:elm:bc:nat}
@@ -7684,9 +7458,6 @@ No other element matrices or vectors are affected.
 
 <p>
 
-<p>
-
-<p>
 
 <h2>Implementation <a name="fem:deq:1D:code:global"></a></h2>
 <p>
@@ -7736,7 +7507,7 @@ The linear system can now be computed and solved symbolically by
 the following function:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solve</span>(integrand_lhs, integrand_rhs, phi, Omega,
           boundary_lhs<span style="color: #666666">=</span><span style="color: #AA22FF">None</span>, boundary_rhs<span style="color: #666666">=</span><span style="color: #AA22FF">None</span>):
@@ -7762,7 +7533,6 @@ the following function:
 </pre></div>
 <p>
 
-<p>
 It turns out that symbolic solution of differential
 equations, discretized by a Galerkin or least squares method
 with global basis functions,
@@ -7790,7 +7560,7 @@ the purpose of showing how to automate the Galerkin or least squares
 method for solving differential equations in 1D with global basis functions:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solve</span>(integrand_lhs, integrand_rhs, phi, Omega,
           boundary_lhs<span style="color: #666666">=</span><span style="color: #AA22FF">None</span>, boundary_rhs<span style="color: #666666">=</span><span style="color: #AA22FF">None</span>, numint<span style="color: #666666">=</span><span style="color: #AA22FF">False</span>):
@@ -7828,7 +7598,6 @@ method for solving differential equations in 1D with global basis functions:
 </pre></div>
 <p>
 
-<p>
 
 <h3>Example: constant right-hand side  <a name="___sec129"></a></h3>
 <p>
@@ -7836,7 +7605,7 @@ To demonstrate the code above, we address
 
 <p>
 $$
-\begin{equation*} -u''(x)=b,\quad x\in\Omega=[0,1],\quad u(1)=1,\ u(0)=0,\end{equation*}
+\begin{equation*} -u''(x)=b,\quad x\in\Omega=[0,1],\quad u(0)=1,\ u(1)=0,\end{equation*}
 $$
 with \( b \) as a (symbolic) constant. A possible choice of space \( V \),
 where the basis functions satisfy
@@ -7884,11 +7653,10 @@ $$
 
 <p>
 
-<p>
 The application can be coded as follows in <tt>sympy</tt>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x, b <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>symbols(<span style="color: #BB4444">&#39;x b&#39;</span>)
 f <span style="color: #666666">=</span> b
@@ -7925,7 +7693,7 @@ The exact solution \( \uex(x) \) can be derived by the following
 <tt>sympy</tt> code:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Solve -u&#39;&#39;=f by integrating f twice</span>
 f1 <span style="color: #666666">=</span> sm<span style="color: #666666">.</span>integrate(f, x)
@@ -7968,11 +7736,11 @@ The new additional ingredients are
 <p>
 
 <ol>
-<li> other types of integrands (as implied by the variational formulation)
+<li> other types of integrands (as implied by the variational formulation)</li>
 <li> additional boundary terms in the variational formulation for
-   Neumann boundary conditions
+   Neumann boundary conditions</li>
 <li> modification of element matrices and vectors due to Dirichlet
-   boundary conditions
+   boundary conditions</li>
 </ol>
 
 Point 1 and 2 can be taken care of by letting the user supply
@@ -7980,7 +7748,7 @@ functions defining the integrands and boundary terms on the
 left- and right-hand side of the equation system:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">integrand_lhs(phi, r, s, x)
 boundary_lhs(phi, r, s, x)
@@ -8001,7 +7769,7 @@ the steps in the computational algorithm for finite element solution
 of a differential equation.
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #666666">&lt;</span>Declare <span style="color: #AA22FF; font-weight: bold">global</span> matrix <span style="color: #AA22FF; font-weight: bold">and</span> rhs: A, b<span style="color: #666666">&gt;</span>
 
@@ -8052,7 +7820,6 @@ of a differential equation.
 </pre></div>
 <p>
 
-<p>
 
 <h2>Variational formulations in 2D and 3D <a name="fem:deq:2D:varform"></a></h2>
 <p>
@@ -8093,7 +7860,10 @@ $$
 where \( \partial\Omega \) is the boundary of \( \Omega \) and
 \( \partial u/\partial n = \normalvec\cdot\nabla u \) is the derivative
 of \( u \) in the outward normal direction, \( \normalvec \) being an outward
-unit normal to \( \partial\Omega \).
+unit normal to \( \partial\Omega \). The integrals \( \int_\Omega ()\dx \) are
+area integrals in 2D and volume integrals in 3D, while
+\( \int_{\partial\Omega} ()\ds \) is a line integral in 2D and a surface
+integral in 3D.
 
 <p>
 Note that \eqref{fem:deq:2D:int:by:parts} obviously applies to a constant
@@ -8106,17 +7876,15 @@ Let us divide the boundary into two parts:
 
 <ul>
  <li> \( \partial\Omega_N \), where we have Neumann conditions
-   \( -a\frac{\partial u}{\partial n} = g \), and
+   \( -a\frac{\partial u}{\partial n} = g \), and</li>
  <li> \( \partial\Omega_D \), where we have Dirichlet conditions
-   \( u = u_0 \).
+   \( u = u_0 \).</li>
 </ul>
 
 The test functions \( v \) are required to vanish on \( \partial\Omega_D \).
 
 <p>
-
-<h4>Example  <a name="___sec132"></a></h4>
-<p>
+<b>Example.</b> <p>
 Here is a quite general linear PDE arising in many problems:
 
 <p>
@@ -8149,7 +7917,7 @@ function \( v \) and integrating over \( \Omega \):
 <p>
 $$
 \int_{\Omega} (\v\cdot\nabla u + \alpha u)v\dx =
-\int_{\Omega} \nabla\cdot\left( a\nabla u\right)\dx + fv \dx
+\int_{\Omega} \nabla\cdot\left( a\nabla u\right)\dx + \int_{\Omega}fv \dx
 \thinspace .
 $$
 The second-order term is integrated by parts:
@@ -8248,7 +8016,7 @@ in detail in the 1D case.
 
 <p>
 
-<h3>Transformation to a reference cell in 2D and 3D  <a name="___sec133"></a></h3>
+<h3>Transformation to a reference cell in 2D and 3D  <a name="___sec132"></a></h3>
 <p>
 We consider an integral of the type
 
@@ -8353,7 +8121,7 @@ $$
 
 <p>
 
-<h3>Numerical integration  <a name="___sec134"></a></h3>
+<h3>Numerical integration  <a name="___sec133"></a></h3>
 <p>
 Integrals are normally computed by numerical integration rules.
 For multi-dimensional cells, various families of rules exist.
@@ -8363,7 +8131,7 @@ All of them are similar to what is shown in 1D:
 
 <p>
 
-<h3>Convenient formulas for P1 elements in 2D  <a name="___sec135"></a></h3>
+<h3>Convenient formulas for P1 elements in 2D  <a name="___sec134"></a></h3>
 <p>
 We shall now provide some formulas for piecewise linear \( \basphi_i \) functions
 and their integrals <em>in the physical coordinate system</em>.
@@ -8455,88 +8223,1319 @@ so that the element matrix entry becomes
 
 <p>
 From an implementational point of view, one will work with local vertex
-numbers \( r=1,2,3 \), parameterize the coefficients in the basis
+numbers \( r=0,1,2 \), parameterize the coefficients in the basis
 functions by \( r \), and look up vertex coordinates through \( q(e,r) \).
 
 <p>
 
-<h2>Summary  <a name="___sec136"></a></h2>
+<h2>Summary  <a name="___sec135"></a></h2>
 <p>
 
 <ul>
  <li> When approximating \( f \) by \( u = \sum_j c_j\basphi_j \), the least squares
    method and the Galerkin/projection method give the same result.
    The interpolation/collocation method is simpler and yields different
-   (mostly inferior) results.
+   (mostly inferior) results.</li>
  <li> Fourier series expansion can be viewed as a least squares or Galerkin
-   approximation procedure with sine and cosine functions.
+   approximation procedure with sine and cosine functions.</li>
  <li> Basis functions should optimally be orthogonal or almost orthogonal,
    because this gives little round-off errors when solving the linear
-   system, and the coefficient matrix becomes diagonal or sparse.
+   system, and the coefficient matrix becomes diagonal or sparse.</li>
  <li> Finite element basis functions are <em>piecewise</em> polynomials, normally
    with discontinuous derivatives at the cell boundaries. The basis
    functions overlap very little, leading to stable numerics and sparse
-   matrices.
+   matrices.</li>
  <li> To use the finite element method for differential equations, we use
    the Galerkin method or the method of weighted residuals
    to arrive at a variational form. Technically, the differential equation
    is multiplied by a test function and integrated over the domain.
    Second-order derivatives are integrated by parts to allow for typical finite
-   element basis functions that have discontinuous derivatives.
+   element basis functions that have discontinuous derivatives.</li>
  <li> The least squares method is not much used for finite element solution
    of differential equations of second order, because
    it then involves second-order derivatives which cause trouble for
-   basis functions with discontinuous derivatives.
+   basis functions with discontinuous derivatives.</li>
  <li> We have worked with two common finite element terminologies and
    associated data structures
    (both are much used, especially the first one, while the other is more
-   general):
+   general):</li>
 
 <ol>
     <li> <em>elements</em>, <em>nodes</em>, and <em>mapping between local and global
-       node numbers</em>
+       node numbers</em></li>
     <li> an extended element concept consisting of <em>cell</em>, <em>vertices</em>,
        <em>degrees of freedom</em>, <em>local basis functions</em>,
        <em>geometry mapping</em>, and <em>mapping between
-       local and global degrees of freedom</em>
+       local and global degrees of freedom</em></li>
 </ol>
 
  <li> The meaning of the word "element" is multi-fold: the geometry of a finite
    element (also known as a cell), the geometry and its basis functions,
-   or all information listed under point 2 above.
+   or all information listed under point 2 above.</li>
  <li> One normally computes integrals in the finite element method element
    by element (cell by cell), either in a local reference coordinate
-   system or directly in the physical domain.
+   system or directly in the physical domain.</li>
  <li> The advantage of working in the reference coordinate system is that
    the mathematical expressions for the basis functions depend on the
    element type only, not the geometry of that element in the physical
    domain.  The disadvantage is that a mapping must be used, and
    derivatives must be transformed from reference to physical
-   coordinates.
+   coordinates.</li>
  <li> Element contributions to the global linear system are collected in
    an element matrix and vector, which must be assembled into the
    global system using the degree of freedom mapping (<tt>dof_map</tt>) or
    the node numbering mapping (<tt>elements</tt>), depending on which terminology
-   that is used.
+   that is used.</li>
  <li> Dirichlet conditions, involving prescribed values of \( u \) at the
    boundary, are implemented either via a boundary function that take
    on the right Dirichlet values, while the basis functions vanish at
    such boundaries. In the finite element method, one has a general
    expression for the boundary function, but one can also incorporate
    Dirichlet conditions in the element matrix and vector or in the
-   global matrix system.
+   global matrix system.</li>
  <li> Neumann conditions, involving prescribed values of the derivative
    (or flux) of \( u \), are incorporated in boundary terms arising from
    integrating terms with second-order derivatives by part.
    Forgetting to account for the boundary terms implies the
    condition \( \partial u/\partial n=0 \) at parts of the boundary where
-   no Dirichlet condition is set.
+   no Dirichlet condition is set.</li>
 </ul>
 
-<h2>Exercises  <a name="___sec137"></a></h2>
+<h2>Time-dependent problems  <a name="___sec136"></a></h2>
 <p>
+The finite element method is normally used for discretization and
+space. There are two alternative strategies for performing
+a discretization in the time:
 
 <p>
+
+<ul>
+ <li> use finite differences for time derivatives to arrive at
+   a recursive set of spatial problems that can be discretized by
+   the finite element method, or</li>
+ <li> discretize in space by finite elements first, and then solve
+   the resulting system of ordinary differential equations (ODEs) by
+   some standard method for ODEs.</li>
+</ul>
+
+We shall exemplify these strategies using a simple diffusion problem
+
+<p>
+$$
+\begin{align}
+\frac{\partial u}{\partial t} &= \alpha\nabla^2 u + f(\x, t),\quad \x\in\Omega, t\in (0,T],
+\label{fem:deq:diffu:eq}\\
+u(\x, 0) & = I(\x),\quad \x\in\Omega,
+\label{fem:deq:diffu:ic}\\
+\frac{\partial u}{\partial n} &= 0,\quad\x\in\partial\Omega,\ t\in (0,T]
+\label{fem:deq:diffu:bcN}
+\thinspace .
+\end{align}
+$$
+Here, \( u(\x,t) \) is the unknown function, \( \alpha \) is a constant, and
+\( f(\x,t) \) and \( I(x) \) are given functions. We have assigned the particular
+boundary condition \eqref{fem:deq:diffu:bcN} to minimize
+the details on handling boundary conditions in the finite element method.
+
+<p>
+
+<h3>Discretization in time by a Forward Euler scheme  <a name="___sec137"></a></h3>
+<p>
+
+<h4>Time discretization  <a name="___sec138"></a></h4>
+<p>
+We can apply a finite difference method in time to \eqref{fem:deq:diffu:eq}.
+First we need a mesh in time, here taken as uniform with
+mesh points \( t_n = n\Delta t \), \( n=0,1,\ldots,N \).
+A Forward Euler scheme consists of sampling \eqref{fem:deq:diffu:eq}
+at \( t_n \) and approximating the time derivative by a forward
+difference \( [D_t^+ u]^n\approx
+(u^{n+1}-u^n)/\Delta t \). This approximation turns \eqref{fem:deq:diffu:eq}
+into a differential equation that is discrete in time, but still
+continuous in space.
+With a finite difference operator notation we can write the
+time-discrete problem as
+
+<p>
+$$
+\begin{equation}
+[D_t^+ u = \alpha\nabla^2 u + f(\x, t)]^n,
+\end{equation}
+$$
+for \( n=1,2,\ldots,N-1 \). Writing this equation out in detail and
+isolating the unknown \( u^{n+1} \) on the left-hand side, demonstrates that
+the time-discrete problem is a recursive set of problems that are
+continuous in space:
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = u^n + \Delta t \left( \alpha\nabla^2 u^n + f(\x, t_n)\right)
+\label{fem:deq:diffu:FE:eq:unp1}
+\thinspace .
+\end{equation}
+$$
+Given \( u^0=I \), we can use \eqref{fem:deq:diffu:FE:eq:unp1} to compute
+\( u^1,u^2,\dots,u^N \).
+
+<p>
+For absolute clarity in the various stages of the discretizations, we
+introduce \( \uex(\x,t) \) as the exact solution of the space-and time-continuous
+partial differential equation \eqref{fem:deq:diffu:eq} and
+\( \uex^n \) as the time-discrete approximation that fulfills
+\eqref{fem:deq:diffu:FE:eq:unp1}:
+
+<p>
+$$
+\begin{align}
+\frac{\partial \uex}{\partial t} &= \alpha\nabla^2 \uex + f(\x, t)
+\label{fem:deq:diffu:eq:uex},\\
+\uex^{n+1} = \uex^n + \Delta t \left( \alpha\nabla^2 \uex^n + f(\x, t_n)\right)
+\label{fem:deq:diffu:FE:eq:uex:n}
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>Space discretization  <a name="___sec139"></a></h4>
+<p>
+We now introduce a finite element approximation to \( \uex^n \) and \( \uex^{n+1} \)
+in \eqref{fem:deq:diffu:FE:eq:uex:n}, where the coefficients depend on the
+time level:
+
+<p>
+$$
+\begin{align}
+\uex^n &\approx u^n = \sum_{j=0}^{N_s} c_j^{n}\basphi_j(\x),
+\label{fem:deq:diffu:femapprox:n}\\
+\uex^{n+1} &\approx u^{n+1} = \sum_{j=0}^{N_s} c_j^{n+1}\basphi_j(\x)
+\label{fem:deq:diffu:femapprox:np1}
+\thinspace .
+\end{align}
+$$
+Note that we have introduced \( N_s \) as the number of degrees of freedom
+in the spatial (s) domain. The number of time points is denoted by \( N \).
+Also note that we use \( u^n \) as the numerical solution we want
+to compute in a program, while \( \uex \) and \( \uex^n \) are used when
+we occasionally
+need to refer to the exact solution and the time-discrete solution,
+respectively.
+
+<p>
+
+<h4>Variational forms  <a name="___sec140"></a></h4>
+<p>
+A weighted residual method with weighting functions \( w_i \) can
+now be formulated. We insert \eqref{fem:deq:diffu:femapprox:n} and
+\eqref{fem:deq:diffu:femapprox:np1} in
+\eqref{fem:deq:diffu:FE:eq:uex:n} to obtain the residual
+
+<p>
+$$ R = u^{n+1} - u^n - \Delta t \left( \alpha\nabla^2 u^n + f(\x, t_n)\right)
+\thinspace .$$
+The weighted residual principle,
+
+<p>
+$$ \int_\Omega Rw_i\dx = 0,\quad i=0,\ldots,N_s,$$
+results in
+
+<p>
+$$
+\int_\Omega
+\left\lbrack
+u^{n+1} - u^n - \Delta t \left( \alpha\nabla^2 u^n + f(\x, t_n)\right)
+\right\rbrack w_i \dx =0,
+$$
+for \( i=0,\ldots,N_s \).
+
+<p>
+The Galerkin method corresponds to choosing \( w_i=\basphi_i \).
+Isolating the unknown \( u^{n+1} \) on the left-hand side gives
+
+<p>
+$$
+\int_{\Omega} u^{n+1}\basphi_i\dx = \int_{\Omega}
+\left\lbrack u^n - \Delta t \left( \alpha\nabla^2 u^n + f(\x, t_n)\right)
+\right\rbrack\basphi_i\dx
+\thinspace .
+$$
+
+<p>
+As usual in spatial finite element problems involving second-order
+derivatives, we apply integration by parts on the term \( \nabla^2 u^n\basphi_i \):
+
+<p>
+$$ \int_{\Omega}\alpha\nabla^2 u^n\basphi_i dx =
+-\int_{\Omega}\alpha\nabla u^n\cdot\nabla\basphi_i\dx +
+\int_{\partial\Omega}\alpha\frac{partial u^n}{\partial n}\basphi dx
+\thinspace .
+$$
+The last term vanishes because we have the Neumann condition
+\( \partial u^n/\partial n=0 \) for all \( n \). Our discrete problem in
+space and time then reads
+
+<p>
+$$
+\begin{equation}
+\int_{\Omega} u^{n+1}\basphi_i\dx =
+\int_{\Omega} u^n\basphi_i\dx -
+\Delta t \int_{\Omega}\alpha\nabla u^n\cdot\nabla\basphi_i\dx +
+\Delta t\int_{\Omega}f^n\basphi_i\dx
+\thinspace .
+\label{fem:deq:diffu:FE:vf:u:np1}
+\end{equation}
+$$
+This is the variational formulation of our recursive set of spatial
+problems.
+
+<p>
+In a program it is only necessary to store \( u^{n+1} \) and \( u^n \) at the
+same time. We therefore drop the \( n \) index in programs and work with
+two functions: <tt>u</tt> for \( u^{n+1} \), the new unknown, and <tt>u_1</tt> for
+\( u^n \), the solution at the previous time level. This is also
+convenient in the mathematics to maximize the correspondence with the
+code:
+
+<p>
+$$
+\begin{equation}
+\int_{\Omega} u\basphi_i\dx =
+\int_{\Omega} u_1\basphi_i\dx -
+\Delta t \int_{\Omega}\alpha\nabla u_1\cdot\nabla\basphi_i\dx +
+\Delta t\int_{\Omega}f^n\basphi_i\dx
+\thinspace .
+\label{fem:deq:diffu:FE:vf:u}
+\end{equation}
+$$
+This variational form can alternatively be expressed by the inner
+product notation:
+
+<p>
+$$
+\begin{equation}
+(u, \basphi_i) = (u_1,\basphi_i) -
+\Delta t (\alpha\nabla u_1,\nabla\basphi_i) +
+(f^n,\basphi_i)
+\thinspace .
+\label{fem:deq:diffu:FE:vf:u:short}
+\end{equation}
+$$
+
+<p>
+
+<h4>Linear systems  <a name="___sec141"></a></h4>
+<p>
+To derive the equations for the new coefficients, we insert
+
+<p>
+$$ u = \sum_{j=0}^{N_s}c_j\basphi_j(\x),\quad
+u_1 = \sum_{j=0}^{N_s} c_{1,j}\basphi(\x)$$
+in \eqref{fem:deq:diffu:FE:vf:u} or \eqref{fem:deq:diffu:FE:vf:u:short},
+and order the terms as matrix-vector products:
+
+<p>
+$$
+\begin{equation}
+\sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_j =
+\sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_{1,j}
+-\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\basphi_i,\nabla\basphi_j) c_{1,j}
++ (f^n,\basphi_i),\quad i=0,\ldots,N_s
+\thinspace .
+\end{equation}
+$$
+This is a linear system \( \sum_j A_{i,j} = b_i \) with
+
+<p>
+$$ A_{i,j} = (\basphi_i,\basphi_j)
+$$
+and
+
+<p>
+$$ b_i = \sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_{1,j}
+-\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\basphi_i,\nabla\basphi_j) c_{1,j}
++ (f^n,\basphi_i)\thinspace . $$
+
+<p>
+It is instructive and convenient for implementations to write the linear
+system on the form
+
+<p>
+$$
+\begin{equation}
+Mc = Mc_1 - \alpha\Delta t Kc + f,
+\end{equation}
+$$
+where \( f \) is a vector where component number \( i \) equals \( (f(\x,t_n),\basphi_i) \),
+\( c=(c_0,\ldots,c_{N_s}) \), \( c_1 = (c_{1,j},\ldots,c_{1,N_s}) \),
+and \( M \) and \( K \) are matrices,
+
+<p>
+
+$$ M_{i,j} = (\basphi_i,\basphi_j),\quad
+K_{i,j} =(\nabla\basphi_i,\nabla\basphi_j)
+\thinspace .$$
+We realize that \( M \) is the matrix arising from a term with the
+zero-th derivative of \( u \), and called the mass matrix, while \( K \) is
+the matrix arising from a Laplace term \( \nabla^2 u \). The \( K \) matrix
+is often known as the <em>stiffness matrix</em>. (The terms mass and stiffness
+stem from the early days of finite elements when applications to
+vibrating structures dominated. The mass matrix arises from the
+mass times acceleration term in Newton's second law, while the stiffness
+matrix arises from the elastic forces in that law. The mass and stiffness
+matrix appearing in a diffusion have slightly different mathematical
+formulas.)
+
+<p>
+<b>Remark.</b> The mathematical symbol \( f \) has two meanings, either the
+function \( f(\x,t) \) in the PDE or the \( f \) vector in the linear system
+to be solved at each time level. The symbol \( u \) also has different
+meanings, basically the unknown in the PDE or the finite element
+function representing the unknown at a time level. The actual
+meaning should be evident from the context.
+
+<p>
+
+
+<h4>Computational algorithm  <a name="___sec142"></a></h4>
+<p>
+We observe that \( M \) and \( K \) can be precomputed so that we can avoid
+assembly of the matrix system at every time level. Instead, some
+matrix-vector multiplications will produce the linear system to be solved.
+The computational algorithm has the following steps:
+
+<p>
+
+<ol>
+<li> Compute \( M \) and \( K \).</li>
+<li> Initialize \( u^0 \) by</li>
+
+<ol>
+  <li> interpolation: \( c_{1,j} = I(\x_j) \), where \( \x_j \) is node number \( j \), or</li>
+  <li> projection: solve
+     \( \sum_j M_{i,j}c){1,j} = (I,\basphi_i) \), \( i=0,\ldots,N_s \).</li>
+</ol>
+
+<li> For \( n=1,2,\ldots,N \):</li>
+
+<ol>
+  <li> compute \( b = Mc_1 - \alpha\Delta t Kc + f \)</li>
+  <li> solve \( Mc = b \)</li>
+  <li> set \( c_1 = c \)</li>
+</ol>
+
+</ol>
+
+<h4>Comparison with the finite difference method  <a name="___sec143"></a></h4>
+<p>
+We can compute the \( M \) and \( K \) matrices using P1 elements.
+From the section <a href="#fem:deq:1D:comp:global">Computation in the global physical domain</a> or
+<a href="#fem:deq:1D:comp:elmwise">Elementwise computations</a> we have that the \( K \) matrix is the same as we get
+from the finite difference method: \( h[D_xD_x u]^n_i \), while
+from the section <a href="#fem:approx:fe:fd:feproj">Finite difference interpretation of a finite element approximation</a> we know that \( M \) can be
+interpreted as the finite difference approximation:
+\( [u - \frac{1}{6}h^2D_xD_x u]^n_i \). The equation system \( Mc=b \) in
+the algorithm is therefore equivalent to the finite difference scheme
+
+<p>
+$$
+\begin{equation}
+[D_t^+(u - \frac{1}{6}h^2D_xD_x u) = \alpha D_xD_x u + f]^n_i
+\label{fem:deq:diffu:FE:fdinterp}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h4>Lumping the mass matrix  <a name="___sec144"></a></h4>
+<p>
+By applying Trapezoidal integration or summing the rows in \( M \) and placing
+the sum on the main diagonal, one can turn \( M \) into a diagonal
+matrix with \( (h/2,h,\ldots,h,h/2) \) on the diagonal. Then there are
+no needs to solve a linear system at each time level, and the finite
+element scheme becomes identical to a standard finite difference method
+
+<p>
+$$
+\begin{equation}
+[D_t^+ u = \alpha D_xD_x u + f]^n_i
+\label{fem:deq:diffu:FE:fdinterp:lumped}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h3>Discretization in time by a Backward Euler scheme  <a name="___sec145"></a></h3>
+<p>
+
+<h4>Time discretization  <a name="___sec146"></a></h4>
+<p>
+The Backward Euler scheme in time applied to our diffusion problem
+can be expressed as follows using the finite difference operator notation:
+
+<p>
+$$
+[D_t^- u = \alpha\nabla^2 u + f(\x, t)]^n
+\thinspace .
+$$
+Written out, and collecting the unknown \( u^n \) on the left-hand side,
+the time-discrete differential equation becomes
+
+<p>
+$$
+\begin{equation}
+u^{n} - \Delta t \left( \alpha\nabla^2 u^n = u^{n-1}  + f(\x, t_{n})\right)
+\label{fem:deq:diffu:BE:eq:un}
+\thinspace .
+\end{equation}
+$$
+Equation \eqref{fem:deq:diffu:BE:eq:un} can compute
+\( u^1,u^2,\dots,u^N \), if we have a start \( u^0=I \) from the initial condition.
+
+<p>
+
+<h4>Variational forms  <a name="___sec147"></a></h4>
+<p>
+The Galerkin method applied to \eqref{fem:deq:diffu:BE:eq:un} and
+integrating by parts, as in the Forward Euler case, results
+in the variational form
+
+<p>
+$$
+\begin{equation}
+\int_{\Omega} \left( u^{n}\basphi_i
++ \Delta t \alpha\nabla u^n\cdot\nabla\basphi_i\right)\dx
+= \int_{\Omega} u^{n-1}\basphi_i\dx -
+\Delta t\int_{\Omega}f^n\basphi_i\dx
+\label{fem:deq:diffu:BE:vf:u:n}
+\thinspace .
+\end{equation}
+$$
+Expressed with \( u \) as \( u^n \) and \( u_1 \) as \( u^{n-1} \), this becomes
+
+<p>
+$$
+\begin{equation}
+\int_{\Omega} \left( u\basphi_i
++ \Delta t \alpha\nabla u\cdot\nabla\basphi_i\right)\dx
+= \int_{\Omega} u_1\basphi_i\dx +
+\Delta t\int_{\Omega}f^n\basphi_i\dx,
+\label{fem:deq:diffu:BE:vf:u}
+\end{equation}
+$$
+or
+
+<p>
+$$
+\begin{equation}
+(u,\basphi_i)
++ \Delta t \alpha(\nabla u,\nabla\basphi_i)
+= (u_1\basphi_i) +
+\Delta t (f^n,\basphi_i)
+\label{fem:deq:diffu:BE:vf:u:short}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h4>Linear systems  <a name="___sec148"></a></h4>
+<p>
+Inserting \( u=\sum_j c_j\basphi_i \) and \( u_1=\sum_j c_{1,j}\basphi_i \),
+we arrive after some algebra at the following linear system to be
+solved at each time level:
+
+<p>
+$$
+\begin{equation}
+(M + \Delta t \alpha K)c = Mc_1 + f,
+\end{equation}
+$$
+where \( M \), \( K \), and \( f \) are as in the Forward Euler case.
+This time we really have to solve a linear system at each time level.
+The system corresponds to solving the finite difference problem
+
+<p>
+$$
+\begin{equation}
+[D_t^-(u - \frac{1}{6}h^2D_xD_x u) = \alpha D_xD_x u + f]^n_i
+\label{fem:deq:diffu:BE:fdinterp}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+The mass matrix \( M \) can be lumped, and then the linear system corresponds
+to a plain Backward Euler finite difference method for the diffusion equation:
+
+<p>
+$$
+\begin{equation}
+[D_t^- u = \alpha D_xD_x u + f]^n_i
+\label{fem:deq:diffu:BE:fdinterp:lumped}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h3>Analysis of the discrete equations  <a name="___sec149"></a></h3>
+<p>
+Let us see how a typical numerical wave component
+
+<p>
+$$
+\begin{equation}
+u^n_q = A^n e^{ikq\Delta x} = A^ne^{ikx},
+\label{fem:deq:diffu:analysis:uni}
+\end{equation}
+$$
+is treated by the schemes. With the results
+
+<p>
+$$
+\begin{align*}
+[D_t^+ A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{A-1}{\Delta t},\\
+[D_t^- A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{1-A^{-1}}{\Delta t},\\
+[D_t A^n e^{ikq\Delta x}]^{n+\half} &= A^{n+\half} e^{ikq\Delta x}\frac{A^{\half}-A^{-\half}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t},
+[D_xD_x A^ne^{ikq\Delta x}]_q = -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),
+\end{align*}
+$$
+we can start inserting \eqref{fem:deq:diffu:analysis:uni} in the
+Forward Euler scheme with P1 elements in space and \( f=0 \),
+
+<p>
+$$
+\begin{equation}
+[D_t^+(u - \frac{1}{6}h^2D_xD_x u) = \alpha D_xD_x u]^n_q
+\label{fem:deq:diffu:FE:fdinterp2}
+\thinspace .
+\end{equation}
+$$
+We have
+
+<p>
+$$ [D_t^+D_xD_x Ae^{ikx}]^n_q = [D_t^+A]^n [D_xD_x e^{ikx}]_q
+= -A^ne^{ikp\Delta x}
+\frac{A-1}{\Delta t}\frac{4}{\Delta x^2}\sin^2 (\frac{k\Delta x}{2})
+\thinspace . $$
+The term \( [D_t^+A^ne^{ikx} - \frac{1}{6}\Delta x^2 D_t^+D_xD_x Ae^{ikx}]^n_q \)
+then reduces to
+
+<p>
+$$ \frac{A-1}{\Delta t} + \frac{1}{6}\Delta x^2 \frac{A-1}{\Delta t}
+\frac{4}{\Delta x^2}\sin^2 (\frac{k\Delta x}{2}), $$
+or
+$$ \frac{A-1}{\Delta t} \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
+\thinspace . $$
+The complete scheme becomes
+
+<p>
+$$
+(A-1) \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
+= -4C\sin^2 (k\Delta x/2),$$
+which we then solve for \( A \),
+
+<p>
+$$ A = 1 - 4C\frac{\sin^2 (k\Delta x/2)}{1 + \frac{2}{3}\sin^2 (k\Delta x/2)}
+\thinspace .$$
+
+<p>
+How does this \( A \) change the stability criterion compared to the
+Forward Euler finite difference scheme and centered differences in
+space? The stability criterion is \( -1<A \), meaning
+
+<p>
+$$
+4C\frac{\sin^2 (p/2}{1 + \frac{2}{3}\sin^2 (p/2)} \leq 2,
+$$
+with \( p=k\Delta x \). The factor \( {\sin^2 (p/2}/(1 + \frac{2}{3}\sin^2 (p/2)) \)
+can be plotted for \( p\in [0,\pi ] \), and the maximum value goes to 3/5
+as \( p\rightarrow \pi \). The worst case for stability therefore occurs for
+the shortest waves, and the stability criterion becomes
+
+<p>
+$$
+\begin{equation}
+C\leq \frac{5}{6}\quad\Rightarrow\quad \Delta t\leq \frac{5\Delta x^2}{6\alpha},
+\end{equation}
+$$
+which is a factor 5/3 better than for the standard Forward Euler
+finite difference method for the diffusion equation.
+Lumping the mass matrix will, however, recover the finite difference
+method and imply \( C\leq 1/2 \) for stability.
+
+<p>
+<!-- plot and compare A_FE_FEM vs A_FE_FDM and exact -->
+
+<p>
+For the Backward Euler scheme
+
+<p>
+$$
+\begin{equation}
+[D_t^-(u - \frac{1}{6}h^2D_xD_x u) = \alpha D_xD_x u]^n_i
+\label{fem:deq:diffu:BE:fdinterp2}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+we get
+
+<p>
+$$
+(1-A^{-1}) \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
+= -4C\sin^2 (k\Delta x/2),$$
+and hence
+
+<p>
+$$
+A = \left( 1 + 4C\frac{\sin^2 (k\Delta x/2)}{(1 + \frac{2}{3}\sin^2 (k\Delta x/2))}\right)^{-1}
+\thinspace .
+$$
+
+<p>
+<b>Remaining tasks</b>:
+
+<p>
+
+<ul>
+ <li> Plot \( A \) vs \( \Aex \) for finite elements and finite differences
+   for each of the time schemes.</li>
+</ul>
+
+<h2>Systems of differential equations <a name="fem:sys"></a></h2>
+<p>
+
+Many mathematical models involve \( m \) unknown functions
+governed by a system of \( m \) differential equations. In abstract form
+we may denote the unknowns by \( u^{(0)},\ldots,
+u^{(m-1)} \) and write the governing equations as
+
+<p>
+$$
+\begin{align*}
+{\cal L}_0(u^{(0)},\ldots,u^{(m-1)}) &= 0,\\
+&\vdots\\
+{\cal L}_{m-1}(u^{(0)},\ldots,u^{(m-1)}) &= 0,
+\end{align*}
+$$
+where \( {\cal L}_i \) is some differential operator defining differential
+equation number \( i \).
+
+<p>
+
+<h3>Variational forms <a name="fem:sys:vform"></a></h3>
+<p>
+There are basically two ways of formulating a variational form
+for a system of differential equations. The first method treats
+each equation independently as a scalar equation, while the other
+method views the total system as a vector equation with a vector function
+as unknown.
+
+<p>
+Let us start with the one equation at a time approach.
+We multiply equation number \( i \) by
+some test function \( v^{(i)}\in V^{(i)} \) and integrate over the domain:
+
+<p>
+$$
+\begin{align}
+\int_\Omega {\cal L}^{(0)}(u^{(0)},\ldots,u^{(m-1)}) v^{(0)}\dx &= 0,
+\label{fem:sys:vform:1by1a}\\
+&\vdots\\
+\int_\Omega {\cal L}^{(m-1)}(u^{(0)},\ldots,u^{(m-1)}) v^{(m-1)}\dx &= 0
+\label{fem:sys:vform:1by1b}
+\thinspace .
+\end{align}
+$$
+Terms with second-order derivatives may be integrated by parts, with
+Neumann conditions inserted in boundary integrals.
+Let
+
+<p>
+$$ V^{(i)} = \hbox{span}\{\basphi_0^{(i)},\ldots,\basphi_{N_i}^{(i)}\},$$
+such that
+
+<p>
+$$ u^{(i)} = B^{(i)}(\x) + \sum_{j=0}^{N_i} c_j^{(i)} \basphi_j^{(i)}(\x),
+$$
+where \( B^{(i)} \) is a boundary function to handle nonzero Dirichlet conditions.
+Observe that different unknowns live in different spaces with different
+basis functions and numbers of degrees of freedom.
+
+<p>
+From the \( m \) equations in the variational forms we can derive
+\( m \) coupled systems of algebraic equations for the
+\( \Pi_{i=0}^{m-1} N_i \) unknown coefficients \( c_j^{(i)} \), \( j=0,\ldots,N_i \),
+\( i=0,\ldots,m-1 \).
+
+<p>
+
+The alternative method for deriving a variational form for a system of
+differential equations introduces a vector of unknown functions
+
+<p>
+$$ \u = (u^{(0)},\ldots,u^{(m-1)}),$$
+a vector of test functions
+
+<p>
+$$ \v = (u^{(0)},\ldots,u^{(m-1)}),$$
+with
+
+<p>
+$$ \u, \v \in  \V = V^{(0)}\times \cdots \times V^{(m-1)}
+\thinspace .$$
+With nonzero Dirichlet conditions, we have a vector
+\( \pmb{B} = (B^{(0)},\ldots,B^{(m-1)}) \) with boundary functions and then
+it is \( \u - \pmb{B} \) that lies in \( \V \), not \( \u \) itself.
+
+<p>
+The governing system of differential equations is written
+
+<p>
+$$ \pmb{\cal L}(\u ) = 0,$$
+where
+
+<p>
+$$ \pmb{\cal L}(\u ) = ({\cal L}^{(0)}(\u),\ldots, {\cal L}^{(m-1)}(\u))
+\thinspace .$$
+The variational form is derived by taking the inner product of
+the vector of equations and the test function vector:
+
+<p>
+$$
+\begin{equation}
+\int_\Omega \pmb{\cal L}(\u )\cdot\v = 0\quad\forall\v\in\V\thinspace .
+\label{fem:sys:vform:inner}
+\end{equation}
+$$
+
+<p>
+Observe that \eqref{fem:sys:vform:inner} is one scalar equation. To derive
+systems of algebraic equations for the unknown coefficients in the
+expansions of the unknown functions, one chooses \( m \) linearly
+independent \( \v \) vectors to generate \( m \) independent variational forms
+from \eqref{fem:sys:vform:inner}.  The particular choice \( \v =
+(v^{(0)},0,\ldots,0) \) recovers \eqref{fem:sys:vform:1by1a}, \( \v =
+(0,\ldots,0,v^{(m-1)} \) recovers \eqref{fem:sys:vform:1by1b}, and \( \v =
+(0,\ldots,0,v^{(i)},0,\ldots,0) \) recovers the variational form number
+\( i \), \( \int_\Omega {\cal L}^{(i)} v^{(i)}\dx =0 \), in
+\eqref{fem:sys:vform:1by1a}-\eqref{fem:sys:vform:1by1b}.
+
+<p>
+
+<h3>A worked example <a name="fem:sys:uT:ex"></a></h3>
+<p>
+We now consider a specific system of two partial differential equations
+in two space dimensions:
+
+<p>
+$$
+\begin{align}
+\mu \nabla^2 w &= -\beta,
+\label{fem:sys:wT:ex:weq}\\
+\kappa\nabla^2 T &= - \mu ||\nabla w||^2
+\thinspace .
+\label{fem:sys:wT:ex:Teq}
+\end{align}
+$$
+The unknown functions \( w(x,y) \) and \( T(x,y) \) are defined in a domain \( \Omega \),
+while \( \mu \), \( \beta \),
+and \( \kappa \) are given constants. The norm in
+\eqref{fem:sys:wT:ex:Teq} is the standard Eucledian norm:
+
+<p>
+$$ ||\nabla w||^2 = \nabla w\cdot\nabla w = w_x^2 + w_y^2
+\thinspace .$$
+
+<p>
+The boundary conditions associated with
+\eqref{fem:sys:wT:ex:weq}-\eqref{fem:sys:wT:ex:Teq} are \( w=0 \) on
+\( \partial\Omega \) and \( T=T_0 \) on \( \partial\Omega \).
+Each of the equations \eqref{fem:sys:wT:ex:weq} and \eqref{fem:sys:wT:ex:Teq}
+need one condition at each point on the boundary.
+
+<p>
+The system \eqref{fem:sys:wT:ex:weq}-\eqref{fem:sys:wT:ex:Teq} arises
+from fluid flow in a straight pipe, with the \( z \) axis in the direction
+of the pipe. The domain \( \Omega \) is a cross section of the pipe, \( w \)
+is the velocity in the \( z \) direction, \( \mu \)
+is the viscosity of the fluid, \( \beta \) is the pressure gradient along
+the pipe, \( T \) is the temperature,
+and \( \kappa \) is the heat conduction coefficient of the
+fluid. The equation \eqref{fem:sys:wT:ex:weq} comes from the Navier-Stokes
+equations, and \eqref{fem:sys:wT:ex:Teq} follows from the energy equation.
+The term \( - \mu ||\nabla w||^2 \) models heating of the fluid
+due to internal friction.
+
+<p>
+Observe that the system \eqref{fem:sys:wT:ex:weq}-\eqref{fem:sys:wT:ex:Teq} has
+only a one-way coupling: \( T \) depends on \( w \), but \( w \) does not depend on
+\( T \), because we can solve \eqref{fem:sys:wT:ex:weq} with respect
+to \( w \) and then \eqref{fem:sys:wT:ex:Teq} with respect to \( T \).
+Some may argue that this is not a real system of PDEs, but just two scalar
+PDEs. Nevertheless, the one-way coupling
+is convenient when comparing different variational forms
+and different implementations.
+
+<p>
+
+<h3>Identical function spaces for the unknowns  <a name="___sec153"></a></h3>
+<p>
+Let us first apply the same function space \( V \) for \( w \) and \( T \)
+(or more precisely, \( w\in V \) and \( T-T_0 \in V \)).
+With
+
+<p>
+$$ V = \hbox{span}\{\basphi_0(x,y),\ldots,\basphi_N(x,y)\}, $$
+we write
+
+<p>
+$$
+\begin{equation}
+w = \sum_{j=0}^N c^{(w)}_j \basphi_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
+\basphi_j\thinspace .
+\label{fem:sys:wT:ex:sum}
+\end{equation}
+$$
+Note that \( w \) and \( T \) in \eqref{fem:sys:wT:ex:weq}-\eqref{fem:sys:wT:ex:Teq}
+denote the exact solution of the PDEs, while \( w \) and \( T \)
+\eqref{fem:sys:wT:ex:sum} are the discrete functions that approximate
+the exact solution. It should be clear from the context whether a
+symbol means the exact or approximate solution, but when we need both
+at the same time, we use a subscript e to denote the exact solution.
+
+<p>
+
+<h4>Variational form of each individual PDE  <a name="___sec154"></a></h4>
+<p>
+Inserting the expansions \eqref{fem:sys:wT:ex:sum}
+in the governing PDEs, results in a residual in each equation,
+
+<p>
+$$
+\begin{align}
+R_w &= \mu \nabla^2 w + \beta,
+\label{fem:sys:wT:ex:weq:R}\\
+R_T &= \kappa\nabla^2 T + \mu ||\nabla w||^2
+\thinspace .
+\label{fem:sys:wT:ex:Teq:R}
+\end{align}
+$$
+A Galerkin method demands \( R_w \) and \( R_T \) do be orthogonal to \( V \):
+
+<p>
+$$
+\begin{align*}
+\int_\Omega R_w v \dx &=0\quad\forall v\in V,\\
+\int_\Omega R_T v \dx &=0\quad\forall v\in V
+\thinspace .
+\end{align*}
+$$
+Because of the Dirichlet conditions, \( v=0 \) on \( \partial\Omega \).
+We integrate the Laplace terms by parts and note that the boundary terms
+vanish since \( v=0 \) on \( \partial\Omega \):
+
+<p>
+$$
+\begin{align}
+\int_\Omega \mu \nabla w\cdot\nabla v \dx &= \int_\Omega \beta v\dx
+\quad\forall v\in V,
+\label{fem:sys:wT:ex:w:vf1}\\
+\int_\Omega \kappa \nabla T\cdot\nabla v \dx &= \int_\Omega \mu
+\nabla w\cdot\nabla w\, v\dx \quad\forall v\in V
+\label{fem:sys:wT:ex:T:vf1}
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>Compound scalar variational form  <a name="___sec155"></a></h4>
+<p>
+The alternative way of deriving the variational from is to
+introduce a test vector function \( \v\in\V = V\times V \) and take
+the inner product of \( \v \) and the residuals, integrated over the domain:
+
+<p>
+$$ \int_{\Omega} (R_w, R_T)\cdot\v \dx = 0\quad\forall\v\in\V
+\thinspace .$$
+With \( \v = (v_0,v_1) \) we get
+
+<p>
+$$ \int_{\Omega} (R_w v_0 + R_T v_1) \dx = 0\quad\forall\v\in\V
+\thinspace .$$
+Integrating the Laplace terms by parts results in
+
+<p>
+$$
+\begin{equation}
+\int_\Omega (\mu\nabla w\cdot\nabla v_0 + \kappa\nabla T\cdot\nabla v_1)\dx
+= \int_\Omega (\beta v_0 + \mu\nabla w\cdot\nabla w\, v_1)\dx,
+\quad\forall \v\in\V
+\thinspace .
+\label{fem:sys:wT:ex:wT:vf2}
+\end{equation}
+$$
+Choosing \( v_0=v \) and \( v_1=0 \) gives the variational form
+\eqref{fem:sys:wT:ex:w:vf1}, while \( v_0=0 \) and \( v_1=v \) gives
+\eqref{fem:sys:wT:ex:T:vf1}.
+
+<p>
+With the inner product notation, \( (p,q) = \int_\Omega pq\dx \), we
+can alternatively write \eqref{fem:sys:wT:ex:w:vf1} and
+\eqref{fem:sys:wT:ex:T:vf1} as
+
+<p>
+$$
+\begin{align}
+ (\mu\nabla w,\nabla v) &= (\beta, v)
+\quad\forall v\in V,
+\label{fem:sys:wT:ex:w:vf1i}\\
+(\kappa \nabla T,\nabla v) &= (\mu\nabla w\cdot\nabla w, v)\quad\forall v\in V
+\label{fem:sys:wT:ex:T:vf1i}
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<h4>Decoupled linear systems  <a name="___sec156"></a></h4>
+<p>
+The linear systems governing the coefficients \( c_j^{(w)} \) and
+\( c_j^{(T)} \), \( j=0,\ldots,N \), are derived by inserting the
+expansions \eqref{fem:sys:wT:ex:sum} in \eqref{fem:sys:wT:ex:w:vf1}
+and \eqref{fem:sys:wT:ex:T:vf1}, and choosing \( v=\basphi_i \) for
+\( i=0,\ldots,N \). The result becomes
+
+<p>
+$$
+\begin{align}
+\sum_{j=0}^N A^{(w)}_{i,j} c^{(w)}_j &= b_i^{(w)},\quad i=0,\ldots,N,
+\label{fem:sys:wT:ex:linsys:w1}\\
+\sum_{j=0}^N A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
+\label{fem:sys:wT:ex:linsys:T1}\\
+A^{(w)}_{i,j} &= (\mu\nabla \basphi_j,\basphi_i),\\
+b_i^{(w)} &= (\beta, \basphi_i),\\
+A^{(T)}_{i,j} &= (\kappa\nabla \basphi_j,\basphi_i),\\
+b_i^{(T)} &= (\mu(\sum_j c^{(w)}_j\nabla\basphi_j)\cdot (\sum_k
+c^{(w)}_k\nabla\basphi_k), \basphi_i)
+\thinspace .
+\end{align}
+$$
+
+<p>
+We can solve the system for \( c_j^{(w)} \) first and then
+the right-hand side entries \( b_i^{(T)} \) are known such that we can
+solve the system for \( c_j^{(T)} \).
+
+<p>
+
+<h4>Coupled linear systems  <a name="___sec157"></a></h4>
+<p>
+Despite the fact that \( w \) can be computed first, without knowing \( T \),
+we shall now pretend that \( w \) and \( T \) enter a two-way coupling such
+that we need to derive the
+algebraic equations as <em>one system</em> for all the unknowns
+\( c_j^{(w)} \) and \( c_j^{(T)} \), \( j=0,\ldots,N \). This system is
+nonlinear in \( c_j^{(w)} \) because of the \( \nabla w\cdot\nabla w \) product.
+To remove this nonlinearity, imagine that we introduce an iteration
+method where we replace \( \nabla w\cdot\nabla w \) by
+\( \nabla \hat w\cdot\nabla w \), \( \hat w \) being the \( w \)
+computed in the previous iteration. Then the term
+\( \nabla \hat w\cdot\nabla w \) is linear in \( w \) since \( \hat w \) is
+known. The total linear system becomes
+
+<p>
+$$
+\begin{align}
+\sum_{j=0}^N A^{(w,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(w,T)}_{i,j} c^{(T)}_j
+&= b_i^{(w)},\quad i=0,\ldots,N,
+\label{fem:sys:wT:ex:linsys:w2}\\
+\sum_{j=0}^N A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
+\label{fem:sys:wT:ex:linsys:T2}\\
+A^{(w,w)}_{i,j} &= (\mu\nabla \basphi_j,\basphi_i),\\
+A^{(w,T)}_{i,j} &= 0,\\
+b_i^{(w)} &= (\beta, \basphi_i),\\
+A^{(w,T)}_{i,j} &= (\mu(\sum_k c^{(\hat w)}_k\nabla\basphi_k)\cdot\nabla\basphi_j), \basphi_i),\\
+A^{(T,T)}_{i,j} &= (\kappa\nabla \basphi_j,\basphi_i),\\
+b_i^{(T)} &= 0
+\thinspace .
+\end{align}
+$$
+This system can alternatively be written in block form
+
+<p>
+$$
+\left(\begin{array}{cc}
+\mu K & 0\\
+L & \kappa K
+\end{array}\right)
+\left(\begin{array}{c}
+c^{(w)}\\
+c^{(T)}
+\end{array}\right) =
+\left(\begin{array}{c}
+b^{(w)}\\
+0
+\end{array}\right),
+$$
+where \( K_{i,j}=(\nabla \basphi_i,\nabla\basphi_j) \) is the well-known matrix
+from the Laplace operator and \( L_{i,j}=A^{(w,T)}_{i,j} \).
+The \( c^{(w)} \), \( c^{(T)} \), and \( b^{(w)} \) block vectors hold the
+coefficients and right-hand side entries
+\( c^{(w)}_i \), \( c^{(T)}_i \), and \( b^{(w)}_i \), \( i=0,\ldots,N \).
+
+<p>
+Note that in the general case where all unknowns enter all equations,
+we have to solve the compound system \eqref{fem:sys:wT:ex:linsys:w2}-\eqref{fem:sys:wT:ex:linsys:T2} since then we cannot utilize the special property
+that \eqref{fem:sys:wT:ex:linsys:w1} does not involve \( T \) and can be solved
+first.
+
+<p>
+When the viscosity depends on the temperature, the
+\( \mu\nabla^2w \) term must be replaced by \( \nabla\cdot (\mu(T)\nabla w) \),
+and then \( T \) enters the equation for \( w \). Now we have a two-way coupling
+since both equations contain \( w \) and \( T \) and therefore
+must be solved simultaneously
+Th equation \( \nabla\cdot (\mu(T)\nabla w)=-\beta \) is nonlinear,
+and if some iteration procedure is invoked, where we use a previously
+computed \( \hat T \) in the viscosity (\( \mu(\hat T) \)), the coefficient is known,
+and the equation involves only one unknown, \( w \). In that case we are
+back to the one-way coupled set of PDEs.
+
+<p>
+
+We may also formulate our PDE system as a vector equation. To this end,
+we introduce the vector of unknowns \( \u = (u^{(0)},u^{(1)}) \),
+where \( u^{(0)}=w \) and \( u^{(1)}=T \). We then have
+
+<p>
+$$
+\nabla^2 \u = \left(\begin{array}{cc}
+-{\mu}^{-1}{\beta}\\
+-{\kappa}^{-1}\mu \nabla u^{(0)}\cdot\nabla u^{(0)}
+\end{array}\right)\thinspace .
+$$
+
+<p>
+
+<h3>Different function spaces for the unknowns  <a name="___sec158"></a></h3>
+<p>
+
+It is easy to generalize the previous formulation to the case where
+\( w\in V^{(w)} \) and \( T\in V^{(T)} \), where \( V^{(w)} \) and \( V^{(T)} \)
+can be different spaces with different numbers of degrees of freedom.
+For example, we may use quadratic basis functions for \( w \) and linear
+for \( T \). Approximation of the unknowns by different finite element
+spaces is known as <em>mixed finite element methods</em>.
+
+<p>
+We write
+
+<p>
+$$
+\begin{align*}
+V^{(w)} &= \hbox{span}\{\basphi_0^{(w)},\ldots,\basphi_{N_w}^{(w)}\},\\
+V^{(T)} &= \hbox{span}\{\basphi_0^{(T)},\ldots,\basphi_{N_T}^{(T)}\}
+\thinspace .
+\end{align*}
+$$
+The next step is to
+multiply \eqref{fem:sys:wT:ex:weq} by a test function \( v^{(w)}\in V^{(w)} \)
+and \eqref{fem:sys:wT:ex:Teq} by a \( v^{(T)}\in V^{(T)} \), integrate by
+parts and arrive at
+
+<p>
+$$
+\begin{align}
+\int_\Omega \mu \nabla w\cdot\nabla v^{(w)} \dx &= \int_\Omega \beta v^{(w)}\dx
+\quad\forall v^{(w)}\in V^{(w)},
+\label{fem:sys:wT:ex:w:vf3}\\
+\int_\Omega \kappa \nabla T\cdot\nabla v^{(T)} \dx &= \int_\Omega \mu
+\nabla w\cdot\nabla w\, v^{(T)}\dx \quad\forall v^{(T)}\in V^{(T)}
+\label{fem:sys:wT:ex:T:vf3}
+\thinspace .
+\end{align}
+$$
+
+<p>
+The compound scalar variational formulation applies a test vector function
+\( \v = (v^{(w)}, v^{(T)}) \) and reads
+
+<p>
+$$
+\begin{equation}
+\int_\Omega (\mu\nabla w\cdot\nabla v^{(w)} +
+\kappa\nabla T\cdot\nabla v^{(T)})\dx
+= \int_\Omega (\beta v^{(w)} + \mu\nabla w\cdot\nabla w\, v^{(T)})\dx,
+\label{fem:sys:wT:ex:wT:vf3}
+\end{equation}
+$$
+valid \( \forall \v\in\V = V^{(w)}\times V^{(T)} \).
+
+<p>
+The associated linear system is similar to
+\eqref{fem:sys:wT:ex:linsys:w1}-\eqref{fem:sys:wT:ex:linsys:T1}
+or
+\eqref{fem:sys:wT:ex:linsys:w2}-\eqref{fem:sys:wT:ex:linsys:T2},
+except that we need to distinguish between \( \basphi_i^{(w)} \)
+and \( \basphi_i^{(T)} \), and the range in the sums over \( j \)
+must match the number of degrees of freedom in the spaces \( V^{(w)} \)
+and \( V^{(T)} \). The formulas become
+
+<p>
+$$
+\begin{align}
+\sum_{j=0}^{N_w} A^{(w)}_{i,j} c^{(w)}_j &= b_i^{(w)},\quad i=0,\ldots,N_w,
+\label{fem:sys:wT:ex:linsys:w1:mixed}\\
+\sum_{j=0}^{N_T} A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
+\label{fem:sys:wT:ex:linsys:T1:mixed}\\
+A^{(w)}_{i,j} &= (\mu\nabla \basphi_j^{(w)},\basphi_i^{(w)}),\\
+b_i^{(w)} &= (\beta, \basphi_i^{(w)}),\\
+A^{(T)}_{i,j} &= (\kappa\nabla \basphi_j^{(T)},\basphi_i^{(T)}),\\
+b_i^{(T)} &= (\mu(\sum_j c^{(w)}_j\nabla\basphi_j^{(w)})\cdot (\sum_k
+c^{(w)}_k\nabla\basphi_k^{(w)}), \basphi_i^{(T)})
+\thinspace .
+\end{align}
+$$
+
+<p>
+In the case we formulate one compound linear system involving
+both \( c^{(w)}_j \), \( j=0,\ldots,N_w \), and \( c^{(T)}_j \), \( j=0,\ldots,N_T \),
+\eqref{fem:sys:wT:ex:linsys:w2}-\eqref{fem:sys:wT:ex:linsys:T2}
+becomes
+
+<p>
+$$
+\begin{align}
+\sum_{j=0}^{N_w} A^{(w,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^{N_T} A^{(w,T)}_{i,j} c^{(T)}_j
+&= b_i^{(w)},\quad i=0,\ldots,N_w,
+\label{fem:sys:wT:ex:linsys:w2}\\
+\sum_{j=0}^{N_w} A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^{N_T} A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
+\label{fem:sys:wT:ex:linsys:T2}\\
+A^{(w,w)}_{i,j} &= (\mu\nabla \basphi_j^{(w)},\basphi_i^{(w)}),\\
+A^{(w,T)}_{i,j} &= 0,\\
+b_i^{(w)} &= (\beta, \basphi_i^{(w)}),\\
+A^{(w,T)}_{i,j} &= (\mu(\sum_k c^{(\hat w)}_k\nabla\basphi_k^{(w)})\cdot\nabla\basphi_j^{(w)}), \basphi_i^{(T)}),\\
+A^{(T,T)}_{i,j} &= (\kappa\nabla \basphi_j^{(T)},\basphi_i^{(T)}),\\
+b_i^{(T)} &= 0
+\thinspace .
+\end{align}
+$$
+The corresponding block form
+
+<p>
+$$
+\left(\begin{array}{cc}
+\mu K^{(w)} & 0\\
+L & \kappa K^{(T)}
+\end{array}\right)
+\left(\begin{array}{c}
+c^{(w)}\\
+c^{(T)}
+\end{array}\right) =
+\left(\begin{array}{c}
+b^{(w)}\\
+0
+\end{array}\right),
+$$
+has square and rectangular block matrices: \( K^{(w)} \) is \( N_w\times N_w \),
+\( K^{(T)} \) is \( N_T\times N_T \), while \( L \) is \( N_T\times N_w \),
+
+<p>
+
+<h3>Computations in 1D  <a name="___sec159"></a></h3>
+<p>
+We can reduce the system \eqref{fem:sys:wT:ex:weq}-\eqref{fem:sys:wT:ex:Teq}
+to one space dimension, which corresponds to flow in a channel between
+two flat plates. Alternatively, one may consider flow in a circular
+pipe, introduce cylindrical coordinates, and utilize the radial symmetry
+to reduce the equations to a one-dimensional problem in the radial
+coordinate. The former model becomes
+
+<p>
+$$
+\begin{align}
+\mu w_{xx} &= -\beta,
+\label{fem:sys:wT:ex1D:weq}\\
+\kappa T_{xx} &= - \mu w_x^2,
+\label{fem:sys:wT:ex1D:Teq}
+\end{align}
+$$
+while the model in the radial coordinate \( r \) reads
+
+<p>
+$$
+\begin{align}
+\mu\frac{1}{r}\frac{d}{dr}\left( r\frac{dw}{dr}\right) &= -\beta,
+\label{fem:sys:wT:ex1Dr:weq}\\
+\kappa \frac{1}{r}\frac{d}{dr}\left( r\frac{dw}{dr}\right) &= - \mu \left(
+\frac{dw}{dr}\right)^2
+\thinspace .
+\label{fem:sys:wT:ex1Dr:Teq}
+\end{align}
+$$
+
+<p>
+The domain for \eqref{fem:sys:wT:ex1D:weq}-\eqref{fem:sys:wT:ex1D:Teq}
+is \( \Omega = [0,H] \), with boundary conditions \( w(0)=w(H)=0 \) and
+\( T(0)=T(H)=T_0 \). For
+\eqref{fem:sys:wT:ex1Dr:weq}-\eqref{fem:sys:wT:ex1Dr:Teq} the domain
+is \( [0,R] \) (\( R \) being the radius of the pipe) and the boundary
+conditions are \( du/dr = dT/dr =0 \) for \( r=0 \), \( u(R)=0 \), and \( T(R)=T_0 \).
+
+<p>
+<!-- 2DO -->
+
+<p>
+<b>Calculations to be continued...</b>
+
+<p>
+
+<h3>Another example in 1D <a name="fem:sys:up:1D"></a></h3>
+<p>
+$$
+\begin{align}
+\frac{\partial w}{\partial x} &= 0,
+\label{fem:sys:up:1D:eq:mass}\\
+w &=-a\frac{partial u}{\partial x}
+\label{fem:sys:up:1D:eq:Darcy}
+\thinspace .
+\end{align}
+$$
+
+<p>
+Boundary conditions: \( u(0)=0 \), \( u(L)=C \).
+
+<p>
+$$
+\begin{equation}
+\frac{\partial}{\partial x}\left( a \frac{partial u}{\partial x}\right )= 0
+\label{fem:sys:up:1D:eq:u}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+Mixed finite elements vs standard finite elements.
+
+<p>
+<!-- 2DO -->
+
+<p>
+<b>Calculations to be continued...</b>
+
+<p>
+
+
+<h2>Exercises  <a name="___sec161"></a></h2>
+<p>
+
 <!-- examples on model4 with 1, x, x^2 etc. Show that N=2 recovers -->
 <!-- the exact solution -->
 
@@ -8548,11 +9547,7 @@ functions by \( r \), and look up vertex coordinates through \( q(e,r) \).
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8600,16 +9595,12 @@ Filename: <tt>cable_sin</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
 
-<h3>Exercise 18: Check integration by parts  <a name="___sec139"></a></h3>
+<h3>Exercise 18: Check integration by parts  <a name="___sec163"></a></h3>
 <a name="fem:deq:exer:intg:parts"></a>
 
 <p>
@@ -8624,16 +9615,12 @@ Filename: <tt>cable_integr_by_parts</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
 
-<h3>Exercise 19: Compute the deflection of a cable with 2 P1 elements  <a name="___sec140"></a></h3>
+<h3>Exercise 19: Compute the deflection of a cable with 2 P1 elements  <a name="___sec164"></a></h3>
 <a name="fem:deq:exer:intg:parts"></a>
 
 <p>
@@ -8646,16 +9633,12 @@ Filename: <tt>cable_2P1</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
 
-<h3>Exercise 20: Compute the deflection of a cable with 1 P2 element  <a name="___sec141"></a></h3>
+<h3>Exercise 20: Compute the deflection of a cable with 1 P2 element  <a name="___sec165"></a></h3>
 <a name="fem:deq:exer:intg:parts"></a>
 
 <p>
@@ -8668,11 +9651,7 @@ Filename: <tt>cable_1P2</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8703,7 +9682,6 @@ $$ u'' =\left\lbrace\begin{array}{ll}
 
 <p>
 
-<p>
 <b>a)</b> Use \( \basphi_i = \sin((i+1)\pi x) \), \( i=0,\ldots,N \) and the Galerkin method
 without integration by parts. Derive a formula
 for \( c_j \) in the solution expansion \( u=\sum_j c_j\basphi_j \).
@@ -8721,11 +9699,7 @@ Filename: <tt>cable_discont_load</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8744,7 +9718,7 @@ approaches.
 <p>
 Consider the system \eqref{fem:deq:1D:ex1:Ab:glob}
 modified for the boundary value \( u(L)=D \), as explained in
-the section <a href="#fem:deq:1D:essBC:Bfunc">General construction of a boundary function</a>, and the system
+the section <a href="#fem:deq:1D:fem:essBC:Bfunc">General construction of a boundary function</a>, and the system
 \eqref{fem:deq:1D:ex1:Ab:glob3}, where all \( c_0,\ldots,c_N \) are
 involved. Show that eliminating \( c_1 \) and \( c_N \) from
 \eqref{fem:deq:1D:ex1:Ab:glob3} results in the other system
@@ -8755,11 +9729,7 @@ involved. Show that eliminating \( c_1 \) and \( c_N \) from
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8785,11 +9755,7 @@ Filename: <tt>nonuniform_P1.pdf</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8809,22 +9775,11 @@ $$
 
 <p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
-
-<p>
 <!-- Could have shooting method as a project -->
 
 <p>
 
-<p>
 <b>a)</b> Find the analytical solution to this problem.
 (Introduce \( w=u' \), solve the first-order differential equation for \( w(x) \),
 and integrate once more.)
@@ -8861,11 +9816,7 @@ Filename: <tt>convdiff1D_P1</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8890,7 +9841,6 @@ $$
 
 <p>
 
-<p>
 <b>a)</b> Use a uniform mesh partition with P1 elements and show what the
 resulting set of equations becomes. Integrate the matrix entries
 exact by hand, but use a Trapezoidal rule to integrate the \( f \) term.
@@ -8936,11 +9886,7 @@ Filename: <tt>radial_Poisson1D_P1.pdf</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -8976,11 +9922,7 @@ Filename: <tt>atan1D_P1.pdf</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -9007,7 +9949,6 @@ We assume for simplicity that the cross section is the unit square:
 
 <p>
 
-<p>
 <b>a)</b> We consider the basis
 \( \basphi_{p,q}(x,y) = \sin((p+1)\pi x)\sin (q\pi y) \), \( p,q=0,\ldots,n \).
 These basis functions fulfill the Dirichlet condition.
