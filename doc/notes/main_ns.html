@@ -1,0 +1,1090 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: #ffffff;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+      color: #000000;
+    }
+    h1 { font-size: 1.8em; color: #1e36ce; }
+    h2 { font-size: 1.5em; color: #1e36ce; }
+    h3 { color: #1e36ce; }
+    a { color: #1e36ce; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    pre { background: #ededed; color: #000; padding: 15px;}
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+
+\newcommand{\xpoint}{\pmb{x}}
+\newcommand{\normalvec}{\pmb{n}}
+
+\newcommand{\x}{\pmb{x}}
+\newcommand{\X}{\pmb{X}}
+\renewcommand{\u}{\pmb{u}}
+\renewcommand{\v}{\pmb{v}}
+\newcommand{\w}{\pmb{w}}
+\newcommand{\V}{\pmb{V}}
+\newcommand{\e}{\pmb{e}}
+\newcommand{\f}{\pmb{f}}
+\newcommand{\F}{\pmb{F}}
+\newcommand{\stress}{\pmb{\sigma}}
+\newcommand{\strain}{\pmb{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\pmb{I}}
+\newcommand{\T}{\pmb{T}}
+
+% Unit vectors
+\newcommand{\ii}{\pmb{i}}
+\newcommand{\jj}{\pmb{j}}
+\newcommand{\kk}{\pmb{k}}
+\newcommand{\ir}{\pmb{i}_r}
+\newcommand{\ith}{\pmb{i}_{\theta}}
+\newcommand{\iz}{\pmb{i}_z}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\phib}{\pmb{\varphi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\pmb{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+<!-- ------------------- main content ------------------------>
+
+<title>Numerical methods for the Navier-Stokes equations</title>
+
+<center><h1>Numerical methods for the Navier-Stokes equations</h1></center>  <! -- document title -->
+
+<! -- author(s) -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2]
+</center>
+
+
+<p>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Department of Informatics, University of Oslo</b></center>
+
+
+<center><h4>Nov 29, 2012</h4></center> <!-- date -->
+<p>
+Note: <b>PRELIMINARY VERSION</b> (expect lots of typos!)
+
+<p>
+
+<h2>Table of contents</h2>
+
+<p>
+
+<a href="#ns:mathphys"> The physical and mathematical problem </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#ns:PDEs"> The Navier-Stokes equations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#ns:derivation"> Derivation </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec3"> Boundary conditions </a><br>
+<a href="#___sec4"> The classical splitting method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec5"> A simple, naive approach </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#ns:split:std"> A working scheme </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec7"> Boundary conditions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec8"> Spatial discretization by the finite element method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec9"> Stress formulations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec10"> Increasing the implicitness </a><br>
+<a href="#___sec11"> Methods based on slight compressibility </a><br>
+<a href="#___sec12"> Fully implicit formulation </a><br>
+<a href="#___sec13"> Applications </a><br>
+
+<p>
+
+
+<!-- 2DO -->
+<!-- FEniCS tutorial has just the algorithm, var form and code -->
+<!-- Here we derive and reason about methods -->
+
+<p>
+<!-- Must say clearer that the unknowns are in the function spaces, -->
+<!-- now it is very much the test functions...problem several places. -->
+
+<p>
+
+
+<h2>The physical and mathematical problem <a name="ns:mathphys"></a></h2>
+<p>
+Fluid flow is one of the most common physical phenomena in nature and
+technological devices. Examples include atmospheric flows ("weather"),
+global ocean currents, air flow around a car, breathing, and
+circulation of blood, to mention a few. The focus in the forthcoming text is
+on a subset of flows without turbulence, where the flow can be considered
+as incompressible, and where the fluid's viscosity is constant.
+(Actually, the model to be discussed
+can be used for turbulence, in principle, but the computations are very
+heavy.)
+
+<p>
+
+<h3>The Navier-Stokes equations <a name="ns:PDEs"></a></h3>
+<p>
+
+For incompressible flow, the key unknowns are the pressure field \( p(\x,t) \) and
+the velocity field \( \u(\x,t) \). These quantities are governed by the
+a momentum balance equation,
+
+<p>
+$$
+\begin{equation}
+ \u_t + (\u\cdot\nabla) \u = -\frac{1}{\varrho}\nabla p + \nu\nabla^2\u + \f,
+\label{ns:NS:mom}
+\end{equation}
+$$
+and a mass balance equation
+
+<p>
+$$
+\begin{equation}
+\nabla\cdot\u = 0
+\label{ns:NS:mass}
+\thinspace .
+\end{equation}
+$$
+Equations \eqref{ns:NS:mom} and \eqref{ns:NS:mass} are known as
+<em>Navier-Stokes equations</em> for incompressible flow. The parameter
+\( \varrho \) is the fluid density, \( \nu \) is the (kinematic) viscosity,
+and \( \f \) denotes body forces such as gravity. Geophysical applications
+often need to incorporate the Coriolis and centrifugal forces in \( \f \).
+The Navier-Stokes equations are to be solved in a spatial domain
+\( \Omega \) for \( t\in (0,T] \).
+
+<p>
+
+<h3>Derivation <a name="ns:derivation"></a></h3>
+<p>
+The derivation of the Navier-Stokes equations contains some equations
+that are useful for alternative formulations of numerical methods, so
+we shall briefly recover the steps to arrive at \eqref{ns:NS:mom}
+and \eqref{ns:NS:mass}. We start with the general momentum
+balance equation for a continuum (arising from Newton's second law
+of motion),
+
+<p>
+$$
+\begin{equation}
+\varrho\Ddt{u} = \nabla\cdot\stress + \varrho\f,
+\label{ns:momentum:general}
+\end{equation}
+$$
+where \( \stress \) is the stress tensor and the operator \( D/dt \) is
+the material derivative,
+$$
+\begin{equation}
+\Ddt{\u} = \u_t + (\u\cdot\nabla)\u,
+\end{equation}
+$$
+here denoting acceleration.
+Therefore, \( \varrho D\u/dt \) is density ("mass")
+times acceleration, while the terms on the right-hand side
+are the forces that induce the motion \( \u \): the internal stresses \( \stress \)
+and the external body forces \( \f \).
+
+<p>
+
+The other fundamental equation for a fluid is that of mass conservation,
+called the continuity equation. It has the general form
+
+<p>
+$$
+\begin{equation}
+\varrho_t + \nabla\cdot (\varrho\u) = 0,
+\end{equation}
+$$
+which can be rewritten as
+$$ \nabla\cdot\u = \frac{1}{\varrho}\Ddt{\varrho}
+\thinspace.
+$$
+An incompressible flow is defined as a flow where each fluid particle
+maintains its density. Since \( \Ddt{\varrho} \) is the rate of change
+of \( \varrho \) of a fluid particle, incompressible flow means
+\( \Ddt{\varrho}=0 \) and hence \( \nabla\cdot\u = 0 \). The latter is the
+most useful equation in a PDE system for incompressible flow
+since it involves the unknown velocity \( \u \).
+
+<p>
+
+Different types of fluids will have different relations between
+the motion \( \u \) and the internal stresses \( \stress \). A <em>Newtonian</em> fluid
+has an isotropic, linear relation between \( \u \) and \( \stress \):
+
+<p>
+$$
+\begin{equation}
+\stress = -p\I + \mu (\nabla\u + (\nabla\u)^T),
+\label{ns:stress:u}
+\end{equation}
+$$
+where \( \I \) is the identity tensor, and \( \mu \) is the dynamic viscosity (\( \mu = \varrho\nu \)). The relation \eqref{ns:stress:u} assumes incompressible flow.
+Inserting \eqref{ns:stress:u} in \eqref{ns:momentum:general} gives
+\eqref{ns:NS:mom} after dividing by \( \varrho \), using
+\( \nabla\cdot (p\I) = \nabla p \), and calculating
+\( \nabla\cdot (\nabla\u + (\nabla\u)^T) \) as \( \nabla^2\u + \nabla (\nabla\cdot\u)
+= \nabla^2\u \). The vector operations involving the nabla operator are
+easiest performed by using index or dyadic notation, but the derivation of
+the particular terms is not important for the forthcoming text.
+
+<p>
+Some numerical methods apply the \( \nabla\cdot\stress = -\nabla p + \nabla\cdot
+(\nabla\u + (\nabla\u)^T) \) form in \eqref{ns:NS:mom}:
+
+<p>
+$$
+\begin{equation}
+ \u_t + (\u\cdot\nabla) \u = \frac{1}{\varrho}\nabla\cdot\stress + \f,
+\label{ns:NS:mom:stress0}
+\end{equation}
+$$
+or
+$$
+\begin{equation}
+ \u_t + (\u\cdot\nabla) \u = -\frac{1}{\varrho}\nabla p +
+\nu\nabla\cdot (\nabla\u + (\nabla\u)^T) + \f
+\label{ns:NS:mom:stress}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+Other formulations add a \( \varrho_t \) term to the continuity equation,
+usually by assuming slight compressibility.
+Then \( \varrho = \varrho (p) \) and we have
+$$ \varrho_t = \frac{\partial\varrho}{\partial p}p_t
+\thinspace .$$
+It is common to evaluate \( \partial\varrho/\partial p \) for some
+fixed reference value \( \varrho_0 \) so that
+\( 1/c^2 = \partial\varrho/\partial p \) can be treated as a constant.
+The parameter \( c \) is the speed of sound in the fluid. The equation
+of continuity is in such cases often written as
+
+<p>
+$$
+\begin{equation}
+p_t + c^2\nabla\cdot\u = 0,
+\label{ns:NS:mass:slightcompr}
+\end{equation}
+$$
+where we have used the simplification \( \nabla(\varrho\u) = \varrho_0\nabla\u \)
+for a slightly incompressible fluid and divided the original equation by
+\( \varrho_0 \).
+
+<p>
+
+<h3>Boundary conditions  <a name="___sec3"></a></h3>
+<p>
+
+The incompressible Navier-Stokes equations need three scalar conditions on
+the velocity components or the stress vector at each point on the
+boundary. The boundary conditions can be classified as follows.
+
+<p>
+
+<ul>
+ <li> Dirichlet conditions: components of \( \u \) are known.</li>
+ <li> Neumann conditions:</li>
+
+<ul>
+    <li> Stress condition: components of \( \stress\cdot\normalvec \) are prescribed.</li>
+    <li> Outflow or symmetry condition: \( \partial\u/\partial n=0 \) (or
+      components of this vector are zero).</li>
+</ul>
+
+</ul>
+
+We have here introduce the notion of Dirichlet and Neumann conditions
+using similarities with Laplace and Poisson problems (i.e., whether
+the condition regards the unknown itself or its derivative).
+
+<p>
+A combination of velocity and stress boundary conditions at a point
+is possible. For example, at a symmetry boundary we set the normal
+velocity to be zero.
+
+<p>
+<!-- At a symmetry boundary, combinations of the listed conditions appear at the -->
+<!-- same point, see ref{ns:exer:symmetry}. -->
+
+<p>
+<!-- A condition on the primary unknown \( \u \) is often referred to as a -->
+<!-- Dirichlet condition, while a condition on the stress vector -->
+<!-- \( \stress\cdot\normalvec \) can be named a Neumann condition (using a -->
+<!-- similarity with the naming of the corresponding conditions in a Laplace -->
+<!-- or Poisson problem). -->
+
+<p>
+
+<h2>The classical splitting method  <a name="___sec4"></a></h2>
+<p>
+
+The earliest and still the most widely applied numerical method for
+the incompressible Navier-Stokes equations is based on splitting
+the PDE system into simpler components for which we can apply
+standard discretization methods. Such a strategy is known as
+<em>operator splitting</em>.
+
+<p>
+<!-- citations -->
+
+<p>
+
+<h3>A simple, naive approach  <a name="___sec5"></a></h3>
+<p>
+The equation \eqref{ns:NS:mom} looks similar to a convection-diffusion
+equation. The simplest possible numerical method for such equations
+applies an explicit Forward Euler scheme in time. It is therefore
+tempting to advance \eqref{ns:NS:mom} in time using a standard Forward Euler
+discretization:
+
+<p>
+$$
+\begin{equation}
+\frac{\u^{n+1}-\u^n}{\Delta t} + (\u^n\cdot\nabla)\u^n = -\frac{1}{\varrho}
+\nabla p^n + \nu\nabla^2\u^n + \f^n,
+\end{equation}
+$$
+which yields an explicit formula for \( \u^{n+1} \):
+
+<p>
+$$
+\begin{equation}
+\u^{n+1} = \u^n - \Delta t(\u^n\cdot\nabla)\u^n -\frac{\Delta t}{\varrho}
+\nabla p^n + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n
+\label{ns:split:FE0}
+\thinspace .
+\end{equation}
+$$
+There are two fundamental problems with this method:
+
+<p>
+
+<ul>
+ <li> the new \( \u^{n+1} \) will in general not satisfy \eqref{ns:NS:mass}, i.e.,
+   \( \nabla\cdot\u^{n+1}\neq 0 \),</li>
+ <li> there is no strategy for computing \( p^{n+1} \).</li>
+</ul>
+
+We may say that the incompressible Navier-Stokes equations are difficult
+to solve numerically because of the incompressibility constraint
+\( \nabla\cdot\u = 0 \) and the pressure term \( \nabla p \).
+
+<p>
+<!-- in \eqref{ns:NS:mom}. -->
+
+<p>
+
+<h3>A working scheme <a name="ns:split:std"></a></h3>
+<p>
+Intuitively speaking, the fulfillment \( \nabla\cdot\u^{n+1} \) requires us to
+have "more unknowns to play with" when advancing \eqref{ns:NS:mom}.
+The idea is to basically use the Forward Euler scheme, but evaluate the
+pressure term at the new time level \( n+1 \):
+
+<p>
+$$
+\begin{equation}
+\u^{n+1} = \u^n - \Delta t(\u^n\cdot\nabla)\u^n -\frac{\Delta t}{\varrho}
+\nabla p^{n+1} + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n
+\label{ns:split:FE}
+\thinspace .
+\end{equation}
+$$
+We must also require
+
+<p>
+$$
+\begin{equation}
+\nabla\cdot\u^{n+1} = 0
+\thinspace .
+\label{ns:split:cont}
+\end{equation}
+$$
+The equations \eqref{ns:split:FE}-\eqref{ns:split:cont} constitute 3+1
+coupled PDEs for the 3+1 unknowns \( \u^{n+1} \) and \( p^{n+1} \).
+
+<p>
+The method for solving \eqref{ns:split:FE}-\eqref{ns:split:cont} is
+based on a splitting idea where we first propagate the velocity
+from old values to some intermediate velocity \( \u^* \), using
+\eqref{ns:split:FE}. Then we enforce the incompressibility constraint
+\eqref{ns:split:cont} to compute a correction to \( \u^* \) and also the
+new pressure \( p^{n+1} \).
+
+<p>
+A plain Forward Euler discretization of \eqref{ns:NS:mom}, but
+with a weight \( \beta \) on the \( \nabla p^n \) term, reads
+
+<p>
+$$
+\begin{equation}
+\u^{*} = \u^n - \Delta t(\u^n\cdot\nabla)\u^n - \beta\frac{\Delta t}{\varrho}
+\nabla p^{n} + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n
+\label{ns:split:FE2}
+\thinspace
+\end{equation}
+$$
+The intermediate velocity \( \u^* \) does not fulfill the incompressibility
+constraint \eqref{ns:split:cont}, but we seek a correction \( \delta\u \),
+
+<p>
+$$
+\begin{equation}
+\u^{n+1} = \u^* + \delta\u,
+\label{ns:split:corr:du}
+\end{equation}
+$$
+such that \( \nabla\cdot \u^{n+1} = 0 \). Since \( \delta\u = \u^{n+1} - \u^* \),
+we can subtract \eqref{ns:split:FE2} from \eqref{ns:split:FE} to
+find \( \delta\u \).
+
+<p>
+$$
+\begin{equation}
+\delta\u = \u^{n+1} - \u^* = -\frac{\Delta t}{\varrho}\nabla\Phi
+\label{ns:split:du}
+\thinspace .
+\end{equation}
+$$
+The quantity \( \Phi \) is introduced as a kind of pressure change:
+
+<p>
+$$
+\begin{equation}
+\Phi = p^{n+1} - \beta p^n
+\label{ns:split:Phi}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+Inserting \( \delta\u \) in the incompressibility constraint,
+
+<p>
+$$ \nabla\cdot (\u^* + \delta\u) = 0,$$
+or equivalently,
+$$ \nabla\cdot\delta\u = - \nabla\cdot \u^* ,$$
+results in
+
+<p>
+$$
+\begin{equation}
+\nabla^2 \Phi = \frac{\varrho}{\Delta t}\nabla\cdot\u^*,
+\label{ns:split:Poisson}
+\end{equation}
+$$
+since \( \nabla\cdot\nabla\Phi = \nabla^2\Phi \).
+
+<p>
+As soon as \( \Phi \) is computed from the Poisson equation
+\eqref{ns:split:Poisson}, we can calculate
+
+<p>
+$$
+\begin{equation}
+\u^{n+1}  = \u^* -\frac{\Delta t}{\varrho}\nabla\Phi,
+\label{ns:split:u:np1}
+\end{equation}
+$$
+and
+
+<p>
+$$
+\begin{equation}
+p^{n+1} = \Phi + \beta p^n
+\label{ns:split:p:np1}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+The solution algorithm at a time level then consists of the following
+steps:
+
+<p>
+
+<ol>
+<li> Compute the intermediate velocity \( \u^* \) from \eqref{ns:split:FE2}.</li>
+<li> Solve the Poisson equation \eqref{ns:split:Poisson} for \( \Phi \).</li>
+<li> Update the velocity from \eqref{ns:split:u:np1}.</li>
+<li> Update the pressure from \eqref{ns:split:p:np1}.</li>
+</ol>
+
+<b>Remarks.</b> The literature is full of papers and books with methods equivalent or
+almost equivalent to the scheme above. Many schemes apply \( \beta =0 \)
+and replace \( \Phi \) by \( p^{n+1} \).
+
+<p>
+<!-- 2DO -->
+<!-- cite literature, incl the FEniCS book -->
+
+<p>
+
+<h3>Boundary conditions  <a name="___sec7"></a></h3>
+<p>
+What boundary conditions should we assign
+to \( \u^* \) when solving \eqref{ns:split:FE2}? A standard choice is
+to apply the same boundary conditions as those specified for \( \u \).
+It follows that \( \delta\u =0 \) on the boundary where \( \u \) is subject
+to Dirichlet conditions. We let \( \partial\Omega_{D,u} \) denote
+the part of the boundary \( \partial\Omega \) with Dirichlet conditions,
+while \( \partial\Omega_{N,u} \) denotes the boundary where Neumann
+conditions involving \( \partial\u/\partial n \) apply.
+
+<p>
+The boundary condition on the pressure in the original incompressible
+Navier-Stokes equations is simply to prescribe \( p \) at a single point,
+potentially as a function of time. However, when solving
+the Poisson equation \eqref{ns:split:Poisson} we need Dirichlet
+or Neumann boundary conditions for \( \Phi \) (the pressure change)
+on the whole boundary. Sometimes the
+pressure is prescribed at an inlet or outlet boundary, which then
+yields a Dirichlet condition for \( \Phi = p^{n+1}-\beta p^n \).
+At the boundaries where \( \u \) is subject to Dirichlet conditions,
+\( \u^* \) has the same conditions,
+and \( \delta\u = 0 \), which implies \( \nabla\Phi =0 \).
+In particular, \( \partial\Phi/\partial n=0 \), and homogeneous Neumann
+conditions are therefore used on such boundaries
+when solving the Poisson equation for
+\( \Phi \). Also, at symmetry boundaries, \( \partial\Phi/\partial n=0 \).
+At an inlet boundary, a pressure gradient in the flow
+direction is often known, say as \( f(t) \), implying that we can compute
+\( \partial\Phi/\partial n= -(f(t^{n+1}) - \beta f(t^n)) \).
+
+<p>
+We let \( \partial\Omega_{D,\Phi} \) be the part of the boundary where
+\( \Phi \) is subject to Dirichlet conditions, while
+\( \partial\Omega_{N,p} \) is the remaining part where
+Neumann conditions involving \( \partial\Phi/\partial n \) are
+assigned.
+
+<p>
+
+<h3>Spatial discretization by the finite element method  <a name="___sec8"></a></h3>
+<p>
+The equations to be solved, \eqref{ns:split:FE2},
+\eqref{ns:split:Poisson}, \eqref{ns:split:u:np1}, and
+\eqref{ns:split:p:np1}, are of two types: explicit updates
+(approximations a la \( u=f \))
+and the Poisson equation. We introduce a vector test function
+\( \v^{(u)}\in V^{(u)} \) for the vector equations \eqref{ns:split:FE2} and
+\eqref{ns:split:u:np1}, and a scalar test function \( v^{(\Phi)}\in
+V^{(\Phi)} \) for the Poisson equation and the update
+\eqref{ns:split:p:np1}. Modulo nonzero Dirichlet conditions, we
+seek \( \u^*,\u^{n+1}\in V^{(u)} \) and \( p^{n+1}\in V^{(\Phi)} \).
+
+<p>
+The variational form of a vector equation like
+\eqref{ns:split:FE2} is derived by taking the inner product of the
+equation and \( \v^{(u)} \). The Laplace term is integrated by parts.
+The \( \int_\Omega \nabla p^n\cdot\v^{(u)}\dx \) integral
+can also be a candidate for integrated by parts, if
+desired, and this is done below. The advantage is that we get a
+boundary integral, often along an outflow boundary, where
+we can insert known \( p \) values.
+
+<p>
+For notational simplicity and close correspondence to computer code,
+we introduce the subscript 1 on quantities from the previous time
+level \( n \) and drop any superscript \( n+1 \) for quantities to be
+computed at the new time level. The resulting variational form can be written as
+
+<p>
+$$
+\begin{align}
+\int_\Omega \bigl( \u^*\cdot\v^{(u)} &+
+\Delta t((\u_1\cdot\nabla)\nabla\u_1)\cdot\v^{(u)}
+- \frac{\Delta t}{\varrho}p\nabla\cdot\v^{(u)} + \nonumber\\
+& \Delta t\,\nu\nabla\u_1\cdot\nabla\v^{(u)} - \Delta t f_1\bigr)\dx
++ \int_{\partial\Omega_{N,u}}\left(
+\nu\frac{\partial\u}{\partial n} - p\normalvec\right)\cdot\v^{(u)}\ds,
+\label{ns:split:FE2:vf}
+\end{align}
+$$
+\( \forall\v^{(u)}\in V^{(u)} \).
+The variational form corresponding to the Poisson equation becomes
+
+<p>
+$$
+\begin{equation}
+\int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}\dx =
+\frac{\varrho}{\Delta t}\int_\Omega \nabla\cdot\u^*\, v^{(\Phi)}\dx
++ \int_{\partial\Omega_{N,p}} \frac{\partial\Phi}{\partial n}v^{(\Phi)}\ds,
+\quad\forall v^{(\Phi)}\in V^{(\Phi)}
+\thinspace .
+\label{ns:split:Poisson:vf}
+\end{equation}
+$$
+
+<p>
+The variational form for the velocity update \eqref{ns:split:u:np1}
+is based on taking the inner product of \( \v^{(u)} \) and
+\eqref{ns:split:u:np1}:
+
+<p>
+$$
+\begin{equation}
+\int_\Omega \u\cdot\v^{(u)}\dx = \int_{\Omega} (\u^* -\frac{\Delta t}{\varrho}
+\nabla\Phi)\cdot\v^{(u)}\dx,\quad\forall\v^{(u)}\in V^{(u)}
+\thinspace .
+\label{ns:split:u:np1:vf}
+\end{equation}
+$$
+Note that this is the same form as in a vector approximation problem:
+approximate a given vector field \( \f \) by a \( \u \), where the components
+of \( \u \) are scalar finite element functions.
+Also note that \( \u \) in \eqref{ns:split:u:np1:vf} is actually \( \u^{n+1} \),
+but that the superscript is dropped since we do not use that in
+an implementation.
+
+<p>
+The pressure update has the variational form
+
+<p>
+$$
+\begin{equation}
+\int_\Omega p v^{(\Phi)}\dx = \int_{\Omega} (\Phi + \beta p_1)v^{(\Phi)}\dx,
+\quad\forall v^{(\Phi)}\in V^{(\Phi)}
+\thinspace .
+\label{ns:split:p:np1:vf}
+\end{equation}
+$$
+(Also here, \( p \) denotes \( p^{n+1} \) and \( p_1 \) is \( p^n \).)
+
+<p>
+The splitting method presented above allows flexible choices of elements
+for \( \u \) and \( p \). In the early days of the finite element method for
+incompressible flow, fully implicit formulations were used and these
+require the \( \u \) element to be of one polynomial degree higher than
+the \( p \) element. This restriction does not apply to the splitting scheme,
+so one may, e.g., choose P1 elements for the velocity components and
+the pressure.
+
+<p>
+
+<h3>Stress formulations  <a name="___sec9"></a></h3>
+<p>
+As mentioned in the section <a href="#ns:derivation">Derivation</a>, we may exchange the
+\( \nu\nabla^2\u \) term in \eqref{ns:NS:mom} with a stress term
+\( \varrho^{-1}\nabla\cdot\stress \), where \( \stress \) is given by
+\eqref{ns:stress:u}. Occasionally, the \( \nabla\cdot\stress \) term
+is advantageous, because integration by parts of
+\( \int_\Omega\nabla\cdot\stress\cdot\v^{(u)}\dx \) gives a boundary
+integral with the stress vector \( \stress\cdot\normalvec \).
+This is convenient when boundary conditions are
+formulated in terms of stresses.
+
+<p>
+<!-- Explain the case where du/dn is given and the stress formulation -->
+<!-- has a remaining term (\nabla\u)^T\cdot\normalvec that must be -->
+<!-- put in the left-hand side. Good candidate for exercises. -->
+
+<p>
+
+
+<h3>Increasing the implicitness  <a name="___sec10"></a></h3>
+<p>
+The explicit scheme \eqref{ns:split:FE2} resembles the same stability
+problems as when a Forward Euler scheme is applied to the diffusion
+equation. However, there is also a convection term \( \u\cdot\nabla\u \)
+that reduces the time step restrictions. The stability criterion reads
+
+<p>
+$$
+\begin{equation}
+\Delta t \leq \frac{h^2}{2\nu + Uh},
+\end{equation}
+$$
+where \( h \) is the minimum element size and \( U \) is a characteristic
+size of the velocity. For small velocities, \( \Delta t\sim h^2 \),
+which implies very small time steps for fine meshes.
+
+<p>
+Treating the viscosity term \( \nu\nabla^2\u \) implicitly helps greatly
+on the stability properties of the scheme for \( \u^* \).
+We may, for example, apply a Backward Euler scheme. Instead of
+\eqref{ns:split:FE} we then have
+
+<p>
+$$
+\begin{align}
+\u^{n+1} &= \u^n - \Delta t(\u^{n+1}\cdot\nabla)\u^{n+1}
+-\frac{\Delta t}{\varrho}
+\nabla p^{n+1} + \Delta t\,\nu\nabla^2\u^{n+1} + \Delta t\f^{n+1},
+\label{ns:split:BE}\\
+\nabla\cdot\u^{n+1} &= 0
+\thinspace .
+\end{align}
+$$
+An intermediate velocity can be computed from the first equation if
+we replace \( p^{n+1} \) by \( \beta p^n \) as done earlier:
+
+<p>
+$$
+\u^{*} = \u^n - \Delta t(\u^{*}\cdot\nabla)\u^{*} -
+\beta\frac{\Delta t}{\varrho}
+p^{n+1} + \Delta t\,\nu\nabla^2\u^{*} + \Delta t\f^{n+1}
+\label{ns:split:BE1}
+\thinspace
+$$
+To simplify the nonlinearity in \( (\u^{*}\cdot\nabla)\u^{*} \) we may
+use an old value in the convective velocity:
+
+<p>
+$$
+\begin{equation}
+(\u^{*}\cdot\nabla)\u^{*} \approx (\u^{n}\cdot\nabla)\u^{*}
+\thinspace .
+\end{equation}
+$$
+This approximation is essentially one Picard iteration using \( u^n \) as
+initial guess.
+
+<p>
+The intermediate velocity \( \u^* \) is now governed by a linear problem
+
+<p>
+$$
+\u^{*} = \u^n - \Delta t(\u^{n}\cdot\nabla)\u^{*} -
+\beta\frac{\Delta t}{\varrho}
+\nabla p^{n} + \Delta t\,\nu\nabla^2\u^{*} + \Delta t\f^{n+1}
+\label{ns:split:BE2}
+\thinspace
+$$
+The correction \( \delta\u = \u^{n+1} - \u^* \) becomes
+
+<p>
+$$
+\delta\u =
+\Delta t((\u^{n+1}\cdot\nabla)\u^{n+1} - (\u^{n}\cdot\nabla)\u^{*})
+-\frac{\Delta t}{\varrho}
+\nabla \Phi + \Delta t\,\nu (\nabla^2 (\u^{n+1} - \u^*)
+\thinspace .$$
+Under the assumption that \( \u^* \) is close to \( \u^{n+1} \), we may drop
+the terms involving \( \u^{n+1}-\u^* \) and just keep the \( \nabla\Phi \) term.
+Then
+
+<p>
+$$
+\delta\u = \u^{n+1} - \u^* = -\frac{\Delta t}{\varrho}\nabla\Phi,
+$$
+as before, and the incompressibility constraint
+\( \nabla\cdot\delta\u = - \nabla\cdot\u^* \) gives
+\( \nabla^2 \Phi = \frac{\varrho}{\Delta t}\nabla\cdot\u^* \).
+
+<p>
+The algorithm becomes the same as for a Forward Euler discretization,
+except that \eqref{ns:split:FE2} is replaced by \eqref{ns:split:BE2}.
+
+<p>
+
+<!-- 2DO -->
+<!-- splitting advection and diffusion -->
+<!-- FEniCS impl (separate in tutorial) -->
+
+<p>
+
+<h2>Methods based on slight compressibility  <a name="___sec11"></a></h2>
+<p>
+By allowing a slight compressibility we can replace the
+problematic constraint \( \nabla\cdot\u \) by an evolution equation
+\eqref{ns:NS:mass:slightcompr} for \( p \). Essentially, we then have
+two evolution equations for \( \u \) and \( p \):
+
+<p>
+$$
+\begin{align}
+\u_t &= -(\u\cdot\nabla) \u -\frac{1}{\varrho}\nabla p + \nu\nabla^2\u + \f,\\
+p_t  &= - c^2\nabla\cdot\u
+\thinspace .
+\end{align}
+$$
+The simplest method is a Forward Euler scheme:
+
+<p>
+$$
+\begin{align}
+\u^{n+1} &= \u^n - \Delta t (\u^n\cdot\nabla) \u^n -\frac{\Delta t}{\varrho}\nabla p^n + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n,\\
+p^{n+1}  &= p^n - \Delta t c^2\nabla\cdot\u^n
+\thinspace .
+\end{align}
+$$
+The major problem with this scheme is the stability constraint, which is
+dictated by the \( c \) parameter (velocity of sound): \( \Delta t \sim 1/c \).
+Usually, \( c \) is taken as a tuning parameter and values much less than
+the speed of sound may give solutions with acceptable compressibility.
+
+<p>
+Any other explicit scheme, say a 2nd- or 4th-order Runge-Kutta method,
+is easily applied. Implicit schemes are of course also possible, but
+then one has to solve linear systems, and the original formulation
+with a true incompressibility constraint \( \nabla\cdot\u = 0 \)
+is not more complicated and usually preferred. In general, the
+method based on slight compressibility and explicit time integration
+becomes computationally very heavy and is not competitive unless one
+can use a \( c \) value much lower than the speed of sound.
+
+<p>
+<!-- Can show that time evolution here is a Jacobi method for solving -->
+<!-- the Poisson eq for Phi -->
+
+<p>
+
+<h2>Fully implicit formulation  <a name="___sec12"></a></h2>
+<p>
+Early attempts to use the finite element method to solve the Navier-Stokes
+equations were based on fully implicit formulations. This is easily
+derived by applying a Backward Euler scheme to the system
+\eqref{ns:NS:mom}-\eqref{ns:NS:mass}:
+
+<p>
+$$
+\begin{align*}
+\frac{\u^n - \u^{n-1}}{\Delta t} + (\u^n\cdot\nabla) \u^n &=
+-\frac{1}{\varrho}\nabla p^n + \nu\nabla^2\u^n + \f^n,\\
+\nabla\cdot\u^n &= 0
+\end{align*}
+$$
+We introduce the test functions \( \v^{(u)}\in V^{(u)} \) for the
+momentum balance equation and seek \( \u^{n+1}\in V^{(u)} \) (or
+more precisely, the part of \( \u^{n+1} \) without nonzero Dirichlet
+conditions). We seek \( p\in V^{(p)} \) and use
+\( v^{(p}\in V^{(p} \) as test function for the continuity equation.
+We may write the system of PDEs as
+
+<p>
+$$
+\begin{align*}
+{\cal L}_u (\u^{n}, p^{n}, \u^{n-1}) &= 0,\\
+\nabla\cdot\u^n &= 0\thinspace .
+\end{align*}
+$$
+A variational formulation can be based on treating the two equations
+separately,
+
+<p>
+$$
+\begin{align*}
+\int_\Omega {\cal L}_u (\u^{n}, p^{n}, \u^{n-1})\cdot\v^{(u)}\dx &= 0,\\
+\int_\Omega \nabla\cdot\u^n v^{(p)}\dx &= 0,
+\end{align*}
+$$
+or we may use an inner product of the two equations \( ({\cal L}_u,
+\nabla\cdot\u) \) and the test vector \( (\v^{(u)}, v^{(p)}) \):
+
+<p>
+$$ \int_\Omega \left(
+{\cal L}_u (\u^{n}, p^{n}, \u^{n-1})\cdot\v^{(u)}
++ \nabla\cdot\u^n v^{(p)}\right)\dx = 0\thinspace .
+$$
+To minimize the distance between code and mathematics, we introduce
+new symbols: \( \u \) for \( \u^n \), \( \u_1 \) for \( \u^{n-1} \), and \( p \) for \( p^n \).
+Integrating the pressure and viscous terms by parts yields
+
+<p>
+$$
+\begin{align}
+\int_\Omega \bigl( \u \cdot\v^{(u)} &+
+\Delta t((\u \cdot\nabla)\nabla\u )\cdot\v^{(u)}
+- \frac{\Delta t}{\varrho}p\nabla\cdot\v^{(u)} + \nonumber\\
+& \Delta t\,\nu\nabla\u\cdot\nabla\v^{(u)} - \Delta t f\bigr)\dx
++ \int_{\partial\Omega_{N,u}}\left(
+\nu\frac{\partial\u}{\partial n} - p\normalvec\right)\cdot\v^{(u)}\ds +
+\nonumber \\
+& \int_{\Omega} \nabla\cdot\u\, v^{(p)}\dx = 0
+\thinspace .
+\label{ns:fullyimpl:BE:vf}
+\end{align}
+$$
+This is nothing but a coupled, nonlinear equation system for \( \u \) and \( p \).
+Inserting finite element expansions for \( \u \) and \( p \) yields discrete
+equations that can be written in matrix form as
+
+<p>
+$$
+\begin{align}
+Mu + \Delta t C(u)u &= -\frac{\Delta t}{\varrho} Lp + \nu Kp + f,\\
+L^T u &= 0,
+\end{align}
+$$
+where \( M \) is the usual mass matrix, but here for a vector function,
+\( u \) collects all coefficients for the \( \u \) field, \( C(u) \) is a matrix
+arising from the convection term \( (\u\cdot\nabla)\u \), \( L \) is a
+matrix arising from the \( p\nabla\cdot\v^{(u)} \) term, \( K \) is the
+matrix corresponding to the Laplace operator (acting on a vector),
+and \( f \) is a vector of the source terms arising from \( \f \).
+The nonlinearity is typically handled by a Newton method.
+
+<p>
+
+The simplified system arising from dropping the time derivative and
+the convection term \( (\u\cdot\nabla)\u \) can be analyzed. It turns out
+that only certain combinations of \( V^{(u)} \) and \( V^{(p)} \) can
+guarantee a stable solution. The polynomials in \( V^{(u)} \) must be (at
+least) one degree higher than those in \( V^{(p)} \). For example, one may
+use P2 elements for \( \u \) and P1 elements for \( p \). This combination is
+known as the famous Taylor-Hood element. Numerical experimentation
+indicates that the same stability restriction on the combination of
+spaces is also important for the fully nonlinear Navier-Stokes
+equations when solved by a fully implicit method. The splitting into
+simpler systems, as shown in the section <a href="#ns:split:std">A working scheme</a>, introduces
+further approximations that stabilize the problem such that the same
+type of element can be used for velocity components and pressure.
+
+<p>
+The splitting method is much more widely used than the fully
+implicit formulation. Although the latter is more robust and
+much better suited for stationary flow, it is also involves
+much heavier computations. In each Newton iteration, a linear system
+involving all the coefficients in \( \u \) and \( p \) must be solved,
+and it is non-trivial to construct efficient iterative solution
+methods (especially preconditioners).
+
+<p>
+
+<h2>Applications  <a name="___sec13"></a></h2>
+<p>
+Figure <a href="#ns:app:figs:channel">1</a> exemplifies the boundary conditions
+for flow in a channel between two infinite plates. This flow
+configuration is assumed to be stationary, \( \u_t=0 \), and a simple
+analytical solution can be found in this particular case.
+
+<p>
+Note that the numerical solution method described above requires
+a time-dependent problem. Stationary problems must be simulated
+by starting with some initial condition and letting the flow
+develop toward the stationary solution as \( t\rightarrow\infty \).
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  Flow in a channel. <a name="ns:app:figs:channel"></a> </p></center>
+<p><img src="fig-ns/flow_in_channel.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+The velocity field in channel flow is symmetric with respect to the center
+line. It is therefore sufficient to calculate the flow in half the channel.
+Figure <a href="#ns:app:figs:channel:symm">2</a> displays the computational domain
+and the relevant boundary conditions.
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 2:  Flow in a half a channel with a symmetry line. <a name="ns:app:figs:channel:symm"></a> </p></center>
+<p><img src="fig-ns/flow_in_channel_symm.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+Figure <a href="#ns:app:figs:channel:bfs">3</a> depicts a more complex flow
+geometry, leading to a more complex velocity field. The boundary conditions
+are, however, similar to those for channel flow.
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 3:  Flow over a backward facing step. <a name="ns:app:figs:channel:bfs"></a> </p></center>
+<p><img src="fig-ns/flow_over_bfs.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+The boundary conditions in Figure <a href="#ns:app:figs:cylinder">4</a> are not listed
+in the figure because there are multiple options. The inflow boundary
+must have a prescribed velocity \( \u \), and on the cylinder we must have
+\( \u = 0 \). On the remaining three boundaries we have some freedom in
+what to assign. At the outflow one typically sets \( \partial\u/\partial n=0 \)
+and fix the pressure at one value. Alternatively, one may apply a
+stress-free condition \( \stress\cdot\normalvec = 0 \), which implicitly
+also sets the pressure. On the boundaries AB and DC there is more
+freedom. The weakest condition is \( \partial\u/\partial n=0 \), assuming
+that the boundary is far enough away from the cylinder such that the
+flow field changes very little. Some prefer to set \( \stress\cdot\normalvec = 0 \)
+here instead. A stronger condition is to require \( u_y=0 \) and
+\( \partial u_x/\partial n=0 \). However, \( u_y=0 \) requires the boundary
+to be far away from the cylinder.
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 4:  Flow around a cylinder. <a name="ns:app:figs:cylinder"></a> </p></center>
+<p><img src="fig-ns/flow_around_cylinder.png" align="bottom" width=600></p>
+</center>
+
+<!-- ------------------- end of main content ----------------->
+</body>
+</html>
+    
+
