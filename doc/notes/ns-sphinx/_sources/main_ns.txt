@@ -6,7 +6,7 @@ Numerical methods for the Navier-Stokes equations
 
 :Author: Hans Petter Langtangen
 
-:Date: Nov 29, 2012
+:Date: Dec 6, 2012
 
 Note: **PRELIMINARY VERSION** (expect lots of typos!)
 
@@ -25,6 +25,18 @@ Note: **PRELIMINARY VERSION** (expect lots of typos!)
 .. Must say clearer that the unknowns are in the function spaces,
 
 .. now it is very much the test functions...problem several places.
+
+
+.. From Andreas Hafreager:
+
+.. why inner(grad(u_1)*u_1,v) and not inner(u_1*grad(u_1),v)? nabla_grad in the latter!!!
+
+.. Should we write (\pmb{u}\cdot\nabla)\pmb{u} when this in FEniCS should be inner(inner(u_1,nabla_grad)*u_1, v)? Drop parenthesis? Ask Mikael
+
+.. The boundary integral with du/dn and p vanishes where u is known, and
+
+.. it is often taken as 0 to impose BC. However, for pressure drop, one must compute p - mention this. Explain why it vanishes for a vector eq when u is given.
+
 
 
 
@@ -490,6 +502,8 @@ and replace :math:`\Phi` by :math:`p^{n+1}`.
 .. cite literature, incl the FEniCS book
 
 
+.. _ns:split:bc:
+
 Boundary conditions  (2)
 ------------------------
 
@@ -543,12 +557,37 @@ seek :math:`\pmb{u}^*,\pmb{u}^{n+1}\in V^{(u)}` and :math:`p^{n+1}\in V^{(\Phi)}
 
 The variational form of a vector equation like
 :eq:`ns:split:FE2` is derived by taking the inner product of the
-equation and :math:`\pmb{v}^{(u)}`. The Laplace term is integrated by parts.
+equation and :math:`\pmb{v}^{(u)}`. The Laplace term is integrated by parts, as usual, but
+this time vectors are involved. The relevant rule takes the form
+
+
+.. math::
+         \int_\Omega (\nabla^2\pmb{u} )\cdot\pmb{v}{\, \mathrm{d}x} = -\int_\Omega \nabla\pmb{u} :\nabla v{\, \mathrm{d}x}
+        + \int_{\partial\Omega}\frac{\partial\pmb{u}}{\partial n}\cdot\pmb{v} {\, \mathrm{d}s},
+
+where :math:`\nabla\pmb{u} :\nabla\pmb{v}` means the *inner tensor product*:
+:math:`\pmb{A}:\pmb{B} = \sum_j\sum_j A_{ij}B_{ij}` (when :math:`\pmb{A}` has elements
+:math:`A_{i,j}` and :math:`\pmb{B}` has elements :math:`B_{i,j}`. Alternatively, we may say that
+:math:`\pmb{A}:\pmb{B}` is
+simply the scalar product of the tensors :math:`\pmb{A}` and :math:`\pmb{B}` when
+these are viewed as vectors (of length 9 instead of tensors of dimension
+:math:`3\times 3` in 3D problems). The normal derivative
+has the usual definition: :math:`\partial\pmb{u}/\partial n = \pmb{n}\cdot \nabla\pmb{u}`.
+
 The :math:`\int_\Omega \nabla p^n\cdot\pmb{v}^{(u)}{\, \mathrm{d}x}` integral
 can also be a candidate for integrated by parts, if
-desired, and this is done below. The advantage is that we get a
-boundary integral, often along an outflow boundary, where
-we can insert known :math:`p` values.
+desired. The relevant rule reads
+
+
+.. math::
+         \int_\Omega \nabla p\cdot\pmb{v} {\, \mathrm{d}x} = -\int_\Omega p\nabla\cdot\pmb{v}{\, \mathrm{d}x}
+        + \int_{\partial\Omega} p\pmb{n}\cdot\pmb{v}{\, \mathrm{d}s}\thinspace .
+
+We use such an integration by parts below.
+The advantage is that we get a
+boundary integral involving :math:`p\pmb{n}`, which is advantageous if
+we want to set a condition on :math:`p`, especially at an outflow boundary, but
+also on an inflow boundary.
 
 For notational simplicity and close correspondence to computer code,
 we introduce the subscript 1 on quantities from the previous time
@@ -559,11 +598,11 @@ computed at the new time level. The resulting variational form can be written as
 .. math::
    :label: ns:split:FE2:vf
         
-        \int_\Omega \bigl( \pmb{u}^*\cdot\pmb{v}^{(u)} &+
+        & \int_\Omega \bigl( \pmb{u}^*\cdot\pmb{v}^{(u)} +
         \Delta t((\pmb{u}_1\cdot\nabla)\nabla\pmb{u}_1)\cdot\pmb{v}^{(u)}
         - \frac{\Delta t}{\varrho}p\nabla\cdot\pmb{v}^{(u)} + \nonumber\\
-        & \Delta t\,\nu\nabla\pmb{u}_1\cdot\nabla\pmb{v}^{(u)} - \Delta t f_1\bigr){\, \mathrm{d}x}
-        + \int_{\partial\Omega_{N,u}}\left(
+        & \Delta t\,\nu\nabla\pmb{u}_1 : \nabla\pmb{v}^{(u)} - \Delta t f_1\bigr){\, \mathrm{d}x}
+        = \int_{\partial\Omega_{N,u}}\left(
         \nu\frac{\partial\pmb{u}}{\partial n} - p\pmb{n}\right)\cdot\pmb{v}^{(u)}{\, \mathrm{d}s},
         
         
@@ -575,7 +614,7 @@ The variational form corresponding to the Poisson equation becomes
 .. math::
    :label: ns:split:Poisson:vf
         
-        \int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}{\, \mathrm{d}x} =
+        \int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}{\, \mathrm{d}x} = -
         \frac{\varrho}{\Delta t}\int_\Omega \nabla\cdot\pmb{u}^*\, v^{(\Phi)}{\, \mathrm{d}x}
         + \int_{\partial\Omega_{N,p}} \frac{\partial\Phi}{\partial n}v^{(\Phi)}{\, \mathrm{d}s},
         \quad\forall v^{(\Phi)}\in V^{(\Phi)}
@@ -627,6 +666,36 @@ the :math:`p` element. This restriction does not apply to the splitting scheme,
 so one may, e.g., choose P1 elements for the velocity components and
 the pressure.
 
+Remark on boundary integrals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The boundary integral in :eq:`ns:split:FE2:vf` comes into play at
+element faces on the boundary if the nodes on a face are not subject
+to Dirichlet conditions.  As for scalar PDEs, Dirichlet conditions
+either mean that :math:`\pmb{v}=0` on that part of the boundary, or the element
+matrix and vector (or the global coefficient matrix and right-hand
+side) are manipulated to enforce known values of the unknown such that
+any boundary integral is erased and replaced by the boundary value.
+
+The boundary integral most often applies to inflow and outflow
+boundaries :math:`x=\hbox{const}` where we assume unidirectional flow, :math:`\pmb{u} = u\pmb{i}`.
+Because of :math:`\nabla\cdot\pmb{u} = 0` we have :math:`\partial\pmb{u}/\partial x =
+\partial\pmb{u}/\partial n=0` and :math:`p=\hbox{const}`.
+Very often, the boundary integral in :eq:`ns:split:FE2:vf` is zero,
+because we apply it to an outflow boundary where we have
+:math:`\partial\pmb{u}/\partial n=0` and then we fix the pressure at :math:`p=0`.
+Note that in the original Navier-Stokes equations, :math:`p`
+enters just through :math:`\nabla p` so a boundary condition at one point is
+necessary to uniquely determine :math:`p` (otherwise :math:`p` is known up to a
+free additive constant).  At inflow boundaries, :math:`\pmb{u}` is either known,
+which implies that the boundary integral does not apply, or we have
+:math:`\partial\pmb{u}/\partial n=0` and :math:`p=p_0`. In this latter case, the
+boundary integral involves an integration of :math:`p\pmb{n}\cdot\pmb{v}`.
+
+The boundary integral involving :math:`\partial\Phi/\partial n` is usually
+omitted since we apply the condition :math:`\partial\Phi/\partial n =0`,
+see the section :ref:`ns:split:bc`.
+
 Stress formulations
 -------------------
 
@@ -663,8 +732,11 @@ that reduces the time step restrictions. The stability criterion reads
         
 
 where :math:`h` is the minimum element size and :math:`U` is a characteristic
-size of the velocity. For small velocities, :math:`\Delta t\sim h^2`,
-which implies very small time steps for fine meshes.
+size of the velocity. The term :math:`2\nu` stems from the viscous (Laplace)
+term while :math:`Uh` arises from the convection term in the Navier-Stokes
+equations. Which of the term that dominates in the denominator therefore
+depends on whether viscous forces or convection is important in the
+equation.
 
 Treating the viscosity term :math:`\nu\nabla^2\pmb{u}` implicitly helps greatly
 on the stability properties of the scheme for :math:`\pmb{u}^*`.

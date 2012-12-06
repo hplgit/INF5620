@@ -62,7 +62,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Nov 29, 2012</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Dec 6, 2012</td>
 </tr>
 </tbody>
 </table>
@@ -297,7 +297,7 @@ almost equivalent to the scheme above. Many schemes apply <span class="math">\(\
 and replace <span class="math">\(\Phi\)</span> by <span class="math">\(p^{n+1}\)</span>.</p>
 </div>
 <div class="section" id="boundary-conditions-2">
-<h2>Boundary conditions  (2)<a class="headerlink" href="#boundary-conditions-2" title="Permalink to this headline">¶</a></h2>
+<span id="ns-split-bc"></span><h2>Boundary conditions  (2)<a class="headerlink" href="#boundary-conditions-2" title="Permalink to this headline">¶</a></h2>
 <p>What boundary conditions should we assign
 to <span class="math">\(\pmb{u}^*\)</span> when solving <a href="#equation-ns:split:FE2">(11)</a>? A standard choice is
 to apply the same boundary conditions as those specified for <span class="math">\(\pmb{u}\)</span>.
@@ -344,27 +344,45 @@ V^{(\Phi)}\)</span> for the Poisson equation and the update
 seek <span class="math">\(\pmb{u}^*,\pmb{u}^{n+1}\in V^{(u)}\)</span> and <span class="math">\(p^{n+1}\in V^{(\Phi)}\)</span>.</p>
 <p>The variational form of a vector equation like
 <a href="#equation-ns:split:FE2">(11)</a> is derived by taking the inner product of the
-equation and <span class="math">\(\pmb{v}^{(u)}\)</span>. The Laplace term is integrated by parts.
-The <span class="math">\(\int_\Omega \nabla p^n\cdot\pmb{v}^{(u)}{\, \mathrm{d}x}\)</span> integral
+equation and <span class="math">\(\pmb{v}^{(u)}\)</span>. The Laplace term is integrated by parts, as usual, but
+this time vectors are involved. The relevant rule takes the form</p>
+<div class="math">
+\[\int_\Omega (\nabla^2\pmb{u} )\cdot\pmb{v}{\, \mathrm{d}x} = -\int_\Omega \nabla\pmb{u} :\nabla v{\, \mathrm{d}x}
++ \int_{\partial\Omega}\frac{\partial\pmb{u}}{\partial n}\cdot\pmb{v} {\, \mathrm{d}s},\]</div>
+<p>where <span class="math">\(\nabla\pmb{u} :\nabla\pmb{v}\)</span> means the <em>inner tensor product</em>:
+<span class="math">\(\pmb{A}:\pmb{B} = \sum_j\sum_j A_{ij}B_{ij}\)</span> (when <span class="math">\(\pmb{A}\)</span> has elements
+<span class="math">\(A_{i,j}\)</span> and <span class="math">\(\pmb{B}\)</span> has elements <span class="math">\(B_{i,j}\)</span>. Alternatively, we may say that
+<span class="math">\(\pmb{A}:\pmb{B}\)</span> is
+simply the scalar product of the tensors <span class="math">\(\pmb{A}\)</span> and <span class="math">\(\pmb{B}\)</span> when
+these are viewed as vectors (of length 9 instead of tensors of dimension
+<span class="math">\(3\times 3\)</span> in 3D problems). The normal derivative
+has the usual definition: <span class="math">\(\partial\pmb{u}/\partial n = \pmb{n}\cdot \nabla\pmb{u}\)</span>.</p>
+<p>The <span class="math">\(\int_\Omega \nabla p^n\cdot\pmb{v}^{(u)}{\, \mathrm{d}x}\)</span> integral
 can also be a candidate for integrated by parts, if
-desired, and this is done below. The advantage is that we get a
-boundary integral, often along an outflow boundary, where
-we can insert known <span class="math">\(p\)</span> values.</p>
+desired. The relevant rule reads</p>
+<div class="math">
+\[\int_\Omega \nabla p\cdot\pmb{v} {\, \mathrm{d}x} = -\int_\Omega p\nabla\cdot\pmb{v}{\, \mathrm{d}x}
++ \int_{\partial\Omega} p\pmb{n}\cdot\pmb{v}{\, \mathrm{d}s}\thinspace .\]</div>
+<p>We use such an integration by parts below.
+The advantage is that we get a
+boundary integral involving <span class="math">\(p\pmb{n}\)</span>, which is advantageous if
+we want to set a condition on <span class="math">\(p\)</span>, especially at an outflow boundary, but
+also on an inflow boundary.</p>
 <p>For notational simplicity and close correspondence to computer code,
 we introduce the subscript 1 on quantities from the previous time
 level <span class="math">\(n\)</span> and drop any superscript <span class="math">\(n+1\)</span> for quantities to be
 computed at the new time level. The resulting variational form can be written as</p>
 <div class="math" id="equation-ns:split:FE2:vf">
-<span class="eqno">(18)</span>\[\begin{split}     \int_\Omega \bigl( \pmb{u}^*\cdot\pmb{v}^{(u)} &amp;+
+<span class="eqno">(18)</span>\[\begin{split}     &amp; \int_\Omega \bigl( \pmb{u}^*\cdot\pmb{v}^{(u)} +
      \Delta t((\pmb{u}_1\cdot\nabla)\nabla\pmb{u}_1)\cdot\pmb{v}^{(u)}
      - \frac{\Delta t}{\varrho}p\nabla\cdot\pmb{v}^{(u)} + \nonumber\\
-     &amp; \Delta t\,\nu\nabla\pmb{u}_1\cdot\nabla\pmb{v}^{(u)} - \Delta t f_1\bigr){\, \mathrm{d}x}
-     + \int_{\partial\Omega_{N,u}}\left(
+     &amp; \Delta t\,\nu\nabla\pmb{u}_1 : \nabla\pmb{v}^{(u)} - \Delta t f_1\bigr){\, \mathrm{d}x}
+     = \int_{\partial\Omega_{N,u}}\left(
      \nu\frac{\partial\pmb{u}}{\partial n} - p\pmb{n}\right)\cdot\pmb{v}^{(u)}{\, \mathrm{d}s},\end{split}\]</div>
 <p><span class="math">\(\forall\pmb{v}^{(u)}\in V^{(u)}\)</span>.
 The variational form corresponding to the Poisson equation becomes</p>
 <div class="math" id="equation-ns:split:Poisson:vf">
-<span class="eqno">(19)</span>\[     \int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}{\, \mathrm{d}x} =
+<span class="eqno">(19)</span>\[     \int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}{\, \mathrm{d}x} = -
      \frac{\varrho}{\Delta t}\int_\Omega \nabla\cdot\pmb{u}^*\, v^{(\Phi)}{\, \mathrm{d}x}
      + \int_{\partial\Omega_{N,p}} \frac{\partial\Phi}{\partial n}v^{(\Phi)}{\, \mathrm{d}s},
      \quad\forall v^{(\Phi)}\in V^{(\Phi)}
@@ -395,6 +413,33 @@ require the <span class="math">\(\pmb{u}\)</span> element to be of one polynomia
 the <span class="math">\(p\)</span> element. This restriction does not apply to the splitting scheme,
 so one may, e.g., choose P1 elements for the velocity components and
 the pressure.</p>
+<div class="section" id="remark-on-boundary-integrals">
+<h3>Remark on boundary integrals<a class="headerlink" href="#remark-on-boundary-integrals" title="Permalink to this headline">¶</a></h3>
+<p>The boundary integral in <a href="#equation-ns:split:FE2:vf">(18)</a> comes into play at
+element faces on the boundary if the nodes on a face are not subject
+to Dirichlet conditions.  As for scalar PDEs, Dirichlet conditions
+either mean that <span class="math">\(\pmb{v}=0\)</span> on that part of the boundary, or the element
+matrix and vector (or the global coefficient matrix and right-hand
+side) are manipulated to enforce known values of the unknown such that
+any boundary integral is erased and replaced by the boundary value.</p>
+<p>The boundary integral most often applies to inflow and outflow
+boundaries <span class="math">\(x=\hbox{const}\)</span> where we assume unidirectional flow, <span class="math">\(\pmb{u} = u\pmb{i}\)</span>.
+Because of <span class="math">\(\nabla\cdot\pmb{u} = 0\)</span> we have <span class="math">\(\partial\pmb{u}/\partial x =
+\partial\pmb{u}/\partial n=0\)</span> and <span class="math">\(p=\hbox{const}\)</span>.
+Very often, the boundary integral in <a href="#equation-ns:split:FE2:vf">(18)</a> is zero,
+because we apply it to an outflow boundary where we have
+<span class="math">\(\partial\pmb{u}/\partial n=0\)</span> and then we fix the pressure at <span class="math">\(p=0\)</span>.
+Note that in the original Navier-Stokes equations, <span class="math">\(p\)</span>
+enters just through <span class="math">\(\nabla p\)</span> so a boundary condition at one point is
+necessary to uniquely determine <span class="math">\(p\)</span> (otherwise <span class="math">\(p\)</span> is known up to a
+free additive constant).  At inflow boundaries, <span class="math">\(\pmb{u}\)</span> is either known,
+which implies that the boundary integral does not apply, or we have
+<span class="math">\(\partial\pmb{u}/\partial n=0\)</span> and <span class="math">\(p=p_0\)</span>. In this latter case, the
+boundary integral involves an integration of <span class="math">\(p\pmb{n}\cdot\pmb{v}\)</span>.</p>
+<p>The boundary integral involving <span class="math">\(\partial\Phi/\partial n\)</span> is usually
+omitted since we apply the condition <span class="math">\(\partial\Phi/\partial n =0\)</span>,
+see the section <a class="reference internal" href="#ns-split-bc"><em>Boundary conditions  (2)</em></a>.</p>
+</div>
 </div>
 <div class="section" id="stress-formulations">
 <h2>Stress formulations<a class="headerlink" href="#stress-formulations" title="Permalink to this headline">¶</a></h2>
@@ -417,8 +462,11 @@ that reduces the time step restrictions. The stability criterion reads</p>
 <div class="math">
 \[\Delta t \leq \frac{h^2}{2\nu + Uh},\]</div>
 <p>where <span class="math">\(h\)</span> is the minimum element size and <span class="math">\(U\)</span> is a characteristic
-size of the velocity. For small velocities, <span class="math">\(\Delta t\sim h^2\)</span>,
-which implies very small time steps for fine meshes.</p>
+size of the velocity. The term <span class="math">\(2\nu\)</span> stems from the viscous (Laplace)
+term while <span class="math">\(Uh\)</span> arises from the convection term in the Navier-Stokes
+equations. Which of the term that dominates in the denominator therefore
+depends on whether viscous forces or convection is important in the
+equation.</p>
 <p>Treating the viscosity term <span class="math">\(\nu\nabla^2\pmb{u}\)</span> implicitly helps greatly
 on the stability properties of the scheme for <span class="math">\(\pmb{u}^*\)</span>.
 We may, for example, apply a Backward Euler scheme. Instead of
@@ -640,7 +688,10 @@ to be far away from the cylinder.</p>
 <li><a class="reference internal" href="#a-simple-naive-approach">A simple, naive approach</a></li>
 <li><a class="reference internal" href="#a-working-scheme">A working scheme</a></li>
 <li><a class="reference internal" href="#boundary-conditions-2">Boundary conditions  (2)</a></li>
-<li><a class="reference internal" href="#spatial-discretization-by-the-finite-element-method">Spatial discretization by the finite element method</a></li>
+<li><a class="reference internal" href="#spatial-discretization-by-the-finite-element-method">Spatial discretization by the finite element method</a><ul>
+<li><a class="reference internal" href="#remark-on-boundary-integrals">Remark on boundary integrals</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#stress-formulations">Stress formulations</a></li>
 <li><a class="reference internal" href="#increasing-the-implicitness">Increasing the implicitness</a></li>
 </ul>

@@ -153,7 +153,7 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Nov 29, 2012</h4></center> <!-- date -->
+<center><h4>Dec 6, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>PRELIMINARY VERSION</b> (expect lots of typos!)
 
@@ -170,13 +170,14 @@ Note: <b>PRELIMINARY VERSION</b> (expect lots of typos!)
 <a href="#___sec4"> The classical splitting method </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec5"> A simple, naive approach </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#ns:split:std"> A working scheme </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec7"> Boundary conditions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#ns:split:bc"> Boundary conditions </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec8"> Spatial discretization by the finite element method </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec9"> Stress formulations </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec10"> Increasing the implicitness </a><br>
-<a href="#___sec11"> Methods based on slight compressibility </a><br>
-<a href="#___sec12"> Fully implicit formulation </a><br>
-<a href="#___sec13"> Applications </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec9"> Remark on boundary integrals </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec10"> Stress formulations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec11"> Increasing the implicitness </a><br>
+<a href="#___sec12"> Methods based on slight compressibility </a><br>
+<a href="#___sec13"> Fully implicit formulation </a><br>
+<a href="#___sec14"> Applications </a><br>
 
 <p>
 
@@ -188,6 +189,14 @@ Note: <b>PRELIMINARY VERSION</b> (expect lots of typos!)
 <p>
 <!-- Must say clearer that the unknowns are in the function spaces, -->
 <!-- now it is very much the test functions...problem several places. -->
+
+<p>
+<!-- From Andreas Hafreager: -->
+<!-- why inner(grad(u_1)*u_1,v) and not inner(u_1*grad(u_1),v)? nabla_grad in the latter!!! -->
+<!-- Should we write (\u\cdot\nabla)\u when this in FEniCS should be inner(inner(u_1,nabla_grad)*u_1, v)? Drop parenthesis? Ask Mikael -->
+<!-- The boundary integral with du/dn and p vanishes where u is known, and -->
+<!-- it is often taken as 0 to impose BC. However, for pressure drop, one must compute p - mention this. Explain why it vanishes for a vector eq when u is given. -->
+<!--  -->
 
 <p>
 
@@ -607,7 +616,7 @@ and replace \( \Phi \) by \( p^{n+1} \).
 
 <p>
 
-<h3>Boundary conditions  <a name="___sec7"></a></h3>
+<h3>Boundary conditions <a name="ns:split:bc"></a></h3>
 <p>
 What boundary conditions should we assign
 to \( \u^* \) when solving \eqref{ns:split:FE2}? A standard choice is
@@ -663,12 +672,34 @@ seek \( \u^*,\u^{n+1}\in V^{(u)} \) and \( p^{n+1}\in V^{(\Phi)} \).
 <p>
 The variational form of a vector equation like
 \eqref{ns:split:FE2} is derived by taking the inner product of the
-equation and \( \v^{(u)} \). The Laplace term is integrated by parts.
+equation and \( \v^{(u)} \). The Laplace term is integrated by parts, as usual, but
+this time vectors are involved. The relevant rule takes the form
+
+<p>
+$$ \int_\Omega (\nabla^2\u )\cdot\v\dx = -\int_\Omega \nabla\u :\nabla v\dx
++ \int_{\partial\Omega}\frac{\partial\u}{\partial n}\cdot\v \ds,$$
+where \( \nabla\u :\nabla\v \) means the <em>inner tensor product</em>:
+\( \pmb{A}:\pmb{B} = \sum_j\sum_j A_{ij}B_{ij} \) (when \( \pmb{A} \) has elements
+\( A_{i,j} \) and \( \pmb{B} \) has elements \( B_{i,j} \). Alternatively, we may say that
+\( \pmb{A}:\pmb{B} \) is
+simply the scalar product of the tensors \( \pmb{A} \) and \( \pmb{B} \) when
+these are viewed as vectors (of length 9 instead of tensors of dimension
+\( 3\times 3 \) in 3D problems). The normal derivative
+has the usual definition: \( \partial\u/\partial n = \normalvec\cdot \nabla\u \).
+
+<p>
 The \( \int_\Omega \nabla p^n\cdot\v^{(u)}\dx \) integral
 can also be a candidate for integrated by parts, if
-desired, and this is done below. The advantage is that we get a
-boundary integral, often along an outflow boundary, where
-we can insert known \( p \) values.
+desired. The relevant rule reads
+
+<p>
+$$ \int_\Omega \nabla p\cdot\v \dx = -\int_\Omega p\nabla\cdot\v\dx
++ \int_{\partial\Omega} p\normalvec\cdot\v\ds\thinspace .$$
+We use such an integration by parts below.
+The advantage is that we get a
+boundary integral involving \( p\normalvec \), which is advantageous if
+we want to set a condition on \( p \), especially at an outflow boundary, but
+also on an inflow boundary.
 
 <p>
 For notational simplicity and close correspondence to computer code,
@@ -679,11 +710,11 @@ computed at the new time level. The resulting variational form can be written as
 <p>
 $$
 \begin{align}
-\int_\Omega \bigl( \u^*\cdot\v^{(u)} &+
+& \int_\Omega \bigl( \u^*\cdot\v^{(u)} +
 \Delta t((\u_1\cdot\nabla)\nabla\u_1)\cdot\v^{(u)}
 - \frac{\Delta t}{\varrho}p\nabla\cdot\v^{(u)} + \nonumber\\
-& \Delta t\,\nu\nabla\u_1\cdot\nabla\v^{(u)} - \Delta t f_1\bigr)\dx
-+ \int_{\partial\Omega_{N,u}}\left(
+& \Delta t\,\nu\nabla\u_1 : \nabla\v^{(u)} - \Delta t f_1\bigr)\dx
+= \int_{\partial\Omega_{N,u}}\left(
 \nu\frac{\partial\u}{\partial n} - p\normalvec\right)\cdot\v^{(u)}\ds,
 \label{ns:split:FE2:vf}
 \end{align}
@@ -694,7 +725,7 @@ The variational form corresponding to the Poisson equation becomes
 <p>
 $$
 \begin{equation}
-\int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}\dx =
+\int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}\dx = -
 \frac{\varrho}{\Delta t}\int_\Omega \nabla\cdot\u^*\, v^{(\Phi)}\dx
 + \int_{\partial\Omega_{N,p}} \frac{\partial\Phi}{\partial n}v^{(\Phi)}\ds,
 \quad\forall v^{(\Phi)}\in V^{(\Phi)}
@@ -749,7 +780,40 @@ the pressure.
 
 <p>
 
-<h3>Stress formulations  <a name="___sec9"></a></h3>
+<h4>Remark on boundary integrals  <a name="___sec9"></a></h4>
+<p>
+The boundary integral in \eqref{ns:split:FE2:vf} comes into play at
+element faces on the boundary if the nodes on a face are not subject
+to Dirichlet conditions.  As for scalar PDEs, Dirichlet conditions
+either mean that \( \v=0 \) on that part of the boundary, or the element
+matrix and vector (or the global coefficient matrix and right-hand
+side) are manipulated to enforce known values of the unknown such that
+any boundary integral is erased and replaced by the boundary value.
+
+<p>
+The boundary integral most often applies to inflow and outflow
+boundaries \( x=\hbox{const} \) where we assume unidirectional flow, \( \u = u\ii \).
+Because of \( \nabla\cdot\u = 0 \) we have \( \partial\u/\partial x =
+\partial\u/\partial n=0 \) and \( p=\hbox{const} \).
+Very often, the boundary integral in \eqref{ns:split:FE2:vf} is zero,
+because we apply it to an outflow boundary where we have
+\( \partial\u/\partial n=0 \) and then we fix the pressure at \( p=0 \).
+Note that in the original Navier-Stokes equations, \( p \)
+enters just through \( \nabla p \) so a boundary condition at one point is
+necessary to uniquely determine \( p \) (otherwise \( p \) is known up to a
+free additive constant).  At inflow boundaries, \( \u \) is either known,
+which implies that the boundary integral does not apply, or we have
+\( \partial\u/\partial n=0 \) and \( p=p_0 \). In this latter case, the
+boundary integral involves an integration of \( p\normalvec\cdot\v \).
+
+<p>
+The boundary integral involving \( \partial\Phi/\partial n \) is usually
+omitted since we apply the condition \( \partial\Phi/\partial n =0 \),
+see the section <a href="#ns:split:bc">Boundary conditions</a>.
+
+<p>
+
+<h3>Stress formulations  <a name="___sec10"></a></h3>
 <p>
 As mentioned in the section <a href="#ns:derivation">Derivation</a>, we may exchange the
 \( \nu\nabla^2\u \) term in \eqref{ns:NS:mom} with a stress term
@@ -769,7 +833,7 @@ formulated in terms of stresses.
 <p>
 
 
-<h3>Increasing the implicitness  <a name="___sec10"></a></h3>
+<h3>Increasing the implicitness  <a name="___sec11"></a></h3>
 <p>
 The explicit scheme \eqref{ns:split:FE2} resembles the same stability
 problems as when a Forward Euler scheme is applied to the diffusion
@@ -783,8 +847,11 @@ $$
 \end{equation}
 $$
 where \( h \) is the minimum element size and \( U \) is a characteristic
-size of the velocity. For small velocities, \( \Delta t\sim h^2 \),
-which implies very small time steps for fine meshes.
+size of the velocity. The term \( 2\nu \) stems from the viscous (Laplace)
+term while \( Uh \) arises from the convection term in the Navier-Stokes
+equations. Which of the term that dominates in the denominator therefore
+depends on whether viscous forces or convection is important in the
+equation.
 
 <p>
 Treating the viscosity term \( \nu\nabla^2\u \) implicitly helps greatly
@@ -871,7 +938,7 @@ except that \eqref{ns:split:FE2} is replaced by \eqref{ns:split:BE2}.
 
 <p>
 
-<h2>Methods based on slight compressibility  <a name="___sec11"></a></h2>
+<h2>Methods based on slight compressibility  <a name="___sec12"></a></h2>
 <p>
 By allowing a slight compressibility we can replace the
 problematic constraint \( \nabla\cdot\u \) by an evolution equation
@@ -917,7 +984,7 @@ can use a \( c \) value much lower than the speed of sound.
 
 <p>
 
-<h2>Fully implicit formulation  <a name="___sec12"></a></h2>
+<h2>Fully implicit formulation  <a name="___sec13"></a></h2>
 <p>
 Early attempts to use the finite element method to solve the Navier-Stokes
 equations were based on fully implicit formulations. This is easily
@@ -1029,7 +1096,7 @@ methods (especially preconditioners).
 
 <p>
 
-<h2>Applications  <a name="___sec13"></a></h2>
+<h2>Applications  <a name="___sec14"></a></h2>
 <p>
 Figure <a href="#ns:app:figs:channel">1</a> exemplifies the boundary conditions
 for flow in a channel between two infinite plates. This flow
