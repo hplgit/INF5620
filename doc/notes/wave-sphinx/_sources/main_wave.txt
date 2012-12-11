@@ -6,7 +6,7 @@ Finite difference methods for wave motion
 
 :Author: Hans Petter Langtangen
 
-:Date: Nov 14, 2012
+:Date: Dec 6, 2012
 
 Note: **VERY PRELIMINARY VERSION!** (Expect lots of typos!)
 
@@ -69,13 +69,13 @@ The displacement function :math:`u` is governed by the mathematical model
 
 The constant :math:`c` and the function :math:`I(x)` must be prescribed.
 
-Equation (:ref:`wave:pde1`) is known as the one-dimensional
+Equation :eq:`wave:pde1` is known as the one-dimensional
 *wave equation*. Since this PDE contains a second-order derivative
-in time, we need *two initial conditions*, here (:ref:`wave:pde1:ic:u`)
+in time, we need *two initial conditions*, here :eq:`wave:pde1:ic:u`
 specifying the initial shape of the string, :math:`I(x)`, and
-(:ref:`wave:pde1:ic:ut`) reflecting that the initial velocity of the
+:eq:`wave:pde1:ic:ut` reflecting that the initial velocity of the
 string is zero. In addition, PDEs need *boundary conditions*, here
-(:ref:`wave:pde1:bc:0`) and (:ref:`wave:pde1:bc:L`), specifying that
+:eq:`wave:pde1:bc:0` and :eq:`wave:pde1:bc:L`, specifying that
 the string is fixed at the ends, i.e., that the displacement :math:`u` is zero
 at the ends.
 
@@ -100,7 +100,7 @@ A finite difference method
    single: wave equation; 1D, finite difference method
 
 
-The PDE problem (:ref:`wave:pde1`)-(:ref:`wave:pde1:bc:L`) will now be
+The PDE problem :eq:`wave:pde1`-:eq:`wave:pde1:bc:L` will now be
 discretized in space and time by a finite difference method.
 
 Step 1: Discretizing the Domain
@@ -173,7 +173,7 @@ Step 2: Fulfilling the equation at the mesh points
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For a numerical solution by the finite difference method, we relax
-the condition that (:ref:`wave:pde1`) holds at all points in
+the condition that :eq:`wave:pde1` holds at all points in
 the domain :math:`(0,L)\times (0,T]` to the requirement that the PDE is
 fulfilled at the mesh points:
 
@@ -207,7 +207,7 @@ and a similar definition of the second-order derivative in :math:`x` direction:
 
 
 .. math::
-         \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
+         \frac{\partial^2}{\partial x^2}u(x_i,t_n)\approx
         \frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2} = [D_xD_x u]^n_i
         \thinspace .
         
@@ -237,7 +237,7 @@ or written more compactly using the operator notation:
 
 
 We also need to replace the derivative in the initial condition
-(:ref:`wave:pde1:ic:ut`) by a finite difference approximation.
+:eq:`wave:pde1:ic:ut` by a finite difference approximation.
 A centered difference of the type
 
 .. math::
@@ -403,13 +403,13 @@ Generalization: including a source term
 ---------------------------------------
 
 Before implementing the algorithm, it is convenient to add a source
-term to the PDE (:ref:`wave:pde1`)
+term to the PDE :eq:`wave:pde1`
 since it gives us more freedom in finding test problems for
 verification. In particular, the source term allows us to use
 *manufactured solutions* for software testing, where we simply choose some
 function as solution, fit the corresponding source term, and define
 consistent boundary and initial conditions. Such solutions
-will seldom fulfill the initial condition (:ref:`wave:pde1:ic:ut`) so
+will seldom fulfill the initial condition :eq:`wave:pde1:ic:ut` so
 we need to generalize this condition to :math:`u_t=V(x)`.
 
 The extended problem
@@ -1062,8 +1062,8 @@ slices of arrays of length ``n-2``:
 
 .. code-block:: python
 
-        u2 = u[:-2] - 2*u[1:-1] + u[1:]
-        u2 = u[0:n-2] - 2*u[1:n-1] + u[1:n]   # alternative
+        u2 = u[:-2] - 2*u[1:-1] + u[2:]
+        u2 = u[0:n-2] - 2*u[1:n-1] + u[2:n]   # alternative
 
 Note that ``u2`` here gets length ``n-2``. If ``u2`` is already an array of
 length ``n`` and we want to use the formula to update all the "inner"
@@ -1071,8 +1071,8 @@ elements of ``u2``, as we will when solving a 1D wave equation, we can write
 
 .. code-block:: python
 
-        u2[1:-1]  = u[:-2] - 2*u[1:-1] + u[1:]
-        u2[1:n-1] = u[0:n-2] - 2*u[1:n-1] + u[1:n]   # alternative
+        u2[1:-1]  = u[:-2] - 2*u[1:-1] + u[2:]
+        u2[1:n-1] = u[0:n-2] - 2*u[1:n-1] + u[2:n]   # alternative
 
 Pen and paper calculations with a small array will demonstrate what is
 actually going on. The expression on the right-hand side are done in the
@@ -1084,7 +1084,7 @@ arithmetic expressions:
 
         temp1 = 2*u[1:-1]
         temp2 = u[0:-2] - temp1
-        temp3 = temp2 + u[1:]
+        temp3 = temp2 + u[2:]
         u2[1:-1] = temp3
 
 
@@ -1104,7 +1104,7 @@ version becomes
 
 .. code-block:: python
 
-        u2[1:-1] = u[:-2] - 2*u[1:-1] + u[1:] + f(x[1:-1])
+        u2[1:-1] = u[:-2] - 2*u[1:-1] + u[2:] + f(x[1:-1])
 
 
 Finite difference schemes expressed as slices
@@ -1586,8 +1586,8 @@ we return ``u[1:-1]`` (if there are two ghost cells).
 Generalization: variable wave velocity
 ======================================
 
-Our next generalization of the 1D wave equation (:ref:`wave:pde1`) or
-(:ref:`wave:pde2`) is to allow for a variable wave velocity :math:`c`:
+Our next generalization of the 1D wave equation :eq:`wave:pde1` or
+:eq:`wave:pde2` is to allow for a variable wave velocity :math:`c`:
 :math:`c=c(x)`, usually motivated by wave motion in a domain composed of
 different physical media with different properties for
 propagating waves.
@@ -1747,10 +1747,10 @@ be done by averaging in three ways:
         
         
 
-The arithmetic mean in (:ref:`wave:pde2:var:c:mean:arithmetic`) is by
+The arithmetic mean in :eq:`wave:pde2:var:c:mean:arithmetic` is by
 far the most commonly used averaging technique.
 
-With the operator notation from (:ref:`wave:pde2:var:c:mean:arithmetic`)
+With the operator notation from :eq:`wave:pde2:var:c:mean:arithmetic`
 we can specify the discretization of the complete variable-coefficient
 wave equation in a compact way:
 
@@ -1845,6 +1845,20 @@ version of the boundary condition, :math:`u^{n+1}_{-1}=u^{n+1}_1`:
                C2*(0.5*(q[i] + q[ip1])*(u_1[ip1] - u_1[i])  - \
                    0.5*(q[i] + q[im1])*(u_1[i] - u_1[im1])) + \
                dt2*f(x[i], t[n])
+
+The use of ``q[i] + q[i+1]`` for ``q[i] + q[i-1]`` might be unexpected, but
+the original formula with ``q[i-1]`` accesses actually ``q[-1]`` which is legal
+indexing, but a :math:`q` value at the opposite side of the mesh! To have a more
+correct computation of :math:`q_{-1/2}`, we therefore assume :math:`q'(0)=0` so that
+:math:`q_{1/2}=q_{-1/2}`. Alternatively, one could compute
+:math:`q_{-1/2}` by extrapolation from :math:`q_0` and :math:`q_1`:
+
+
+.. math::
+         q_{-\frac{1}{2}} \approx q_0 + \frac{1}{2}(q_1-q_0) , 
+
+but this would modify the scheme at the boundary so that we
+cannot reuse the formula for the interior point as we do above.
 
 
 A vectorized version of the scheme with a variable coefficient
@@ -2548,7 +2562,7 @@ Discretizing the PDEs
 ~~~~~~~~~~~~~~~~~~~~~
 
 For example,
-(:ref:`wave:2D3D:model1:v2`) can be discretized as
+:eq:`wave:2D3D:model1:v2` can be discretized as
 
 
 .. math::
@@ -2592,7 +2606,7 @@ with the discretization of the initial condition:
         
 
 
-The PDE (:ref:`wave:2D3D:model2:v2`)
+The PDE :eq:`wave:2D3D:model2:v2`
 with variable coefficients is discretized term by term using
 the corresponding elements from the 1D case:
 
@@ -4034,7 +4048,7 @@ The scheme
 .. math::
    :label: wave:pde1:analysis:scheme
         
-        [D_tD_t u = c^2 D_xD_x u]^n_p
+        [D_tD_t u = c^2 D_xD_x u]^n_q
         
         
 
@@ -4047,7 +4061,7 @@ compared to :math:`\omega`? And does the amplitude of such a wave component
 preserve its (unit) amplitude, as it should,
 or does it get amplified or damped in time (due to a complex :math:`\tilde\omega`)?
 These are the questions we aim to answer in the following analysis.
-Note the need for using :math:`p` as counter for the mesh point in :math:`x` direction
+Note the need for using :math:`q` as counter for the mesh point in :math:`x` direction
 since :math:`i` is already used as the imaginary unit (in this analysis).
 
 .. We use :math:`p` because we can then naturally continue with :math:`q` and :math:`r` as indices
@@ -4073,8 +4087,8 @@ Similarly, by just changing symbols (:math:`\omega\rightarrow k`,
 
 .. math::
         
-        [D_xD_x e^{ikx}]_p = -\frac{4}{\Delta x^2}\sin^2\left(
-        \frac{k\Delta x}{2}\right)e^{ikp\Delta x} \thinspace .
+        [D_xD_x e^{ikx}]_q = -\frac{4}{\Delta x^2}\sin^2\left(
+        \frac{k\Delta x}{2}\right)e^{ikq\Delta x} \thinspace .
         
 
 
@@ -4085,17 +4099,17 @@ evaluate two expressions:
 
 .. math::
         
-        \lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikp\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
-        \frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikp\Delta x}\\
-        \lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p &= \lbrack D_xD_x e^{ikx}\rbrack_p e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
-        \frac{k\Delta x}{2}\right)e^{ikp\Delta x}e^{-i\tilde\omega n\Delta t} \thinspace . 
+        \lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikq\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
+        \frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikq\Delta x}\\
+        \lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_xD_x e^{ikx}\rbrack_q e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
+        \frac{k\Delta x}{2}\right)e^{ikq\Delta x}e^{-i\tilde\omega n\Delta t} \thinspace . 
 
 Then the complete scheme,
 
 
 .. math::
         
-        \lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p
+        \lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q
         
 
 leads to the following equation for the unknown numerical
@@ -4155,7 +4169,7 @@ the right-hand side can attain the value 1 when
 
 .. math::
         
-        \frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\mathbb{N}
+        \frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\mathbb{Z}
         \thinspace .
         
 
@@ -4260,8 +4274,6 @@ is resolved in the mesh. Wave components with wave length
 less than :math:`2\Delta x` (:math:`2\pi/k < 2\Delta x`) are not visible in the mesh,
 so it does not make sense to have :math:`p>\pi/2`.
 
-Note that the symbol :math:`p`, previously used as index, is here reused with
-another meaning.
 We may introduce the function :math:`r(C, p)=\tilde c/c`:
 
 
@@ -4383,7 +4395,7 @@ A discrete 2D wave equation can be written as
 
 .. math::
         
-        \lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{p,q}
+        \lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{q,r}
         \thinspace .
         
 
@@ -4391,12 +4403,12 @@ This equation admits a Fourier component
 
 .. math::
         
-        u^n_{p,q} = \exp{\left( i(k_x p\Delta x + k_y q\Delta y
+        u^n_{q,r} = \exp{\left( i(k_x q\Delta x + k_y r\Delta y
         - \tilde\omega n\Delta t)\right)},
         
 
 as solution. Letting the operators :math:`D_tD_t`, :math:`D_xD_x`, and :math:`D_yD_y`
-act on :math:`u^n_{p,q}` results in
+act on :math:`u^n_{q,r}` results in
 
 .. math::
         
@@ -4598,8 +4610,8 @@ we have that
         \thinspace .
         
 
-Equation (:ref:`wave:app:string:hcomp`) is then simply the identity :math:`T=T`, while
-(:ref:`wave:app:string:vcomp`) can be written as
+Equation :eq:`wave:app:string:hcomp` is then simply the identity :math:`T=T`, while
+:eq:`wave:app:string:vcomp` can be written as
 
 
 .. math::
@@ -4931,13 +4943,13 @@ forces, body forces (gravity, for instance), and temperature effects:
 These equations are often referred to as the Euler equations for the motion
 of a fluid. The parameters involved are the density :math:`\varrho`,
 the velocity :math:`\pmb{u}`,
-and the pressure :math:`p`. Equation (:ref:`wave:app:sound:Euler`) reflects
-mass balance, (:ref:`wave:app:sound:cont`) is Newton's second law for
+and the pressure :math:`p`. Equation :eq:`wave:app:sound:Euler` reflects
+mass balance, :eq:`wave:app:sound:cont` is Newton's second law for
 a fluid, with frictional and body forces omitted, and
-(:ref:`wave:app:sound:prho`) is a constitutive law relating
+:eq:`wave:app:sound:prho` is a constitutive law relating
 density to pressure by thermodynamics considerations.
 A typical model
-for (:ref:`wave:app:sound:prho`) is the so-called `isentropic relation <http://en.wikipedia.org/wiki/Isentropic_process>`_, valid for
+for :eq:`wave:app:sound:prho` is the so-called `isentropic relation <http://en.wikipedia.org/wiki/Isentropic_process>`_, valid for
 adiabatic processes where there is not heat transfer:
 
 
@@ -4967,7 +4979,7 @@ and velocity. We therefore write
 where we have decomposed the fields in a constant
 equilibrium value, corresponding
 to :math:`\pmb{u}=0`, and a small perturbation marked with a hat symbol.
-By inserting these decompositions in (:ref:`wave:app:sound:cont`) and
+By inserting these decompositions in :eq:`wave:app:sound:cont` and
 (:ref:`wave:app:sound:Euler`, neglecting all product terms of small
 perturbations and/or their derivatives, and dropping the hat symbols,
 one gets the following linearized PDE system for the small perturbations in
@@ -4996,8 +5008,8 @@ yields a PDE system for :math:`p` and :math:`\pmb{u}`:
         \thinspace .
         
 
-Taking the divergence of (:ref:`wave:app:sound:Euler:pert`) and
-differentiating (:ref:`wave:app:sound:cont:pert`) with respect to time
+Taking the divergence of :eq:`wave:app:sound:Euler:pert` and
+differentiating :eq:`wave:app:sound:cont:pert` with respect to time
 gives the possibility to easily eliminate :math:`\nabla\cdot\pmb{u}_t` and
 arrive at a standard, linear wave equation for :math:`p`:
 
@@ -5149,12 +5161,12 @@ quantities:
         
         
 
-where :math:`g` is the acceleration of gravity. Equation (:ref:`wave:app:sw:2D:eeq`)
+where :math:`g` is the acceleration of gravity. Equation :eq:`wave:app:sw:2D:eeq`
 corresponds to mass balance while the other two are derived from momentum
 balance (Newton's second law).
 
 The initial conditions associated with
-(:ref:`wave:app:sw:2D:eeq`)-(:ref:`wave:app:sw:2D:veq`) are :math:`\eta`, :math:`u`,
+:eq:`wave:app:sw:2D:eeq`-:eq:`wave:app:sw:2D:veq` are :math:`\eta`, :math:`u`,
 and :math:`v` prescribed at :math:`t=0`. A common condition is to have some water
 elevation :math:`\eta =I(x,y)` and assume that the surface is at rest:
 :math:`u=v=0`. A subsea earthquake usually means a sufficiently rapid motion
@@ -5170,12 +5182,12 @@ conditions are needed when waves run up at the shore, and at open
 boundaries where we want the waves to leave the computational domain
 undisturbed.
 
-Equations (:ref:`wave:app:sw:2D:eeq`), (:ref:`wave:app:sw:2D:ueq`), and
-(:ref:`wave:app:sw:2D:veq`) can be transformed to a standard, linear
-wave equation. First, multiply (:ref:`wave:app:sw:2D:ueq`) and
-(:ref:`wave:app:sw:2D:veq`) by :math:`H`, differentiate (:ref:`wave:app:sw:2D:ueq`))
-with respect to :math:`x` and (:ref:`wave:app:sw:2D:veq`) with respect to :math:`y`.
-Second, differentiate (:ref:`wave:app:sw:2D:eeq`) with respect to :math:`t`
+Equations :eq:`wave:app:sw:2D:eeq`, :eq:`wave:app:sw:2D:ueq`, and
+:eq:`wave:app:sw:2D:veq` can be transformed to a standard, linear
+wave equation. First, multiply :eq:`wave:app:sw:2D:ueq` and
+:eq:`wave:app:sw:2D:veq` by :math:`H`, differentiate :eq:`wave:app:sw:2D:ueq`)
+with respect to :math:`x` and :eq:`wave:app:sw:2D:veq` with respect to :math:`y`.
+Second, differentiate :eq:`wave:app:sw:2D:eeq` with respect to :math:`t`
 and use that :math:`(Hu)_{xt}=(Hu_t)_x` and :math:`(Hv)_{yt}=(Hv_t)_y` when :math:`H`
 is independent of :math:`t`. Third, eliminate :math:`(Hu_t)_x` and :math:`(Hv_t)_y`
 with the aid of the other two differentiated equations. These manipulations
@@ -5194,17 +5206,17 @@ results in a standard, linear wave equation for :math:`\eta`:
 
 In the case we have an initial non-flat water surface at rest, the
 initial conditions become :math:`\eta =I(x,y)` and :math:`\eta_t=0`.
-The latter follows from (:ref:`wave:app:sw:2D:eeq`) if :math:`u=v=0`, or
+The latter follows from :eq:`wave:app:sw:2D:eeq` if :math:`u=v=0`, or
 simply from the fact that the vertical velocity of the surface
 is :math:`\eta_t`, which is zero for a surface at rest.
 
-The system (:ref:`wave:app:sw:2D:eeq`)-(:ref:`wave:app:sw:2D:veq`)
+The system :eq:`wave:app:sw:2D:eeq`-:eq:`wave:app:sw:2D:veq`
 can be extended to handle a time-varying bottom topography, which is
 relevant for modeling long waves generated by underwater slides.
 In such cases the water depth function :math:`H` is also a function of :math:`t`,
 due to the moving slide,
 and one must add a time-derivative term :math:`H_t` to the left-hand side
-of (:ref:`wave:app:sw:2D:eeq`). A moving bottom is best described by
+of :eq:`wave:app:sw:2D:eeq`. A moving bottom is best described by
 introducing :math:`z=H_0` as the still-water level, :math:`z=B(x,y,t)` as
 the time- and space-varying bottom topography, so that :math:`H=H_0-B(x,y,t)`.
 In the elimination of :math:`u` and :math:`v` one may assume that the dependence of
@@ -5243,7 +5255,7 @@ Surface waves are influenced by the drag of the wind, and if the
 wind velocity some meters above the surface is :math:`(U,V)`,
 the wind drag gives contributions
 :math:`C_V\sqrt{U^2+V^2}U` and :math:`C_V\sqrt{U^2+V^2}V` to
-(:ref:`wave:app:sw:2D:ueq`) and (:ref:`wave:app:sw:2D:veq`), respectively,
+:eq:`wave:app:sw:2D:ueq` and :eq:`wave:app:sw:2D:veq`, respectively,
 on the right-hand sides.
 
 Bottom drag
@@ -5251,10 +5263,10 @@ Bottom drag
 
 The waves will experience a drag from the bottom, often roughly modeled
 by a term similar to the wind drag:
-:math:`C_B\sqrt{u^2+v^2}u` on the right-hand side of (:ref:`wave:app:sw:2D:ueq`) and
-:math:`C_B\sqrt{u^2+v^2}v` on the right-hand side of (:ref:`wave:app:sw:2D:veq`).
-Note that in this case the PDEs (:ref:`wave:app:sw:2D:ueq`) and
-(:ref:`wave:app:sw:2D:veq`) become nonlinear and the elimination of :math:`u` and :math:`v`
+:math:`C_B\sqrt{u^2+v^2}u` on the right-hand side of :eq:`wave:app:sw:2D:ueq` and
+:math:`C_B\sqrt{u^2+v^2}v` on the right-hand side of :eq:`wave:app:sw:2D:veq`.
+Note that in this case the PDEs :eq:`wave:app:sw:2D:ueq` and
+:eq:`wave:app:sw:2D:veq` become nonlinear and the elimination of :math:`u` and :math:`v`
 to arrive at a 2nd-order wave equation for :math:`\eta` is not possible anymore.
 
 Effect of the Earth's rotation
@@ -5262,8 +5274,8 @@ Effect of the Earth's rotation
 
 Long geophysical waves will often be affected by the rotation of the
 Earth because of the Coriolis force. This force gives rise to a
-term :math:`fv` on the right-hand side of (:ref:`wave:app:sw:2D:ueq`) and
-:math:`-fu` on the right-hand side of (:ref:`wave:app:sw:2D:veq`).
+term :math:`fv` on the right-hand side of :eq:`wave:app:sw:2D:ueq` and
+:math:`-fu` on the right-hand side of :eq:`wave:app:sw:2D:veq`.
 Also in this case one cannot eliminate :math:`u` and :math:`v` to work with a single
 equation for :math:`\eta`. The Coriolis parameter is :math:`f=2\Omega\sin\phi`,
 where :math:`\Omega` is the angular velocity of the earth and :math:`\phi` is
@@ -5333,7 +5345,7 @@ where :math:`\gamma` is a parameter related to the velocity profile,
 of blood.
 
 We have three unknowns :math:`A`, :math:`Q`, and :math:`P`, and two equations
-(:ref:`wave:app:blood:cont`) and (:ref:`wave:app:blood:mom`).
+:eq:`wave:app:blood:cont` and :eq:`wave:app:blood:mom`.
 A third equation is needed to relate the flow to
 the deformations of the wall. A common form for this equation is
 
@@ -5400,9 +5412,9 @@ Reduction to standard wave equation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is not uncommon to neglect the viscous term on the right-hand side of
-(:ref:`wave:app:blood:mom`) and also the quadratic term
+:eq:`wave:app:blood:mom` and also the quadratic term
 with :math:`Q^2` on the left-hand side. The reduced equations
-(:ref:`wave:app:blood:mom`)
+:eq:`wave:app:blood:mom`
 and :eq:`wave:app:blood:const` form a first-order
 linear wave equation system:
 
@@ -6113,8 +6125,8 @@ Exercise 25: Investigate harmonic vs arithmetic mean
 
 In :ref:`wave:app:exer:tsunami1D:hill`, investigate if
 there is significant difference between the harmonic mean
-(:ref:`wave:pde2:var:c:mean:harmonic`) and the standard
-arithmetic mean (:ref:`wave:pde2:var:c:mean:arithmetic`).
+:eq:`wave:pde2:var:c:mean:harmonic` and the standard
+arithmetic mean :eq:`wave:pde2:var:c:mean:arithmetic`.
 Use extreme cases for the investigations where the subsea hill is
 close to the flat surface. Pay particular attention to the
 box-shaped obstruction :eq:`wave:app:exer:tsunami1D:hill:box` since
@@ -6226,4 +6238,3 @@ at the upper boundary.
 Filename: ``seismic2D.py``.
 
 .. --- end of exercise
-

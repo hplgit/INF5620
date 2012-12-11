@@ -60,6 +60,8 @@ $$
 \newcommand{\half}{\frac{1}{2}}
 \newcommand{\halfi}{{1/2}}
 
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+
 \newcommand{\xpoint}{\pmb{x}}
 \newcommand{\normalvec}{\pmb{n}}
 
@@ -68,7 +70,7 @@ $$
 \renewcommand{\u}{\pmb{u}}
 \renewcommand{\v}{\pmb{v}}
 \newcommand{\w}{\pmb{w}}
-\renewcommand{\u}{\pmb{u}}
+\newcommand{\V}{\pmb{V}}
 \newcommand{\e}{\pmb{e}}
 \newcommand{\f}{\pmb{f}}
 \newcommand{\F}{\pmb{F}}
@@ -130,18 +132,16 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Nov 14, 2012</h4></center> <!-- date -->
+<center><h4>Dec 6, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>VERY PRELIMINARY VERSION!</b> (Expect lots of typos!)
 
 <p>
 
-<p>
 <h2>Table of contents</h2>
 
 <p>
 
-<p>
 <a href="#wave:string"> Finite difference methods for waves on a string </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#wave:pde1:fd"> A finite difference method </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec2"> Step 1: Discretizing the Domain </a><br>
@@ -278,22 +278,12 @@ Note: <b>VERY PRELIMINARY VERSION!</b> (Expect lots of typos!)
 &nbsp; &nbsp; &nbsp; <a href="#wave:app:exer:seismic2D"> Exercise 26: Simulate seismic waves in 2D </a><br>
 
 <p>
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
 <!-- Externaldocuments: ../decay/main_decay, ../bin/main_vib -->
 
 <p>
 
-<p>
-
-<p>
 A very wide range of physical processes lead to wave motion, where
 signals are propagated through a medium in space and time, normally
 with little or no permanent movement of the medium itself.
@@ -410,7 +400,6 @@ mesh spacings.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 1:  Mesh in space and time for a 1D wave equation. <a name="wave:pde1:fig:mesh"></a> </p></center>
@@ -419,9 +408,6 @@ mesh spacings.
 
 <p>
 
-<p>
-
-<p>
 The solution \( u(x,t) \) is sought at the mesh points: \( u(x_i,t_n) \) for
 \( i=0,\ldots,N_x \) and \( n=0,\ldots,N \). The numerical approximation at
 mesh point \( (x_i,t_n) \) is denoted by \( u^n_i \).  The circles in Figure
@@ -469,7 +455,7 @@ $$ \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
 and a similar definition of the second-order derivative in \( x \) direction:
 
 <p>
-$$ \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
+$$ \frac{\partial^2}{\partial x^2}u(x_i,t_n)\approx
 \frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2} = [D_xD_x u]^n_i
 \thinspace .
 $$
@@ -516,7 +502,6 @@ $$
 
 <p>
 
-<p>
 
 <h4>Step 4: Formulating a Recursive Algorithm  <a name="___sec5"></a></h4>
 <p>
@@ -556,7 +541,6 @@ the boundary conditions: \( u_0^{n+1}=0 \) and \( u_{N_x}^{n+1}=0 \).
 
 <p>
 
-<p>
 A problem with \eqref{wave:pde1:step4} arises when \( n=0 \) since the
 formula for \( u^1_i \) involves \( u^{-1}_i \), which is an undefined
 quantity outside the time mesh and the time domain. However, we can
@@ -578,7 +562,6 @@ connects four instead of five points: \( u^1_2 \), \( u_1^0 \), \( u_2^0 \), and
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 2:  Modified stencil for the first time step. <a name="wave:pde1:fig:stencil:u1"></a> </p></center>
@@ -587,7 +570,6 @@ connects four instead of five points: \( u^1_2 \), \( u_1^0 \), \( u_2^0 \), and
 
 <p>
 
-<p>
 We can now summarize the computational algorithm:
 
 <p>
@@ -606,7 +588,6 @@ illustrated by an <a href="http://hplgit.github.com/INF5620/doc/notes/mov-wave/w
 
 <p>
 
-<p>
 
 <h4>Sketch of an implementation  <a name="___sec6"></a></h4>
 <p>
@@ -627,7 +608,7 @@ The following Python snippet realizes the steps in the computational
 algorithm.
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"># Given mesh points as arrays x and t (x[i], t[n])
 dx = x[1] - x[0];  dt = t[1] - t[0]
@@ -660,7 +641,6 @@ for n in range(1, N):
 </pre></div>
 <p>
 
-<p>
 
 <h3>Generalization: including a source term <a name="wave:pde2:fd"></a></h3>
 <p>
@@ -807,7 +787,6 @@ solutions (just set \( C=1 \)).
 
 <p>
 
-<p>
 
 <h2>Implementation <a name="wave:pde1:impl"></a></h2>
 <p>
@@ -841,7 +820,7 @@ where <tt>u</tt> is the solution at the spatial points <tt>x</tt> at time <tt>t[
 A first attempt at a solver function is listed below.
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
 
@@ -905,7 +884,6 @@ A first attempt at a solver function is listed below.
 </pre></div>
 <p>
 
-<p>
 
 <h3>Verification: exact quadratic solution  <a name="___sec13"></a></h3>
 <p>
@@ -913,7 +891,7 @@ We use the test problem derived in the section <a href="#wave:pde2:fd">Generaliz
 verification. Here is a function realizing this verification as a nose test:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
 
@@ -944,7 +922,6 @@ verification. Here is a function realizing this verification as a nose test:
 </pre></div>
 <p>
 
-<p>
 
 <h3>Visualization: animating \( u(x,t) \)  <a name="___sec14"></a></h3>
 <p>
@@ -960,7 +937,7 @@ The following <tt>viz</tt> function defines a <tt>user_action</tt>
 callback function for plotting the solution at each time level:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">viz</span>(I, V, f, c, L, Nx, C, T, umin, umax, animate<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>):
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Run solver and visualize u at each time level.&quot;&quot;&quot;</span>
@@ -1024,7 +1001,7 @@ run native commands in the terminal window. An AVI movie
 can be made by <tt>mencoder</tt>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; mencoder <span style="color: #BB4444">&quot;mf://frame_%04d.png&quot;</span> -mf <span style="color: #B8860B">fps</span><span style="color: #666666">=</span>4:type<span style="color: #666666">=</span>png <span style="color: #BB6622; font-weight: bold">\</span>
           -ovc lavc -o movie.avi
@@ -1034,7 +1011,7 @@ Terminal&gt; mplayer movie.avi
 The HTML player can only be generated by
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; scitools movie <span style="color: #B8860B">output_file</span><span style="color: #666666">=</span>movie.html <span style="color: #B8860B">fps</span><span style="color: #666666">=</span>4 frame_*.png
 </pre></div>
@@ -1055,7 +1032,7 @@ possible number of frames) is the length of <tt>t</tt>, <tt>t.size</tt>, and if 
 want <tt>num_frames</tt>, we need to plot every <tt>t.size/num_frames</tt> frame:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">every <span style="color: #666666">=</span> <span style="color: #AA22FF">int</span>(t<span style="color: #666666">.</span>size<span style="color: #666666">/</span><span style="color: #AA22FF">float</span>(num_frames))
 <span style="color: #AA22FF; font-weight: bold">if</span> n <span style="color: #666666">%</span> every <span style="color: #666666">==</span> <span style="color: #666666">0</span> <span style="color: #AA22FF; font-weight: bold">or</span> n <span style="color: #666666">==</span> t<span style="color: #666666">.</span>size<span style="color: #666666">-1</span>:
@@ -1086,7 +1063,7 @@ desires to program directly with Matplotlib, quite different code
 is needed. Matplotlib's interactive mode must be turned on:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">matplotlib.pyplot</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">plt</span>
 plt<span style="color: #666666">.</span>ion()  <span style="color: #008800; font-style: italic"># interactive mode on</span>
@@ -1097,7 +1074,7 @@ commonly used animation technique with Matplotlib
 is to update the data in the plot at each time level:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Make a first plot</span>
 lines <span style="color: #666666">=</span> plt<span style="color: #666666">.</span>plot(t, u)
@@ -1111,11 +1088,10 @@ plt<span style="color: #666666">.</span>savefig(<span style="color: #666666">...
 </pre></div>
 <p>
 
-<p>
 An alternative is to rebuild the plot at every time level:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">plt<span style="color: #666666">.</span>clf()        <span style="color: #008800; font-style: italic"># delete any previous curve(s)</span>
 plt<span style="color: #666666">.</span>axis([<span style="color: #666666">...</span>])
@@ -1129,8 +1105,6 @@ Many prefer to work with figure and axis objects as in MATLAB:
 
 <p>
 
-<p>
-<p>
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">fig <span style="color: #666666">=</span> plt<span style="color: #666666">.</span>figure()
 <span style="color: #666666">...</span>
@@ -1144,7 +1118,6 @@ fig<span style="color: #666666">.</span>savefig(<span style="color: #666666">...
 </pre></div>
 <p>
 
-<p>
 
 <h4>Running a case  <a name="___sec19"></a></h4>
 <p>
@@ -1172,7 +1145,7 @@ that \( V=0 \). A function setting
 these physical parameters and calling <tt>viz</tt> for this case goes as follows:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">guitar</span>(C):
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;Triangular wave (pulled guitar string).&quot;&quot;&quot;</span>
@@ -1230,12 +1203,10 @@ to periods in periodic solutions.  If \( u\sim \sin (\omega t) = \sin
 
 <p>
 
-<p>
 
 <h2>Vectorization  <a name="___sec21"></a></h2>
 <p>
 
-<p>
 The computational algorithm for solving the wave equation visits one
 mesh point at a time and evaluates a formula for the new value at
 that point. Technically, this is implemented by a loop over array
@@ -1253,12 +1224,10 @@ also makes it easy to exploit parallel computing.
 
 <p>
 
-<p>
 
 <h3>Operations on slices of arrays  <a name="___sec22"></a></h3>
 <p>
 
-<p>
 Efficient computing with <tt>numpy</tt> arrays demands that we avoid loops
 and compute with entire arrays at once, or at least large portions of them.
 Consider this calculation of differences:
@@ -1304,7 +1273,6 @@ an equivalent <em>vectorized code</em>. The process of vectorizing code is calle
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 3:  Illustration of subtracting two (displaced) slices of two arrays. <a name="wave:pde1:vec:fig1"></a> </p></center>
@@ -1313,7 +1281,6 @@ an equivalent <em>vectorized code</em>. The process of vectorizing code is calle
 
 <p>
 
-<p>
 Newcomers to vectorization are encouraged to choose
 a small array <tt>u</tt>, say with five elements,
 and simulate with pen and paper
@@ -1332,8 +1299,8 @@ The vectorization consists of replacing the loop by arithmetics on
 slices of arrays of length <tt>n-2</tt>:
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2 <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:]
-u2 <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>:n<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:n]   <span style="color: #008800; font-style: italic"># alternative</span>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2 <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:]
+u2 <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>:n<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:n]   <span style="color: #008800; font-style: italic"># alternative</span>
 </pre></div>
 <p>
 Note that <tt>u2</tt> here gets length <tt>n-2</tt>. If <tt>u2</tt> is already an array of
@@ -1341,8 +1308,8 @@ length <tt>n</tt> and we want to use the formula to update all the "inner"
 elements of <tt>u2</tt>, as we will when solving a 1D wave equation, we can write
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]  <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:]
-u2[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>:n<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:n]   <span style="color: #008800; font-style: italic"># alternative</span>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]  <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:]
+u2[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>:n<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:n]   <span style="color: #008800; font-style: italic"># alternative</span>
 </pre></div>
 <p>
 Pen and paper calculations with a small array will demonstrate what is
@@ -1354,12 +1321,11 @@ arithmetic expressions:
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">temp1 <span style="color: #666666">=</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]
 temp2 <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> temp1
-temp3 <span style="color: #666666">=</span> temp2 <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:]
+temp3 <span style="color: #666666">=</span> temp2 <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:]
 u2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> temp3
 </pre></div>
 <p>
 
-<p>
 We can extend the example to a formula with an additional term computed
 by calling a function:
 <p>
@@ -1375,11 +1341,10 @@ Assuming <tt>u2</tt>, <tt>u</tt>, and <tt>x</tt> all have length <tt>n</tt>, the
 version becomes
 <p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">1</span>:] <span style="color: #666666">+</span> f(x[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>])
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> u[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u[<span style="color: #666666">2</span>:] <span style="color: #666666">+</span> f(x[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>])
 </pre></div>
 <p>
 
-<p>
 
 <h3>Finite difference schemes expressed as slices  <a name="___sec23"></a></h3>
 <p>
@@ -1399,7 +1364,7 @@ to this loop:
 The vectorized version becomes
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">-</span> u_2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> \
           C2<span style="color: #666666">*</span>(u_1[:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u_1[<span style="color: #666666">2</span>:])
@@ -1413,7 +1378,6 @@ or
 </pre></div>
 <p>
 
-<p>
 <!-- We may vectorize the other loops regarding the initial condition and -->
 <!-- the first time step, but the effect will hardly be -->
 <!-- noticeable in long time simulations. -->
@@ -1426,7 +1390,6 @@ and the vectorized loops are included.
 
 <p>
 
-<p>
 
 <h4>Verification  <a name="___sec24"></a></h4>
 <p>
@@ -1437,7 +1400,7 @@ use a <tt>user_action</tt> function that compares the computed and exact
 solution at each time level and performs an assert:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">test_quadratic</span>():
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
@@ -1497,14 +1460,10 @@ effect!
 
 <p>
 
-<p>
 
 <h2>Exercises  <a name="___sec29"></a></h2>
 <p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -1530,11 +1489,7 @@ Filename: <tt>wave1D_u0_s2.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -1555,11 +1510,7 @@ Filename: <tt>wave1D_u0_s2c.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -1582,7 +1533,6 @@ smallest Courant number such that the slicing works).
 
 <p>
 
-<p>
 
 <h2>Generalization: reflecting boundaries  <a name="___sec33"></a></h2>
 <p>
@@ -1598,7 +1548,6 @@ more complicated to express numerically and also implement.
 <h3>Neumann boundary condition  <a name="___sec34"></a></h3>
 <p>
 
-<p>
 When a wave hits a boundary and is to be reflected back, one applies
 the condition
 
@@ -1670,9 +1619,6 @@ looks like for computing \( u^3_0 \) in terms of \( u^2_0 \), \( u^1_0 \), and
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 4:  Modified stencil at a boundary with a Neumann condition. <a name="wave:pde1:fig:Neumann:stencil"></a> </p></center>
@@ -1681,7 +1627,6 @@ looks like for computing \( u^3_0 \) in terms of \( u^2_0 \), \( u^1_0 \), and
 
 <p>
 
-<p>
 Similarly, \eqref{wave:pde1:Neumann:0} applied at \( x=L \)
 is discretized by a central difference
 
@@ -1711,9 +1656,6 @@ by an <a href="http://hplgit.github.com/INF5620/doc/notes/mov-wave/wave1D_PDE_Ne
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Implementation of Neumann conditions  <a name="___sec36"></a></h3>
 <p>
@@ -1730,7 +1672,7 @@ for the internal points and the boundary points.
 The coding for the latter reads
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">i = 0
 ip1 = i+1
@@ -1744,12 +1686,11 @@ u[i] = u_1[i] + C2*(u_1[im1] - 2*u_1[i] + u_1[ip1])
 </pre></div>
 <p>
 
-<p>
 We can in fact create one loop over both the internal and boundary
 points and use only one updating formula:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">for i in range(0, Nx+1):
     ip1 = i+1 if i &lt; Nx else i-1
@@ -1758,7 +1699,6 @@ points and use only one updating formula:
 </pre></div>
 <p>
 
-<p>
 The program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave1D_dn.py"><tt>wave1D_dn.py</tt></a>
 solves the 1D wave equation \( u_{tt}=c^2u_{xx}+f(x,t) \) with
 general boundary and initial conditions:
@@ -1796,7 +1736,7 @@ We may keep <tt>x</tt> as the array for the physical mesh points, but just add
 extra elements to <tt>u</tt>,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u   <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">+3</span>)
 </pre></div>
@@ -1817,7 +1757,7 @@ The old code for updating <tt>u</tt> at the inner mesh points must
 now be extended to cover all points:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, Nx<span style="color: #666666">+2</span>):
     u[i] <span style="color: #666666">=</span> <span style="color: #666666">-</span> u_2[i] <span style="color: #666666">+</span> <span style="color: #666666">2*</span>u_1[i] <span style="color: #666666">+</span> \
@@ -1830,7 +1770,7 @@ Then the boundary points are updated, assuming the Neumann condition
 applies at both boundaries:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">2</span>]
 u[Nx<span style="color: #666666">+2</span>] <span style="color: #666666">=</span> u[Nx]
@@ -1846,7 +1786,6 @@ we return <tt>u[1:-1]</tt> (if there are two ghost cells).
 
 <p>
 
-<p>
 
 <h2>Generalization: variable wave velocity <a name="wave:pde2:var:c"></a></h2>
 <p>
@@ -1959,7 +1898,6 @@ when discretizing such a term.
 
 <p>
 
-<p>
 
 <h3>Computing the coefficient between mesh points <a name="wave:pde2:var:c:means"></a></h3>
 <p>
@@ -2028,7 +1966,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>How a variable coefficient affects the stability  <a name="___sec44"></a></h3>
 <p>
@@ -2051,7 +1988,6 @@ have stable solutions (\( \beta =0.9 \) may act as an all-round value).
 
 <p>
 
-<p>
 
 <h3>Implementation of variable coefficients  <a name="___sec45"></a></h3>
 <p>
@@ -2061,7 +1997,7 @@ the mesh points. The following loop is a straightforward
 implementation of the scheme \eqref{wave:pde2:var:c:scheme:impl}:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, Nx):
     u[i] <span style="color: #666666">=</span> <span style="color: #666666">-</span> u_2[i] <span style="color: #666666">+</span> <span style="color: #666666">2*</span>u_1[i] <span style="color: #666666">+</span> \
@@ -2080,7 +2016,7 @@ boundary, we need to combine this scheme with the discrete
 version of the boundary condition, \( u^{n+1}_{-1}=u^{n+1}_1 \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">i <span style="color: #666666">=</span> <span style="color: #666666">0</span>
 ip1 <span style="color: #666666">=</span> i<span style="color: #666666">+1</span>
@@ -2091,13 +2027,25 @@ u[i] <span style="color: #666666">=</span> <span style="color: #666666">-</span>
        dt2<span style="color: #666666">*</span>f(x[i], t[n])
 </pre></div>
 <p>
+The use of <tt>q[i] + q[i+1]</tt> for <tt>q[i] + q[i-1]</tt> might be unexpected, but
+the original formula with <tt>q[i-1]</tt> accesses actually <tt>q[-1]</tt> which is legal
+indexing, but a \( q \) value at the opposite side of the mesh! To have a more
+correct computation of \( q_{-1/2} \), we therefore assume \( q'(0)=0 \) so that
+\( q_{1/2}=q_{-1/2} \). Alternatively, one could compute
+\( q_{-1/2} \) by extrapolation from \( q_0 \) and \( q_1 \):
 
 <p>
+$$ q_{-\frac{1}{2}} \approx q_0 + \frac{1}{2}(q_1-q_0) , $$
+but this would modify the scheme at the boundary so that we
+cannot reuse the formula for the interior point as we do above.
+
+<p>
+
 A vectorized version of the scheme with a variable coefficient
 at internal points in the mesh becomes
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">-</span> u_2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> \
           C2<span style="color: #666666">*</span>(<span style="color: #666666">0.5*</span>(q[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> q[<span style="color: #666666">2</span>:])<span style="color: #666666">*</span>(u_1[<span style="color: #666666">2</span>:] <span style="color: #666666">-</span> u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]) <span style="color: #666666">-</span>
@@ -2106,7 +2054,6 @@ at internal points in the mesh becomes
 </pre></div>
 <p>
 
-<p>
 
 <h3>A more general model PDE with variable coefficients  <a name="___sec46"></a></h3>
 <p>
@@ -2206,7 +2153,6 @@ term in the wave equation.
 
 <p>
 
-<p>
 
 <h2>Building a general 1D wave equation solver <a name="wave:pde2:software"></a></h2>
 <p>
@@ -2257,7 +2203,7 @@ A class for flexible plotting, cleaning up files, and making a movie
 files like function <tt>viz</tt> and <tt>plot_u</tt> did can be coded as follows:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">class</span> <span style="color: #0000FF">PlotSolution</span>:
     <span style="color: #BB4444; font-style: italic">&quot;&quot;&quot;</span>
@@ -2350,7 +2296,7 @@ function is a flexible tool for playing around with various wave
 shapes and location of a medium with a different wave velocity:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">pulse</span>(C<span style="color: #666666">=1</span>, Nx<span style="color: #666666">=200</span>, animate<span style="color: #666666">=</span><span style="color: #AA22FF">True</span>, version<span style="color: #666666">=</span><span style="color: #BB4444">&#39;vectorized&#39;</span>, T<span style="color: #666666">=2</span>,
           loc<span style="color: #666666">=</span><span style="color: #BB4444">&#39;center&#39;</span>, pulse_tp<span style="color: #666666">=</span><span style="color: #BB4444">&#39;gaussian&#39;</span>, slowness_factor<span style="color: #666666">=2</span>,
@@ -2476,9 +2422,6 @@ This is especially useful during program testing.
 <h2>Exercises  <a name="___sec52"></a></h2>
 <p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2495,11 +2438,7 @@ Filename: <tt>wave1D_dn_ghost.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2518,11 +2457,7 @@ Filename: <tt>wave1D_symmetric</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2543,11 +2478,7 @@ Filename: <tt>wave1D_symmetric</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2577,11 +2508,7 @@ Filename: <tt>wave1D_symmetric.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2604,11 +2531,7 @@ Filename: <tt>pulse1D.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2629,11 +2552,7 @@ Filename: <tt>pulse1D_analysis.pdf</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -2649,7 +2568,6 @@ Filenames: <tt>pulse1D_harmonic.pdf</tt>, <tt>pulse1D_harmonic.py</tt>.
 
 <p>
 
-<p>
 
 <h2>Finite difference methods for 2D and 3D wave equations <a name="wave:2D3D"></a></h2>
 <p>
@@ -2804,7 +2722,6 @@ and write \( u^n_{i,j} \).
 
 <p>
 
-<p>
 
 <h3>Discretization <a name="wave:2D3D:models"></a></h3>
 <p>
@@ -2948,7 +2865,6 @@ implementations.
 <h2>Implementation <a name="wave:2D3D:impl"></a></h2>
 <p>
 
-<p>
 We shall now describe in detail various Python implementations
 for solving a standard 2D, linear wave equation with constant
 wave velocity and \( u=0 \) on the
@@ -3015,7 +2931,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>Scalar computations  <a name="___sec69"></a></h3>
 <p>
@@ -3040,7 +2955,7 @@ We therefore give \( \Delta t \) explicitly. The signature of
 the <tt>solver</tt> function is then
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">solver</span>(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
            user_action<span style="color: #666666">=</span><span style="color: #AA22FF">None</span>, version<span style="color: #666666">=</span><span style="color: #BB4444">&#39;scalar&#39;</span>,
@@ -3061,7 +2976,6 @@ dt2 <span style="color: #666666">=</span> dt<span style="color: #666666">**2</sp
 </pre></div>
 <p>
 
-<p>
 
 <h4>Stability limit  <a name="___sec71"></a></h4>
 <p>
@@ -3075,14 +2989,13 @@ limit with a safety factor:
 </pre></div>
 <p>
 
-<p>
 
 <h4>Solution arrays  <a name="___sec72"></a></h4>
 We store \( u^{n+1}_{i,j} \), \( u^{n}_{i,j} \), and
 \( u^{n-1}_{i,j} \) in three two-dimensional arrays,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u   <span style="color: #666666">=</span> zeros((Nx<span style="color: #666666">+1</span>,Ny<span style="color: #666666">+1</span>))   <span style="color: #008800; font-style: italic"># solution array</span>
 u_1 <span style="color: #666666">=</span> zeros((Nx<span style="color: #666666">+1</span>,Ny<span style="color: #666666">+1</span>))   <span style="color: #008800; font-style: italic"># solution at t-dt</span>
@@ -3103,7 +3016,7 @@ the <tt>user_action</tt> function should be straightforward generalization of
 the 1D code:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, Nx<span style="color: #666666">+1</span>):
     <span style="color: #AA22FF; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, Ny<span style="color: #666666">+1</span>):
@@ -3121,7 +3034,7 @@ The key finite difference formula for updating the solution at
 a time level is implemented as
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, Nx):
     <span style="color: #AA22FF; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">1</span>, Ny):
@@ -3134,7 +3047,7 @@ a time level is implemented as
 We must thereafter ensure that <tt>u</tt> is zero on the four boundaries:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">j <span style="color: #666666">=</span> <span style="color: #666666">0</span>
 <span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, Nx<span style="color: #666666">+1</span>): u[i,j] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
@@ -3158,7 +3071,6 @@ the CPU time is spent in this function.
 
 <p>
 
-<p>
 
 <h3>Vectorized computations  <a name="___sec74"></a></h3>
 <p>
@@ -3177,7 +3089,7 @@ Having the one-dimensional coordinate arrays <tt>x</tt> and <tt>y</tt> is not
 sufficient: these must be extended to vectorized versions,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">xv <span style="color: #666666">=</span> x[:,newaxis]
 yv <span style="color: #666666">=</span> y[newaxis,:]
@@ -3193,7 +3105,7 @@ With the <tt>xv</tt> and <tt>yv</tt> arrays for vectorized computing,
 setting the initial condition is just a matter of
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u_1[:,:] <span style="color: #666666">=</span> I(xv, yv)
 </pre></div>
@@ -3205,7 +3117,7 @@ sometimes not all of the array is to be filled by such a function
 evaluation. This is the case with the computational scheme for \( u^{n+1}_{i,j} \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> u_2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> \
       Cx2<span style="color: #666666">*</span>(u_1[:<span style="color: #666666">-2</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u_1[<span style="color: #666666">2</span>:,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]) <span style="color: #666666">+</span> \
@@ -3214,7 +3126,6 @@ evaluation. This is the case with the computational scheme for \( u^{n+1}_{i,j} 
 </pre></div>
 <p>
 
-<p>
 Array slices in 2D are more complicated to understand than those in
 1D, but the logic from 1D applies to each dimension separately.
 For example, when doing \( u^{n}_{i,j} - u^{n}_{i-1,j} \) for \( i=1,\ldots,N_x \),
@@ -3248,7 +3159,7 @@ The boundary conditions along the four sides makes use of
 a slice consisting of all indices along a boundary:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[: ,<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
 u[:,Ny] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
@@ -3309,12 +3220,10 @@ program implements this verification as a nose test.
 
 <p>
 
-<p>
 
 <h3>Migrating loops to Cython  <a name="___sec77"></a></h3>
 <p>
 
-<p>
 Although vectorization can bring down the CPU time dramatically
 compared with scalar code, there is still some factor 5-10 to win
 in these types of applications
@@ -3342,7 +3251,7 @@ types and adding some important annotations to speed up array
 computing in Cython. Let us first list the code:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
 <span style="color: #AA22FF; font-weight: bold">cimport</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
@@ -3380,9 +3289,6 @@ computing in Cython. Let us first list the code:
 </pre></div>
 <p>
 
-<p>
-
-<p>
 This example may act as a recipe on how to transform array-intensive
 code with loops into Cython.
 
@@ -3428,7 +3334,7 @@ Cython can visually explain how successfully it can translate a code from
 Python to C. The command
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; cython -a wave2D_u0_loop_cy.pyx
 </pre></div>
@@ -3443,7 +3349,6 @@ loops with array computing to C, which is our primary goal.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 5:  Visual illustration of Cython's ability to translate Python to C. <a name="wave:2D3D:impl:fig:cython:ma1"></a> </p></center>
@@ -3452,7 +3357,6 @@ loops with array computing to C, which is our primary goal.
 
 <p>
 
-<p>
 You can also inspect the generated C code directly, in the file
 <tt>wave2D_u0_loop_cy.c</tt>, but understanding this C code requires
 familiarity with writing Python extension modules in C by hand. However,
@@ -3463,9 +3367,6 @@ the mathematics in mind.
 
 <p>
 
-<p>
-
-<p>
 
 <h4>Building the extension module  <a name="___sec80"></a></h4>
 <p>
@@ -3475,7 +3376,7 @@ This is usually done by making a <tt>setup.py</tt> script, which
 is the standard way of building and installing Python software:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.core</span> <span style="color: #AA22FF; font-weight: bold">import</span> setup
 <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.extension</span> <span style="color: #AA22FF; font-weight: bold">import</span> Extension
@@ -3493,7 +3394,7 @@ To translate to C, compile, and build the module <tt>wave2D_u0_loop_cy</tt>,
 run
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python setup.py build_ext --inplace
 </pre></div>
@@ -3503,7 +3404,7 @@ current directory as the file <tt>wave2D_u0_loop_cy.so</tt>. This
 file acts as a normal Python module:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; import wave2D_u0_loop_cy
 &gt;&gt;&gt; dir(wave2D_u0_loop_cy)
@@ -3512,7 +3413,6 @@ file acts as a normal Python module:
 </pre></div>
 <p>
 
-<p>
 The <tt>setup.py</tt> file makes use of the <tt>distutils</tt> package in Python
 and Cython's extension of this package.
 These tools know how Python was built on the computer and will
@@ -3542,7 +3442,7 @@ module contains our <tt>advance</tt> function, which we now may call from
 the Python program for the wave equation:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">wave2D_u0_loop_cy</span>
 cython_advance <span style="color: #666666">=</span> wave2D_u0_loop_cy<span style="color: #666666">.</span>advance
@@ -3554,7 +3454,6 @@ cython_advance <span style="color: #666666">=</span> wave2D_u0_loop_cy<span styl
 </pre></div>
 <p>
 
-<p>
 
 <h4>Efficiency  <a name="___sec82"></a></h4>
 <p>
@@ -3584,7 +3483,6 @@ array computations.
 
 <p>
 
-<p>
 
 <h4>The Fortran subroutine  <a name="___sec84"></a></h4>
 <p>
@@ -3595,7 +3493,7 @@ for implementing the updating formula
 at the boundaries:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">subroutine </span><span style="color: #B8860B">advance</span>(<span style="color: #B8860B">u</span>, <span style="color: #B8860B">u_1</span>, <span style="color: #B8860B">u_2</span>, <span style="color: #B8860B">f</span>, <span style="color: #B8860B">Cx2</span>, <span style="color: #B8860B">Cy2</span>, <span style="color: #B8860B">dt2</span>, <span style="color: #B8860B">Nx</span>, <span style="color: #B8860B">Ny</span>)
       <span style="color: #00BB00; font-weight: bold">integer </span><span style="color: #B8860B">Nx</span>, <span style="color: #B8860B">Ny</span>
@@ -3657,7 +3555,7 @@ we can call the Fortran version of <tt>advance</tt> from Python.
 The necessary commands to run are
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; f2py -m wave2D_u0_loop_f77 -h wave2D_u0_loop_f77.pyf <span style="color: #BB6622; font-weight: bold">\</span>
           --overwrite-signature wave2D_u0_loop_f77.f
@@ -3680,7 +3578,7 @@ is <tt>wave2D_u0_loop_f77.so</tt>, and this file can imported as any other
 Python module:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; import wave2D_u0_loop_f77
 &gt;&gt;&gt; dir(wave2D_u0_loop_f77)
@@ -3694,7 +3592,6 @@ Functions:
 </pre></div>
 <p>
 
-<p>
 
 <h4>Examining doc strings  <a name="___sec86"></a></h4>
 <p>
@@ -3717,7 +3614,7 @@ the documentation <tt>f2py</tt> has generated for our Fortran <tt>advance</tt>
 subroutine:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; print wave2D_u0_loop_f77.advance.__doc__
 This module &#39;wave2D_u0_loop_f77&#39; is auto-generated with f2py
@@ -3751,7 +3648,6 @@ documentation.
 
 <p>
 
-<p>
 
 <h4>How to avoid array copying  <a name="___sec87"></a></h4>
 <p>
@@ -3789,21 +3685,17 @@ u_2 = zeros((Nx+1,Ny+1), order=order)   # solution at t-2*dt
 </pre></div>
 <p>
 
-<p>
-
-<p>
 In the compile and build step of using <tt>f2py</tt>, it is recommended to add
 an extra option for making <tt>f2py</tt> report on array copying:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; f2py -c wave2D_u0_loop_f77.pyf --build-dir build_f77 <span style="color: #BB6622; font-weight: bold">\</span>
           -DF2PY_REPORT_ON_ARRAY_COPY<span style="color: #666666">=</span>1 wave2D_u0_loop_f77.f
 </pre></div>
 <p>
 
-<p>
 It can sometimes be a challenge to track down which array that causes
 a copying. There are two principal reasons for copying array data:
 either the array does not have Fortran storage or the element types do
@@ -3817,7 +3709,7 @@ has Fortran storage. A typical problem in the <tt>wave2D_u0.py</tt> code is
 to set
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">f_a <span style="color: #666666">=</span> f(xv, yv, t[n])
 </pre></div>
@@ -3839,7 +3731,6 @@ or remaking the <tt>f(xv, yv, t[n])</tt> array,
 </pre></div>
 <p>
 
-<p>
 
 <h4>Efficiency  <a name="___sec88"></a></h4>
 <p>
@@ -3856,7 +3747,6 @@ done in Python.
 
 <p>
 
-<p>
 
 <h3>Migrating loops to C via Cython  <a name="___sec89"></a></h3>
 <p>
@@ -3885,21 +3775,20 @@ in the first index. For a two-dimensional <tt>u</tt> declared as
 in the following order:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[<span style="color: #666666">0</span>,<span style="color: #666666">0</span>], u[<span style="color: #666666">0</span>,<span style="color: #666666">1</span>], u[<span style="color: #666666">0</span>,<span style="color: #666666">2</span>], <span style="color: #666666">...</span>, u[<span style="color: #666666">0</span>,Ny], u[<span style="color: #666666">1</span>,<span style="color: #666666">0</span>], u[<span style="color: #666666">1</span>,<span style="color: #666666">1</span>], <span style="color: #666666">...</span>,
 u[<span style="color: #666666">1</span>,Ny], u[<span style="color: #666666">2</span>,<span style="color: #666666">0</span>], <span style="color: #666666">...</span>, u[Nx,<span style="color: #666666">0</span>], u[Nx,<span style="color: #666666">1</span>], <span style="color: #666666">...</span>, u[Nx, Ny]
 </pre></div>
 <p>
 
-<p>
 Viewing <tt>u</tt> as one-dimensional, the index pair \( (i,j) \) translates
 to <tt>i*(Ny+1) + j</tt>. Where a C programmer would naturally write
 an index <tt>u[i][j]</tt>, the indexing must read <tt>u[i*(Ny+1) + j]</tt>.
 This is tedious to write, so it can be handy to define a C macro,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800">#define idx(i,j) (i)*(Ny+1) + j</span>
 </pre></div>
@@ -3919,7 +3808,7 @@ formula. Macros are handy, but requires careful use.
 The C version of function <tt>advance</tt> can be coded as follows.
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800">#define idx(i,j) (i)*(Ny+1) + j</span>
 
@@ -3947,7 +3836,6 @@ The C version of function <tt>advance</tt> can be coded as follows.
 </pre></div>
 <p>
 
-<p>
 
 <h4>The Cython interface file  <a name="___sec92"></a></h4>
 <p>
@@ -3958,7 +3846,7 @@ our C code. The Cython code, placed in a file with extension <tt>.pyx</tt>, here
 <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c_cy.pyx"><tt>wave2D_u0_loop_c_cy.pyx</tt></a>, looks like
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
 <span style="color: #AA22FF; font-weight: bold">cimport</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #AA22FF; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
@@ -3987,7 +3875,7 @@ Here, we first declare the C functions to be interfaced.
 These must also appear in a C header file, <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0_loop_c.h"><tt>wave2D_u0_loop_c.h</tt></a>,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">extern</span> <span style="color: #00BB00; font-weight: bold">void</span> advance(<span style="color: #00BB00; font-weight: bold">double</span><span style="color: #666666">*</span> u, <span style="color: #00BB00; font-weight: bold">double</span><span style="color: #666666">*</span> u_1, <span style="color: #00BB00; font-weight: bold">double</span><span style="color: #666666">*</span> u_2, <span style="color: #00BB00; font-weight: bold">double</span><span style="color: #666666">*</span> f,
 		    <span style="color: #00BB00; font-weight: bold">double</span> Cx2, <span style="color: #00BB00; font-weight: bold">double</span> Cy2, <span style="color: #00BB00; font-weight: bold">double</span> dt2,
@@ -4014,7 +3902,7 @@ It remains to build the extension module. An appropriate
 <tt>setup.py</tt> file is
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.core</span> <span style="color: #AA22FF; font-weight: bold">import</span> setup
 <span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">distutils.extension</span> <span style="color: #AA22FF; font-weight: bold">import</span> Extension
@@ -4038,7 +3926,7 @@ residing in the file <tt>wave2D_u0_loop_c_cy.so</tt>. This module can
 be imported in Python,
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; import wave2D_u0_loop_c_cy as m
 &gt;&gt;&gt; dir(m)
@@ -4049,7 +3937,7 @@ be imported in Python,
 The call to the C version of <tt>advance</tt> can go like this in Python:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">advance <span style="color: #666666">=</span> wave2D_u0_loop_c_cy<span style="color: #666666">.</span>advance_cwrap
 f_a[:,:] <span style="color: #666666">=</span> f(xv, yv, t[n])
@@ -4057,7 +3945,6 @@ u <span style="color: #666666">=</span> advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
 </pre></div>
 <p>
 
-<p>
 
 <h4>Efficiency  <a name="___sec94"></a></h4>
 <p>
@@ -4083,7 +3970,7 @@ Fortran syntax and place it in a Fortran file, here
 <tt>wave2D_u0_loop_c_f2py_signature.f</tt>:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">subroutine </span><span style="color: #B8860B">advance</span>(<span style="color: #B8860B">u</span>, <span style="color: #B8860B">u_1</span>, <span style="color: #B8860B">u_2</span>, <span style="color: #B8860B">f</span>, <span style="color: #B8860B">Cx2</span>, <span style="color: #B8860B">Cy2</span>, <span style="color: #B8860B">dt2</span>, <span style="color: #B8860B">Nx</span>, <span style="color: #B8860B">Ny</span>)
 <span style="color: #B8860B">Cf2py</span> <span style="color: #AA22FF; font-weight: bold">intent</span>(<span style="color: #B8860B">c</span>) <span style="color: #B8860B">advance</span>
@@ -4101,7 +3988,7 @@ complete contents of the function body, it can generate the
 Fortran 90 module specification:
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; f2py -m wave2D_u0_loop_c_f2py <span style="color: #BB6622; font-weight: bold">\</span>
           -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature <span style="color: #BB6622; font-weight: bold">\</span>
@@ -4112,7 +3999,7 @@ The compile and build step is as for the Fortran code, except that we
 list C file(s) instead of Fortran file(s):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; f2py -c wave2D_u0_loop_c_f2py.pyf <span style="color: #BB6622; font-weight: bold">\</span>
           --build-dir tmp_build_c <span style="color: #BB6622; font-weight: bold">\</span>
@@ -4175,9 +4062,6 @@ function in the C file with the interface we want to wrap.
 <h3>Callbacks to Python from Fortran or C  <a name="___sec99"></a></h3>
 <p>
 
-<p>
-
-<p>
 
 <h2>Analysis of the continuous and discrete solutions  <a name="___sec100"></a></h2>
 <p>
@@ -4323,7 +4207,7 @@ The scheme
 <p>
 $$
 \begin{equation}
-[D_tD_t u = c^2 D_xD_x u]^n_p
+[D_tD_t u = c^2 D_xD_x u]^n_q
 \label{wave:pde1:analysis:scheme}
 \end{equation}
 $$
@@ -4336,7 +4220,7 @@ compared to \( \omega \)? And does the amplitude of such a wave component
 preserve its (unit) amplitude, as it should,
 or does it get amplified or damped in time (due to a complex \( \tilde\omega \))?
 These are the questions we aim to answer in the following analysis.
-Note the need for using \( p \) as counter for the mesh point in \( x \) direction
+Note the need for using \( q \) as counter for the mesh point in \( x \) direction
 since \( i \) is already used as the imaginary unit (in this analysis).
 
 <p>
@@ -4362,8 +4246,8 @@ Similarly, by just changing symbols (\( \omega\rightarrow k \),
 <p>
 $$
 \begin{equation*}
-[D_xD_x e^{ikx}]_p = -\frac{4}{\Delta x^2}\sin^2\left(
-\frac{k\Delta x}{2}\right)e^{ikp\Delta x} \thinspace .
+[D_xD_x e^{ikx}]_q = -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x} \thinspace .
 \end{equation*}
 $$
 
@@ -4375,17 +4259,17 @@ evaluate two expressions:
 <p>
 $$
 \begin{align}
-\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikp\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
-\frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikp\Delta x}\\
-\lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p &= \lbrack D_xD_x e^{ikx}\rbrack_p e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
-\frac{k\Delta x}{2}\right)e^{ikp\Delta x}e^{-i\tilde\omega n\Delta t} \thinspace . \end{align}
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikq\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
+\frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikq\Delta x}\\
+\lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_xD_x e^{ikx}\rbrack_q e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x}e^{-i\tilde\omega n\Delta t} \thinspace . \end{align}
 $$
 Then the complete scheme,
 
 <p>
 $$
 \begin{equation*}
-\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_p
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q
 \end{equation*}
 $$
 leads to the following equation for the unknown numerical
@@ -4413,7 +4297,6 @@ where
 
 <p>
 
-<p>
 $$
 \begin{equation}
 C = \frac{c\Delta t}{\Delta x}
@@ -4441,7 +4324,7 @@ the right-hand side can attain the value 1 when
 <p>
 $$
 \begin{equation*}
-\frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\Integerp
+\frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\Integer
 \thinspace .
 \end{equation*}
 $$
@@ -4456,7 +4339,6 @@ and we must require
 
 <p>
 
-<p>
 $$
 \begin{equation}
 C\leq 1 \thinspace .
@@ -4542,8 +4424,6 @@ less than \( 2\Delta x \) (\( 2\pi/k < 2\Delta x \)) are not visible in the mesh
 so it does not make sense to have \( p>\pi/2 \).
 
 <p>
-Note that the symbol \( p \), previously used as index, is here reused with
-another meaning.
 We may introduce the function \( r(C, p)=\tilde c/c \):
 
 <p>
@@ -4559,7 +4439,6 @@ numbers \( C \) and \( p \).
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 6:  The fractional error in the wave velocity for different Courant numbers.  <a name="wave:pde1:fig:disprel"></a> </p></center>
@@ -4568,11 +4447,10 @@ numbers \( C \) and \( p \).
 
 <p>
 
-<p>
 Defining
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">def r(C, p):
     return 2/(C*p)*asin(C*sin(p))
@@ -4588,7 +4466,7 @@ With <tt>sympy</tt> we can also easily make a Taylor series expansion in the
 discretization parameter \( p \):
 
 <p>
-<p>
+
 
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #666666">&gt;&gt;&gt;</span> C, p <span style="color: #666666">=</span> symbols(<span style="color: #BB4444">&#39;C p&#39;</span>)
 <span style="color: #666666">&gt;&gt;&gt;</span> rs <span style="color: #666666">=</span> r(C, p)<span style="color: #666666">.</span>series(p, <span style="color: #666666">0</span>, <span style="color: #666666">7</span>)
@@ -4631,7 +4509,6 @@ and \( D_xD_x \)).
 
 <p>
 
-<p>
 
 <h3>Extending the analysis to 2D and 3D  <a name="___sec103"></a></h3>
 <p>
@@ -4662,19 +4539,19 @@ $$
 A discrete 2D wave equation can be written as
 $$
 \begin{equation}
-\lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{p,q}
+\lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{q,r}
 \thinspace .
 \end{equation}
 $$
 This equation admits a Fourier component
 $$
 \begin{equation}
-u^n_{p,q} = \exp{\left( i(k_x p\Delta x + k_y q\Delta y
+u^n_{q,r} = \exp{\left( i(k_x q\Delta x + k_y r\Delta y
 - \tilde\omega n\Delta t)\right)},
 \end{equation}
 $$
 as solution. Letting the operators \( D_tD_t \), \( D_xD_x \), and \( D_yD_y \)
-act on \( u^n_{p,q} \) results in
+act on \( u^n_{q,r} \) results in
 $$
 \begin{equation}
 \frac{4}{\Delta t^2}\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
@@ -4739,7 +4616,6 @@ $$
 
 <p>
 
-<p>
 The exact numerical dispersion relation in 3D becomes, for constant \( c \),
 
 <p>
@@ -4791,7 +4667,6 @@ establishing wave equation models.
 <h3>Waves on a string <a name="wave:app:string"></a></h3>
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 7:  Discrete string model with point masses connected by elastic strings. <a name="wave:app:string:fig"></a> </p></center>
@@ -4800,7 +4675,6 @@ establishing wave equation models.
 
 <p>
 
-<p>
 Figure <a href="#wave:app:string:fig">7</a> shows a model we may use to derive
 the equation for waves on a string. The string is modeled as a
 set of discrete point masses (at mesh points) with
@@ -4970,14 +4844,10 @@ tension.
 
 <p>
 
-<p>
 
 <h3>Waves on a membrane <a name="wave:app:membrane"></a></h3>
 <p>
 
-<p>
-
-<p>
 
 <h3>Elastic waves in a rod <a name="wave:app:elastic:rod"></a></h3>
 <p>
@@ -5168,7 +5038,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>Sound waves in liquids and gases <a name="wave:app:sound"></a></h3>
 <p>
@@ -5273,11 +5142,7 @@ where \( c = \sqrt{\gamma p_0/\varrho_0} \) is the speed of sound in the fluid.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h3>Spherical waves <a name="wave:app:spherical"></a></h3>
 <p>
@@ -5362,7 +5227,6 @@ condition is assigned at \( r=\epsilon \), for some \( \epsilon >0 \).
 
 <p>
 
-<p>
 
 <h3>The linear shallow water equations <a name="wave:app:sw:2D"></a></h3>
 <p>
@@ -5448,7 +5312,6 @@ $$
 
 <p>
 
-<p>
 In the case we have an initial non-flat water surface at rest, the
 initial conditions become \( \eta =I(x,y) \) and \( \eta_t=0 \).
 The latter follows from \eqref{wave:app:sw:2D:eeq} if \( u=v=0 \), or
@@ -5531,11 +5394,7 @@ the latitude.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 
 <h3>Waves in blood vessels <a name="wave:app:blood"></a></h3>
 <p>
@@ -5732,14 +5591,10 @@ and can hence be solved independently.
 
 <p>
 
-<p>
 
 <h2>Exercises <a name="wave:app:exer"></a></h2>
 <p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5774,11 +5629,7 @@ Filename: <tt>rod.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5797,11 +5648,7 @@ Filename: <tt>wave3D_u0.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5850,7 +5697,6 @@ the simulation.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 8:  Sketch of initial water surface due to a subsea earthquake. <a name="wave:app:fig:1D:tsunami:flat"></a> </p></center>
@@ -5859,9 +5705,6 @@ the simulation.
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 9:  An initial surface elevation is split into two waves. <a name="wave:app:fig:1D:tsunami:2waves"></a> </p></center>
@@ -5876,11 +5719,7 @@ Filename: <tt>tsunami1D_flat.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5888,7 +5727,6 @@ Filename: <tt>tsunami1D_flat.py</tt>.
 <h3>Exercise 14: Implement an open boundary condition <a name="wave:app:exer:tsunami1D:radiation"></a></h3>
 <p>
 
-<p>
 To enable the right-going wave in <a href="#wave:app:exer:tsunami1D">Exercise 13: Earthquake-generated tsunami in a 1D model</a>
 to leave the computational domain and travel undisturbed through
 the boundary, one can in a one-dimensional problem impose the
@@ -5961,11 +5799,7 @@ Filename: <tt>wave1D_Ropen.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -5979,7 +5813,6 @@ shallow water above the hill.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 10:  Sketch of an earthquake-generated tsunami passing over a subsea hill. <a name="wave:app:fig:1D:tsunami:hill"></a> </p></center>
@@ -5988,7 +5821,6 @@ shallow water above the hill.
 
 <p>
 
-<p>
 One possible form of the
 hill is a Gaussian function,
 
@@ -6025,7 +5857,6 @@ interval.
 
 <p>
 
-<p>
 Visualize both the bottom topography and the
 water surface elevation (this requires modifying <tt>plot_u</tt>).
 Allow for a flexible choice of bottom shape,
@@ -6048,11 +5879,7 @@ Filename: <tt>tsunami1D_hill.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6085,11 +5912,7 @@ Filename: <tt>wave2D_n.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6144,11 +5967,7 @@ Filename: <tt>wave2D_n2.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6243,11 +6062,7 @@ Filename: <tt>tsunami2D_hill.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6270,11 +6085,7 @@ Filename: <tt>tsunami3D_hill_compiled.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6293,11 +6104,7 @@ Filename: <tt>tsunami3D_hill.f</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6314,11 +6121,7 @@ Filename: <tt>tsunami2D_hill_mpl.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6335,11 +6138,7 @@ Filename: <tt>tsunami2D_hill_mayavi.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6356,11 +6155,7 @@ Filename: <tt>tsunami2D_hill_paraview.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6379,11 +6174,7 @@ Filename: <tt>tsunami2D_hill_OpenDX.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>
@@ -6415,11 +6206,7 @@ Filename: <tt>tsunami2D_hill_harmonic.py</tt>.
 
 <p>
 
-<p>
 
-<p>
-
-<p>
 <!-- --- begin exercise -->
 
 <p>

@@ -1,0 +1,689 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+
+<!--
+Color definitions:  http://www.december.com/html/spec/color0.html
+CSS examples:       http://www.w3schools.com/css/css_examples.asp
+-->
+
+<style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: #ffffff;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+      color: #000000;
+    }
+    h1 { font-size: 1.8em; color: #1e36ce; }
+    h2 { font-size: 1.5em; color: #1e36ce; }
+    h3 { color: #1e36ce; }
+    a { color: #1e36ce; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    pre { background: #ededed; color: #000; padding: 15px;}
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+</style>
+
+<!-- Use MathJax to render mathematics -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+</head>
+
+<body>
+    
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+
+\newcommand{\xpoint}{\pmb{x}}
+\newcommand{\normalvec}{\pmb{n}}
+
+\newcommand{\x}{\pmb{x}}
+\newcommand{\X}{\pmb{X}}
+\renewcommand{\u}{\pmb{u}}
+\renewcommand{\v}{\pmb{v}}
+\newcommand{\w}{\pmb{w}}
+\newcommand{\V}{\pmb{V}}
+\newcommand{\e}{\pmb{e}}
+\newcommand{\f}{\pmb{f}}
+\newcommand{\F}{\pmb{F}}
+\newcommand{\stress}{\pmb{\sigma}}
+\newcommand{\strain}{\pmb{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\pmb{I}}
+\newcommand{\T}{\pmb{T}}
+
+% Unit vectors
+\newcommand{\ii}{\pmb{i}}
+\newcommand{\jj}{\pmb{j}}
+\newcommand{\kk}{\pmb{k}}
+\newcommand{\ir}{\pmb{i}_r}
+\newcommand{\ith}{\pmb{i}_{\theta}}
+\newcommand{\iz}{\pmb{i}_z}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\phib}{\pmb{\varphi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\pmb{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+<!-- ------------------- main content ------------------------>
+
+<title>INF5620 Lecture: Numerical solution of the Navier-Stokes equations</title>
+
+<center><h1>INF5620 Lecture: Numerical solution of the Navier-Stokes equations</h1></center>  <! -- document title -->
+
+<center><h4>Dec 6, 2012</h4></center> <!-- date -->
+<p>
+
+<h2>Table of contents</h2>
+
+<p>
+
+<a href="#ns:mathphys"> The physical and mathematical problem </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec1"> The Navier-Stokes equations </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec2"> Boundary conditions </a><br>
+<a href="#___sec3"> The classical splitting method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec4"> A simple, naive approach </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec5"> A working scheme </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec6"> Summary </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec7"> Boundary conditions </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec8"> Spatial discretization by the finite element method </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec9"> Increasing the implicitness </a><br>
+<a href="#___sec10"> Methods based on slight compressibility </a><br>
+<a href="#___sec11"> Applications </a><br>
+
+<p>
+
+
+
+<h2>The physical and mathematical problem <a name="ns:mathphys"></a></h2>
+<p>
+<!-- MOVIE: [http://www.youtube.com/watch?v=P8VcZzgdfSc] -->
+
+<p>
+
+<iframe width="420" height="315" src="http://www.youtube.com/embed/P8VcZzgdfSc" frameborder="0" allowfullscreen></iframe>
+
+
+<p>
+
+<iframe width="420" height="315" src="http://www.youtube.com/embed/sI2uCHH3qIM" frameborder="0" allowfullscreen></iframe>
+
+
+<p>
+Applications involving fluid flow:
+
+<p>
+
+<ul>
+ <p><li> Weather (flow in the atmosphere)</li>
+ <p><li> Ocean currents</li>
+ <p><li> Flight</li>
+ <p><li> Drag on cars</li>
+ <p><li> Blood circulation</li>
+ <p><li> Breathing</li>
+</ul>
+
+<h3>The Navier-Stokes equations  <a name="___sec1"></a></h3>
+<p>
+Assumptions:
+
+<p>
+
+<ul>
+  <p><li> Incompressible flow (velocity \( < 1/3 \) of the speed of sound)</li>
+  <p><li> Laminar flow</li>
+  <p><li> Simple fluids (constant viscosity \( \nu \))</li>
+</ul>
+
+Primary unknowns:
+
+<p>
+
+<ul>
+  <p><li> velocity \( \u(\x,t) \)</li>
+  <p><li> pressure \( p(\x,t) \)</li>
+</ul>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 1:  Flow around a cylinder. </p></center>
+<p><img src="fig-ns/flow_around_cylinder.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+Momentum balance (Newton's 2nd law):
+
+<p>
+$$
+\begin{equation}
+ \u_t + (\u\cdot\nabla) \u = -\frac{1}{\varrho}\nabla p + \nu\nabla^2\u + \f,
+\label{ns:NS:mom}
+\end{equation}
+$$
+
+<p>
+Mass balance (eq. of continuity):
+
+<p>
+$$
+\begin{equation}
+\nabla\cdot\u = 0
+\label{ns:NS:mass}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h3>Boundary conditions  <a name="___sec2"></a></h3>
+<p>
+
+<ul>
+ <p><li> Dirichlet conditions: components of \( \u \) are known</li>
+ <p><li> Neumann conditions:</li>
+
+<ul>
+    <p><li> Stress condition: components of the stress vector \( \stress\cdot\normalvec \) are prescribed</li>
+    <p><li> Outflow or symmetry condition: \( \partial\u/\partial n=0 \) (or
+      components of this vector are zero)</li>
+</ul>
+
+ <p><li> Pressure known at <em>a single point</em></li>
+</ul>
+
+<h2>The classical splitting method  <a name="___sec3"></a></h2>
+<p>
+Idea: split the N-S equations into simpler problems (<em>operator splitting</em>).
+
+<p>
+
+<h3>A simple, naive approach  <a name="___sec4"></a></h3>
+<p>
+The equation for \( \u \) looks like a diffusion equation...why not
+a Forward Euler scheme?
+
+<p>
+$$
+ \u_t + (\u\cdot\nabla) \u = -\frac{1}{\varrho}\nabla p + \nu\nabla^2\u + \f
+$$
+
+<p>
+$$
+\begin{equation}
+\frac{\u^{n+1}-\u^n}{\Delta t} + (\u^n\cdot\nabla)\u^n = -\frac{1}{\varrho}
+\nabla p^n + \nu\nabla^2\u^n + \f^n,
+\end{equation}
+$$
+
+<p>
+$$
+\begin{equation}
+\u^{n+1} = \u^n - \Delta t(\u^n\cdot\nabla)\u^n -\frac{\Delta t}{\varrho}
+\nabla p^n + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n
+\label{ns:split:FE0}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+Two fundamental problems:
+
+<p>
+
+<ul>
+ <p><li> \( \nabla\cdot\u^{n+1}\neq 0 \) (that equation is not used!)</li>
+ <p><li> no computation of \( p^{n+1} \)</li>
+</ul>
+
+<h3>A working scheme  <a name="___sec5"></a></h3>
+<p>
+Idea: Forward Euler in time, but evaluate \( \nabla p \) at \( t_{n+1} \)
+and enforce \( \nabla\cdot\u^{n+1} = 0 \).
+
+<p>
+$$
+\begin{align*}
+\u^{n+1} &= \u^n - \Delta t(\u^n\cdot\nabla)\u^n -\frac{\Delta t}{\varrho}
+\nabla p^{n+1} + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n,\\
+\nabla\cdot\u^{n+1} &= 0
+\thinspace
+\end{align*}
+$$
+
+<p>
+
+<ul>
+  <p><li> Implicit system for \( \u^{n+1} \) and \( p^{n+1} \)</li>
+  <p><li> Splitting technique:</li>
+
+<ul>
+    <p><li> Use old \( \beta\nabla p^n \) for \( \nabla p^{n+1} \)
+      and advance to intermediate velocity \( \u^* \)</li>
+    <p><li> Correct the \( \u^* \) velocity by \( \nabla\cdot\u^{n+1} = 0 \)</li>
+</ul>
+
+</ul>
+
+Intermediate velocity (Forward Euler):
+
+<p>
+$$
+\begin{equation}
+\u^{*} = \u^n - \Delta t(\u^n\cdot\nabla)\u^n - \beta\frac{\Delta t}{\varrho}
+\nabla p^{n} + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n
+\label{ns:split:FE2}
+\thinspace
+\end{equation}
+$$
+
+<p>
+Seek correction \( \delta\u \) such that
+
+<p>
+$$
+\begin{equation}
+\u^{n+1} = \u^* + \delta\u,
+\label{ns:split:corr:du}
+\end{equation}
+$$
+fulfills
+
+<p>
+$$ \nabla\cdot \u^{n+1} = 0 \thinspace .$$
+
+<p>
+Subtract \( \u^* \) equation from original \( \u^{n+1} \) equation to
+find \( \delta\u \):
+
+<p>
+$$
+\begin{equation}
+\delta\u = \u^{n+1} - \u^* = -\frac{\Delta t}{\varrho}\nabla\Phi,
+\label{ns:split:du}
+\end{equation}
+$$
+where
+
+<p>
+$$
+\begin{equation}
+\Phi = p^{n+1} - \beta p^n
+\label{ns:split:Phi}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+The oldest methods had \( \beta=0 \), but \( \beta\neq 0 \) gives in general
+better speed and accuracy.
+
+<p>
+\( \nabla\cdot \u^{n+1} = 0 \) implies
+
+<p>
+$$ \nabla\cdot\delta\u = - \nabla\cdot \u^* ,$$
+which gives
+
+<p>
+$$
+\begin{equation}
+\nabla^2 \Phi = \frac{\varrho}{\Delta t}\nabla\cdot\u^*
+\label{ns:split:Poisson}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+When \( \Phi \) is computed,
+
+<p>
+$$
+\begin{equation}
+\u^{n+1}  = \u^* -\frac{\Delta t}{\varrho}\nabla\Phi,
+\label{ns:split:u:np1}
+\end{equation}
+$$
+and
+
+<p>
+$$
+\begin{equation}
+p^{n+1} = \Phi + \beta p^n
+\label{ns:split:p:np1}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+
+<h4>Summary  <a name="___sec6"></a></h4>
+<p>
+
+<ol>
+<p><li> Compute the intermediate velocity \( \u^* \) from \eqref{ns:split:FE2}</li>
+<p><li> Solve the Poisson equation \eqref{ns:split:Poisson} for \( \Phi \)</li>
+<p><li> Update the velocity: \( \u^{n+1}  = \u^* -\frac{\Delta t}{\varrho}\nabla\Phi \)</li>
+<p><li> Update the pressure: \( p^{n+1} = \Phi + \beta p^n \)</li>
+</ol>
+
+Basically, we have \( u=f \) approximation problems (1, 3, 4) and a
+Poisson equation to solve.
+
+<p>
+
+<h3>Boundary conditions  <a name="___sec7"></a></h3>
+<p>
+Problem: \( p \) condition at one point only in the original N-S equations.
+Now we need boundary conditions for \( \Phi \) along the whole boundary
+(Poisson equation).
+
+<p>
+
+<ul>
+ <p><li> Use conditions for \( \u \) also for \( \u^* \)</li>
+ <p><li> Known pressure: known \( \Phi \)</li>
+ <p><li> Known pressure gradient: known \( \partial\Phi/\partial n \)</li>
+ <p><li> Otherwise \( \partial\Phi/\partial n = 0 \)</li>
+</ul>
+
+<h3>Spatial discretization by the finite element method  <a name="___sec8"></a></h3>
+<p>
+
+<ul>
+ <p><li> \( \u^*,\u^{n+1}\in V^{(u)} \) (modulo nonzero Dirichlet cond.)</li>
+ <p><li> \( p^{n+1}\in V^{(\Phi)} \) (modulo nonzero Dirichlet cond.)</li>
+ <p><li> Test function \( \v^{(u)}\in V^{(u)} \) for vector equations (velocity)</li>
+ <p><li> Test function \( v^{(\Phi)}\in V^{(\Phi)} \) for scalar equations (pressure)</li>
+ <p><li> Take inner product of vector equation and \( \v^{(u)} \)</li>
+ <p><li> Integrate \( \nabla^2\u\cdot \v^{(u)} \) by parts</li>
+ <p><li> Integrate \( \nabla p\cdot \v^{(u)} \) by parts (optional)</li>
+ <p><li> Notation: \( \u \) is \( \u^{n+1} \), \( \u_1 \) is \( \u^n \), \( p \) is \( p^{n+1} \),
+   \( p_1 \) is \( p^n \) (as in code)</li>
+</ul>
+
+$$
+\begin{align}
+\int_\Omega \bigl( \u^*\cdot\v^{(u)} &+
+\Delta t((\u_1\cdot\nabla)\nabla\u_1)\cdot\v^{(u)}
+- \frac{\Delta t}{\varrho}p\nabla\cdot\v^{(u)} + \nonumber\\
+& \Delta t\,\nu\nabla\u_1\cdot\nabla\v^{(u)} - \Delta t f_1\bigr)\dx
++ \int_{\partial\Omega_{N,u}}\left(
+\nu\frac{\partial\u}{\partial n} - p\normalvec\right)\cdot\v^{(u)}\ds,
+\label{ns:split:FE2:vf}
+\end{align}
+$$
+\( \forall\v^{(u)}\in V^{(u)} \).
+
+<p>
+Natural boundary condition:
+
+<p>
+$$ \nu\frac{\partial\u}{\partial n} - p\normalvec \quad (=0)$$
+Usually \( {\partial\u /\partial n}=0 \) and \( p=0 \) at outlets.
+
+<p>
+Pressure Poisson equation:
+
+<p>
+$$
+\begin{equation}
+\int_\Omega\nabla\Phi\cdot\nabla v^{(\Phi)}\dx =
+\frac{\varrho}{\Delta t}\int_\Omega \nabla\cdot\u^*\, v^{(\Phi)}\dx
++ \int_{\partial\Omega_{N,p}} \frac{\partial\Phi}{\partial n}v^{(\Phi)}\ds,
+\quad\forall v^{(\Phi)}\in V^{(\Phi)}
+\thinspace .
+\label{ns:split:Poisson:vf}
+\end{equation}
+$$
+
+<p>
+Velocity update:
+
+<p>
+$$
+\begin{equation}
+\int_\Omega \u\cdot\v^{(u)}\dx = \int_{\Omega} (\u^* -\frac{\Delta t}{\varrho}
+\nabla\Phi)\cdot\v^{(u)}\dx,\quad\forall\v^{(u)}\in V^{(u)}
+\thinspace .
+\label{ns:split:u:np1:vf}
+\end{equation}
+$$
+
+<p>
+Pressure update:
+
+<p>
+$$
+\begin{equation}
+\int_\Omega p v^{(\Phi)}\dx = \int_{\Omega} (\Phi + \beta p_1)v^{(\Phi)}\dx,
+\quad\forall v^{(\Phi)}\in V^{(\Phi)}
+\thinspace .
+\label{ns:split:p:np1:vf}
+\end{equation}
+$$
+
+<p>
+
+<h3>Increasing the implicitness  <a name="___sec9"></a></h3>
+<p>
+Stability (due to Forward Euler-style scheme):
+
+<p>
+$$
+\begin{equation}
+\Delta t \leq \frac{h^2}{2\nu + Uh}
+\thinspace .
+\end{equation}
+$$
+\( h \): minimum element size, \( U \): typical velocity.
+
+<p>
+Better stability by a Backward Euler scheme:
+
+<p>
+$$
+\begin{align}
+\u^{n+1} &= \u^n - \Delta t(\u^{n+1}\cdot\nabla)\u^{n+1}
+-\frac{\Delta t}{\varrho}
+\nabla p^{n+1} + \Delta t\,\nu\nabla^2\u^{n+1} + \Delta t\f^{n+1},
+\label{ns:split:BE}\\
+\nabla\cdot\u^{n+1} &= 0
+\thinspace .
+\end{align}
+$$
+
+<p>
+Intermediate velocity (\( \nabla p^{n+1}\rightarrow \beta p^n \)):
+
+<p>
+$$
+\u^{*} = \u^n - \Delta t(\u^{*}\cdot\nabla)\u^{*} -
+\beta\frac{\Delta t}{\varrho}
+p^{n+1} + \Delta t\,\nu\nabla^2\u^{*} + \Delta t\f^{n+1}
+\label{ns:split:BE1}
+\thinspace
+$$
+
+<p>
+Deal with nonlinearity in a simple way (1 Pickard it.):
+
+<p>
+$$
+\begin{equation}
+(\u^{*}\cdot\nabla)\u^{*} \approx (\u^{n}\cdot\nabla)\u^{*}
+\thinspace .
+\end{equation}
+$$
+
+<p>
+Then we have a linear problem for \( \u^* \):
+
+<p>
+$$
+\u^{*} = \u^n - \Delta t(\u^{n}\cdot\nabla)\u^{*} -
+\beta\frac{\Delta t}{\varrho}
+\nabla p^{n} + \Delta t\,\nu\nabla^2\u^{*} + \Delta t\f^{n+1}
+\label{ns:split:BE2}
+\thinspace
+$$
+
+<p>
+Correction (assume \( \u^{n+1}-\u^* \) small):
+
+<p>
+$$
+\delta\u =
+\Delta t((\u^{n+1}\cdot\nabla)\u^{n+1} - (\u^{n}\cdot\nabla)\u^{*})
+-\frac{\Delta t}{\varrho}
+\nabla \Phi + \Delta t\,\nu (\nabla^2 (\u^{n+1} - \u^*)
+\approx -\frac{\Delta t}{\varrho}
+\nabla \Phi
+\thinspace .$$
+
+<p>
+So, as before,
+
+<p>
+$$ \nabla^2 \Phi = \frac{\varrho}{\Delta t}\nabla\cdot\u^* $$
+
+<p>
+
+<ul>
+ <p><li> Need to solve an implicit equation (linear system) for \( \u^* \)</li>
+ <p><li> The other steps are the same</li>
+ <p><li> A Crank-Nicolson method is more accurate (also implicit scheme for \( \u^* \))</li>
+</ul>
+
+<h2>Methods based on slight compressibility  <a name="___sec10"></a></h2>
+<p>
+\( \nabla\cdot\u=0 \) is problematic. Allow slight compressibility in
+the fluid:
+
+<p>
+$$ p_t  + c^2\nabla\cdot\u =0 \thinspace . $$
+\( c \): speed of sound.
+
+<p>
+Now we have evolution equations for \( \u \) and \( p \):
+
+<p>
+$$
+\begin{align}
+\u_t &= -(\u\cdot\nabla) \u -\frac{1}{\varrho}\nabla p + \nu\nabla^2\u + \f,\\
+p_t  &= - c^2\nabla\cdot\u
+\thinspace .
+\end{align}
+$$
+
+<p>
+Forward Euler:
+
+<p>
+$$
+\begin{align}
+\u^{n+1} &= \u^n - \Delta t (\u^n\cdot\nabla) \u^n -\frac{\Delta t}{\varrho}\nabla p^n + \Delta t\,\nu\nabla^2\u^n + \Delta t\f^n,\\
+p^{n+1}  &= p^n - \Delta t c^2\nabla\cdot\u^n
+\thinspace .
+\end{align}
+$$
+
+<p>
+
+<ul>
+ <p><li> Stability requires \( \Delta t\sim h^2/c \)</li>
+ <p><li> \( c \) is large</li>
+ <p><li> Remedy: choose smaller \( c \) ("pseudo sound speed")</li>
+ <p><li> Can use Runge-Kutta methods</li>
+ <p><li> Can use implicit methods (but then the other scheme with \( \nabla\cdot\u=0 \)
+   is not more complicated)</li>
+</ul>
+
+<h2>Applications  <a name="___sec11"></a></h2>
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 2:  Flow in a channel. <a name="ns:app:figs:channel"></a> </p></center>
+<p><img src="fig-ns/flow_in_channel.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 3:  Flow in a half a channel with a symmetry line. <a name="ns:app:figs:channel:symm"></a> </p></center>
+<p><img src="fig-ns/flow_in_channel_symm.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 4:  Flow over a backward facing step. <a name="ns:app:figs:channel:bfs"></a> </p></center>
+<p><img src="fig-ns/flow_over_bfs.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+<center> <! -- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 5:  Flow around a cylinder. <a name="ns:app:figs:cylinder"></a> </p></center>
+<p><img src="fig-ns/flow_around_cylinder.png" align="bottom" width=600></p>
+</center>
+
+<p>
+
+
+<!-- ------------------- end of main content ----------------->
+</body>
+</html>
+    
+
