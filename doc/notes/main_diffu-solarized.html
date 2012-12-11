@@ -29,7 +29,7 @@ CSS examples:       http://www.w3schools.com/css/css_examples.asp
     }
     a { color: #657b83; text-decoration:none; }
     a:hover { color: #b58900; background: #eee8d5; text-decoration:none; }
-    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; }
+    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; line-height: 125%; }
     h2 { font-variant: small-caps; }
     pre {
       background: #fdf6e3;
@@ -81,6 +81,8 @@ $$
 \newcommand{\half}{\frac{1}{2}}
 \newcommand{\halfi}{{1/2}}
 
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+
 \newcommand{\xpoint}{\pmb{x}}
 \newcommand{\normalvec}{\pmb{n}}
 
@@ -89,7 +91,7 @@ $$
 \renewcommand{\u}{\pmb{u}}
 \renewcommand{\v}{\pmb{v}}
 \newcommand{\w}{\pmb{w}}
-\renewcommand{\u}{\pmb{u}}
+\newcommand{\V}{\pmb{V}}
 \newcommand{\e}{\pmb{e}}
 \newcommand{\f}{\pmb{f}}
 \newcommand{\F}{\pmb{F}}
@@ -137,6 +139,7 @@ $$
 
 <center><h1>Finite difference methods for diffusion processes</h1></center>  <! -- document title -->
 
+<p>
 <! -- author(s) -->
 
 <center>
@@ -151,18 +154,17 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Nov 15, 2012</h4></center> <!-- date -->
+<p>
+<center><h4>Dec 11, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>VERY PRELIMINARY VERSION</b>
 
 <p>
 
-<p>
 <h2>Table of contents</h2>
 
 <p>
 
-<p>
 <a href="#___sec0"> A simple 1D diffusion equation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:FE"> Forward Euler scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:BE"> Backward Euler Scheme </a><br>
@@ -185,19 +187,9 @@ Note: <b>VERY PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#___sec19"> Summary of accuracy of amplification factors </a><br>
 
 <p>
-<p>
 
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
 
 <h2>A simple 1D diffusion equation  <a name="___sec0"></a></h2>
 <p>
@@ -277,7 +269,7 @@ Written out,
 <p>
 $$
 \begin{equation}
-\frac{u^{n+1}-u^n}{\Delta t} = \alpha \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
+\frac{u^{n+1}_i-u^n_i}{\Delta t} = \alpha \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
 \label{diffu:pde1:step3b}
 \end{equation}
 $$
@@ -314,9 +306,10 @@ The computational algorithm is then
 The algorithm is compactly fully specified in Python:
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
+
+<!-- code typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
 dx = x[1] - x[0]
 t = linspace(0, T, N+1)    # mesh points in time
 dt = t[1] - t[0]
@@ -341,12 +334,10 @@ for n in range(0, N):
 </pre></div>
 <p>
 
-<p>
 
 <h3>Backward Euler Scheme <a name="diffu:pde1:BE"></a></h3>
 <p>
 
-<p>
 We now apply a backward difference in time in \eqref{diffu:pde1:step2},
 but the same central difference in space:
 
@@ -362,7 +353,7 @@ which written out reads
 <p>
 $$
 \begin{equation}
-\frac{u^{n}_i-u^n-1_i}{\Delta t} = \alpha\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
+\frac{u^{n}_i-u^{n-1}_i}{\Delta t} = \alpha\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
 \label{diffu:pde1:step3bBE}
 \end{equation}
 $$
@@ -386,10 +377,10 @@ unknown new values \( u^n_1 \) and \( u^n_2 \) on the left-hand side gives
 $$
 \begin{align}
 \left(1+  2\alpha\frac{\Delta t}{\Delta x^2}\right) u^{n}_1
-- \alpha\frac{\Delta t}{\Delta x^2} u^{n}_{2}  &= u^n-1_1,\\
-- \alpha\frac{\Delta t}{\Delta x^2} u^{n}_{2} +
+- \alpha\frac{\Delta t}{\Delta x^2} u^{n}_{2}  &= u^{n-1}_1,\\
+- \alpha\frac{\Delta t}{\Delta x^2} u^{n}_{1} +
 \left(1+  2\alpha\frac{\Delta t}{\Delta x^2}\right) u^{n}_2
-  &= u^n-1_2
+  &= u^{n-1}_2
 \thinspace .
 \end{align}
 $$
@@ -422,7 +413,7 @@ $$
 <p>
 $$
 \begin{equation}
-- Cu^n_{i-1} + \left(1+  2C\right) u^{n}_i - Cu^n_{i+1}) = u_{i-1}^n,
+- Cu^n_{i-1} + \left(1+  2C\right) u^{n}_i - Cu^n_{i+1} = u_{i-1}^{n-1},
 \label{diffu:pde1:step4BE}
 \end{equation}
 $$
@@ -537,9 +528,10 @@ This leads to the following computational algorithm, here sketched
 with Python code:
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
+
+<!-- code typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
 dx = x[1] - x[0]
 t = linspace(0, T, N+1)    # mesh points in time
 u   = zeros(Nx+1)
@@ -573,7 +565,6 @@ for n in range(0, N):
 </pre></div>
 <p>
 
-<p>
 
 <h3>Sparse matrix implementation <a name="diffu:pde1:impl:sparse"></a></h3>
 <p>
@@ -595,37 +586,38 @@ sparse matrix data structures. The code below illustrates how we
 can store only the main diagonal and the upper and lower diagonals.
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Representation of sparse matrix and right-hand side</span>
-main  <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">+1</span>)
-lower <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">-1</span>)
-upper <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">-1</span>)
-b     <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">+1</span>)
 
-<span style="color: #008800; font-style: italic"># Precompute sparse matrix</span>
-main[:] <span style="color: #666666">=</span> <span style="color: #666666">1</span> <span style="color: #666666">+</span> <span style="color: #666666">2*</span>C
-lower[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #008800; font-style: italic">#1</span>
-upper[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #008800; font-style: italic">#1</span>
-<span style="color: #008800; font-style: italic"># Insert boundary conditions</span>
-main[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #666666">1</span>
-main[Nx] <span style="color: #666666">=</span> <span style="color: #666666">1</span>
+<!-- code typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #228B22"># Representation of sparse matrix and right-hand side</span>
+main  = zeros(Nx+<span style="color: #B452CD">1</span>)
+lower = zeros(Nx-<span style="color: #B452CD">1</span>)
+upper = zeros(Nx-<span style="color: #B452CD">1</span>)
+b     = zeros(Nx+<span style="color: #B452CD">1</span>)
 
-A <span style="color: #666666">=</span> scipy<span style="color: #666666">.</span>sparse<span style="color: #666666">.</span>diags(
-    diagonals<span style="color: #666666">=</span>[main, lower, upper],
-    offsets<span style="color: #666666">=</span>[<span style="color: #666666">0</span>, <span style="color: #666666">-1</span>, <span style="color: #666666">1</span>], shape<span style="color: #666666">=</span>(Nx<span style="color: #666666">+1</span>, Nx<span style="color: #666666">+1</span>),
-    format<span style="color: #666666">=</span><span style="color: #BB4444">&#39;csr&#39;</span>)
-<span style="color: #AA22FF; font-weight: bold">print</span> A<span style="color: #666666">.</span>todense()
+<span style="color: #228B22"># Precompute sparse matrix</span>
+main[:] = <span style="color: #B452CD">1</span> + <span style="color: #B452CD">2</span>*C
+lower[:] = -C  <span style="color: #228B22">#1</span>
+upper[:] = -C  <span style="color: #228B22">#1</span>
+<span style="color: #228B22"># Insert boundary conditions</span>
+main[<span style="color: #B452CD">0</span>] = <span style="color: #B452CD">1</span>
+main[Nx] = <span style="color: #B452CD">1</span>
 
-<span style="color: #008800; font-style: italic"># Set initial condition</span>
-<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>,Nx<span style="color: #666666">+1</span>):
-    u_1[i] <span style="color: #666666">=</span> I(x[i])
+A = scipy.sparse.diags(
+    diagonals=[main, lower, upper],
+    offsets=[<span style="color: #B452CD">0</span>, -<span style="color: #B452CD">1</span>, <span style="color: #B452CD">1</span>], shape=(Nx+<span style="color: #B452CD">1</span>, Nx+<span style="color: #B452CD">1</span>),
+    format=<span style="color: #CD5555">&#39;csr&#39;</span>)
+<span style="color: #8B008B; font-weight: bold">print</span> A.todense()
 
-<span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, N):
-    b <span style="color: #666666">=</span> u_1
-    b[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> b[<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>  <span style="color: #008800; font-style: italic"># boundary conditions</span>
-    u[:] <span style="color: #666666">=</span> scipy<span style="color: #666666">.</span>sparse<span style="color: #666666">.</span>linalg<span style="color: #666666">.</span>spsolve(A, b)
-    u_1[:] <span style="color: #666666">=</span> u
+<span style="color: #228B22"># Set initial condition</span>
+<span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>,Nx+<span style="color: #B452CD">1</span>):
+    u_1[i] = I(x[i])
+
+<span style="color: #8B008B; font-weight: bold">for</span> n <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, N):
+    b = u_1
+    b[<span style="color: #B452CD">0</span>] = b[-<span style="color: #B452CD">1</span>] = <span style="color: #B452CD">0.0</span>  <span style="color: #228B22"># boundary conditions</span>
+    u[:] = scipy.sparse.linalg.spsolve(A, b)
+    u_1[:] = u
 </pre></div>
 <p>
 The <tt>scipy.sparse.linalg.spsolve</tt> function utilizes the sparse storage
@@ -634,7 +626,6 @@ elimination solve.
 
 <p>
 
-<p>
 
 <h3>The \( \theta \) Rule <a name="diffu:pde1:theta"></a></h3>
 <p>
@@ -658,9 +649,6 @@ $$
 
 <p>
 
-<p>
-
-<p>
 
 <h3>The Laplace and Poisson equation as the steady state limit  <a name="___sec5"></a></h3>
 <p>
@@ -738,7 +726,6 @@ $$
 
 <p>
 
-<p>
 A very important feature is that the initial shape \( I(x)=Q\sin kx \)
 undergoes a damping \( \exp{(-\alpha k^2t)} \), meaning that
 rapid oscillations in space, corresponding to large \( k \), are very much
@@ -779,7 +766,6 @@ becomes invisible.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 1:  Evolution of the solution of a diffusion problem: initial condition (upper left), 1/100 reduction of the small waves (upper right), 1/10 reduction of the long wave (lower left), and 1/100 reduction of the long wave (lower right). <a name="diffu:pde1:fig:damping"></a> </p></center>
@@ -788,7 +774,6 @@ becomes invisible.
 
 <p>
 
-<p>
 <!-- x/sqrt(t) solution, kernel with integral -->
 
 <p>
@@ -830,7 +815,6 @@ and \( b_{100\pi}=0.1 \).
 
 <p>
 
-<p>
 
 <h3>Analysis of the finite difference schemes <a name="diffu:pde1:analysis"></a></h3>
 <p>
@@ -869,7 +853,6 @@ solutions that are not present in the exact solution.
 
 <p>
 
-<p>
 
 <h4>Accuracy  <a name="___sec11"></a></h4>
 <p>
@@ -887,7 +870,6 @@ or how well the numerical amplification factor
 
 <p>
 
-<p>
 
 <h3>Analysis of the Forward Euler scheme <a name="diffu:pde1:analysis:FE"></a></h3>
 <p>
@@ -895,7 +877,6 @@ or how well the numerical amplification factor
 
 <p>
 
-<p>
 The Forward Euler finite difference scheme for \( u_t = \alpha u_{xx} \) can
 be written as
 
@@ -919,7 +900,6 @@ dividing by \( A^n e^{ikq\Delta x} \) leads to
 
 <p>
 
-<p>
 $$
 \begin{equation*}
 \frac{A-1}{\Delta t} = -\alpha \frac{4}{\Delta x^2}\sin^2\left(
@@ -959,7 +939,8 @@ $$
 
 <h4>Stability  <a name="___sec13"></a></h4>
 <p>
-We easily see that \( A\leq 1 \), but \( A<-1 \) might be a possibility that will lead
+We easily see that \( A\leq 1 \). However, the \( A \) can be less than \( -1 \),
+which will lead
 to growth of a numerical wave component. The criterion \( A\geq -1 \) implies
 
 <p>
@@ -1004,18 +985,19 @@ the Taylor series expansion of \( A/\Aex \) in terms of \( C \)
 can easily be done with aid of <tt>sympy</tt>:
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">A_exact</span>(C, p):
-    <span style="color: #AA22FF; font-weight: bold">return</span> exp(<span style="color: #666666">-</span>C<span style="color: #666666">*</span>p<span style="color: #666666">**2</span>)
 
-<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">A_FE</span>(C, p):
-    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">1</span> <span style="color: #666666">-</span> <span style="color: #666666">4*</span>C<span style="color: #666666">*</span>sin(p<span style="color: #666666">/2</span>)<span style="color: #666666">**2</span>
+<!-- code typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">A_exact</span>(C, p):
+    <span style="color: #8B008B; font-weight: bold">return</span> exp(-C*p**<span style="color: #B452CD">2</span>)
 
-<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
-C, p <span style="color: #666666">=</span> symbols(<span style="color: #BB4444">&#39;C p&#39;</span>)
-A_err_FE <span style="color: #666666">=</span> A_FE(C, p)<span style="color: #666666">/</span>A_exact(C, p)
-<span style="color: #AA22FF; font-weight: bold">print</span> A_err_FE<span style="color: #666666">.</span>series(C, <span style="color: #666666">0</span>, <span style="color: #666666">6</span>)
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">A_FE</span>(C, p):
+    <span style="color: #8B008B; font-weight: bold">return</span> <span style="color: #B452CD">1</span> - <span style="color: #B452CD">4</span>*C*sin(p/<span style="color: #B452CD">2</span>)**<span style="color: #B452CD">2</span>
+
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">import</span> *
+C, p = symbols(<span style="color: #CD5555">&#39;C p&#39;</span>)
+A_err_FE = A_FE(C, p)/A_exact(C, p)
+<span style="color: #8B008B; font-weight: bold">print</span> A_err_FE.series(C, <span style="color: #B452CD">0</span>, <span style="color: #B452CD">6</span>)
 </pre></div>
 <p>
 The result is
@@ -1036,7 +1018,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>Analysis of the Backward Euler scheme <a name="diffu:pde1:analysis:BE"></a></h3>
 <p>
@@ -1091,9 +1072,6 @@ for any \( \Delta t >0 \).
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Analysis of the Crank-Nicolson scheme <a name="diffu:pde1:analysis:CN"></a></h3>
 <p>
@@ -1162,38 +1140,30 @@ factor is positive, except for Crank-Nicolson when \( C>0.5 \).
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 2:  Error in amplification factor for large time steps. <a name="diffu:pde1:fig:A:err:C20"></a> </p></center>
-<p><img src="fig-diffu/diffusion_A_C20_C2_FDM.png" align="bottom" width=800,></p>
+<center><p class="caption">Figure 2:  Amplification factors for large time steps. <a name="diffu:pde1:fig:A:err:C20"></a> </p></center>
+<p><img src="fig-diffu/diffusion_A_C20_C2_FDM.png" align="bottom" width=800></p>
 </center>
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 3:  Error in amplification factor for time steps around the Forward Euler stability limit. <a name="diffu:pde1:fig:A:err:C0.5"></a> </p></center>
-<p><img src="fig-diffu/diffusion_A_C05_C025_FDM.png" align="bottom" width=800,></p>
+<center><p class="caption">Figure 3:  Amplification factors for time steps around the Forward Euler stability limit. <a name="diffu:pde1:fig:A:err:C0.5"></a> </p></center>
+<p><img src="fig-diffu/diffusion_A_C05_C025_FDM.png" align="bottom" width=800></p>
 </center>
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
-<center><p class="caption">Figure 4:  Error in amplification factor for small time steps. <a name="diffu:pde1:fig:A:err:C0.1"></a> </p></center>
-<p><img src="fig-diffu/diffusion_A_C01_C001_FDM.png" align="bottom" width=800,></p>
+<center><p class="caption">Figure 4:  Amplification factors for small time steps. <a name="diffu:pde1:fig:A:err:C0.1"></a> </p></center>
+<p><img src="fig-diffu/diffusion_A_C01_C001_FDM.png" align="bottom" width=800></p>
 </center>
 
 <p>
 
-<p>
 The effect of negative amplification factors is that \( A^n \) changes sign
 from one time level to the next, thereby giving rise to oscillations in
 time in an animation of the solution. We see from Figure <a href="#diffu:pde1:fig:A:err:C20">2</a> that for \( C=20 \), waves with \( p\geq \pi/2 \) undergo a damping close to
@@ -1221,19 +1191,8 @@ Run \( C=... \)...
 
 <p>
 
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
-
-<p>
 
 <!-- ------------------- end of main content ----------------->
 </body>
