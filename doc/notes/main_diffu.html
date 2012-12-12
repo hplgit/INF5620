@@ -60,6 +60,8 @@ $$
 \newcommand{\half}{\frac{1}{2}}
 \newcommand{\halfi}{{1/2}}
 
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+
 \newcommand{\xpoint}{\pmb{x}}
 \newcommand{\normalvec}{\pmb{n}}
 
@@ -68,7 +70,7 @@ $$
 \renewcommand{\u}{\pmb{u}}
 \renewcommand{\v}{\pmb{v}}
 \newcommand{\w}{\pmb{w}}
-\renewcommand{\u}{\pmb{u}}
+\newcommand{\V}{\pmb{V}}
 \newcommand{\e}{\pmb{e}}
 \newcommand{\f}{\pmb{f}}
 \newcommand{\F}{\pmb{F}}
@@ -116,6 +118,7 @@ $$
 
 <center><h1>Finite difference methods for diffusion processes</h1></center>  <! -- document title -->
 
+<p>
 <! -- author(s) -->
 
 <center>
@@ -130,18 +133,17 @@ $$
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 
 
-<center><h4>Nov 15, 2012</h4></center> <!-- date -->
+<p>
+<center><h4>Dec 12, 2012</h4></center> <!-- date -->
 <p>
 Note: <b>VERY PRELIMINARY VERSION</b>
 
 <p>
 
-<p>
 <h2>Table of contents</h2>
 
 <p>
 
-<p>
 <a href="#___sec0"> A simple 1D diffusion equation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:FE"> Forward Euler scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:BE"> Backward Euler Scheme </a><br>
@@ -164,19 +166,9 @@ Note: <b>VERY PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#___sec19"> Summary of accuracy of amplification factors </a><br>
 
 <p>
-<p>
 
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
 
 <h2>A simple 1D diffusion equation  <a name="___sec0"></a></h2>
 <p>
@@ -293,8 +285,9 @@ The computational algorithm is then
 The algorithm is compactly fully specified in Python:
 
 <p>
-<p>
 
+
+<!-- code typeset with pygments style "default" -->
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
 dx = x[1] - x[0]
 t = linspace(0, T, N+1)    # mesh points in time
@@ -320,12 +313,10 @@ for n in range(0, N):
 </pre></div>
 <p>
 
-<p>
 
 <h3>Backward Euler Scheme <a name="diffu:pde1:BE"></a></h3>
 <p>
 
-<p>
 We now apply a backward difference in time in \eqref{diffu:pde1:step2},
 but the same central difference in space:
 
@@ -516,8 +507,9 @@ This leads to the following computational algorithm, here sketched
 with Python code:
 
 <p>
-<p>
 
+
+<!-- code typeset with pygments style "default" -->
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">x = linspace(0, L, Nx+1)   # mesh points in space
 dx = x[1] - x[0]
 t = linspace(0, T, N+1)    # mesh points in time
@@ -552,7 +544,6 @@ for n in range(0, N):
 </pre></div>
 <p>
 
-<p>
 
 <h3>Sparse matrix implementation <a name="diffu:pde1:impl:sparse"></a></h3>
 <p>
@@ -574,35 +565,36 @@ sparse matrix data structures. The code below illustrates how we
 can store only the main diagonal and the upper and lower diagonals.
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008800; font-style: italic"># Representation of sparse matrix and right-hand side</span>
+
+<!-- code typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #408080; font-style: italic"># Representation of sparse matrix and right-hand side</span>
 main  <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">+1</span>)
 lower <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">-1</span>)
 upper <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">-1</span>)
 b     <span style="color: #666666">=</span> zeros(Nx<span style="color: #666666">+1</span>)
 
-<span style="color: #008800; font-style: italic"># Precompute sparse matrix</span>
+<span style="color: #408080; font-style: italic"># Precompute sparse matrix</span>
 main[:] <span style="color: #666666">=</span> <span style="color: #666666">1</span> <span style="color: #666666">+</span> <span style="color: #666666">2*</span>C
-lower[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #008800; font-style: italic">#1</span>
-upper[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #008800; font-style: italic">#1</span>
-<span style="color: #008800; font-style: italic"># Insert boundary conditions</span>
+lower[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #408080; font-style: italic">#1</span>
+upper[:] <span style="color: #666666">=</span> <span style="color: #666666">-</span>C  <span style="color: #408080; font-style: italic">#1</span>
+<span style="color: #408080; font-style: italic"># Insert boundary conditions</span>
 main[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #666666">1</span>
 main[Nx] <span style="color: #666666">=</span> <span style="color: #666666">1</span>
 
 A <span style="color: #666666">=</span> scipy<span style="color: #666666">.</span>sparse<span style="color: #666666">.</span>diags(
     diagonals<span style="color: #666666">=</span>[main, lower, upper],
     offsets<span style="color: #666666">=</span>[<span style="color: #666666">0</span>, <span style="color: #666666">-1</span>, <span style="color: #666666">1</span>], shape<span style="color: #666666">=</span>(Nx<span style="color: #666666">+1</span>, Nx<span style="color: #666666">+1</span>),
-    format<span style="color: #666666">=</span><span style="color: #BB4444">&#39;csr&#39;</span>)
-<span style="color: #AA22FF; font-weight: bold">print</span> A<span style="color: #666666">.</span>todense()
+    format<span style="color: #666666">=</span><span style="color: #BA2121">&#39;csr&#39;</span>)
+<span style="color: #008000; font-weight: bold">print</span> A<span style="color: #666666">.</span>todense()
 
-<span style="color: #008800; font-style: italic"># Set initial condition</span>
-<span style="color: #AA22FF; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>,Nx<span style="color: #666666">+1</span>):
+<span style="color: #408080; font-style: italic"># Set initial condition</span>
+<span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>,Nx<span style="color: #666666">+1</span>):
     u_1[i] <span style="color: #666666">=</span> I(x[i])
 
-<span style="color: #AA22FF; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #AA22FF">range</span>(<span style="color: #666666">0</span>, N):
+<span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>, N):
     b <span style="color: #666666">=</span> u_1
-    b[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> b[<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>  <span style="color: #008800; font-style: italic"># boundary conditions</span>
+    b[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> b[<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>  <span style="color: #408080; font-style: italic"># boundary conditions</span>
     u[:] <span style="color: #666666">=</span> scipy<span style="color: #666666">.</span>sparse<span style="color: #666666">.</span>linalg<span style="color: #666666">.</span>spsolve(A, b)
     u_1[:] <span style="color: #666666">=</span> u
 </pre></div>
@@ -613,7 +605,6 @@ elimination solve.
 
 <p>
 
-<p>
 
 <h3>The \( \theta \) Rule <a name="diffu:pde1:theta"></a></h3>
 <p>
@@ -637,9 +628,6 @@ $$
 
 <p>
 
-<p>
-
-<p>
 
 <h3>The Laplace and Poisson equation as the steady state limit  <a name="___sec5"></a></h3>
 <p>
@@ -717,7 +705,6 @@ $$
 
 <p>
 
-<p>
 A very important feature is that the initial shape \( I(x)=Q\sin kx \)
 undergoes a damping \( \exp{(-\alpha k^2t)} \), meaning that
 rapid oscillations in space, corresponding to large \( k \), are very much
@@ -758,7 +745,6 @@ becomes invisible.
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 1:  Evolution of the solution of a diffusion problem: initial condition (upper left), 1/100 reduction of the small waves (upper right), 1/10 reduction of the long wave (lower left), and 1/100 reduction of the long wave (lower right). <a name="diffu:pde1:fig:damping"></a> </p></center>
@@ -767,7 +753,6 @@ becomes invisible.
 
 <p>
 
-<p>
 <!-- x/sqrt(t) solution, kernel with integral -->
 
 <p>
@@ -809,7 +794,6 @@ and \( b_{100\pi}=0.1 \).
 
 <p>
 
-<p>
 
 <h3>Analysis of the finite difference schemes <a name="diffu:pde1:analysis"></a></h3>
 <p>
@@ -848,7 +832,6 @@ solutions that are not present in the exact solution.
 
 <p>
 
-<p>
 
 <h4>Accuracy  <a name="___sec11"></a></h4>
 <p>
@@ -866,7 +849,6 @@ or how well the numerical amplification factor
 
 <p>
 
-<p>
 
 <h3>Analysis of the Forward Euler scheme <a name="diffu:pde1:analysis:FE"></a></h3>
 <p>
@@ -874,7 +856,6 @@ or how well the numerical amplification factor
 
 <p>
 
-<p>
 The Forward Euler finite difference scheme for \( u_t = \alpha u_{xx} \) can
 be written as
 
@@ -898,7 +879,6 @@ dividing by \( A^n e^{ikq\Delta x} \) leads to
 
 <p>
 
-<p>
 $$
 \begin{equation*}
 \frac{A-1}{\Delta t} = -\alpha \frac{4}{\Delta x^2}\sin^2\left(
@@ -983,18 +963,19 @@ the Taylor series expansion of \( A/\Aex \) in terms of \( C \)
 can easily be done with aid of <tt>sympy</tt>:
 
 <p>
-<p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">A_exact</span>(C, p):
-    <span style="color: #AA22FF; font-weight: bold">return</span> exp(<span style="color: #666666">-</span>C<span style="color: #666666">*</span>p<span style="color: #666666">**2</span>)
 
-<span style="color: #AA22FF; font-weight: bold">def</span> <span style="color: #00A000">A_FE</span>(C, p):
-    <span style="color: #AA22FF; font-weight: bold">return</span> <span style="color: #666666">1</span> <span style="color: #666666">-</span> <span style="color: #666666">4*</span>C<span style="color: #666666">*</span>sin(p<span style="color: #666666">/2</span>)<span style="color: #666666">**2</span>
+<!-- code typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">A_exact</span>(C, p):
+    <span style="color: #008000; font-weight: bold">return</span> exp(<span style="color: #666666">-</span>C<span style="color: #666666">*</span>p<span style="color: #666666">**2</span>)
 
-<span style="color: #AA22FF; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #AA22FF; font-weight: bold">import</span> <span style="color: #666666">*</span>
-C, p <span style="color: #666666">=</span> symbols(<span style="color: #BB4444">&#39;C p&#39;</span>)
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">A_FE</span>(C, p):
+    <span style="color: #008000; font-weight: bold">return</span> <span style="color: #666666">1</span> <span style="color: #666666">-</span> <span style="color: #666666">4*</span>C<span style="color: #666666">*</span>sin(p<span style="color: #666666">/2</span>)<span style="color: #666666">**2</span>
+
+<span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">sympy</span> <span style="color: #008000; font-weight: bold">import</span> <span style="color: #666666">*</span>
+C, p <span style="color: #666666">=</span> symbols(<span style="color: #BA2121">&#39;C p&#39;</span>)
 A_err_FE <span style="color: #666666">=</span> A_FE(C, p)<span style="color: #666666">/</span>A_exact(C, p)
-<span style="color: #AA22FF; font-weight: bold">print</span> A_err_FE<span style="color: #666666">.</span>series(C, <span style="color: #666666">0</span>, <span style="color: #666666">6</span>)
+<span style="color: #008000; font-weight: bold">print</span> A_err_FE<span style="color: #666666">.</span>series(C, <span style="color: #666666">0</span>, <span style="color: #666666">6</span>)
 </pre></div>
 <p>
 The result is
@@ -1015,7 +996,6 @@ $$
 
 <p>
 
-<p>
 
 <h3>Analysis of the Backward Euler scheme <a name="diffu:pde1:analysis:BE"></a></h3>
 <p>
@@ -1070,9 +1050,6 @@ for any \( \Delta t >0 \).
 
 <p>
 
-<p>
-
-<p>
 
 <h3>Analysis of the Crank-Nicolson scheme <a name="diffu:pde1:analysis:CN"></a></h3>
 <p>
@@ -1141,7 +1118,6 @@ factor is positive, except for Crank-Nicolson when \( C>0.5 \).
 
 <p>
 
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 2:  Error in amplification factor for large time steps. <a name="diffu:pde1:fig:A:err:C20"></a> </p></center>
@@ -1150,9 +1126,6 @@ factor is positive, except for Crank-Nicolson when \( C>0.5 \).
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 3:  Error in amplification factor for time steps around the Forward Euler stability limit. <a name="diffu:pde1:fig:A:err:C0.5"></a> </p></center>
@@ -1161,9 +1134,6 @@ factor is positive, except for Crank-Nicolson when \( C>0.5 \).
 
 <p>
 
-<p>
-
-<p>
 <center> <! -- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 4:  Error in amplification factor for small time steps. <a name="diffu:pde1:fig:A:err:C0.1"></a> </p></center>
@@ -1172,7 +1142,6 @@ factor is positive, except for Crank-Nicolson when \( C>0.5 \).
 
 <p>
 
-<p>
 The effect of negative amplification factors is that \( A^n \) changes sign
 from one time level to the next, thereby giving rise to oscillations in
 time in an animation of the solution. We see from Figure <a href="#diffu:pde1:fig:A:err:C20">2</a> that for \( C=20 \), waves with \( p\geq \pi/2 \) undergo a damping close to
@@ -1200,19 +1169,8 @@ Run \( C=... \)...
 
 <p>
 
-<p>
 
-<p>
 
-<p>
-
-<p>
-
-<p>
-
-<p>
-
-<p>
 
 <!-- ------------------- end of main content ----------------->
 </body>
