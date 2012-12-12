@@ -6,7 +6,7 @@ Basic finite element methods
 
 :Author: Hans Petter Langtangen
 
-:Date: Nov 21, 2012
+:Date: Dec 11, 2012
 
 Note: **QUITE PRELIMINARY VERSION**
 
@@ -978,7 +978,7 @@ by functions on the form :math:`u(x)=\sum_{j=0}^Nc_jx^j`, :math:`N=10`.
 Analytically, we know that :math:`c_j=0` for :math:`j>2`, but ill-conditioning
 may produce :math:`c_j\neq 0` for :math:`j>2`.
 
-
+===========  ===========  ===========  ===========  
    exact      ``sympy``   ``numpy32``  ``numpy64``  
 ===========  ===========  ===========  ===========  
           9         9.62         5.57         8.98  
@@ -4093,11 +4093,6 @@ Choosing :math:`L_x=L_y=2`, we have
 
 Figure :ref:`fem:approx:fe:2D:fig:ubilinear` illustrates the result.
 
-.. 2DO
-
-
-**NOTE**: :math:`A` and/or :math:`b` are wrong, :math:`c` is right.
-
 
 .. _fem:approx:fe:2D:fig:ubilinear:
 
@@ -4456,7 +4451,7 @@ be used for both P1 and higher-order elements.
 
 .. _fem:approx:fe:map:fig:2DP1:
 
-.. figure:: fig-fem/ElmT3n2D_map.png
+.. figure:: fig-fem/ElmT3n2D_map.fig
    :width: 400
 
    *Affine mapping of a P1 element*
@@ -4500,7 +4495,7 @@ the physical coordinate system, see Figure :ref:`fem:approx:fe:map:fig:2DP2`.
 
 .. _fem:approx:fe:map:fig:2DP2:
 
-.. figure:: fig-fem/ElmT6n2D_map.png
+.. figure:: fig-fem/ElmT6n2D_map.fig
    :width: 400
 
    *Isoparametric mapping of a P2 element*
@@ -4962,7 +4957,7 @@ with this particular integrand, and the ``approximate`` function faces a problem
 when converting ``f`` to a Python function (for plotting) since
 ``Heaviside`` is not an available function in ``numpy``. It is better to make
 special-purpose code for this case or perform all
-caluclations by hand.
+calculations by hand.
 Filename: ``Heaviside_approx_P1P2.py.``.
 
 .. --- end of exercise
@@ -5028,6 +5023,13 @@ Trapezoidal rule :eq:`fem:approx:fe:numint1:trapez` for calculating
 integrals on the reference element. Assemble the contributions, assuming
 a uniform cell partitioning, and show that the resulting linear system
 has the form :math:`c_i=f(x_{i})` for :math:`i=0,\ldots,N`.
+
+
+
+.. 2DO
+
+.. Must say something about error estimates!
+
 Filename: ``fe_trapez.pdf``.
 
 .. --- end of exercise
@@ -6274,7 +6276,7 @@ Nonlinear terms
 ~~~~~~~~~~~~~~~
 
 Finally, we show that the techniques used above to derive variational
-forms also apply in nonlinear cases. Here is a model problem with
+forms also apply to nonlinear PDE problems as well. Here is a model problem with
 a nonlinear coefficient and right-hand side:
 
 
@@ -6298,8 +6300,8 @@ The integration by parts does not differ from the case where we have
 
 
 .. math::
-         \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}vdx =
-        \int_0^L f(u)vdx + [vu']_0^L\quad\forall v\in V
+         \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}dx =
+        \int_0^L f(u)vdx + [avu']_0^L\quad\forall v\in V
         \thinspace .
         
 
@@ -6309,18 +6311,19 @@ is used to impose the other boundary condition :math:`u'(L)=E`, resulting in
 
 .. math::
          \int_0^L a(u)\frac{du}{dx}\frac{dv}{dx}vdx =
-        \int_0^L f(u)vdx + vE\quad\forall v\in V,
+        \int_0^L f(u)vdx + a(L)v(L)E\quad\forall v\in V,
         
 
 or alternatively written more compactly as
 
 
 .. math::
-         (a(u)u', v') = (f(u),v) + vE\quad\forall v\in V
+         (a(u)u', v') = (f(u),v) + a(L)v(L)E\quad\forall v\in V
         \thinspace .
         
 
-Since the problem is nonlinear, we cannot identify :math:`a(u,v)` and :math:`L(v)`.
+Since the problem is nonlinear, we cannot identify a bilinear
+form :math:`a(u,v)` and a linear form :math:`L(v)`.
 An abstract notation is typically *find :math:`u` such that*
 
 
@@ -6330,7 +6333,7 @@ An abstract notation is typically *find :math:`u` such that*
 with
 
 .. math::
-         F(u;v) = (a(u)u', v') - (f(u),v) - vE
+         F(u;v) = (a(u)u', v') - (f(u),v) - a(L)v(L)E
         \thinspace .
         
 
@@ -6977,7 +6980,7 @@ and then modify the linear system such that the :math:`c_i` values corresponding
 to Dirichlet conditions get their right values.
 
 Consider the computation of the global coefficient matrix
-(:ref:`fem:deq:1D:P1:Acb`). If we include all the :math:`c_0,\ldots,c_N`
+:eq:`fem:deq:1D:ex1:Ab:glob`. If we include all the :math:`c_0,\ldots,c_N`
 values in the system, we have some additional matrix entries
 from the first and last cell. We start with
 
@@ -7917,17 +7920,18 @@ function :math:`v` and integrating over :math:`\Omega`:
         \thinspace .
         
 
-The second-order term is integrated by parts:
+The second-order term is integrated by parts, according to
 
 
 .. math::
         
         \int_{\Omega} \nabla\cdot\left( a\nabla u\right){\, \mathrm{d}x} =
         -\int_{\Omega} a\nabla u\cdot\nabla v{\, \mathrm{d}x}
-        + \int_{\partial\Omega} a\frac{\partial u}{\partial n} v{\, \mathrm{d}s},
+        + \int_{\partial\Omega} a\frac{\partial u}{\partial n} v{\, \mathrm{d}s}
+        \thinspace .
         
 
-resulting in
+The variational form now reads
 
 
 .. math::
@@ -8164,7 +8168,7 @@ and Jacobians.
 A lot of computational and algorithmic details are hidden by this approach.
 
 Let :math:`\Omega^{(e)}` be cell number :math:`e`, and let the three vertices
-have global vertex numbers :math:`I`, :math:`j`, and :math:`K`.
+have global vertex numbers :math:`I`, :math:`J`, and :math:`K`.
 The corresponding coordinates are
 :math:`(x_{I},y_{I})`, :math:`(x_{J},y_{J})`, and :math:`(x_{K},y_{K})`.
 The basis function :math:`{\varphi}_I` over :math:`\Omega^{(e)}` have the explicit
@@ -8235,7 +8239,7 @@ We collect these numbers in a local element matrix:
         
 
 
-The common element matrix entry :math:`\int_{\Omega^{(e)}} \nabla{\varphi}_I\cdot\nabla{\varphi}_J{\, \mathrm{d}x}`, arising from a Laplace term :math:`\nabla^u`, can also easily be
+The common element matrix entry :math:`\int_{\Omega^{(e)}} \nabla{\varphi}_I\cdot\nabla{\varphi}_J{\, \mathrm{d}x}`, arising from a Laplace term :math:`\nabla^2u`, can also easily be
 computed by the formulas above. We have
 
 
@@ -8244,7 +8248,7 @@ computed by the formulas above. We have
         \frac{\Delta^2}{4}(\beta_I\beta_J + \gamma_I\gamma_J) = \hbox{const},
 
 so that the element matrix entry becomes
-:math:`\frac{1}{4}(\Delta^3\beta_I\beta_J + \gamma_I\gamma_J)`.
+:math:`\frac{1}{4}\Delta^3(\beta_I\beta_J + \gamma_I\gamma_J)`.
 
 From an implementational point of view, one will work with local vertex
 numbers :math:`r=0,1,2`, parameterize the coefficients in the basis
@@ -8369,6 +8373,13 @@ the details on handling boundary conditions in the finite element method.
 Discretization in time by a Forward Euler scheme
 ------------------------------------------------
 
+.. 2DO
+
+.. N_s out: use N_t in time N in general space in all examples,
+
+.. and change decay and vib to N_t
+
+
 Time discretization  (1)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -8418,7 +8429,7 @@ partial differential equation :eq:`fem:deq:diffu:eq` and
         
         \frac{\partial u_{\small\mbox{e}}}{\partial t} &= \alpha\nabla^2 u_{\small\mbox{e}} + f(\pmb{x}, t)
         ,\\
-        u_{\small\mbox{e}}^{n+1} = u_{\small\mbox{e}}^n + \Delta t \left( \alpha\nabla^2 u_{\small\mbox{e}}^n + f(\pmb{x}, t_n)\right)
+        u_{\small\mbox{e}}^{n+1} &= u_{\small\mbox{e}}^n + \Delta t \left( \alpha\nabla^2 u_{\small\mbox{e}}^n + f(\pmb{x}, t_n)\right)
         
         \thinspace .
         
@@ -8501,7 +8512,7 @@ derivatives, we apply integration by parts on the term :math:`\nabla^2 u^n{\varp
 .. math::
          \int_{\Omega}\alpha\nabla^2 u^n{\varphi}_i dx =
         -\int_{\Omega}\alpha\nabla u^n\cdot\nabla{\varphi}_i{\, \mathrm{d}x} +
-        \int_{\partial\Omega}\alpha\frac{partial u^n}{\partial n}{\varphi} dx
+        \int_{\partial\Omega}\alpha\frac{\partial u^n}{\partial n}{\varphi} dx
         \thinspace .
         
 
@@ -8529,7 +8540,9 @@ same time. We therefore drop the :math:`n` index in programs and work with
 two functions: ``u`` for :math:`u^{n+1}`, the new unknown, and ``u_1`` for
 :math:`u^n`, the solution at the previous time level. This is also
 convenient in the mathematics to maximize the correspondence with the
-code:
+code. From now on :math:`u_1` means the discrete unknown at the previous
+time level, :math:`u^{n}`, and :math:`u` represents the
+discrete unknown at the new time level, :math:`u^{n+1}`.
 
 
 .. math::
@@ -8603,11 +8616,19 @@ system on the form
 
 .. math::
         
-        Mc = Mc_1 - \alpha\Delta t Kc + f,
+        Mc = Mc_1 - \alpha\Delta t Kc_1 + f,
         
 
-where :math:`f` is a vector where component number :math:`i` equals :math:`(f(\pmb{x},t_n),{\varphi}_i)`,
-:math:`c=(c_0,\ldots,c_{N_s})`, :math:`c_1 = (c_{1,j},\ldots,c_{1,N_s})`,
+where
+
+
+.. math::
+        
+        f &= ((f(\pmb{x},t_n),{\varphi}_i), \ldots, (f(\pmb{x},t_n),{\varphi}_{N_s})),\\
+        c &=(c_0,\ldots,c_{N_s}),\\
+        c_1 &= (c_{1,j},\ldots,c_{1,N_s}),
+        
+
 and :math:`M` and :math:`K` are matrices,
 
 
@@ -8656,12 +8677,12 @@ The computational algorithm has the following steps:
   1. interpolation: :math:`c_{1,j} = I(\pmb{x}_j)`, where :math:`\pmb{x}_j` is node number :math:`j`, or
 
   2. projection: solve
-     :math:`\sum_j M_{i,j}c){1,j} = (I,{\varphi}_i)`, :math:`i=0,\ldots,N_s`.
+     :math:`\sum_j M_{i,j}c_{1,j} = (I,{\varphi}_i)`, :math:`i=0,\ldots,N_s`.
 
 
 3. For :math:`n=1,2,\ldots,N`:
 
-  1. compute :math:`b = Mc_1 - \alpha\Delta t Kc + f`
+  1. compute :math:`b = Mc_1 - \alpha\Delta t Kc_1 + f`
 
   2. solve :math:`Mc = b`
 
@@ -8732,7 +8753,7 @@ the time-discrete differential equation becomes
 .. math::
    :label: fem:deq:diffu:BE:eq:un
         
-        u^{n} - \Delta t \left( \alpha\nabla^2 u^n = u^{n-1}  + f(\pmb{x}, t_{n})\right)
+        u^{n} - \Delta t \left( \alpha\nabla^2 u^n + f(\pmb{x}, t_{n})\right) = u^{n-1}
         
         \thinspace .
         
@@ -8847,8 +8868,8 @@ is treated by the schemes. With the results
         
         [D_t^+ A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{A-1}{\Delta t},\\
         [D_t^- A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{1-A^{-1}}{\Delta t},\\
-        [D_t A^n e^{ikq\Delta x}]^{n+\frac{1}{2}} &= A^{n+\frac{1}{2}} e^{ikq\Delta x}\frac{A^{\frac{1}{2}}-A^{-\frac{1}{2}}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t},
-        [D_xD_x A^ne^{ikq\Delta x}]_q = -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),
+        [D_t A^n e^{ikq\Delta x}]^{n+\frac{1}{2}} &= A^{n+\frac{1}{2}} e^{ikq\Delta x}\frac{A^{\frac{1}{2}}-A^{-\frac{1}{2}}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t},\\
+        [D_xD_x A^ne^{ikq\Delta x}]_q &= -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),
         
 
 we can start inserting :eq:`fem:deq:diffu:analysis:uni` in the
@@ -8972,17 +8993,17 @@ Systems of differential equations
 =================================
 
 
-Many mathematical models involve :math:`m` unknown functions
-governed by a system of :math:`m` differential equations. In abstract form
+Many mathematical models involve :math:`m+1` unknown functions
+governed by a system of :math:`m+1` differential equations. In abstract form
 we may denote the unknowns by :math:`u^{(0)},\ldots,
-u^{(m-1)}` and write the governing equations as
+u^{(m)}` and write the governing equations as
 
 
 .. math::
         
-        {\cal L}_0(u^{(0)},\ldots,u^{(m-1)}) &= 0,\\
+        {\cal L}_0(u^{(0)},\ldots,u^{(m)}) &= 0,\\
         &\vdots\\
-        {\cal L}_{m-1}(u^{(0)},\ldots,u^{(m-1)}) &= 0,
+        {\cal L}_{m}(u^{(0)},\ldots,u^{(m)}) &= 0,
         
 
 where :math:`{\cal L}_i` is some differential operator defining differential
@@ -9006,10 +9027,10 @@ some test function :math:`v^{(i)}\in V^{(i)}` and integrate over the domain:
 
 .. math::
         
-        \int_\Omega {\cal L}^{(0)}(u^{(0)},\ldots,u^{(m-1)}) v^{(0)}{\, \mathrm{d}x} &= 0,
+        \int_\Omega {\cal L}^{(0)}(u^{(0)},\ldots,u^{(m)}) v^{(0)}{\, \mathrm{d}x} &= 0,
         \\
         &\vdots\\
-        \int_\Omega {\cal L}^{(m-1)}(u^{(0)},\ldots,u^{(m-1)}) v^{(m-1)}{\, \mathrm{d}x} &= 0
+        \int_\Omega {\cal L}^{(m)}(u^{(0)},\ldots,u^{(m)}) v^{(m)}{\, \mathrm{d}x} &= 0
         
         \thinspace .
         
@@ -9035,8 +9056,8 @@ basis functions and numbers of degrees of freedom.
 
 From the :math:`m` equations in the variational forms we can derive
 :math:`m` coupled systems of algebraic equations for the
-:math:`\Pi_{i=0}^{m-1} N_i` unknown coefficients :math:`c_j^{(i)}`, :math:`j=0,\ldots,N_i`,
-:math:`i=0,\ldots,m-1`.
+:math:`\Pi_{i=0}^{m} N_i` unknown coefficients :math:`c_j^{(i)}`, :math:`j=0,\ldots,N_i`,
+:math:`i=0,\ldots,m`.
 
 
 The alternative method for deriving a variational form for a system of
@@ -9044,23 +9065,23 @@ differential equations introduces a vector of unknown functions
 
 
 .. math::
-         \pmb{u} = (u^{(0)},\ldots,u^{(m-1)}),
+         \pmb{u} = (u^{(0)},\ldots,u^{(m)}),
 
 a vector of test functions
 
 
 .. math::
-         \pmb{v} = (u^{(0)},\ldots,u^{(m-1)}),
+         \pmb{v} = (u^{(0)},\ldots,u^{(m)}),
 
 with
 
 
 .. math::
-         \pmb{u}, \pmb{v} \in  \pmb{V} = V^{(0)}\times \cdots \times V^{(m-1)}
+         \pmb{u}, \pmb{v} \in  \pmb{V} = V^{(0)}\times \cdots \times V^{(m)}
         \thinspace .
 
 With nonzero Dirichlet conditions, we have a vector
-:math:`\pmb{B} = (B^{(0)},\ldots,B^{(m-1)})` with boundary functions and then
+:math:`\pmb{B} = (B^{(0)},\ldots,B^{(m)})` with boundary functions and then
 it is :math:`\pmb{u} - \pmb{B}` that lies in :math:`\pmb{V}`, not :math:`\pmb{u}` itself.
 
 The governing system of differential equations is written
@@ -9073,7 +9094,7 @@ where
 
 
 .. math::
-         \pmb{\cal L}(\pmb{u} ) = ({\cal L}^{(0)}(\pmb{u}),\ldots, {\cal L}^{(m-1)}(\pmb{u}))
+         \pmb{\cal L}(\pmb{u} ) = ({\cal L}^{(0)}(\pmb{u}),\ldots, {\cal L}^{(m)}(\pmb{u}))
         \thinspace .
 
 The variational form is derived by taking the inner product of
@@ -9094,7 +9115,7 @@ expansions of the unknown functions, one chooses :math:`m` linearly
 independent :math:`\pmb{v}` vectors to generate :math:`m` independent variational forms
 from :eq:`fem:sys:vform:inner`.  The particular choice :math:`\pmb{v} =
 (v^{(0)},0,\ldots,0)` recovers :eq:`fem:sys:vform:1by1a`, :math:`\pmb{v} =
-(0,\ldots,0,v^{(m-1)}` recovers :eq:`fem:sys:vform:1by1b`, and :math:`\pmb{v} =
+(0,\ldots,0,v^{(m)}` recovers :eq:`fem:sys:vform:1by1b`, and :math:`\pmb{v} =
 (0,\ldots,0,v^{(i)},0,\ldots,0)` recovers the variational form number
 :math:`i`, :math:`\int_\Omega {\cal L}^{(i)} v^{(i)}{\, \mathrm{d}x} =0`, in
 :eq:`fem:sys:vform:1by1a`-:eq:`fem:sys:vform:1by1b`.
@@ -9271,9 +9292,19 @@ can alternatively write :eq:`fem:sys:wT:ex:w:vf1` and
 .. math::
         
          (\mu\nabla w,\nabla v) &= (\beta, v)
+        \quad\forall v\in V,\\
+        (\kappa \nabla T,\nabla v) &= (\mu\nabla w\cdot\nabla w, v)\quad\forall v\in V,
+        
+
+or since :math:`\mu` and :math:`\kappa` are considered constant,
+
+
+.. math::
+        
+        \mu (\nabla w,\nabla v) &= (\beta, v)
         \quad\forall v\in V,
         \\
-        (\kappa \nabla T,\nabla v) &= (\mu\nabla w\cdot\nabla w, v)\quad\forall v\in V
+        \kappa(\nabla T,\nabla v) &= \mu(\nabla w\cdot\nabla w, v)\quad\forall v\in V
         
         \thinspace .
         
@@ -9295,18 +9326,44 @@ and :eq:`fem:sys:wT:ex:T:vf1`, and choosing :math:`v={\varphi}_i` for
         \\
         \sum_{j=0}^N A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
         \\
-        A^{(w)}_{i,j} &= (\mu\nabla {\varphi}_j,{\varphi}_i),\\
+        A^{(w)}_{i,j} &= \mu(\nabla {\varphi}_j,\nabla {\varphi}_i),\\
         b_i^{(w)} &= (\beta, {\varphi}_i),\\
-        A^{(T)}_{i,j} &= (\kappa\nabla {\varphi}_j,{\varphi}_i),\\
-        b_i^{(T)} &= (\mu(\sum_j c^{(w)}_j\nabla{\varphi}_j)\cdot (\sum_k
+        A^{(T)}_{i,j} &= \kappa(\nabla {\varphi}_j,\nabla {\varphi}_i),\\
+        b_i^{(T)} &= \mu((\sum_j c^{(w)}_j\nabla{\varphi}_j)\cdot (\sum_k
         c^{(w)}_k\nabla{\varphi}_k), {\varphi}_i)
         \thinspace .
         
 
 
-We can solve the system for :math:`c_j^{(w)}` first and then
-the right-hand side entries :math:`b_i^{(T)}` are known such that we can
-solve the system for :math:`c_j^{(T)}`.
+It can also be instructive to write the linear systems using matrices
+and vectors. Define :math:`K` as the matrix corresponding to the Laplace
+operator :math:`\nabla^2`. That is, :math:`K_{i,j} = (\nabla {\varphi}_j,\nabla {\varphi}_i)`.
+Let us introduce the vectors
+
+
+.. math::
+        
+        b^{(w)} &= (b_0^{(w)},\ldots,b_{N}^{(w)}),
+        b^{(T)} &= (b_0^{(T)},\ldots,b_{N}^{(T)}),
+        c^{(w)} &= (c_0^{(w)},\ldots,c_{N}^{(w)}),
+        c^{(T)} &= (c_0^{(T)},\ldots,c_{N}^{(T)})\thinspace .
+        
+
+The system :eq:`fem:sys:wT:ex:linsys:w1`-:eq:`fem:sys:wT:ex:linsys:T1`
+can now be expressed in matrix-vector form as
+
+
+.. math::
+        
+        \mu K c^{(w)} &= b^{(w)},\\
+        \kappa K c^{(T)} &= b^{(T)}\thinspace .
+        
+
+
+We can solve the first system for :math:`c^{(w)}`, and then
+the right-hand side :math:`b^{(T)}` is known such that we can
+solve the second system for :math:`c^{(T)}`.
+
 
 Coupled linear systems
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -9319,9 +9376,9 @@ algebraic equations as *one system* for all the unknowns
 nonlinear in :math:`c_j^{(w)}` because of the :math:`\nabla w\cdot\nabla w` product.
 To remove this nonlinearity, imagine that we introduce an iteration
 method where we replace :math:`\nabla w\cdot\nabla w` by
-:math:`\nabla \hat w\cdot\nabla w`, :math:`\hat w` being the :math:`w`
+:math:`\nabla w_{-}\cdot\nabla w`, :math:`w_{-}` being the :math:`w`
 computed in the previous iteration. Then the term
-:math:`\nabla \hat w\cdot\nabla w` is linear in :math:`w` since :math:`\hat w` is
+:math:`\nabla w_{-}\cdot\nabla w` is linear in :math:`w` since :math:`w_{-}` is
 known. The total linear system becomes
 
 
@@ -9332,16 +9389,28 @@ known. The total linear system becomes
         \\
         \sum_{j=0}^N A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
         \\
-        A^{(w,w)}_{i,j} &= (\mu\nabla {\varphi}_j,{\varphi}_i),\\
+        A^{(w,w)}_{i,j} &= \mu(\nabla {\varphi}_j,{\varphi}_i),\\
         A^{(w,T)}_{i,j} &= 0,\\
         b_i^{(w)} &= (\beta, {\varphi}_i),\\
-        A^{(w,T)}_{i,j} &= (\mu(\sum_k c^{(\hat w)}_k\nabla{\varphi}_k)\cdot\nabla{\varphi}_j), {\varphi}_i),\\
-        A^{(T,T)}_{i,j} &= (\kappa\nabla {\varphi}_j,{\varphi}_i),\\
+        A^{(w,T)}_{i,j} &= \mu((\nabla{\varphi} w_{-})\cdot\nabla{\varphi}_j), {\varphi}_i),\\
+        A^{(T,T)}_{i,j} &= \kappa(\nabla {\varphi}_j,{\varphi}_i),\\
         b_i^{(T)} &= 0
         \thinspace .
         
 
-This system can alternatively be written in block form
+This system can alternatively be written in matrix-vector form as
+
+
+.. math::
+        
+        \mu K c^{(w)} &= 0 b^{(w)},\\
+        L c^{(w)} + \kappa K c^{(T)} & =0,
+        
+
+with :math:`L` as the matrix from the :math:`\nabla w_{-}\cdot\nabla` operator:
+:math:`L_{i,j} = A^{(w,T)}_{i,j}`.
+
+The matrix-vector equations are often conveniently written in block form:
 
 
 .. math::
@@ -9360,15 +9429,12 @@ This system can alternatively be written in block form
         \end{array}\right),
         
 
-where :math:`K_{i,j}=(\nabla {\varphi}_i,\nabla{\varphi}_j)` is the well-known matrix
-from the Laplace operator and :math:`L_{i,j}=A^{(w,T)}_{i,j}`.
-The :math:`c^{(w)}`, :math:`c^{(T)}`, and :math:`b^{(w)}` block vectors hold the
-coefficients and right-hand side entries
-:math:`c^{(w)}_i`, :math:`c^{(T)}_i`, and :math:`b^{(w)}_i`, :math:`i=0,\ldots,N`.
 
 Note that in the general case where all unknowns enter all equations,
-we have to solve the compound system :eq:`fem:sys:wT:ex:linsys:w2`-:eq:`fem:sys:wT:ex:linsys:T2` since then we cannot utilize the special property
-that :eq:`fem:sys:wT:ex:linsys:w1` does not involve :math:`T` and can be solved
+we have to solve the compound system
+:eq:`fem:sys:wT:ex:linsys:w2`-:eq:`fem:sys:wT:ex:linsys:T2` since
+then we cannot utilize the special property that
+:eq:`fem:sys:wT:ex:linsys:w1` does not involve :math:`T` and can be solved
 first.
 
 When the viscosity depends on the temperature, the
@@ -9378,7 +9444,7 @@ since both equations contain :math:`w` and :math:`T` and therefore
 must be solved simultaneously
 Th equation :math:`\nabla\cdot (\mu(T)\nabla w)=-\beta` is nonlinear,
 and if some iteration procedure is invoked, where we use a previously
-computed :math:`\hat T` in the viscosity (:math:`\mu(\hat T)`), the coefficient is known,
+computed :math:`T_{-}` in the viscosity (:math:`\mu(T_{-})`), the coefficient is known,
 and the equation involves only one unknown, :math:`w`. In that case we are
 back to the one-way coupled set of PDEs.
 
@@ -9470,11 +9536,10 @@ and :math:`V^{(T)}`. The formulas become
         \\
         \sum_{j=0}^{N_T} A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
         \\
-        A^{(w)}_{i,j} &= (\mu\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),\\
+        A^{(w)}_{i,j} &= \mu(\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),\\
         b_i^{(w)} &= (\beta, {\varphi}_i^{(w)}),\\
-        A^{(T)}_{i,j} &= (\kappa\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),\\
-        b_i^{(T)} &= (\mu(\sum_j c^{(w)}_j\nabla{\varphi}_j^{(w)})\cdot (\sum_k
-        c^{(w)}_k\nabla{\varphi}_k^{(w)}), {\varphi}_i^{(T)})
+        A^{(T)}_{i,j} &= \kappa(\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),\\
+        b_i^{(T)} &= \mu(\nabla w_{-}, {\varphi}_i^{(T)})
         \thinspace .
         
 
@@ -9492,11 +9557,11 @@ becomes
         \\
         \sum_{j=0}^{N_w} A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^{N_T} A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
         \\
-        A^{(w,w)}_{i,j} &= (\mu\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),\\
+        A^{(w,w)}_{i,j} &= \mu(\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),\\
         A^{(w,T)}_{i,j} &= 0,\\
         b_i^{(w)} &= (\beta, {\varphi}_i^{(w)}),\\
-        A^{(w,T)}_{i,j} &= (\mu(\sum_k c^{(\hat w)}_k\nabla{\varphi}_k^{(w)})\cdot\nabla{\varphi}_j^{(w)}), {\varphi}_i^{(T)}),\\
-        A^{(T,T)}_{i,j} &= (\kappa\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),\\
+        A^{(w,T)}_{i,j} &= \mu (\nabla w_{-}\cdot\nabla{\varphi}_j^{(w)}), {\varphi}_i^{(T)}),\\
+        A^{(T,T)}_{i,j} &= \kappa(\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),\\
         b_i^{(T)} &= 0
         \thinspace .
         
@@ -9525,6 +9590,35 @@ has square and rectangular block matrices: :math:`K^{(w)}` is :math:`N_w\times N
 
 Computations in 1D
 ------------------
+
+.. 2DO
+
+.. show analytical solution in [0,H]
+
+.. use global polynomials (x^i(H-x)), exact sol
+
+.. compute uncoupled and coupled discrete systems, N=4
+
+.. note: coupled can use exact w_{-}
+
+.. P1-P1, n elements, 2 elements as special case
+
+.. uncoupled and coupled (can use exercises for variants)
+
+.. P1 for w, P2 for T or P4 for T
+
+.. similar computations for circle can be done as project
+
+.. extensions to time-dep versions in projects
+
+.. any geophysical applications? flowing ice sheet ("half channel") and
+
+.. temp gradient through, check with Jed
+
+.. the time-dependent system can be introduced in diffusion and
+
+.. a finite difference scheme can be devised
+
 
 We can reduce the system :eq:`fem:sys:wT:ex:weq`-:eq:`fem:sys:wT:ex:Teq`
 to one space dimension, which corresponds to flow in a channel between
@@ -9930,11 +10024,15 @@ to a 1D Poisson equation
 
 
 
-*a)* Use a uniform mesh partition with P1 elements and show what the
+*a)* Derive a variational form of :eq:`fem:deq:exer:1D:Poisson:polar:eq`
+by integrating over the whole disk, or posed equivalently: use
+a weighting function :math:`2\pi r v(r)` and integrate :math:`r` from :math:`0` to :math:`R`.
+
+*b)* Use a uniform mesh partition with P1 elements and show what the
 resulting set of equations becomes. Integrate the matrix entries
 exact by hand, but use a Trapezoidal rule to integrate the :math:`f` term.
 
-*b)* Explain that a natural
+*c)* Explain that a natural
 finite difference method applied to :eq:`fem:deq:exer:1D:Poisson:polar:eq`
 gives
 

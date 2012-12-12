@@ -103,22 +103,25 @@ def plot_u(u, x, t, n):
 
 L = 1
 a = 1
-T = 3
+
+def I(x):
+    return 0 if x > L/2. else 1
 
 # Command-line arguments: Nx C theta
 import sys
 Nx = 15
-C = 5
-theta = 0.5
+C = 0.5
+theta = 0
+T = 3
 #theta = 1
 #Nx = int(sys.argv[1])
 #C = float(sys.argv[2])
 #theta = float(sys.argv[3])
 
-cases = [(7, 5, 0.5), ]
-def I(x):
-    return 0 if x > L/2. else 1
-
-u, x, t, cpu = solver(I, a, L, Nx, C, T,
-                      theta=theta, u_L=1, u_R=0,
-                      user_action=plot_u)
+cases = [(15, 0.5, 1, 0.12), (7, 5, 0.5, 3), (15, 0.5, 0, 0.25)]
+for Nx, C, theta, T in cases:
+    print 'theta=%g, C=%g, Nx=%d' % (theta, C, Nx)
+    u, x, t, cpu = solver(I, a, L, Nx, C, T,
+                          theta=theta, u_L=1, u_R=0,
+                          user_action=plot_u)
+    raw_input('CR: ')
