@@ -47,6 +47,7 @@ plt.ylabel('log(error)')
 plt.axis([min(dt_values), max(dt_values), min_E, max_E])
 plt.title('Error vs time step')
 plt.savefig('error.png')
+plt.savefig('error.pdf')
 
 # Combine images into rows with 2 plots in each row
 combine_image_commands = []
@@ -57,12 +58,17 @@ for method in 'BE', 'CN', 'FE':
         'montage -background white -geometry 100%' + \
         ' -tile 2x %s %s.png' % (imagefiles, method))
     combine_image_commands.append(
+        'convert -trim %s.png %s.png' % (method, method))
+    combine_image_commands.append(
         'pdftk %s output tmp.pdf' % imagefiles)
     num_rows = int(round(len(dt_values)/2.0))
     combine_image_commands.append(
         'pdfnup --nup 2x%d tmp.pdf' % num_rows)
     combine_image_commands.append(
-        'mv -f tmp-nup.pdf %s.pdf' % method)
+        'pdfcrop tmp-nup.pdf')
+    combine_image_commands.append(
+        'mv -f tmp-nup-crop.pdf %s.pdf;'
+        'rm -f tmp.pdf tmp-nup.pdf' % method)
     imagefiles = ' '.join(['%s_%s.png' % (method, dt)
                            for dt in dt_values])
 
@@ -223,7 +229,7 @@ idx{error vs time step}
 How $E$ varies with $\Delta t$ for $\theta=0,0.5,1$
 is shown in Figure ref{fig:E}.
 
-FIGURE: [error.png, width=400] Error versus time step. label{fig:E}
+FIGURE: [error, width=400] Error versus time step. label{fig:E}
 """)
 
 # Good habits when writing for latex, sphinx and mathjax-html

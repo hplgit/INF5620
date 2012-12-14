@@ -57,12 +57,17 @@ for method in 'BE', 'CN', 'FE':
         'montage -background white -geometry 100%' + \
         ' -tile 2x %s %s.png' % (imagefiles, method))
     combine_image_commands.append(
+        'convert -trim %s.png %s.png' % (method, method))
+    combine_image_commands.append(
         'pdftk %s output tmp.pdf' % imagefiles)
     num_rows = int(round(len(dt_values)/2.0))
     combine_image_commands.append(
         'pdfnup --nup 2x%d tmp.pdf' % num_rows)
     combine_image_commands.append(
-        'mv -f tmp-nup.pdf %s.pdf' % method)
+        'pdfcrop tmp-nup.pdf')
+    combine_image_commands.append(
+        'mv -f tmp-nup-crop.pdf %s.pdf;'
+        'rm -f tmp.pdf tmp-nup.pdf' % method)
     imagefiles = ' '.join(['%s_%s.png' % (method, dt)
                            for dt in dt_values])
 

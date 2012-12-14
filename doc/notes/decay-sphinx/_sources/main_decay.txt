@@ -6,9 +6,9 @@ Finite difference methods for first-order ODEs
 
 :Author: Hans Petter Langtangen
 
-:Date: Oct 6, 2012
+:Date: Dec 13, 2012
 
-Note: **VERY PRELIMINARY VERSION!** (Not proof-read! Expect lots of typos!)
+Note: **PRELIMINARY VERSION** (expect typos!)
 
 
 
@@ -793,8 +793,8 @@ equation.
 
 .. _decay:impl1:
 
-Implementation
-==============
+Implementation  (1)
+===================
 
 The purpose now is to make a computer program for solving
 
@@ -1546,7 +1546,42 @@ draw the new pair of curves in the same plot window, while we want
 the different pairs to appear in separate windows and files.
 Calling ``figure()`` ensures this.
 
-The complete code resides in the file `dc_plot_mpl.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_plot_mpl.py>`_.
+
+.. index:: PNG plot
+
+.. index:: PDF plot
+
+.. index:: EPS plot
+
+
+.. index::
+   single: view; PNG plot
+
+.. index::
+   single: view; PDF plot
+
+.. index::
+   single: view; EPS plot
+
+
+The ``explore`` function stores the plot in three different image file formats:
+PNG, PDF, and EPS (Encapsulated PostScript). The PNG format is aimed
+at being included in HTML files, the PDF format in pdfLaTeX documents,
+and the EPS format in LaTeX documents. Frequently used viewers for these
+image files on Unix systems are ``gv`` (comes with Ghostscript)
+for the PDF and EPS formats and
+``display`` (from the ImageMagick) suite for PNG files:
+
+
+.. code-block:: console
+
+        Terminal> gv BE_0.5.pdf
+        Terminal> gv BE_0.5.eps
+        Terminal> display BE_0.5.png
+
+
+The complete code containing the functions above
+resides in the file `dc_plot_mpl.py <https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/dc_plot_mpl.py>`_.
 Running this program results in
 
 .. code-block:: console
@@ -1587,25 +1622,31 @@ from the ImageMagick suite:
 
         Terminal> montage -background white -geometry 100% -tile 2x1 \
                   FE_0.4.png FE_0.04.png FE1.png
+        Terminal> convert -trim FE1.png FE1.png
 
 The ``-geometry`` argument is used to specify the size of the image, and here
 we preserve the individual sizes of the images. The ``-tile HxV`` option
 specifies ``H`` images in the horizontal direction and ``V`` images in
 the vertical direction. A series of image files to be combined are then listed,
 with the name of the resulting combined image, here ``FE1.png`` at the end.
+The ``convert -trim`` command removes surrounding white areas in the figure.
 
 For \LaTeX{} reports it is not recommended to use ``montage`` and PNG files
 as the result has too low resolution. Instead, plots should be made
-in the PDF format and combined using the ``pdftk`` and ``pdfnup`` tools
+in the PDF format and combined using the ``pdftk``, ``pdfnup``, and ``pdfcrop`` tools
 (on Linux/Unix):
 
 
 .. code-block:: console
 
         Terminal> pdftk FE_0.4.png FE_0.04.png output tmp.pdf
-        Terminal> pdfnup --nup 2x1 tmp.pdf  # output in tmp-nup.pdf
-        Terminal> mv tmp-nup.pdf FE1.png
+        Terminal> pdfnup --nup 2x1 tmp.pdf     # output in tmp-nup.pdf
+        Terminal> pdfcrop tmp-nup.pdf tmp.pdf  # output in tmp.pdf
+        Terminal> mv tmp.pdf FE1.png
 
+Here, ``pdftk`` combines images into a multi-page PDF file, ``pdfnup``
+combines the images in individual pages to a table of images (pages),
+and ``pdfcrop`` removes white margins in the resulting combined image file.
 
 The behavior of the two other schemes is shown in Figures :ref:`decay:fig:BE1`
 and :ref:`decay:fig:CN1`. Crank-Nicolson is obviously the most accurate
@@ -1873,7 +1914,7 @@ the option when the help string is printed. For example, the option for
 The structure of this output is
 
 
-.. code-block:: py
+.. code-block:: text
 
 
           --I metavar, --initial_condition metavar
@@ -1983,8 +2024,8 @@ That is, those time steps lie outside the asymptotic range of
 :math:`\Delta t` values where the error behave like :eq:`decay:E:dt`.
 
 
-Implementation
-~~~~~~~~~~~~~~
+Implementation  (2)
+~~~~~~~~~~~~~~~~~~~
 
 It is straightforward to extend the ``main`` function in the program
 ``dc_argparse.py`` with statements for computing :math:`r_0, r_1, \ldots, r_{m-2}`
@@ -2626,7 +2667,8 @@ this function and printing the computed ``u`` and ``t`` arrays:
 
 
 When such interactive demonstrations are inserted in doc strings,
-Python's ``doctest`` module can be used to automate running all commands
+Python's `doctest <http://docs.python.org/library/doctest.html>`_
+module can be used to automate running all commands
 in interactive sessions and compare new output with the output
 appearing in the doc string.  All we have to do in the current example
 is to write
@@ -3001,6 +3043,40 @@ described on `Nose's web pages <http://nose.readthedocs.org/en/latest/>`_.  On D
 systems the command is ``sudo apt-get install python-nose``, and
 with MacPorts you run ``sudo port install py27-nose``.
 
+
+.. index:: nose testing of doctests
+
+
+.. index::
+   single: software testing; nose w/doctests
+
+
+Using nose to test modules with doctests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assume that ``mod`` is the name of some module that contains doctests.
+We may let ``nose`` run these doctests and report errors in the
+standard way using the code set-up
+
+
+.. code-block:: python
+
+        import doctest
+        import mod
+        
+        def test_mod():
+            failure_count, test_count = doctest.testmod(m=mod)
+            nt.assert_equal(failure_count, 0,
+                            msg='%d tests out of %d failed' %
+                            (failure_count, test_count))
+
+The call to ``doctest.testmod`` runs all doctests in the module file
+``mod.py`` and returns the number of failures (``failure_count``)
+and the total number of tests (``test_count``). A real example is
+found in the file
+`test_dc_doctest.py <http://github.hplgit.com/INF5620/src/decay/test/test_dc_doctest.py>`_.
+
+
 .. _decay:prog:se:unittest:
 
 Classical unit testing with unittest
@@ -3136,8 +3212,8 @@ should first consult one of the many electronic Python tutorials
 or textbooks to come up to speed with concepts and syntax of
 Python classes before reading on.
 
-The problem class
-~~~~~~~~~~~~~~~~~
+The problem class  (1)
+~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: problem class
@@ -3226,8 +3302,8 @@ supplied, but if we do not have, class ``Problem`` makes one for us.
 Python's ``None`` object is used to indicate that a variable is not
 initialized with a value.
 
-The solver class
-~~~~~~~~~~~~~~~~
+The solver class  (1)
+~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: solver class
@@ -3276,8 +3352,8 @@ reading :math:`\Delta t` and :math:`\theta` from the command line:
 Note that we here simply reuse the implementation of the numerical method
 from the ``dc_mod`` module.
 
-The visualizer class
-~~~~~~~~~~~~~~~~~~~~
+The visualizer class  (1)
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: visualizer class
@@ -3429,8 +3505,8 @@ a slightly more advanced version of class ``Parameters`` where we
 in the ``set`` and ``get`` functions test for valid parameter names and
 raise exceptions with informative messages if any name is not registered.
 
-The problem class
-~~~~~~~~~~~~~~~~~
+The problem class  (2)
+~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: problem class
@@ -3459,8 +3535,8 @@ A class ``Problem`` for the exponential decay ODE with parameters :math:`a`, :ma
                 return I*np.exp(-a*t)
 
 
-The solver class
-~~~~~~~~~~~~~~~~
+The solver class  (2)
+~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: solver class
@@ -3502,8 +3578,8 @@ the ``decay_class.py`` file:
                 return E
 
 
-The visualizer class
-~~~~~~~~~~~~~~~~~~~~
+The visualizer class  (2)
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. index:: visualizer class
@@ -3598,14 +3674,17 @@ We want to combine all the ``FE_*.png`` files in a table
 fashion in one file, with two images in each row,
 starting with the largest :math:`\Delta t` in the upper
 left corner and decreasing the value as we go to the right and down.
-This can be done using the `montage <http://www.imagemagick.org/script/montage.php>`_ program.
+This can be done using the `montage <http://www.imagemagick.org/script/montage.php>`_ program. The often occurring white areas around the plots can
+be cropped away by the ``convert -trim`` command.
 
 Also plot files in the PDF format with names ``FE_*.pdf``, ``BE_*.pdf``,
 and ``CN_*.pdf`` are generated and these should be combined using other
 tools: ``pdftk`` to combine individual plots into one file with one plot
 per page, and ``pdfnup`` to combine the pages into a table with multiple
-plots per page. The code snippets below contains all details about the
-usage of ``montage``, ``pdftk``, and ``pdfnup``.
+plots per page. The resulting image often has some extra surrounding
+white space that can be removed by the ``pdfcrop`` program.
+The code snippets below contains all details about the
+usage of ``montage``, ``convert``, ``pdftk``, ``pdfnup``, and ``pdfcrop``.
 
 
 
@@ -3679,12 +3758,17 @@ implementation:
                 'montage -background white -geometry 100%' + \
                 ' -tile 2x %s %s.png' % (imagefiles, method))
             combine_image_commands.append(
+                'convert -trim %s.png %s.png' % (method, method))
+            combine_image_commands.append(
                 'pdftk %s output tmp.pdf' % imagefiles)
             num_rows = int(round(len(dt_values)/2.0))
             combine_image_commands.append(
                 'pdfnup --nup 2x%d tmp.pdf' % num_rows)
             combine_image_commands.append(
-                'mv -f tmp-nup.pdf %s.pdf' % method)
+                'pdfcrop tmp-nup.pdf')
+            combine_image_commands.append(
+                'mv -f tmp-nup-crop.pdf %s.pdf;'
+                'rm -f tmp.pdf tmp-nup.pdf' % method)
             imagefiles = ' '.join(['%s_%s.png' % (method, dt)
                                    for dt in dt_values])
         
@@ -3728,7 +3812,7 @@ We may comment upon many useful constructs in this script:
 
  * All ``montage``, ``pdftk``, ``pdfnup``, and ``mv`` commands for creating
    composite figures are stored in a
-   list and thereafter executed in a loop.
+   list and later executed in a loop.
 
  * ``glob('*_*.png')`` returns a list of the names of all files in the
    current folder where the filename matches the *Unix wildcard notation*
@@ -4053,7 +4137,7 @@ system like Mercurial or Git.
 For the investigations outlined in the section :ref:`decay:exper:report`,
 we can create a folder tree with files
 
-.. code-block:: py
+.. code-block:: text
 
 
         src/dc_mod.py
@@ -4075,8 +4159,8 @@ report documented in the final published ``report.html`` file.
 
 
 
-Exercises
-=========
+Exercises  (1)
+==============
 
 
 
@@ -4226,7 +4310,7 @@ The `dc_memsave.py <http://github.hplgit.com/INF5620/src/decay/dc_memsave.py>`_ 
 writes the time values and solution values to a file which looks
 like
 
-.. code-block:: py
+.. code-block:: text
 
 
         0.0000000000000000E+00  1.0000000000000000E+00
@@ -4383,6 +4467,14 @@ the command line (the options ``--dt`` and ``--theta`` have then no effect
 when running the ``experiment`` function).
 Note that the classes in the ``decay_class1`` module should *not* be
 modified.
+
+.. 2DO
+
+
+.. Explain the concepts of convergence, stability and consistence,
+
+.. see Doug's article.
+
 Filename: ``dc_class_exper.py``.
 
 .. --- end of exercise
@@ -4944,8 +5036,8 @@ rule,
 .. math::
    :label: decay:E2:Tr
         
-        E_2 \approx \left(\Delta t\left( \half ({u_{\small\mbox{e}}}(0) - u^0)^2
-        + \half ({u_{\small\mbox{e}}}(T) - u^N)^2  + \sum_{k=1}^{N-1} ({u_{\small\mbox{e}}}(k\Delta t) - u^k)^2 \right)
+        E_2 \approx \left(\Delta t\left( \frac{1}{2} ({u_{\small\mbox{e}}}(0) - u^0)^2
+        + \frac{1}{2} ({u_{\small\mbox{e}}}(T) - u^N)^2  + \sum_{k=1}^{N-1} ({u_{\small\mbox{e}}}(k\Delta t) - u^k)^2 \right)
         \right)^{1/2} \thinspace .
         
         
@@ -4956,7 +5048,7 @@ generalization in terms of the sum of the various trapezoids:
 .. math::
    :label: decay:E2:Trg
         
-        E_2 \approx \left(\half\sum_{k=0}^{N-1}(t_{k+1} - t_k)
+        E_2 \approx \left(\frac{1}{2}\sum_{k=0}^{N-1}(t_{k+1} - t_k)
         \left( ({u_{\small\mbox{e}}}(k\Delta t) - u^k)^2 + ({u_{\small\mbox{e}}}((k+1)\Delta t) - u^{k+1})^2\right)
         \right)^{1/2} \thinspace .
         
@@ -5010,8 +5102,8 @@ since :math:`t=i\Delta t`, :math:`\sum_{i=0}^N i^2\approx \frac{1}{3}N^3`, and
 :math:`N=T/Delta t`.
 
 
-Exercises
-=========
+Exercises  (2)
+==============
 
 
 
@@ -5234,8 +5326,8 @@ Deriving the :math:`\theta`-rule formula
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Writing out the :math:`\theta`-rule in :eq:`decay:problem:ab:theta:avg:all:op`,
-using (:ref:`decay:fd1:Du:theta`)
-and (:ref:`decay:fd1:wmean:a`), we get
+using :eq:`decay:fd1:Du:theta`
+and :eq:`decay:fd1:wmean:a`, we get
 
 .. math::
    :label: decay:problem:ab:theta:avg:all
@@ -5425,7 +5517,8 @@ Verification via manufactured solutions
 
 Following the idea of the previous section, we can choose any formula
 as the exact solution, insert the formula in the ODE problem and fit
-:math:`a(t)`, :math:`b(t)`, and I to make the formula fulfill the equation. This
+the data :math:`a(t)`, :math:`b(t)`, and :math:`I` to make the chosen
+formula fulfill the equation. This
 powerful technique for generating exact solutions is very useful for
 verification purposes and known as the *method of manufactured
 solutions*, often abbreviated MMS.
@@ -5442,7 +5535,7 @@ used in the section :ref:`decay:verify:trivial`, at least in more
 complicated applications. However, the constant solution is often
 ideal for initial debugging before proceeding with a linear solution.
 
-Let :math:`u(t) = ct + d`. We must then have :math:`d=I` from the initial condition.
+We choose :math:`u(t) = ct + d`. We must then have :math:`d=I` from the initial condition.
 Inserting this :math:`u` in the ODE results in
 
 .. math::
@@ -5453,9 +5546,9 @@ Any function :math:`u=ct+I` is then a correct solution if we choose
 .. math::
          b(t) = c + a(t)(ct + I) \thinspace . 
 
-Note that there are no restrictions on :math:`a(t)` and :math:`c`.
+With this :math:`b(t)` there are no restrictions on :math:`a(t)` and :math:`c`.
 
-Let us see if such a linear solution is compatible with the numerical
+Let us see if such a linear solution obeys the numerical
 schemes. That is, we must check that :math:`u^n = ca(t_n)(ct_n+I)` fits
 the discrete equations. To this end, it is convenient to
 compute the action of a difference operator on :math:`u^n=t_n`:
@@ -5647,7 +5740,7 @@ by the famous 4th-order Runge-Kutta method, using :math:`\Delta t=1`
 and :math:`N=6` steps:
 
 
-.. code-block:: py
+.. code-block:: text
 
 
         def f(u, t):
@@ -6010,11 +6103,11 @@ The two-step scheme
         
         
 
-essentially applies a Crank-Nicolson method (:ref:`decay:fd2:RK2:s2`)
+essentially applies a Crank-Nicolson method :eq:`decay:fd2:RK2:s2`
 to the ODE, but replaces
 the term :math:`f(u^{n+1}, t_{n+1})` by a prediction
-:math:`f(u^{*}, t_{n+1})` based on a Forward Euler step (:ref:`decay:fd2:RK2:s1`).
-The scheme (:ref:`decay:fd2:RK2:s1`)-(:ref:`decay:fd2:RK2:s2`) is
+:math:`f(u^{*}, t_{n+1})` based on a Forward Euler step :eq:`decay:fd2:RK2:s1`.
+The scheme :eq:`decay:fd2:RK2:s1`-:eq:`decay:fd2:RK2:s2` is
 known as Huen's method, but is also a 2nd-order Runge-Kutta method.
 The scheme is explicit, and the error is expected to behave as :math:`\Delta t^2`.
 
@@ -6118,8 +6211,8 @@ some method for computing :math:`u^1` and :math:`u^2`.
 
 
 
-Exercises
-=========
+Exercises  (3)
+==============
 
 
 
@@ -6385,7 +6478,7 @@ Filename: ``decay_schemes_oo.py``.
 Exercise 23: Analyze explicit 2nd-order methods
 -----------------------------------------------
 
-Show that the schemes (:ref:`decay:fd2:RK2:s2`) and
+Show that the schemes :eq:`decay:fd2:RK2:s2` and
 :eq:`decay:fd2:Taylor2` are identical in the case :math:`f(u,t)=-a`, where
 :math:`a>0` is a constant. Find an expression for the amplification factor,
 and determine the stability limit (:math:`A=`). Can the scheme produce
@@ -7010,7 +7103,7 @@ a nonlinear equation in :math:`v` when applied to
 .. math::
         
         \frac{v^{n+1}-v^n}{\Delta t}
-        = -a^{n+\frac{1}{2}}\frac{1}{2}(|v^{n+1}|v^{n+1} + a^n|v^n|v^n) + b^{n+\frac{1}{2}}
+        = -a^{n+\frac{1}{2}}\frac{1}{2}(|v^{n+1}|v^{n+1} + |v^n|v^n) + b^{n+\frac{1}{2}}
         \thinspace .
         
 
@@ -7018,9 +7111,17 @@ However, instead of approximating the term :math:`-|v|v` by an arithmetic
 average, we can use a *geometric average*:
 
 
+.. index:: geometric average
+
+
+.. index::
+   single: averaging; geometric
+
+
+
 .. math::
         
-        |v|v^{n+\frac{1}{2}} \approx |v|^nv^{n+1}
+        (|v|v)^{n+\frac{1}{2}} \approx |v^n|v^{n+1}
         \thinspace .
         
 
@@ -7160,8 +7261,8 @@ allow larger :math:`\Delta t` without any growth in the solutions, are
 more popular choices when creating time-stepping algorithms for
 partial differential equations.
 
-Exercises
-=========
+Exercises  (4)
+==============
 
 
 
@@ -7528,7 +7629,6 @@ and simulate 1000 scenarios of
 length 20 years. Compute the mean evolution of one unit of money and the
 corresponding
 standard deviation. Plot these two curves along with the :math:`p^n-i` curve.
-Filename: ``random_interest.py``.
 
 *Hint 1.* The following code snippet computes :math:`p^{n+1}`:
 
@@ -7570,6 +7670,7 @@ using to accumulation arrays, ``sum_u`` and ``sum_u2``, and
 performing ``sum_u += u`` and ``sum_u2 += u**2`` after every experiment.
 This technique avoids storing all the :math:`u_i(t)` time series for
 computing the statistics.
+Filename: ``random_interest.py``.
 
 .. --- end of exercise
 
@@ -7691,4 +7792,3 @@ Compare solutions for :math:`r_0=I, 3I/2, 2I`.
 Filename: ``interest_modeling.py``.
 
 .. --- end of exercise
-
