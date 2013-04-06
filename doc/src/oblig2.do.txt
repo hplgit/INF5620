@@ -1,0 +1,140 @@
+TITLE: Highly recommended finite element project in INF5620
+
+===== Project: 1D wave equation with finite elements =====
+file=wave1D_fem.py, wave1D_fem.pdf
+
+The purpose of this project is to derive and analyze a finite element
+method for the 1D wave equation
+
+!bt
+\[ u_{tt} = c^2 u_{xx},\quad x\in [0,L],\ t\in (0,T],\]
+!et
+with boundary and initial conditions
+
+!bt
+\[ u(0,t) = U_0(t),\quad u_x(L,t)=0,\quad u(x,0)=I(0),\quad u_t(x,0)=V(x)
+\thinspace .\]
+!et
+
+The analysis will give insight on how to adjust the default behavior
+of the finite element method such that its properties are as good as
+those for the finite difference method. With the necessary adjustments
+discovered in 2D, one gets an accurate
+finite element method for simulating 2D and
+3D waves in complex geometries.
+
+!bsubex
+Use a finite difference method in time to formulate a sequence of
+spatial problems for $u^n(x)$, $n=0,1,\ldots,N$.
+!esubex
+
+!bsubex
+Use a Galerkin method to derive a variational form of each of the
+spatial problems. Integrate the $u_{xx}$ term by parts.
+!esubex
+
+!bsubex
+Derive the linear system to be solved at each time level and express
+it in the form
+
+!bt
+\[ Mc^{n+1} = 2Mc^{n} - Mc^{n-1} + C^2Kc^{n},\]
+!et
+where $M$ and $K$ are matrices, $C$ is the Courant number,
+$c^n=(c_0^n,c_1^n,\ldots,c^n_{N_x})$,
+$c_j^n$ being the coefficients in the expansion $u^n = \sum_{j=0}^{N_x}
+c_j\varphi_j(x)$.
+
+!bhint
+Group the general expressions
+for the linear system according to the above equation and then compute
+the actual matrix entries by assembling element matrices for $M$ and $K$.
+!ehint
+
+__Remark.__ Unless $M$ is diagonal, a (tridiagonal) *linear system*
+must be solved at each time step, whereas the finite difference method
+leads to an explicit formula for $u^{n+1}_i$ at each spatial point at
+a new time level.
+!esubex
+
+!bsubex
+Interpret equation number $i$ in the linear system as a finite
+difference approximation of $u_{tt}=c^2u_{xx}$ using the following scheme:
+
+!bt
+\begin{equation}
+[D_tD_t( u + \frac{1}{6}\Delta x^2 D_xD_x u ) = c^2 D_xD_x u]_{i}^{n}
+label{oblig2:fdm:fem:discrete}
+\thinspace .
+\end{equation}
+!et
+
+!bhint
+Write out equation number $i$ and substitute $c_j$ by $u_j$ to help
+interpreting finite element equations as finite difference schemes.
+Study the material on "interpreting the mass matrix as a finite difference
+operator": "http://hplgit.github.com/INF5620/doc/notes/fem-sphinx/main_fem.html#comparison-of-finite-element-and-finite-difference-approximation".
+The similarity of finite differences and elements regarding the $u_{xx}$ term
+is evident from a "detailed example": "http://hplgit.github.com/INF5620/doc/notes/fem-sphinx/main_fem.html#computing-with-finite-elements" in the course
+material on solving $-u_{xx}=f$ by finite elements.
+!ehint
+!esubex
+
+!bsubex
+Perform an analysis of the scheme (ref{oblig2:fdm:fem:discrete})
+in the same way as is done for the corresponding finite difference
+scheme in the "course notes": "http://hplgit.github.com/INF5620/doc/notes/wave-sphinx/main_wave.html#analysis-of-the-continuous-and-discrete-solutions".
+That is, investigate a Fourier component $u^n_p = \exp{(i(kp\Delta x - \tilde
+\omega n\Delta t))}$. Show that the stability criterion is
+!bt
+\[ C \leq \frac{1}{\sqrt{3}},\]
+!et
+and therefore that any hope for recovering the exact solution for $C=1$
+becomes impossible.
+!esubex
+
+!bsubex
+Find the numerical dispersion relation
+($\tilde\omega$ expressed by other parameters) and plot the
+error in wave velocity $\tilde c/c$ ($\tilde c = \tilde \omega/k$, $c=\omega/c$)
+as a function of $k\Delta x$ for various Courant numbers.
+Compare with "the corresponding plot for the finite difference method": "http://hplgit.github.com/INF5620/doc/notes/wave-sphinx/main_wave.html#wave-pde1-fig-disprel" for $u_{tt}=c^2u_{xx}$ (computed with the aid of the
+program "dispersion_relation_1D.py":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/dispersion_relation_1D.py").
+!esubex
+
+!bsubex
+Use the Trapezoidal rule to compute the $M$ matrix. Show that the finite
+element method with P1 elements now produces the same scheme at the
+interior mesh points as the standard finite difference method for
+$u_{tt}=c^2u_{xx}$. Also show that the equations for $i=1$ and
+$i=N_x$ are identical in the two methods.
+!esubex
+
+!bsubex
+Instead of using the Trapezoidal rule to produce a diagonal $M$ matrix,
+one can replace $M$ by $\mbox{diag}(Me)$, where $e=(1,1,\ldots,1)$
+and $\mbox{diag}(w)$ means a diagonal matrix with the vector $w$
+on the diagonal. The interpretation of this approach is that we
+sum each row in $M$ and place the sum on the diagonal.
+Show that this method produces the same results as Trapezoidal integration
+(in a 1D problem). Also show that if you replace each row in the element
+matrices associated with $M$ by the row sum on the diagonal, the same
+result arises.
+!esubex
+
+!bremarks
+Say we want to solve the 3D wave equation $u_{tt}=c^2\nabla^2u$ with
+finite elements and get the same stability as in the finite difference
+method. We can then compute $M$ and $K$ in the usual way and thereafter
+just replace $M$ by $\mbox{diag}(Me)$. When the mass matrix is lumped
+this way and becomes diagonal, we get the same representation of
+of the terms
+$u^{n-1}$, $u^n$, and $u^{n+1}$ as in the finite difference method.
+The $K$ matrix also resembles finite differences for P1 elements.
+With Q1 elements the $K$ matrix has more nonzero entries per row, but
+this does not change the numerical properties of the scheme significantly.
+The key issue is to use a lumped mass matrix.
+!eremarks
+
+
