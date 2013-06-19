@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="description" content="Introduction to computing with finite difference methods">
+<meta name="keywords" content="decay (problem),exponential decay,mesh finite differences,grid finite differences,mesh function,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,doc strings,printf format (Python),format string syntax (Python),PNG plot,PDF plot,EPS plot,view PNG plot,view PDF plot,view EPS plot,user interfaces to programs,command-line interfaces,reading the command line,list comprehension,option-value pairs (command line),command-line options and values,reading the command line,convergence rate,dictionary,verification,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,software testing nose w/doctests,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability criterion,amplification factor,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Taylor-series methods (for ODEs),Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order,Runge-Kutta, 4th-order scheme,RK4,population dynamics,logistic model,radioactive decay,terminal velocity,geometric average,averaging geometric">
+
+
+
+<style type="text/css">
+    body {
+      margin:5;
+      padding:0;
+      border:0;	/* Remove the border around the viewport in old versions of IE */
+      width:100%;
+      background: #fdf6e3;
+      min-width:600px;	/* Minimum width of layout - remove if not required */
+      font-family: Verdana, Helvetica, Arial, sans-serif;
+      font-size: 1.0em;
+      line-height: 1.3em;
+      color: #657b83;
+    }
+    a { color: #657b83; text-decoration:none; }
+    a:hover { color: #b58900; background: #eee8d5; text-decoration:none; }
+    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; line-height: 125%; }
+    h2 { font-variant: small-caps; }
+    pre {
+      background: #fdf6e3;
+      -webkit-box-shadow: inset 0 0 2px #000000;
+      -moz-box-shadow: inset 0 0 2px #000000;
+      box-shadow: inset 0 0 2px #000000;
+      color: #586e75;
+      margin-left: 0px;
+      font-family: 'Droid Sans Mono', monospace;
+      padding: 2px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
+    }
+    tt { font-family: "Courier New", Courier; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p { text-indent: 0px; }
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .alert-text-small   { font-size: 80%;  }
+    .alert-text-large   { font-size: 130%; }
+    .alert-text-normal  { font-size: 90%;  }
+    .alert {
+             padding:8px 35px 8px 14px; margin-bottom:18px;
+             text-shadow:0 1px 0 rgba(255,255,255,0.5);
+             border:1px solid #bababa;
+             -webkit-border-radius: 4px; -moz-border-radius: 4px;
+             border-radius: 4px
+             color: #555;
+             background-color: whiteSmoke;
+             background-position: 10px 5px;
+             background-repeat: no-repeat;
+             background-size: 38px;
+             padding-left: 55px;
+             width: 75%;
+     }
+     .alert-block {padding-top:14px; padding-bottom:14px}
+     .alert-block > p, .alert-block > ul {margin-bottom:0}
+     .alert li {margin-top: 1em}
+     .alert-block p+p {margin-top:5px}
+     .alert-notice { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_notice.png); }
+     .alert-summary  { background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_summary.png); }
+     .alert-warning { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_warning.png); }
+     .alert-question {background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_question.png); }
+
+</style>
+
+</head>
+
+<!-- tocinfo
+{'highest level': 1,
+ 'sections': [(' Finite difference methods  ',
+               1,
+               'decay:basics',
+               'decay:basics'),
+              (' A basic model for exponential decay ',
+               2,
+               'decay:model',
+               'decay:model'),
+              (' The Forward Euler scheme ',
+               2,
+               'decay:schemes:FE',
+               'decay:schemes:FE'),
+              (' Step 1: Discretizing the domain ', 3, None, '___sec3'),
+              (' Step 2: Fulfilling the equation at discrete time points ',
+               3,
+               None,
+               '___sec4'),
+              (' Step 3: Replacing derivatives by finite differences ',
+               3,
+               None,
+               '___sec5'),
+              (' Step 4: Formulating a recursive algorithm ',
+               3,
+               None,
+               '___sec6'),
+              (' The Backward Euler scheme ',
+               2,
+               'decay:schemes:BE',
+               'decay:schemes:BE'),
+              (' The Crank-Nicolson scheme ',
+               2,
+               'decay:schemes:CN',
+               'decay:schemes:CN'),
+              (' The unifying $\\theta$-rule ',
+               2,
+               'decay:schemes:theta',
+               'decay:schemes:theta'),
+              (' Constant time step ', 2, None, '___sec10'),
+              (' Compact operator notation for finite differences ',
+               2,
+               'decay:fd:op',
+               'decay:fd:op'),
+              (' Implementation ', 1, 'decay:impl1', 'decay:impl1'),
+              (' Making a solver function ', 2, 'decay:py1', 'decay:py1'),
+              (' Function for computing the numerical solution ',
+               3,
+               None,
+               '___sec14'),
+              (' Integer division ', 3, None, '___sec15'),
+              (' Doc strings ', 3, None, '___sec16'),
+              (' Formatting of numbers ', 3, None, '___sec17'),
+              (' Running the program ', 3, None, '___sec18'),
+              (' Verifying the implementation ', 2, None, '___sec19'),
+              (' Running a few algorithmic steps by hand ',
+               3,
+               None,
+               '___sec20'),
+              (' Comparison with an exact discrete solution ',
+               3,
+               None,
+               '___sec21'),
+              (' Computing the numerical error ',
+               2,
+               'decay:computing:error',
+               'decay:computing:error'),
+              (' Plotting solutions ', 2, None, '___sec23'),
+              (' Plotting with SciTools ', 2, None, '___sec24'),
+              (' Creating user interfaces ', 2, None, '___sec25'),
+              (' Reading a sequence of command-line arguments ',
+               3,
+               None,
+               '___sec26'),
+              (' Working with an argument parser ', 3, None, '___sec27'),
+              (' Computing convergence rates ',
+               2,
+               'decay:convergence:rate',
+               'decay:convergence:rate'),
+              (' Estimating $r$ ', 3, None, '___sec29'),
+              (' Implementation ', 3, None, '___sec30'),
+              (' Debugging via convergence rates ', 3, None, '___sec31'),
+              (' Memory-saving implementation ', 2, None, '___sec32'),
+              (' Software engineering ', 1, None, '___sec33'),
+              (' Making a module ',
+               2,
+               'decay:prog:se:module',
+               'decay:prog:se:module'),
+              (' Prefixing imported functions by the module name ',
+               2,
+               'decay:prog:se:import',
+               'decay:prog:se:import'),
+              (' Doctests ',
+               2,
+               'decay:prog:se:doctest',
+               'decay:prog:se:doctest'),
+              (' Unit testing with nose ',
+               2,
+               'decay:prog:se:nose',
+               'decay:prog:se:nose'),
+              (' Basic use of nose ', 3, None, '___sec38'),
+              (' Demonstrating nose ', 3, None, '___sec39'),
+              (' Installation of nose ', 3, None, '___sec40'),
+              (' Using nose to test modules with doctests ',
+               3,
+               None,
+               '___sec41'),
+              (' Classical unit testing with unittest ',
+               2,
+               'decay:prog:se:unittest',
+               'decay:prog:se:unittest'),
+              (' Basic use of unittest ', 3, None, '___sec43'),
+              (' Demonstration of unittest ', 3, None, '___sec44'),
+              (' Implementing simple problem and solver classes ',
+               2,
+               'decay:prog:se:class',
+               'decay:prog:se:class'),
+              (' The problem class ', 3, None, '___sec46'),
+              (' The solver class ', 3, None, '___sec47'),
+              (' The visualizer class ', 3, None, '___sec48'),
+              (' Combing the objects ', 3, None, '___sec49'),
+              (' Improving the problem and solver classes ',
+               2,
+               'decay:prog:se:class2',
+               'decay:prog:se:class2'),
+              (' A generic class for parameters ', 3, None, '___sec51'),
+              (' The problem class ', 3, None, '___sec52'),
+              (' The solver class ', 3, None, '___sec53'),
+              (' The visualizer class ', 3, None, '___sec54'),
+              (' Performing scientific experiments ',
+               1,
+               'decay:experiments',
+               'decay:experiments'),
+              (' Interpreting output from other programs ',
+               2,
+               None,
+               '___sec56'),
+              (' Making a report ',
+               2,
+               'decay:exper:report',
+               'decay:exper:report'),
+              (' Plain HTML ', 3, None, '___sec58'),
+              (' HTML with MathJax ', 3, None, '___sec59'),
+              (' LaTeX ', 3, None, '___sec60'),
+              (' Sphinx ', 3, None, '___sec61'),
+              (' Markdown ', 3, None, '___sec62'),
+              (' Wiki formats ', 3, None, '___sec63'),
+              (' Doconce ', 3, None, '___sec64'),
+              (' Worked example ', 3, None, '___sec65'),
+              (' Publishing a complete project ',
+               2,
+               'decay:exper:github',
+               'decay:exper:github'),
+              (' Exercises ', 1, None, '___sec67'),
+              (' Exercise 1: Experiment with integer division ',
+               2,
+               'decay:exer:intdiv',
+               'decay:exer:intdiv'),
+              (' Exercise 2: Experiment with wrong computations ',
+               2,
+               'decay:exer:decay1err',
+               'decay:exer:decay1err'),
+              (' Exercise 3: Implement specialized functions ',
+               2,
+               'decay:exer:FEBECN',
+               'decay:exer:FEBECN'),
+              (' Exercise 4: Plot the error function ',
+               2,
+               'decay:exer:plot:error',
+               'decay:exer:plot:error'),
+              (' Exercise 5: Compare methods for a give time mesh ',
+               2,
+               'decay:exer:plot:dtconst',
+               'decay:exer:plot:dtconst'),
+              (' Exercise 6: Change formatting of numbers and debug ',
+               2,
+               'decay:exer:inexact:output',
+               'decay:exer:inexact:output'),
+              (' Exercise 7: Write a doctest ',
+               2,
+               'decay:exer:doctest1',
+               'decay:exer:doctest1'),
+              (' Exercise 8: Write a nose test ',
+               2,
+               'decay:exer:nosetest1',
+               'decay:exer:nosetest1'),
+              (' Exercise 9: Make a module ',
+               2,
+               'decay:exer:module1',
+               'decay:exer:module1'),
+              (' Exercise 10: Make use of a class implementation ',
+               2,
+               'decay:exer:decay_class:exper',
+               'decay:exer:decay_class:exper'),
+              (' Analysis of finite difference equations ',
+               1,
+               'decay:analysis',
+               'decay:analysis'),
+              (' Discouraging numerical solutions ', 2, None, '___sec79'),
+              (' Experimental investigation of oscillatory solutions ',
+               2,
+               None,
+               '___sec80'),
+              (' Exact numerical solution ', 2, None, '___sec81'),
+              (' Stability ', 2, None, '___sec82'),
+              (' Comparing amplification factors ', 2, None, '___sec83'),
+              (' Series expansion of amplification factors ',
+               2,
+               None,
+               '___sec84'),
+              (' Local error ', 2, None, '___sec85'),
+              (' Analytical comparison of schemes ', 2, None, '___sec86'),
+              (' The real (global) error at a point ', 2, None, '___sec87'),
+              (' Integrated errors ', 2, None, '___sec88'),
+              (' Exercises ', 1, None, '___sec89'),
+              (' Exercise 11: Explore the $\\theta$-rule for exponential growth ',
+               2,
+               'decay:analysis:exer:growth',
+               'decay:analysis:exer:growth'),
+              (' Exercise 12: Summarize investigations in a report ',
+               2,
+               'decay:analysis:exer:growth:report',
+               'decay:analysis:exer:growth:report'),
+              (' Exercise 13: Plot amplification factors for exponential growth ',
+               2,
+               'decay:analysis:exer:growth:A',
+               'decay:analysis:exer:growth:A'),
+              (' Model extensions ', 1, None, '___sec93'),
+              (' Generalization: including a variable coefficient ',
+               2,
+               None,
+               '___sec94'),
+              (' Generalization: including a source term ',
+               2,
+               'decay:source',
+               'decay:source'),
+              (' Schemes ', 3, None, '___sec96'),
+              (' Implementation of the generalized model problem ',
+               2,
+               'decay:general',
+               'decay:general'),
+              (' Deriving the $\\theta$-rule formula ', 3, None, '___sec98'),
+              (' The Python code ', 3, None, '___sec99'),
+              (' Coding of variable coefficients ', 3, None, '___sec100'),
+              (' Verification via trivial solutions ',
+               2,
+               'decay:verify:trivial',
+               'decay:verify:trivial'),
+              (' Verification via manufactured solutions ',
+               2,
+               'decay:MMS',
+               'decay:MMS'),
+              (' Extension to systems of ODEs ', 2, None, '___sec103'),
+              (' General first-order ODEs ', 1, None, '___sec104'),
+              (' Generic form ', 2, None, '___sec105'),
+              (' Some popular schemes for ODEs ', 2, None, '___sec106'),
+              (' Implicit 2-step backward scheme ', 3, None, '___sec107'),
+              (' The Leapfrog scheme ', 3, None, '___sec108'),
+              (' The filtered Leapfrog scheme ', 3, None, '___sec109'),
+              (' 2nd-order Runge-Kutta scheme ', 3, None, '___sec110'),
+              (' A 2nd-order Taylor-series method ', 3, None, '___sec111'),
+              (' 2nd-order Adams-Bashforth scheme ', 3, None, '___sec112'),
+              (' 3rd-order Adams-Bashforth scheme ', 3, None, '___sec113'),
+              (' 4th-order Runge-Kutta scheme ', 3, None, '___sec114'),
+              (' The Odespy software ', 2, None, '___sec115'),
+              (' Example: Runge-Kutta methods  ', 2, None, '___sec116'),
+              (' Remark about using the $\\theta$-rule in Odespy ',
+               3,
+               None,
+               '___sec117'),
+              (' Example: Adaptive Runge-Kutta methods  ',
+               2,
+               None,
+               '___sec118'),
+              (' Exercises ', 1, None, '___sec119'),
+              (' Exercise 14: Experiment with precision in tests and the size of $u$ ',
+               2,
+               'decay:fd2:exer:precision',
+               'decay:fd2:exer:precision'),
+              (' Exercise 15: Implement the 2-step backward scheme ',
+               2,
+               'decay:fd2:exer:bw2',
+               'decay:fd2:exer:bw2'),
+              (' Exercise 16: Implement the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog1',
+               'decay:fd2:exer:leapfrog1'),
+              (' Exercise 17: Experiment with the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog2',
+               'decay:fd2:exer:leapfrog2'),
+              (' Exercise 18: Analyze the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog3',
+               'decay:fd2:exer:leapfrog3'),
+              (' Exercise 19: Implement the filtered Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog4',
+               'decay:fd2:exer:leapfrog4'),
+              (' Exercise 20: Implement the 2nd-order Adams-Bashforth scheme ',
+               2,
+               'decay:fd2:exer:AB2',
+               'decay:fd2:exer:AB2'),
+              (' Exercise 21: Implement the 3rd-order Adams-Bashforth scheme ',
+               2,
+               'decay:fd2:exer:AB3',
+               'decay:fd2:exer:AB3'),
+              (' Exercise 22: Generalize a class implementation ',
+               2,
+               'decay:exer:decay_class2',
+               'decay:exer:decay_class2'),
+              (' Exercise 23: Generalize an advanced class implementation ',
+               2,
+               'decay:exer:decay_class3',
+               'decay:exer:decay_class3'),
+              (' Exercise 24: Make a unified implementation of many schemes ',
+               2,
+               'decay:fd2:exer:uni',
+               'decay:fd2:exer:uni'),
+              (' Exercise 25: Analyze explicit 2nd-order methods ',
+               2,
+               'decay:exer:RK2:Taylor:analysis',
+               'decay:exer:RK2:Taylor:analysis'),
+              (' Applications of exponential decay models ',
+               1,
+               'decay:app',
+               'decay:app'),
+              (' Evolution of a population ',
+               2,
+               'decay:app:pop',
+               'decay:app:pop'),
+              (' Compound interest and inflation ',
+               2,
+               'decay:app:interest',
+               'decay:app:interest'),
+              (' Radioactive Decay ',
+               2,
+               'decay:app:nuclear',
+               'decay:app:nuclear'),
+              (' Deterministic model ', 3, None, '___sec136'),
+              (' Stochastic model ', 3, None, '___sec137'),
+              (' Relation between stochastic and deterministic models ',
+               3,
+               None,
+               '___sec138'),
+              (" Newton's law of cooling ", 2, None, '___sec139'),
+              (' Decay of atmospheric pressure with altitude ',
+               2,
+               'decay:app:atm',
+               'decay:app:atm'),
+              (' Multiple atmospheric layers ', 3, None, '___sec141'),
+              (' Simplification: $L=0$ ', 3, None, '___sec142'),
+              (' Simplification: one-layer model ', 3, None, '___sec143'),
+              (' Compaction of sediments ',
+               2,
+               'decay:app:sediment',
+               'decay:app:sediment'),
+              (' Vertical motion of a body in a viscous fluid ',
+               2,
+               'decay:app:drag',
+               'decay:app:drag'),
+              (' Overview of forces ', 3, None, '___sec146'),
+              (' Equation of motion ', 3, None, '___sec147'),
+              (' Terminal velocity ', 3, None, '___sec148'),
+              (' A Crank-Nicolson scheme ', 3, None, '___sec149'),
+              (' Physical data ', 3, None, '___sec150'),
+              (' Verification ', 3, None, '___sec151'),
+              (' Decay ODEs from solving a PDE by Fourier expansions ',
+               2,
+               'decay:app:diffusion:Fourier',
+               'decay:app:diffusion:Fourier'),
+              (' Exercises ', 1, None, '___sec153'),
+              (' Exercise 26: Simulate stochastic radioactive decay ',
+               2,
+               'decay:app:exer:stoch:nuclear',
+               'decay:app:exer:stoch:nuclear'),
+              (" Exercise 27: Derive schemes for Newton's law of cooling ",
+               2,
+               'decay:app:exer:cooling:schemes',
+               'decay:app:exer:cooling:schemes'),
+              (' Exercise 28: Simulate the pressure drop in the atmosphere ',
+               2,
+               'decay:app:exer:atm1',
+               'decay:app:exer:atm1'),
+              (' Exercise 29: Make a program for vertical motion in a fluid ',
+               2,
+               'decay:app:exer:drag:prog',
+               'decay:app:exer:drag:prog'),
+              (' Exercise 30: Plot forces acting in vertical motion in a fluid ',
+               2,
+               'decay:app:exer:drag:prog:viz',
+               'decay:app:exer:drag:prog:viz'),
+              (' Exercise 31: Simulate a free fall of a parachute jumper ',
+               2,
+               'decay:app:exer:drag:parachute1',
+               'decay:app:exer:drag:parachute1'),
+              (' Exercise 32: Simulate a complete parachute jump ',
+               2,
+               'decay:app:exer:drag:parachute2',
+               'decay:app:exer:drag:parachute2'),
+              (' Exercise 33: Simulate a rising ball in water ',
+               2,
+               'decay:app:exer:drag:rising',
+               'decay:app:exer:drag:rising'),
+              (' Exercise 34: Radioactive decay of Carbon-14 ',
+               2,
+               'decay:app:exer:radio:C14',
+               'decay:app:exer:radio:C14'),
+              (' Exercise 35: Radioactive decay of two substances ',
+               2,
+               'decay:app:exer:radio:twosubst',
+               'decay:app:exer:radio:twosubst'),
+              (' Exercise 36: Find time of murder from body temperature ',
+               2,
+               'decay:app:exer:cooling:pizza',
+               'decay:app:exer:cooling:pizza'),
+              (' Exercise 37: Simulate an oscillating cooling process ',
+               2,
+               'decay:app:exer:cooling:osc',
+               'decay:app:exer:cooling:osc'),
+              (' Exercise 38: Compute $y=|x|$ by solving an ODE ',
+               2,
+               'decay:app:exer:signum',
+               'decay:app:exer:signum'),
+              (' Exercise 39: Simulate growth of a fortune with random interest rate ',
+               2,
+               'decay:app:exer:interest',
+               'decay:app:exer:interest'),
+              (' Exercise 40: Simulate sudden environmental changes for a population ',
+               2,
+               'decay:app:exer:pop:at',
+               'decay:app:exer:pop:at'),
+              (' Exercise 41: Simulate oscillating environment for a population ',
+               2,
+               'decay:app:exer:pop:osc',
+               'decay:app:exer:pop:osc'),
+              (' Exercise 42: Simulate logistic growth ',
+               2,
+               'decay:app:exer:pop:logistic1',
+               'decay:app:exer:pop:logistic1'),
+              (' Exercise 43: Rederive the equation for continuous compound interest ',
+               2,
+               'decay:app:exer:interest:derive',
+               'decay:app:exer:interest:derive')]}
+end of tocinfo -->
+
+<body>
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{{\cal O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{{\cal I}_x}
+\newcommand{\Iy}{{\cal I}_y}
+\newcommand{\Iz}{{\cal I}_z}
+\newcommand{\It}{{\cal I}_t}
+\newcommand{\setb}[1]{{#1}^0}    % set begin
+\newcommand{\sete}[1]{{#1}^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{{#1}^-}
+\newcommand{\setr}[1]{{#1}^+}
+\newcommand{\seti}[1]{{#1}^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+<a name="part0005"></a>
+<!-- begin top navigation -->
+<a href="._part0004_main_decay-solarized.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0006_main_decay-solarized.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end top navigation -->
+
+<p>
+<!-- !split -->
+
+<h2>Exercises  <a name="___sec67"></a></h2>
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 1: Experiment with integer division <a name="decay:exer:intdiv"></a></h3>
+
+<p>
+Explain what happens in the following computations, where
+some are (mathematically) unexpected:
+<p>
+
+<!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; dt = 3
+&gt;&gt;&gt; T = 8
+&gt;&gt;&gt; Nt = T/dt
+&gt;&gt;&gt; Nt
+2
+&gt;&gt;&gt; theta = 1; a = 1
+&gt;&gt;&gt; (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
+0
+</pre></div>
+<p>
+Filename: <code>pyproblems.txt</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 2: Experiment with wrong computations <a name="decay:exer:decay1err"></a></h3>
+
+<p>
+Consider the <code>solver</code> function in the <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_v1.py"><tt>decay_v1.py</tt></a>
+and the following call:
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">u, t = solver(I=<span style="color: #B452CD">1</span>, a=<span style="color: #B452CD">1</span>, T=<span style="color: #B452CD">7</span>, dt=<span style="color: #B452CD">2</span>, theta=<span style="color: #B452CD">1</span>)
+</pre></div>
+<p>
+The output becomes
+<p>
+
+<!-- code=text (from !bc dat) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">t= 0.000 u=1
+t= 2.000 u=0
+t= 4.000 u=0
+t= 6.000 u=0
+</pre></div>
+<p>
+Print out the result of all intermediate computations and use
+<code>type(v)</code> to see the object type of the result stored in <code>v</code>.
+Examine the intermediate calculations and explain
+why <code>u</code> is wrong and why we compute up to \( t=6 \) only even though we
+specified \( T=7 \).
+Filename: <code>decay_v1_err.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 3: Implement specialized functions <a name="decay:exer:FEBECN"></a></h3>
+
+<p>
+Implement a specialized Python function <code>ForwardEuler</code> that solves
+the problem \( u'=-au \), \( u(0)=I \), using the Forward Euler method.
+Do not reimplement the solution algorithm, but let the <code>ForwardEuler</code>
+function call the <code>solver</code> function. Import this latter function
+from the module <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_mod.py"><tt>decay_mod</tt></a>.
+Also make similar functions <code>BackwardEuler</code> and <code>CrankNicolson</code>.
+Filename: <code>decay_FE_BE_CN.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 4: Plot the error function <a name="decay:exer:plot:error"></a></h3>
+
+<p>
+Solve the problem \( u'=-au \), \( u(0)=I \), using the Forward Euler, Backward
+Euler, and Crank-Nicolson schemes. For each scheme, plot the error function
+\( e_n = \uex(t_n)-u^n \) for \( \Delta t \), \( \frac{1}{4}\Delta t \), and
+\( \frac{1}{8}\Delta t \), where \( \uex \) is the exact solution of the ODE and
+\( u^n \) is the numerical solution at mesh point \( t_n \).
+Filename: <code>decay_plot_error.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 5: Compare methods for a give time mesh <a name="decay:exer:plot:dtconst"></a></h3>
+
+<p>
+Make a program that imports the <code>solver</code> function from the
+<code>decay_mod</code> module and offers a function <code>compare(dt, I, a)</code> for
+comparing, in a plot, the methods corresponding to \( \theta=0,0.5,1 \)
+and the exact solution.  This plot shows the accuracy of the methods
+for a given time mesh. Read input data for the problem from the
+command line using appropriate functions in the <code>decay_mod</code> module
+(the <code>--dt</code> option for giving several time step values can be reused:
+just use the first time step value for the computations).
+Filename: <code>decay_compare_theta.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 6: Change formatting of numbers and debug <a name="decay:exer:inexact:output"></a></h3>
+
+<p>
+The <a href="http://github.hplgit.com/INF5620/src/decay/decay_memsave.py"><tt>decay_memsave.py</tt></a> program
+writes the time values and solution values to a file which looks
+like
+<p>
+
+<!-- code=text typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">0.0000000000000000E+00  1.0000000000000000E+00
+2.0000000000000001E-01  8.3333333333333337E-01
+4.0000000000000002E-01  6.9444444444444453E-01
+6.0000000000000009E-01  5.7870370370370383E-01
+8.0000000000000004E-01  4.8225308641975323E-01
+1.0000000000000000E+00  4.0187757201646102E-01
+1.2000000000000000E+00  3.3489797668038418E-01
+1.3999999999999999E+00  2.7908164723365347E-01
+</pre></div>
+<p>
+Modify the file output such that it looks like
+<p>
+
+<!-- code=text (from !bc dat) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">0.000  1.00000
+0.200  0.83333
+0.400  0.69444
+0.600  0.57870
+0.800  0.48225
+1.000  0.40188
+1.200  0.33490
+1.400  0.27908
+</pre></div>
+<p>
+Run
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; python decay8_v2.py --T 10 --theta 1 --dt 0.2 --makeplot
+</pre></div>
+<p>
+The program just prints <code>Bug in the implementation!</code> and does not
+show the plot. What went wrong?
+Filename: <code>decay_memsave_v2.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 7: Write a doctest <a name="decay:exer:doctest1"></a></h3>
+
+<p>
+Type in the following program and equip the <code>roots</code> function with a doctest:
+
+<p>
+
+<!-- code=python (from !bc pypro) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sys</span>
+<span style="color: #228B22"># This sqrt(x) returns real if x&gt;0 and complex if x&lt;0</span>
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">numpy.lib.scimath</span> <span style="color: #8B008B; font-weight: bold">import</span> sqrt
+
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">roots</span>(a, b, c):
+    <span style="color: #CD5555">&quot;&quot;&quot;</span>
+<span style="color: #CD5555">    Return the roots of the quadratic polynomial</span>
+<span style="color: #CD5555">    p(x) = a*x**2 + b*x + c.</span>
+
+<span style="color: #CD5555">    The roots are real or complex objects.</span>
+<span style="color: #CD5555">    &quot;&quot;&quot;</span>
+    q = b**<span style="color: #B452CD">2</span> - <span style="color: #B452CD">4</span>*a*c
+    r1 = (-b + sqrt(q))/(<span style="color: #B452CD">2</span>*a)
+    r2 = (-b - sqrt(q))/(<span style="color: #B452CD">2</span>*a)
+    <span style="color: #8B008B; font-weight: bold">return</span> r1, r2
+
+a, b, c = [<span style="color: #658b00">float</span>(arg) <span style="color: #8B008B; font-weight: bold">for</span> arg <span style="color: #8B008B">in</span> sys.argv[<span style="color: #B452CD">1</span>:]]
+<span style="color: #8B008B; font-weight: bold">print</span> roots(a, b, c)
+</pre></div>
+<p>
+Make sure to test both real and complex roots.
+Write out numbers with 14 digits or less.
+Filename: <code>doctest_roots.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 8: Write a nose test <a name="decay:exer:nosetest1"></a></h3>
+
+<p>
+Make a nose test for the <code>roots</code> function in <a href="#decay:exer:doctest1">Exercise 7: Write a doctest</a>.
+Filename: <code>test_roots.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 9: Make a module <a name="decay:exer:module1"></a></h3>
+
+<p>
+Let
+$$ q(t) = \frac{RAe^{at}}{R + A(e^{at} - 1)}
+\thinspace .
+$$
+
+Make a Python module <code>q_module</code> containing two functions <code>q(t)</code> and
+<code>dqdt(t)</code> for computing \( q(t) \) and \( q'(t) \), respectively. Perform a
+<code>from numpy import *</code> in this module. Import <code>q</code> and <code>dqdt</code> in another
+file using the "star import" construction <code>from q_module import
+*</code>. All objects available in this file is given by <code>dir()</code>. Print
+<code>dir()</code> and <code>len(dir())</code>.  Then change the import of <code>numpy</code> in
+<code>q_module.py</code> to <code>import numpy as np</code>. What is the effect of this
+import on the number of objects in <code>dir()</code> in a file that does <code>from
+q_module import *</code>?
+
+<p>
+<!-- \frac{du}{dt}=au\left(1-\frac{u}{R}\right),\quad u(0)=A, -->
+Filename: <code>q_module.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 10: Make use of a class implementation <a name="decay:exer:decay_class:exper"></a></h3>
+
+<p>
+We want to solve the exponential decay problem \( u'=-au \), \( u(0)=I \),
+for several \( \Delta t \) values and \( \theta=0,0.5,1 \).
+For each \( \Delta t \) value, we want to make a plot where the
+three solutions corresponding to \( \theta=0,0.5,1 \) appear along with
+the exact solution.
+Write a function <code>experiment</code> to accomplish this. The function should
+import the classes <code>Problem</code>, <code>Solver</code>, and <code>Visualizer</code> from the
+<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_class.py"><tt>decay_class1</tt></a>
+module and make use of these. A new command-line option <code>--dt_values</code>
+must be added to allow the user to specify the \( \Delta t \) values on
+the command line (the options <code>--dt</code> and <code>--theta</code> have then no effect
+when running the <code>experiment</code> function).
+Note that the classes in the <code>decay_class1</code> module should <em>not</em> be
+modified.
+Filename: <code>decay_class_exper.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<p>
+<!-- begin bottom navigation -->
+<a href="._part0004_main_decay-solarized.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0006_main_decay-solarized.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end bottom navigation -->
+
+<!-- ------------------- end of main content --------------- -->
+
+
+</body>
+</html>
+    
+

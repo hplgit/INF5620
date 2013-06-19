@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<!--
+Automatically generated HTML file from Doconce source
+(http://code.google.com/p/doconce/)
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="description" content="Introduction to computing with finite difference methods">
+<meta name="keywords" content="decay (problem),exponential decay,mesh finite differences,grid finite differences,mesh function,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,doc strings,printf format (Python),format string syntax (Python),PNG plot,PDF plot,EPS plot,view PNG plot,view PDF plot,view EPS plot,user interfaces to programs,command-line interfaces,reading the command line,list comprehension,option-value pairs (command line),command-line options and values,reading the command line,convergence rate,dictionary,verification,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,software testing nose w/doctests,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability criterion,amplification factor,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Taylor-series methods (for ODEs),Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order,Runge-Kutta, 4th-order scheme,RK4,population dynamics,logistic model,radioactive decay,terminal velocity,geometric average,averaging geometric">
+
+
+
+<style type="text/css">
+    /* Color definitions:  http://www.december.com/html/spec/color0.html
+       CSS examples:       http://www.w3schools.com/css/css_examples.asp */
+
+    body {
+      margin-top: 1.0em;
+      background-color: #ffffff;
+      font-family: Helvetica, Arial, FreeSans, san-serif;
+      color: #000000;
+    }
+    h1 { font-size: 1.8em; color: #1e36ce; }
+    h2 { font-size: 1.5em; color: #1e36ce; }
+    h3 { color: #1e36ce; }
+    a { color: #1e36ce; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .alert-text-small   { font-size: 80%;  }
+    .alert-text-large   { font-size: 130%; }
+    .alert-text-normal  { font-size: 90%;  }
+    .alert {
+             padding:8px 35px 8px 14px; margin-bottom:18px;
+             text-shadow:0 1px 0 rgba(255,255,255,0.5);
+             border:1px solid #bababa;
+             -webkit-border-radius: 4px; -moz-border-radius: 4px;
+             border-radius: 4px
+             color: #555;
+             background-color: whiteSmoke;
+             background-position: 10px 5px;
+             background-repeat: no-repeat;
+             background-size: 38px;
+             padding-left: 55px;
+             width: 75%;
+     }
+     .alert-block {padding-top:14px; padding-bottom:14px}
+     .alert-block > p, .alert-block > ul {margin-bottom:0}
+     .alert li {margin-top: 1em}
+     .alert-block p+p {margin-top:5px}
+     .alert-notice { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_notice.png); }
+     .alert-summary  { background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_summary.png); }
+     .alert-warning { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_warning.png); }
+     .alert-question {background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_gray_question.png); }
+
+</style>
+
+</head>
+
+<!-- tocinfo
+{'highest level': 1,
+ 'sections': [(' Finite difference methods  ',
+               1,
+               'decay:basics',
+               'decay:basics'),
+              (' A basic model for exponential decay ',
+               2,
+               'decay:model',
+               'decay:model'),
+              (' The Forward Euler scheme ',
+               2,
+               'decay:schemes:FE',
+               'decay:schemes:FE'),
+              (' Step 1: Discretizing the domain ', 3, None, '___sec3'),
+              (' Step 2: Fulfilling the equation at discrete time points ',
+               3,
+               None,
+               '___sec4'),
+              (' Step 3: Replacing derivatives by finite differences ',
+               3,
+               None,
+               '___sec5'),
+              (' Step 4: Formulating a recursive algorithm ',
+               3,
+               None,
+               '___sec6'),
+              (' The Backward Euler scheme ',
+               2,
+               'decay:schemes:BE',
+               'decay:schemes:BE'),
+              (' The Crank-Nicolson scheme ',
+               2,
+               'decay:schemes:CN',
+               'decay:schemes:CN'),
+              (' The unifying $\\theta$-rule ',
+               2,
+               'decay:schemes:theta',
+               'decay:schemes:theta'),
+              (' Constant time step ', 2, None, '___sec10'),
+              (' Compact operator notation for finite differences ',
+               2,
+               'decay:fd:op',
+               'decay:fd:op'),
+              (' Implementation ', 1, 'decay:impl1', 'decay:impl1'),
+              (' Making a solver function ', 2, 'decay:py1', 'decay:py1'),
+              (' Function for computing the numerical solution ',
+               3,
+               None,
+               '___sec14'),
+              (' Integer division ', 3, None, '___sec15'),
+              (' Doc strings ', 3, None, '___sec16'),
+              (' Formatting of numbers ', 3, None, '___sec17'),
+              (' Running the program ', 3, None, '___sec18'),
+              (' Verifying the implementation ', 2, None, '___sec19'),
+              (' Running a few algorithmic steps by hand ',
+               3,
+               None,
+               '___sec20'),
+              (' Comparison with an exact discrete solution ',
+               3,
+               None,
+               '___sec21'),
+              (' Computing the numerical error ',
+               2,
+               'decay:computing:error',
+               'decay:computing:error'),
+              (' Plotting solutions ', 2, None, '___sec23'),
+              (' Plotting with SciTools ', 2, None, '___sec24'),
+              (' Creating user interfaces ', 2, None, '___sec25'),
+              (' Reading a sequence of command-line arguments ',
+               3,
+               None,
+               '___sec26'),
+              (' Working with an argument parser ', 3, None, '___sec27'),
+              (' Computing convergence rates ',
+               2,
+               'decay:convergence:rate',
+               'decay:convergence:rate'),
+              (' Estimating $r$ ', 3, None, '___sec29'),
+              (' Implementation ', 3, None, '___sec30'),
+              (' Debugging via convergence rates ', 3, None, '___sec31'),
+              (' Memory-saving implementation ', 2, None, '___sec32'),
+              (' Software engineering ', 1, None, '___sec33'),
+              (' Making a module ',
+               2,
+               'decay:prog:se:module',
+               'decay:prog:se:module'),
+              (' Prefixing imported functions by the module name ',
+               2,
+               'decay:prog:se:import',
+               'decay:prog:se:import'),
+              (' Doctests ',
+               2,
+               'decay:prog:se:doctest',
+               'decay:prog:se:doctest'),
+              (' Unit testing with nose ',
+               2,
+               'decay:prog:se:nose',
+               'decay:prog:se:nose'),
+              (' Basic use of nose ', 3, None, '___sec38'),
+              (' Demonstrating nose ', 3, None, '___sec39'),
+              (' Installation of nose ', 3, None, '___sec40'),
+              (' Using nose to test modules with doctests ',
+               3,
+               None,
+               '___sec41'),
+              (' Classical unit testing with unittest ',
+               2,
+               'decay:prog:se:unittest',
+               'decay:prog:se:unittest'),
+              (' Basic use of unittest ', 3, None, '___sec43'),
+              (' Demonstration of unittest ', 3, None, '___sec44'),
+              (' Implementing simple problem and solver classes ',
+               2,
+               'decay:prog:se:class',
+               'decay:prog:se:class'),
+              (' The problem class ', 3, None, '___sec46'),
+              (' The solver class ', 3, None, '___sec47'),
+              (' The visualizer class ', 3, None, '___sec48'),
+              (' Combing the objects ', 3, None, '___sec49'),
+              (' Improving the problem and solver classes ',
+               2,
+               'decay:prog:se:class2',
+               'decay:prog:se:class2'),
+              (' A generic class for parameters ', 3, None, '___sec51'),
+              (' The problem class ', 3, None, '___sec52'),
+              (' The solver class ', 3, None, '___sec53'),
+              (' The visualizer class ', 3, None, '___sec54'),
+              (' Performing scientific experiments ',
+               1,
+               'decay:experiments',
+               'decay:experiments'),
+              (' Interpreting output from other programs ',
+               2,
+               None,
+               '___sec56'),
+              (' Making a report ',
+               2,
+               'decay:exper:report',
+               'decay:exper:report'),
+              (' Plain HTML ', 3, None, '___sec58'),
+              (' HTML with MathJax ', 3, None, '___sec59'),
+              (' LaTeX ', 3, None, '___sec60'),
+              (' Sphinx ', 3, None, '___sec61'),
+              (' Markdown ', 3, None, '___sec62'),
+              (' Wiki formats ', 3, None, '___sec63'),
+              (' Doconce ', 3, None, '___sec64'),
+              (' Worked example ', 3, None, '___sec65'),
+              (' Publishing a complete project ',
+               2,
+               'decay:exper:github',
+               'decay:exper:github'),
+              (' Exercises ', 1, None, '___sec67'),
+              (' Exercise 1: Experiment with integer division ',
+               2,
+               'decay:exer:intdiv',
+               'decay:exer:intdiv'),
+              (' Exercise 2: Experiment with wrong computations ',
+               2,
+               'decay:exer:decay1err',
+               'decay:exer:decay1err'),
+              (' Exercise 3: Implement specialized functions ',
+               2,
+               'decay:exer:FEBECN',
+               'decay:exer:FEBECN'),
+              (' Exercise 4: Plot the error function ',
+               2,
+               'decay:exer:plot:error',
+               'decay:exer:plot:error'),
+              (' Exercise 5: Compare methods for a give time mesh ',
+               2,
+               'decay:exer:plot:dtconst',
+               'decay:exer:plot:dtconst'),
+              (' Exercise 6: Change formatting of numbers and debug ',
+               2,
+               'decay:exer:inexact:output',
+               'decay:exer:inexact:output'),
+              (' Exercise 7: Write a doctest ',
+               2,
+               'decay:exer:doctest1',
+               'decay:exer:doctest1'),
+              (' Exercise 8: Write a nose test ',
+               2,
+               'decay:exer:nosetest1',
+               'decay:exer:nosetest1'),
+              (' Exercise 9: Make a module ',
+               2,
+               'decay:exer:module1',
+               'decay:exer:module1'),
+              (' Exercise 10: Make use of a class implementation ',
+               2,
+               'decay:exer:decay_class:exper',
+               'decay:exer:decay_class:exper'),
+              (' Analysis of finite difference equations ',
+               1,
+               'decay:analysis',
+               'decay:analysis'),
+              (' Discouraging numerical solutions ', 2, None, '___sec79'),
+              (' Experimental investigation of oscillatory solutions ',
+               2,
+               None,
+               '___sec80'),
+              (' Exact numerical solution ', 2, None, '___sec81'),
+              (' Stability ', 2, None, '___sec82'),
+              (' Comparing amplification factors ', 2, None, '___sec83'),
+              (' Series expansion of amplification factors ',
+               2,
+               None,
+               '___sec84'),
+              (' Local error ', 2, None, '___sec85'),
+              (' Analytical comparison of schemes ', 2, None, '___sec86'),
+              (' The real (global) error at a point ', 2, None, '___sec87'),
+              (' Integrated errors ', 2, None, '___sec88'),
+              (' Exercises ', 1, None, '___sec89'),
+              (' Exercise 11: Explore the $\\theta$-rule for exponential growth ',
+               2,
+               'decay:analysis:exer:growth',
+               'decay:analysis:exer:growth'),
+              (' Exercise 12: Summarize investigations in a report ',
+               2,
+               'decay:analysis:exer:growth:report',
+               'decay:analysis:exer:growth:report'),
+              (' Exercise 13: Plot amplification factors for exponential growth ',
+               2,
+               'decay:analysis:exer:growth:A',
+               'decay:analysis:exer:growth:A'),
+              (' Model extensions ', 1, None, '___sec93'),
+              (' Generalization: including a variable coefficient ',
+               2,
+               None,
+               '___sec94'),
+              (' Generalization: including a source term ',
+               2,
+               'decay:source',
+               'decay:source'),
+              (' Schemes ', 3, None, '___sec96'),
+              (' Implementation of the generalized model problem ',
+               2,
+               'decay:general',
+               'decay:general'),
+              (' Deriving the $\\theta$-rule formula ', 3, None, '___sec98'),
+              (' The Python code ', 3, None, '___sec99'),
+              (' Coding of variable coefficients ', 3, None, '___sec100'),
+              (' Verification via trivial solutions ',
+               2,
+               'decay:verify:trivial',
+               'decay:verify:trivial'),
+              (' Verification via manufactured solutions ',
+               2,
+               'decay:MMS',
+               'decay:MMS'),
+              (' Extension to systems of ODEs ', 2, None, '___sec103'),
+              (' General first-order ODEs ', 1, None, '___sec104'),
+              (' Generic form ', 2, None, '___sec105'),
+              (' Some popular schemes for ODEs ', 2, None, '___sec106'),
+              (' Implicit 2-step backward scheme ', 3, None, '___sec107'),
+              (' The Leapfrog scheme ', 3, None, '___sec108'),
+              (' The filtered Leapfrog scheme ', 3, None, '___sec109'),
+              (' 2nd-order Runge-Kutta scheme ', 3, None, '___sec110'),
+              (' A 2nd-order Taylor-series method ', 3, None, '___sec111'),
+              (' 2nd-order Adams-Bashforth scheme ', 3, None, '___sec112'),
+              (' 3rd-order Adams-Bashforth scheme ', 3, None, '___sec113'),
+              (' 4th-order Runge-Kutta scheme ', 3, None, '___sec114'),
+              (' The Odespy software ', 2, None, '___sec115'),
+              (' Example: Runge-Kutta methods  ', 2, None, '___sec116'),
+              (' Remark about using the $\\theta$-rule in Odespy ',
+               3,
+               None,
+               '___sec117'),
+              (' Example: Adaptive Runge-Kutta methods  ',
+               2,
+               None,
+               '___sec118'),
+              (' Exercises ', 1, None, '___sec119'),
+              (' Exercise 14: Experiment with precision in tests and the size of $u$ ',
+               2,
+               'decay:fd2:exer:precision',
+               'decay:fd2:exer:precision'),
+              (' Exercise 15: Implement the 2-step backward scheme ',
+               2,
+               'decay:fd2:exer:bw2',
+               'decay:fd2:exer:bw2'),
+              (' Exercise 16: Implement the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog1',
+               'decay:fd2:exer:leapfrog1'),
+              (' Exercise 17: Experiment with the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog2',
+               'decay:fd2:exer:leapfrog2'),
+              (' Exercise 18: Analyze the Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog3',
+               'decay:fd2:exer:leapfrog3'),
+              (' Exercise 19: Implement the filtered Leapfrog scheme ',
+               2,
+               'decay:fd2:exer:leapfrog4',
+               'decay:fd2:exer:leapfrog4'),
+              (' Exercise 20: Implement the 2nd-order Adams-Bashforth scheme ',
+               2,
+               'decay:fd2:exer:AB2',
+               'decay:fd2:exer:AB2'),
+              (' Exercise 21: Implement the 3rd-order Adams-Bashforth scheme ',
+               2,
+               'decay:fd2:exer:AB3',
+               'decay:fd2:exer:AB3'),
+              (' Exercise 22: Generalize a class implementation ',
+               2,
+               'decay:exer:decay_class2',
+               'decay:exer:decay_class2'),
+              (' Exercise 23: Generalize an advanced class implementation ',
+               2,
+               'decay:exer:decay_class3',
+               'decay:exer:decay_class3'),
+              (' Exercise 24: Make a unified implementation of many schemes ',
+               2,
+               'decay:fd2:exer:uni',
+               'decay:fd2:exer:uni'),
+              (' Exercise 25: Analyze explicit 2nd-order methods ',
+               2,
+               'decay:exer:RK2:Taylor:analysis',
+               'decay:exer:RK2:Taylor:analysis'),
+              (' Applications of exponential decay models ',
+               1,
+               'decay:app',
+               'decay:app'),
+              (' Evolution of a population ',
+               2,
+               'decay:app:pop',
+               'decay:app:pop'),
+              (' Compound interest and inflation ',
+               2,
+               'decay:app:interest',
+               'decay:app:interest'),
+              (' Radioactive Decay ',
+               2,
+               'decay:app:nuclear',
+               'decay:app:nuclear'),
+              (' Deterministic model ', 3, None, '___sec136'),
+              (' Stochastic model ', 3, None, '___sec137'),
+              (' Relation between stochastic and deterministic models ',
+               3,
+               None,
+               '___sec138'),
+              (" Newton's law of cooling ", 2, None, '___sec139'),
+              (' Decay of atmospheric pressure with altitude ',
+               2,
+               'decay:app:atm',
+               'decay:app:atm'),
+              (' Multiple atmospheric layers ', 3, None, '___sec141'),
+              (' Simplification: $L=0$ ', 3, None, '___sec142'),
+              (' Simplification: one-layer model ', 3, None, '___sec143'),
+              (' Compaction of sediments ',
+               2,
+               'decay:app:sediment',
+               'decay:app:sediment'),
+              (' Vertical motion of a body in a viscous fluid ',
+               2,
+               'decay:app:drag',
+               'decay:app:drag'),
+              (' Overview of forces ', 3, None, '___sec146'),
+              (' Equation of motion ', 3, None, '___sec147'),
+              (' Terminal velocity ', 3, None, '___sec148'),
+              (' A Crank-Nicolson scheme ', 3, None, '___sec149'),
+              (' Physical data ', 3, None, '___sec150'),
+              (' Verification ', 3, None, '___sec151'),
+              (' Decay ODEs from solving a PDE by Fourier expansions ',
+               2,
+               'decay:app:diffusion:Fourier',
+               'decay:app:diffusion:Fourier'),
+              (' Exercises ', 1, None, '___sec153'),
+              (' Exercise 26: Simulate stochastic radioactive decay ',
+               2,
+               'decay:app:exer:stoch:nuclear',
+               'decay:app:exer:stoch:nuclear'),
+              (" Exercise 27: Derive schemes for Newton's law of cooling ",
+               2,
+               'decay:app:exer:cooling:schemes',
+               'decay:app:exer:cooling:schemes'),
+              (' Exercise 28: Simulate the pressure drop in the atmosphere ',
+               2,
+               'decay:app:exer:atm1',
+               'decay:app:exer:atm1'),
+              (' Exercise 29: Make a program for vertical motion in a fluid ',
+               2,
+               'decay:app:exer:drag:prog',
+               'decay:app:exer:drag:prog'),
+              (' Exercise 30: Plot forces acting in vertical motion in a fluid ',
+               2,
+               'decay:app:exer:drag:prog:viz',
+               'decay:app:exer:drag:prog:viz'),
+              (' Exercise 31: Simulate a free fall of a parachute jumper ',
+               2,
+               'decay:app:exer:drag:parachute1',
+               'decay:app:exer:drag:parachute1'),
+              (' Exercise 32: Simulate a complete parachute jump ',
+               2,
+               'decay:app:exer:drag:parachute2',
+               'decay:app:exer:drag:parachute2'),
+              (' Exercise 33: Simulate a rising ball in water ',
+               2,
+               'decay:app:exer:drag:rising',
+               'decay:app:exer:drag:rising'),
+              (' Exercise 34: Radioactive decay of Carbon-14 ',
+               2,
+               'decay:app:exer:radio:C14',
+               'decay:app:exer:radio:C14'),
+              (' Exercise 35: Radioactive decay of two substances ',
+               2,
+               'decay:app:exer:radio:twosubst',
+               'decay:app:exer:radio:twosubst'),
+              (' Exercise 36: Find time of murder from body temperature ',
+               2,
+               'decay:app:exer:cooling:pizza',
+               'decay:app:exer:cooling:pizza'),
+              (' Exercise 37: Simulate an oscillating cooling process ',
+               2,
+               'decay:app:exer:cooling:osc',
+               'decay:app:exer:cooling:osc'),
+              (' Exercise 38: Compute $y=|x|$ by solving an ODE ',
+               2,
+               'decay:app:exer:signum',
+               'decay:app:exer:signum'),
+              (' Exercise 39: Simulate growth of a fortune with random interest rate ',
+               2,
+               'decay:app:exer:interest',
+               'decay:app:exer:interest'),
+              (' Exercise 40: Simulate sudden environmental changes for a population ',
+               2,
+               'decay:app:exer:pop:at',
+               'decay:app:exer:pop:at'),
+              (' Exercise 41: Simulate oscillating environment for a population ',
+               2,
+               'decay:app:exer:pop:osc',
+               'decay:app:exer:pop:osc'),
+              (' Exercise 42: Simulate logistic growth ',
+               2,
+               'decay:app:exer:pop:logistic1',
+               'decay:app:exer:pop:logistic1'),
+              (' Exercise 43: Rederive the equation for continuous compound interest ',
+               2,
+               'decay:app:exer:interest:derive',
+               'decay:app:exer:interest:derive')]}
+end of tocinfo -->
+
+<body>
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{{\cal O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{{\cal I}_x}
+\newcommand{\Iy}{{\cal I}_y}
+\newcommand{\Iz}{{\cal I}_z}
+\newcommand{\It}{{\cal I}_t}
+\newcommand{\setb}[1]{{#1}^0}    % set begin
+\newcommand{\sete}[1]{{#1}^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{{#1}^-}
+\newcommand{\setr}[1]{{#1}^+}
+\newcommand{\seti}[1]{{#1}^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+<a name="part0008"></a>
+<!-- begin top navigation -->
+<a href="._part0007_main_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+<!-- end top navigation -->
+
+<p>
+<!-- !split -->
+
+<h2>Applications of exponential decay models <a name="decay:app"></a></h2>
+
+<p>
+This section presents many mathematical models that all
+end up with ODEs of the type \( u'=-au+b \), where the solution exhibits
+exponential growth or decay.  The applications are taken from biology,
+finance, and physics, and cover population growth or decay, compound
+interest and inflation, radioactive decay, cooling of bodies, pressure
+variations in the atmosphere, and air resistance on falling or rising
+bodies.
+
+<h3>Evolution of a population <a name="decay:app:pop"></a></h3>
+
+<p>
+Let \( N \) be the number of individuals in a population occupying some
+spatial domain.
+Despite \( N \) being an integer we shall compute with \( N \) as a real number
+and view \( N(t) \) as a continuous function of time.
+The basic model assumption is that in a time interval \( \Delta t \) the number of
+newcomers to the populations (newborns) is proportional to
+\( N \), with proportionality constant \( \bar b \). The amount of
+newcomers will increase the population and result in
+to
+$$ N(t+\Delta t) = N(t) + \bar bN(t)\thinspace . $$
+
+It is obvious that a long time interval \( \Delta t \) will result in
+more newcomers and hence a larger \( \bar b \). Therefore, we introduce
+\( b=\bar b/\Delta t \): the number of newcomers per unit time and per
+individual. We must then multiply \( b \) by the length of the time
+interval considered and by the population size to get the
+total number of new individuals, \( b\Delta t N \).
+
+<p>
+If the number of removals from the population (deaths) is also
+proportional to \( N \), with proportionality constant \( d\Delta t \),
+the population evolves according to
+$$ N(t+\Delta t) = N(t) + b\Delta t N(t) - d\Delta t N(t)\thinspace . $$
+
+Dividing by \( \Delta t \) and letting \( \Delta t \rightarrow 0 \),
+we get the ODE
+
+<p>
+$$
+\begin{equation}
+N' = (b-d)N\thinspace .
+\end{equation}
+$$
+
+In a population where the death rate (\( d \)) is larger than
+then newborn rate (\( b \)), \( a>0 \), and the population experiences
+exponential decay rather than exponential growth.
+
+<p>
+In some populations there is an immigration of individuals into the
+spatial domain. With \( I \) individuals coming in per time unit,
+the equation for the population change becomes
+
+<p>
+$$ N(t+\Delta t) = N(t) + b\Delta t N(t) - d\Delta t N(t) + \Delta t I\thinspace . $$
+
+The corresponding ODE reads
+$$
+\begin{equation}
+N' = (b-d)N + I,\quad N(0)=N_0
+\thinspace .
+\end{equation}
+$$
+
+
+<p>
+Some simplification arises if we introduce a fractional measure
+of the population: \( u=N/N_0 \) and set \( r=b-d \). The ODE problem
+now becomes
+$$
+\begin{equation}
+u' = ru + f,\quad u(0)=1,
+\label{decay:app:pop:ueq}
+\end{equation}
+$$
+
+where \( f=I/N_0 \) measures the net immigration per time unit as
+the fraction of the initial population.
+
+<p>
+The growth rate \( r \) of a population decreases if the environment
+has limited resources. Suppose the environment can sustain at
+most \( N_{\max} \) individuals. We may then assume that the growth rate
+approaches zero as \( N \) approaches \( N_{\max} \), i.e., as \( u \) approaches
+\( M=N_{\max}/N_0 \). The simplest possible evolution of \( r \) is then a
+linear function: \( r(t)=r_0(1-u(t)/M) \), where \( r_0 \)
+is the initial growth rate when the population is small relative to the
+maximum size and there is enough resources. Using this \( r(t) \) in
+\eqref{decay:app:pop:ueq} results in the <em>logistic model</em> for the
+evolution of a population:
+$$
+\begin{equation}
+u' = r_0(1-u/M)u,\quad u(0)=1
+\thinspace .
+\label{decay:app:pop:logistic}
+\end{equation}
+$$
+
+Initially, \( u \) will grow at rate \( r_0 \), but the growth will decay
+as \( u \) approaches \( M \), and then there is no more change in \( u \), causing
+the limit \( u\rightarrow M \) as \( t\rightarrow\infty \).
+Note that the logistic equation \( u'=r_0(1-u/M)u \) is <em>nonlinear</em> because
+of the quadratic term \( -u^2r_0/M \).
+
+<h3>Compound interest and inflation <a name="decay:app:interest"></a></h3>
+
+<p>
+Say the annual interest rate is \( r \) percent and that the bank
+adds the interest once a year to your investment.
+If \( u^n \) is the investment in year \( n \), the investment in year \( u^{n+1} \)
+grows to
+
+<p>
+$$ u^{n+1} = u^n + \frac{r}{100}u^n
+\thinspace . $$
+
+In reality, the interest rate is added every day. We therefore introduce
+a parameter \( m \) for the number of periods per year when the interest
+is added. If \( n \) counts the periods, we have the fundamental model
+for compound interest:
+$$
+\begin{equation}
+u^{n+1} = u^n + \frac{r}{100 m}u^n
+\thinspace .
+\label{decay:app:interest:eq1}
+\end{equation}
+$$
+
+This model is a <em>difference equation</em>, but it can be transformed to a
+continuous differential equation through a limit process.
+The first step is to derive a formula for the growth of the investment
+over a time \( t \).
+Starting with an investment \( u^0 \), and assuming that \( r \) is constant in time,
+we get
+$$
+\begin{align*}
+u^{n+1} &= \left(1 + \frac{r}{100 m}\right)u^{n}\\ 
+&= \left(1 + \frac{r}{100 m}\right)^2u^{n-1}\\ 
+&\ \ \vdots\\ 
+&= \left(1 +\frac{r}{100 m}\right)^{n+1}u^{0}
+\end{align*}
+$$
+
+Introducing time \( t \), which here is a real-numbered counter for years,
+we have that \( n=mt \), so we can write
+
+<p>
+$$ u^{mt} = \left(1 + \frac{r}{100 m}\right)^{mt} u^0\thinspace . $$
+
+The second step is to assume <em>continuous compounding</em>, meaning that the
+interest is added continuously. This implies \( m\rightarrow\infty \), and
+in the limit one gets the formula
+$$
+\begin{equation}
+u(t) = u_0e^{rt/100},
+\end{equation}
+$$
+
+which is nothing but the solution of the ODE problem
+$$
+\begin{equation}
+u' = \frac{r}{100}u,\quad u(0)=u_0
+\thinspace .
+\label{decay:app:interest:eq2}
+\end{equation}
+$$
+
+This is then taken as the ODE model for compound interest if \( r>0 \).
+However, the reasoning applies equally well to inflation, which is
+just the case \( r<0 \). One may also take the \( r \) in \eqref{decay:app:interest:eq2}
+as the net growth of an investemt, where \( r \) takes both compound interest
+and inflation into account. Note that for real applications we must
+use a time-dependent \( r \) in \eqref{decay:app:interest:eq2}.
+
+<p>
+Introducing \( a=\frac{r}{100} \), continuous inflation of an initial
+fortune \( I \) is then
+a process exhibiting exponential decay according to
+$$ u' = -au,\quad u(0)=I\thinspace . $$
+
+<h3>Radioactive Decay <a name="decay:app:nuclear"></a></h3>
+
+<p>
+An atomic nucleus of an unstable atom may lose energy by emitting
+ionizing particles and thereby be transformed to a nucleus with a
+different number of protons and neutrons.  This process is known as
+<a href="http://en.wikipedia.org/wiki/Radioactive_decay">radioactive decay</a>.
+Actually, the process is stochastic when viewed for a single atom,
+because it is impossible to predict exactly when a particular atom
+emits a particle. Nevertheless, with a large number of atoms, \( N \), one
+may view the process as deterministic and compute the mean behavior of
+the decay. Below we reason intuitively about an ODE for the mean
+behavior, then we show mathematically that a detailed stochastic model
+for single atoms leads the same mean behavior.
+
+<h4>Deterministic model  <a name="___sec136"></a></h4>
+
+<p>
+Suppose at time \( t \), the number of the original atom type is \( N(t) \).
+A basic model assumption is that the transformation of the atoms of the original
+type in a small time interval \( \Delta t \) is proportional to
+\( N \), so that
+$$ N(t+\Delta t) = N(t) - a\Delta t N(t),$$
+
+where \( a \) is a constant. Introducing \( u=N(t)/N(0) \), dividing by
+\( \Delta t \) and letting \( \Delta t\rightarrow 0 \) gives the
+following ODE:
+
+<p>
+$$
+\begin{equation}
+u' = -au,\quad u(0)=1
+\thinspace .
+\end{equation}
+$$
+
+The parameter \( a \) can for a given nucleus be expressed through the
+<em>half-life</em> \( t_{1/2} \), which is the time taken for the decay to reduce the
+initial amount by one half, i.e., \( u(t_{1/2}) = 0.5 \).
+With \( u(t)=e^{-at} \), we get \( t_{1/2}=a^{-1}\ln 2 \) or \( a=\ln 2/t_{1/2} \).
+
+<p>
+<!-- <a href="http://en.wikipedia.org/wiki/Exponential_decay"><tt>http://en.wikipedia.org/wiki/Exponential_decay</tt></a> -->
+
+<h4>Stochastic model  <a name="___sec137"></a></h4>
+
+<p>
+We have originally \( N_0 \) atoms. Each atom may have decayed or
+survived at a particular time \( t \). We want to count how many original
+atoms that are left, i.e., how many atoms that have survived.
+The survival of a single atom at time \( t \) is a random event. Since there
+are only two outcomes, survival or decay, we have a
+<a href="http://en.wikipedia.org/wiki/Bernoulli_trial">Bernoulli trial</a>.
+Let \( p \) be the
+probability of survival (implying that the probability of decay
+is \( 1-p \)). If each atom survives independently of
+the others, and the probability of survival is the same for every
+atom, we have \( N_0 \) statistically Bernoulli trials, known as
+a <em>binomial experiment</em> from probability theory.
+The probability \( P(N) \) that \( N \) out
+of the \( N_0 \) atoms have survived at time \( t \) is then given by the
+famous <em>binomial distribution</em>
+
+<p>
+$$ P(N) = \frac{N_0!}{N! (N_0-N)!}p^N (1-p)^{N_0-N}\ts $$
+
+The mean (or expected) value \( \E{P} \) of \( P(N) \) is known to be \( N_0p \).
+
+<p>
+It remains to estimate \( p \). Let the interval \( [0,t] \) be divided into \( m \)
+small subintervals of length \( \Delta t \). We make the assumption that
+the probability of decay of a single atom in an interval of length \( \Delta t \)
+is \( \tilde p \), and that this probability is proportional to \( \Delta t \):
+\( \tilde p = \lambda\Delta t \). The corresponding probability of survival
+is \( 1-\lambda\Delta t \). Believing that \( \lambda \) is independent
+of time, we have, for each interval of length \( \Delta t \),
+a Bernoulli trial: the atom either survives or
+decays in that interval. Now, \( p \) is the probability that the atom
+survives in all the intervals:
+
+<p>
+$$ p = (1-\lambda\Delta t)^m\ts$$
+
+The expected number of atoms of the original type at time \( t \) is
+
+<p>
+$$
+\begin{equation}
+\E{P} = N_0p = N_0(1-\lambda\Delta t)^m,\quad m=t/\Delta t\ts
+\end{equation}
+$$
+
+
+<p>
+To see the relation between the two types of Bernoulli trials and the
+ODE above, we go to the limit \( \Delta t\rightarrow t \), \( m\rightarrow\infty \).
+One can show that
+
+<p>
+$$ p = \lim_{m\rightarrow\infty} (1-\lambda\Delta t)^m
+= \lim_{m\rightarrow\infty} \left(1-\lambda\frac{t}{m}\right)^m = e^{-lambda t}
+$$
+
+This is the famous exponential waiting time (or arrival time) distribution for a
+Poisson process in probability theory (obtained here, as often done, as
+the limit of a binomial experiment). The probability of decay,
+\( 1-e^{-lambda t} \), follows an <a href="http://en.wikipedia.org/wiki/Exponential_distribution">exponential distribution</a>.
+The limit means that \( m \) is very
+large, hence \( \Delta t \) is very small, and \( \tilde p=\lambda\Delta t \)
+is very small since the intensity of the events, \( \lambda \), is assumed
+finite. This situation corresponds to a very small probability
+that an atom will decay in a very short time interval, which is a
+reasonable model.
+
+<h4>Relation between stochastic and deterministic models  <a name="___sec138"></a></h4>
+
+<p>
+With \( p=e^{-\lambda t} \) we get the expected number of original atoms
+at \( t \) as \( N_0p=N_0e^{-\lambda t} \), which is exactly the solution of
+the ODE model \( N'=-\lambda N \). The result means that the ODE model
+captures the mean behavior of the underlying stochastic model. This
+is, however, not always the common relation between microscopic stochastic
+models and macroscopic "averaged" models.
+
+<p>
+Also of interest is to see that a Forward Euler discretization of
+\( N'=-\lambda N \), \( N(0)=N_0 \), gives \( N^m = N_0(1-\lambda\Delta t)^m \)
+at time \( t_m=m\Delta t \), which is exactly the
+expected value of the stochastic experiment with \( N_0 \) atoms
+and \( m \) small intervals of length \( \Delta t \), where each atom can
+decay with probability \( \lambda\Delta t \) in an interval.
+
+<p>
+A fundamental question is how accurate the ODE model is. The underlying
+stochastic model fluctuates around its expected value. A measure
+of the fluctuations is the standard deviation of the binomial experiment with
+\( N_0 \) atoms, which can be shown to be \( \Std{P}=\sqrt{N_0p(1-p)} \). Compared
+to the size of the expectation, we get
+a normalized standard deviation
+
+<p>
+$$ \frac{\sqrt{\Var{P}}}{\E{P}} = N_0^{-1/2}\sqrt{p^{-1}-1}
+= N_0^{-1/2}\sqrt{(1-e^{-\lambda t})^{-1}-1}\approx
+(N_0\lambda t)^{-1/2},
+$$
+
+showing that the normalized fluctuations are very small if \( N_0 \) is
+very large, which is usually the case.
+
+<h3>Newton's law of cooling  <a name="___sec139"></a></h3>
+
+<p>
+<!-- <a href="http://web.bham.ac.uk/winterhs/Newton.htm"><tt>http://web.bham.ac.uk/winterhs/Newton.htm</tt></a> -->
+<!-- I. Newton, Scala Graduum Caloris, Philosophical Transactions of the Royal Society of London, 1701 -->
+<!-- explanation: <a href="http://www.madsci.org/posts/archives/2000-11/973522810.Ph.r.html"><tt>http://www.madsci.org/posts/archives/2000-11/973522810.Ph.r.html</tt></a> -->
+
+<p>
+When a body at some temperature is placed in a cooling environment,
+experience shows that the temperature falls rapidly in the beginning,
+and then the changes in temperature levels off until the body's
+temperature equals that of the surroundings. Newton carried out some
+experiments on cooling hot iron and found that the temperature
+evolved as a "geometric progression at times in arithmetic progression",
+meaning that the temperature decayed exponentially.
+Later, this result was formulated as a differential equation:
+the rate of change of the temperature in a body is proportional to
+the temperature difference between the body and its surroundings.
+This statement is known as <em>Newton's law of cooling</em>, which
+can be mathematically expressed as
+$$
+\begin{equation}
+{dT\over dt} = -k(T-T_s),
+\label{decay:Newton:cooling}
+\end{equation}
+$$
+
+where \( T \) is the temperature of the body, \( T_s \) is the temperature
+of the surroundings, \( t \) is time, and \( k \) is a positive constant.
+Equation \eqref{decay:Newton:cooling} is primarily viewed as an
+empirical law, valid when heat is efficiently convected away
+from the surface of the body by a flowing fluid such as air
+at constant temperature \( T_s \).
+The constant \( k \) reflects the transfer of heat from the body to
+the surroundings and must be determined from physical experiments.
+
+<h3>Decay of atmospheric pressure with altitude <a name="decay:app:atm"></a></h3>
+
+<p>
+<!-- The Barometric Formula -->
+<!-- <a href="http://en.wikipedia.org/wiki/Barometric_formula"><tt>http://en.wikipedia.org/wiki/Barometric_formula</tt></a> -->
+
+<p>
+Vertical equilibrium of air in the atmosphere is governed by
+the equation
+
+<p>
+$$
+\begin{equation}
+\frac{dp}{dz} = -\varrho g
+\thinspace .
+\label{decay:app:atm:dpdz}
+\end{equation}
+$$
+
+Here, \( p(z) \) is the air pressure, \( \varrho \) is the density of
+air, and \( g=9.807\hbox{ m/s}^2 \) is a standard value of
+the acceleration of gravity.
+(Equation \eqref{decay:app:atm:dpdz} follows directly from the general
+Navier-Stokes equations for fluid motion, with
+the assumption that the air does not move.)
+
+<p>
+The pressure is related to density and temperature through the ideal gas law
+
+<p>
+$$
+\begin{equation}
+\varrho = \frac{Mp}{R^*T}, \label{decay:app:atm:rho}
+\end{equation}
+$$
+
+where \( M \) is the molar mass of the Earth's air (0.029 kg/mol),
+\( R^* \) is the universal
+gas constant (\( 8.314 \) Nm/(mol K)), and \( T \) is the temperature.
+All variables \( p \), \( \varrho \), and \( T \) vary with the height \( z \).
+Inserting \eqref{decay:app:atm:rho} in \eqref{decay:app:atm:dpdz} results
+in an ODE for with a variable coefficient:
+
+<p>
+$$
+\begin{equation}
+\frac{dp}{dz} = -\frac{Mg}{R^*T(z)} p
+\label{decay:app:atm:ode}
+\thinspace  .
+\end{equation}
+$$
+
+<h4>Multiple atmospheric layers  <a name="___sec141"></a></h4>
+
+<p>
+The atmosphere can be approximately modeled by seven layers.
+In each layer, \eqref{decay:app:atm:ode} is applied with
+a linear temperature of the form
+
+<p>
+$$ T(z) = \bar T_i + L_i(z-h_i),$$
+
+where \( z=h_i \) denotes the bottom of layer number \( i \),
+having temperature \( \bar T_i \),
+and \( L_i \) is a constant in layer number \( i \). The table below
+lists \( h_i \) (m), \( \bar T_i \) (K), and \( L_i \) (K/m) for the layers
+\( i=0,\ldots,6 \).
+
+<p>
+<table border="1">
+<tr><td align="center"><b>    \( i \)     </b></td> <td align="center"><b>   \( h_i \)    </b></td> <td align="center"><b> \( \bar T_i \) </b></td> <td align="center"><b>   \( L_i \)    </b></td> </tr>
+<tr><td align="left">   0                 </td> <td align="right">   0                 </td> <td align="right">   288               </td> <td align="right">   -0.0065           </td> </tr>
+<tr><td align="left">   1                 </td> <td align="right">   11,000            </td> <td align="right">   216               </td> <td align="right">   0.0               </td> </tr>
+<tr><td align="left">   2                 </td> <td align="right">   20,000            </td> <td align="right">   216               </td> <td align="right">   0.001             </td> </tr>
+<tr><td align="left">   3                 </td> <td align="right">   32,000            </td> <td align="right">   228               </td> <td align="right">   0.0028            </td> </tr>
+<tr><td align="left">   4                 </td> <td align="right">   47,000            </td> <td align="right">   270               </td> <td align="right">   0.0               </td> </tr>
+<tr><td align="left">   5                 </td> <td align="right">   51,000            </td> <td align="right">   270               </td> <td align="right">   -0.0028           </td> </tr>
+<tr><td align="left">   6                 </td> <td align="right">   71,000            </td> <td align="right">   214               </td> <td align="right">   -0.002            </td> </tr>
+</table>
+<p>
+For implementation it might be convenient to write \eqref{decay:app:atm:ode}
+on the form
+$$
+\begin{equation}
+\frac{dp}{dz} = -\frac{Mg}{R^*(\bar T(z) + L(z)(z-h(z)))} p,
+\end{equation}
+$$
+
+where \( \bar T(z) \), \( L(z) \), and \( h(z) \) are piecewise constant
+functions with values given in the table.
+The value of the pressure at the ground \( z=0 \) is \( 101325 \) Pa.
+
+<h4>Simplification: \( L=0 \)  <a name="___sec142"></a></h4>
+
+<p>
+One commonly used simplification is to assume that the temperature is
+constant within each layer. This means that \( L=0 \).
+
+<h4>Simplification: one-layer model  <a name="___sec143"></a></h4>
+
+<p>
+Another commonly used approximation is to work with one layer instead of
+seven. This <a href="http://en.wikipedia.org/wiki/Density_of_air">one-layer model</a>
+is based on \( T(z)=T_0 - Lz \), with
+sea level standard temperature \( T_0=288 \) K and
+temperature lapse rate \( L=0.0065 \) K/m.
+Furthermore, \( p_0 \) is the sea level atmospheric pressure \( 1\cdot 10^5 \) Pa.
+
+<h3>Compaction of sediments <a name="decay:app:sediment"></a></h3>
+
+<p>
+Sediments, originally made from materials like sand and mud, get
+compacted through geological time by the weight of new material that
+is deposited on the sea bottom. The porosity \( \phi \) of the sediments
+tells how much void (fluid) space there is between the sand and
+mud grains. The porosity reduces with depth because the weight of
+the sediments above and causes the void space to shrink and thereby
+increases the compaction.
+
+<p>
+A typical assumption is that the change in \( \phi \) at some depth \( z \)
+is negatively proportional to \( \phi \). This assumption leads to
+the differential equation problem
+
+<p>
+$$
+\begin{equation}
+\frac{d\phi}{dz} = -c\phi,\quad \phi(0)=\phi_0,
+\label{decay:app:sediment:phi:eq}
+\end{equation}
+$$
+
+where the \( z \) axis points downwards, \( z=0 \) is the surface with known
+porosity, and \( c>0 \) is a constant.
+
+<p>
+The upper part of the Earth's crust consists of many geological layers
+stacked on top of each other, as indicated in Figure
+<a href="#decay:app:sediment:fig:layers">22</a>.  The model
+\eqref{decay:app:sediment:phi:eq} can be applied for each layer. In
+layer number \( i \), we have the unknown porosity function \( \phi_i(z) \)
+fulfilling \( \phi_i'(z)=-c_iz \), since the constant \( c \) in the model
+\eqref{decay:app:sediment:phi:eq} depends on the type of sediment in
+the layer. From the figure we see that new layers of sediments are
+deposited on top of older ones as time progresses. The compaction is
+rapid in the beginning and then decreases (exponentially) with depth
+in each layer.
+
+<p>
+<center> <!-- figure -->
+<hr class="figure">
+<center><p class="caption">Figure 22:  Illustration of the compaction of geological layers (with different colors) through time. <a name="decay:app:sediment:fig:layers"></a> </p></center>
+<p><img src="fig-decay/Compaction_of_Sediment.png" align="bottom" width=600></p>
+</center>
+
+<p>
+When we drill a well at present through the right-most column of
+sediments in Figure <a href="#decay:app:sediment:fig:layers">22</a>, we can measure
+the thickness of the sediment in (say) the bottom layer. Let \( L_1 \) be
+this thickness.  Assuming that the volume of sediment remains constant
+through time, we have that the initial volume, \( \int_0^{L_{1,0}}
+\phi_1 dz \), must equal the volume seen today,
+\( \int_{\ell-L_1}^{\ell}\phi_1 dz \), where \( \ell \) is the depth of the
+bottom of the sediment in the present day configuration.  After having
+solved for \( \phi_1 \) as a function of \( z \), we can then find the
+original thickness \( L_{1,0} \) of the sediment from the equation
+
+<p>
+$$ \int_0^{L_{1,0}} \phi dz = \int_{\ell-L_1}^{\ell}\phi_1 dz \thinspace .$$
+
+In hydrocarbon exploration it is important to know \( L_{1,0} \) and the
+compaction history of the various layers of sediments.
+
+<h3>Vertical motion of a body in a viscous fluid <a name="decay:app:drag"></a></h3>
+
+<p>
+A body moving vertically through a fluid (liquid or gas) is subject to
+three different types of forces: the gravity force, <a href="http://en.wikipedia.org/wiki/Drag_(physics)">the drag force</a>,
+and the buoyancy force.
+
+<h4>Overview of forces  <a name="___sec146"></a></h4>
+
+<p>
+The gravity force is \( F_g= -mg \), where \( m \) is the mass of the body and
+\( g \) is the acceleration of gravity.
+The uplift or buoyancy force ("Archimedes force") \( F_b = \varrho gV \),
+where \( \varrho \) is the density of the fluid and
+\( V \) is the volume of the body.
+Forces and other quantities are taken as positive in the upward
+direction.
+
+<p>
+The drag force is of two types, depending on the Reynolds number
+$$
+\begin{equation}
+\hbox{Re} = \frac{\varrho d|v|}{\mu},
+\end{equation}
+$$
+
+where \( d \) is the diameter of the body in
+the direction perpendicular to the flow, \( v \) is the velocity of the
+body, and \( \mu \) is the dynamic viscosity of the fluid.
+When \( \hbox{Re} < 1 \), the drag force is fairly well modeled by
+the so-called Stokes' drag,
+which for a spherical body of diameter \( d \) reads
+$$
+\begin{equation}
+F_d^{(S)} = - 3\pi d\mu v
+\thinspace .
+\end{equation}
+$$
+
+For large Re, typically \( \hbox{Re} > 10^3 \), the drag force is quadratic
+in the velocity:
+$$
+\begin{equation}
+F_d^{(q)} = -{1\over2}C_D\varrho A|v|v,
+\end{equation}
+$$
+
+where \( C_D \) is a dimensionless drag coefficient depending on the body's shape,
+\( A \) is the cross-sectional area as
+produced by a cut plane, perpendicular to the motion, through the thickest
+part of the body. The superscripts \( \,{}^q \) and \( \,{}^S \) in
+\( F_d^{(S)} \) and \( F_d^{(q)} \) indicates Stokes drag and quadratic drag,
+respectively.
+
+<h4>Equation of motion  <a name="___sec147"></a></h4>
+
+<p>
+All the mentioned forces act in the vertical direction.
+Newton's second law of motion applied to the body says that the sum of
+these forces must equal the mass of the body times its acceleration
+\( a \) in the vertical direction.
+
+<p>
+$$
+\begin{equation*} ma = F_g + F_d^{(S)} + F_b ,\end{equation*}
+$$
+
+if we choose to work with the Stokes drag.
+Inserting the expressions for the forces yields
+
+<p>
+$$  ma = -mg - 3\pi d\mu v + \varrho gV
+\thinspace .
+$$
+
+The unknowns here are \( v \) and \( a \), i.e., we have two unknowns but only
+one equation. From kinematics in physics we know that
+the acceleration is the time derivative of the velocity: \( a = dv/dt \).
+This is our second equation.
+We can easily eliminate \( a \) and get a single differential equation for \( v \):
+
+<p>
+$$ m{dv\over dt} = -mg - 3\pi d\mu v + \varrho gV
+\thinspace .
+$$
+
+A small rewrite of this equation is handy: We express \( m \) as \( \varrho_bV \),
+where \( \varrho_b \) is the density of the body, and we divide by
+the mass to get
+
+<p>
+$$
+\begin{equation}
+v'(t) = - \frac{3\pi d\mu}{\varrho_b V} v + g\left(\frac{\varrho}{\varrho_b} -1\right)
+\label{decay:app:fallingbody:model:S}
+\thinspace .
+\end{equation}
+$$
+
+We may introduce the constants
+$$
+\begin{equation}
+a = \frac{3\pi d\mu}{\varrho_b V},\quad
+b = g\left(\frac{\varrho}{\varrho_b} -1\right),
+\end{equation}
+$$
+
+so that the structure of the differential equation becomes evident:
+
+<p>
+$$
+\begin{equation}
+v'(t) = -av(t) + b
+\label{decay:app:fallingbody:gmodel:S}
+\thinspace .
+\end{equation}
+$$
+
+The corresponding initial condition is \( v(0)=v_0 \) for some prescribed
+starting velocity \( v_0 \).
+
+<p>
+This derivation can be repeated with the quadratic drag force
+\( F_d^{(q)} \), yielding
+
+<p>
+$$
+\begin{equation}
+v'(t) =
+-{1\over2}C_D{\varrho A\over\varrho_b V}|v|v +
+g\left({\varrho\over\varrho_b} - 1\right)
+\thinspace .
+\label{decay:app:fallingbody:model:q}
+\end{equation}
+$$
+
+Defining
+
+<p>
+$$
+\begin{equation}
+a = {1\over2}C_D{\varrho A\over\varrho_b V},
+\end{equation}
+$$
+
+and \( b \) as above, we can write \eqref{decay:app:fallingbody:model:q} as
+$$
+\begin{equation}
+v'(t) = -a|v|v + b
+\thinspace .
+\label{decay:app:fallingbody:gmodel:q}
+\end{equation}
+$$
+
+<h4>Terminal velocity  <a name="___sec148"></a></h4>
+
+<p>
+An interesting aspect of \eqref{decay:app:fallingbody:gmodel:S} and
+\eqref{decay:app:fallingbody:gmodel:q} is whether we can approach
+a constant, so-called <em>terminal velocity</em> \( v_T \), as \( t\rightarrow\infty \). The
+existence of \( v_T \) assumes that
+\( v'(t)\rightarrow 0 \) as \( t\rightarrow\infty \) and therefore
+
+<p>
+$$0 = -av_T + b$$
+
+and
+$$ 0 = -a|v_T|v_T + b
+\thinspace .
+$$
+
+The former equation implies \( v_T = b/a \), while the latter has solutions
+\( v_T =-\sqrt{|b|/a} \) for a falling body (\( v_T<0 \)) and
+\( v_T = \sqrt{b/a} \) for a rising body (\( v_T>0 \)).
+
+<h4>A Crank-Nicolson scheme  <a name="___sec149"></a></h4>
+
+<p>
+Both governing equations, the Stokes' drag model
+\eqref{decay:app:fallingbody:gmodel:S} and the quadratic drag model
+\eqref{decay:app:fallingbody:gmodel:q}, can be readily solved
+by the Forward Euler scheme. The Crank-Nicolson method gives
+a nonlinear equation in \( v \) when applied to
+\eqref{decay:app:fallingbody:gmodel:q}:
+
+<p>
+$$
+\begin{equation}
+\frac{v^{n+1}-v^n}{\Delta t}
+= -a^{n+\frac{1}{2}}\frac{1}{2}(|v^{n+1}|v^{n+1} + |v^n|v^n) + b^{n+\frac{1}{2}}
+\thinspace .
+\end{equation}
+$$
+
+However, instead of approximating the term \( -|v|v \) by an arithmetic
+average, we can use a <em>geometric average</em>:
+
+<p>
+$$
+\begin{equation}
+(|v|v)^{n+\frac{1}{2}} \approx |v^n|v^{n+1}
+\thinspace .
+\end{equation}
+$$
+
+The error is of second order in \( \Delta t \), just as for the arithmetic
+average. Now,
+
+<p>
+$$
+\frac{v^{n+1}-v^n}{\Delta t} = - a^{n+\frac{1}{2}}|v^{n}|v^{n+1} + b^{n+\frac{1}{2}}
+$$
+
+becomes a linear equation in \( v^{n+1} \), and we can easily solve for \( v^{n+1} \):
+$$
+\begin{equation}
+v^{n+1} = \frac{v_n + \Delta t b^{n+\frac{1}{2}}}{1 + \Delta t a^{n+\frac{1}{2}}|v^{n}|}
+\label{decay:app:fallingbody:gmodel:q:CN}
+\end{equation}
+$$
+
+<h4>Physical data  <a name="___sec150"></a></h4>
+
+<p>
+Suitable values of \( \mu \) are \( 1.8\cdot 10^{-5}\hbox{ Pa}\, \hbox{s} \) for air
+and \( 8.9\cdot 10^{-4}\hbox{ Pa}\, \hbox{s} \) for water.
+Densities can be taken as \( 1.2\hbox{ kg/m}^3 \) for air and as
+\( 1.0\cdot 10^3\hbox{ kg/m}^3 \) for water. For considerable vertical
+displacement in the atmosphere one should take into account that
+the density of air varies with height, see the section <a href="#decay:app:atm">Decay of atmospheric pressure with altitude</a>.
+One possible density variation arises from the one-layer model
+in the section <a href="#decay:app:atm">Decay of atmospheric pressure with altitude</a>.
+
+<p>
+The <a href="http://en.wikipedia.org/wiki/Drag_coefficient">drag coefficient</a> \( C_D \) depends heavily
+on the shape of the body.  Some values are: 0.45 for a sphere, 0.42
+for a semi-sphere, 1.05 for a cube, 0.82 for a long cylinder (with the
+length along the vertical direction), 0.75 for a rocket,
+1.0-1.3 for a man in upright position, 1.3 for a flat plate perpendicular
+to the flow, and
+0.04 for a streamlined (droplet-like) body.
+
+<h4>Verification  <a name="___sec151"></a></h4>
+
+<p>
+To verify the program, one may assume a heavy body in air such that the \( F_b \)
+force can be neglected, and assume a small velocity such that the
+air resistance \( F_d \) can also be neglected. Setting \( \varrho =0 \)
+removes both these terms from the equation. The motion then leads to
+the velocity
+\( v(t)=v_0 - gt \), which is linear in \( t \) and therefore should be
+reproduced to machine precision (say tolerance \( 10^{-15} \)) by any
+implementation based on the Crank-Nicolson or Forward Euler schemes.
+
+<p>
+Another verification, but not as powerful as the one above,
+can be based on computing the terminal velocity and comparing with
+the exact expressions.
+
+<h3>Decay ODEs from solving a PDE by Fourier expansions <a name="decay:app:diffusion:Fourier"></a></h3>
+
+<p>
+<!-- Maybe move to diffusion part? Makes sense there two, or refer...or -->
+<!-- repeat, or make one exer with two k's and then generalize in diffusion -->
+
+<p>
+Suppose we have a partial differential equation
+$$ \frac{\partial u}{\partial t} = \alpha\frac{\partial^2u}{\partial x^2}
++ f(x,t),
+$$
+
+with boundary conditions \( u(0,t)=u(L,t)=0 \) and initial condition
+\( u(x,0)=I(x) \). One may express the solution as
+$$ u(x,t) = \sum_{k=1}^m A_k(t)e^{ikx\pi/L},$$
+
+for appropriate unknown functions \( A_k \), \( k=1,\ldots,m \).
+We use the complex exponential \( e^{ikx\pi/L} \) for easy algebra, but
+the physical \( u \) is taken as the real part of any complex expression.
+Note that the expansion in terms of \( e^{ikx\pi/L} \) is compatible with
+the boundary conditions: all functions \( e^{ikx\pi/L} \) vanish for
+\( x=0 \) and \( x=L \). Suppose we can express \( I(x) \) as
+
+<p>
+$$ I(x) = \sum_{k=1}^m I_ke^{ikx\pi/L}
+\thinspace .
+$$
+
+Such an expansion can be computed by well-known Fourier expansion techniques,
+but the details are not important here.
+Also suppose we can express the given \( f(x,t) \) as
+$$ f(x,t) = \sum_{k=1}^m b_k(t)e^{ikx\pi/L}
+\thinspace .
+$$
+
+Inserting the expansions for \( u \)
+and \( f \) in the differential equations demands that all terms corresponding
+to a given \( k \) must be equal. The calculations results in the follow
+system of ODEs:
+
+<p>
+$$
+A_k'(t) = -\alpha\frac{k^2\pi^2}{L^2} + b_k(t),\quad k=1,\ldots,m
+\thinspace .
+$$
+
+From the initial condition
+$$ u(x,0)=\sum_k A_k(0)e^{ikx\pi/L}=I(x)=\sum_k I_k e^{(ikx\pi/L)},$$
+
+it follows that \( A_k(0)=I_k \), \( k=1,\ldots,m \). We then have \( m \)
+equations of the form \( A_k'=-a A_k +b \), \( A_k(0)=I_k \), for
+appropriate definitions of \( a \) and \( b \). These ODE problems
+independent each other such that we can solve one problem
+at a time. The outline technique is a quite common approach for solving
+partial differential equations.
+
+<p>
+<b>Remark.</b>
+Since \( a=\alpha k^2\pi^2/L^2 \) depends on \( k \) and the stability of
+the Forward Euler scheme demands \( a\Delta t \leq 1 \), we get that
+\( \Delta t \leq \alpha^{-1}L^2\pi^{-2} k^{-2} \). Usually, quite large
+\( k \) values are needed to accurately represent the given functions
+\( I(x) \) and \( f(x,y) \) and then \( \Delta t \) needs to be very small.
+Therefore, the Crank-Nicolson and Backward Euler schemes, which
+allow larger \( \Delta t \) without any growth in the solutions, are
+more popular choices when creating time-stepping algorithms for
+partial differential equations.
+
+<h2>Exercises  <a name="___sec153"></a></h2>
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 26: Simulate stochastic radioactive decay <a name="decay:app:exer:stoch:nuclear"></a></h3>
+
+<p>
+The purpose of this exercise is to implement the stochastic model
+described in the section <a href="#decay:app:nuclear">Radioactive Decay</a> and show that its
+mean behavior approximates the solution of the corresponding
+ODE model.
+
+<p>
+The simulation goes on for a time interval \( [0,T] \) divided into
+\( N_t \) intervals of length \( \Delta t \). We start with \( N_0 \)
+atoms. In some time interval, we have \( N \) atoms that have survived.
+Simulate \( N \) Bernoulli trials with probability \( \lambda\Delta t \)
+in this interval by drawing \( N \) random numbers, each being 0 (survival)
+or 1 (decay), where the probability of getting 1 is \( \lambda\Delta t \).
+We are interested in the number of decays, \( d \), and the number of
+survived atoms in the next interval is then \( N-d \).
+The Bernoulli trials
+are simulated by drawing \( N \) uniformly distributed real numbers on
+\( [0,1] \) and saying that 1 corresponds to a value less than \( \lambda\Delta t \):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #408080; font-style: italic"># Given lambda_, dt, N</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+uniform <span style="color: #666666">=</span> np<span style="color: #666666">.</span>random<span style="color: #666666">.</span>uniform(N)
+Bernoulli_trials <span style="color: #666666">=</span> np<span style="color: #666666">.</span>asarray(uniform <span style="color: #666666">&lt;</span> lambda_<span style="color: #666666">*</span>dt, dtype<span style="color: #666666">=</span>np<span style="color: #666666">.</span>int)
+d <span style="color: #666666">=</span> Bernoulli_trials<span style="color: #666666">.</span>size
+</pre></div>
+<p>
+Observe that <code>uniform < lambda_*dt</code> is a boolean array whose true
+and false values become 1 and 0, respectively, when converted to an
+integer array.
+
+<p>
+Repeat the simulation over \( [0,T] \) a large number of times, compute the average
+value of \( N \) in each interval, and compare with the solution of
+the corresponding ODE model.
+Filename: <code>stochastic_decay.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 27: Derive schemes for Newton's law of cooling <a name="decay:app:exer:cooling:schemes"></a></h3>
+
+<p>
+Given Newton's law of cooling \eqref{decay:Newton:cooling}, show in detail
+how we can apply the ideas of the Forward Euler, Backward Euler, and
+Crank-Nicolson discretizations to derive explicit computational formulas
+for \( T^{n+1} \) in terms of computed quantities.
+
+<p>
+<!-- Can introduce \( u=T-T_s \), or much better for illustration of the -->
+<!-- thinking: operate directly on the T equation -->
+Filename: <code>schemes_cooling.pdf</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 28: Simulate the pressure drop in the atmosphere <a name="decay:app:exer:atm1"></a></h3>
+
+<p>
+We consider the models for atmospheric pressure in
+the section <a href="#decay:app:atm">Decay of atmospheric pressure with altitude</a>.
+Make a program with three functions,
+
+<p>
+
+<ul>
+ <li> one computing the pressure \( p(z) \) using a seven-layer model
+   and varying \( L \),</li>
+ <li> one computing \( p(z) \) using a seven-layer model,
+   but with constant temperature in each layer, and</li>
+ <li> one computing \( p(z) \) based on the
+   one-layer model.</li>
+</ul>
+
+How can these implementations be verified? Should ease of verification
+impact how you code the functions?
+Compare the three models in a plot.
+Filename: <code>atmospheric_pressure.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 29: Make a program for vertical motion in a fluid <a name="decay:app:exer:drag:prog"></a></h3>
+
+<p>
+Implement the Stokes' drag model \eqref{decay:app:fallingbody:model:S}
+and the quadratic drag model \eqref{decay:app:fallingbody:model:q} from
+the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a> in a program, using the Crank-Nicolson
+scheme as explained. At each time level, compute the Reynolds number
+Re and choose the Stokes' drag model if \( \hbox{Re} < 1 \) and the
+quadratic drag model otherwise.  Include nose tests (in the file) that
+runs the two suggested verification tests in the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a>.
+Filename: <code>vertical_motion.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 30: Plot forces acting in vertical motion in a fluid <a name="decay:app:exer:drag:prog:viz"></a></h3>
+
+<p>
+Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 29: Make a program for vertical motion in a fluid</a> to compute
+the forces \( F_d^{(q)} \), \( F_d^{(S)} \), \( F_g \), and \( F_b \).
+Plot the latter two and the relevant drag force, depending on
+the value of the Reynolds number.
+Filename: <code>vertical_motion_force_plot.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 31: Simulate a free fall of a parachute jumper <a name="decay:app:exer:drag:parachute1"></a></h3>
+
+<p>
+Apply the program from <a href="#decay:app:exer:drag:prog">Exercise 29: Make a program for vertical motion in a fluid</a> to
+a parachute jumper in free fall before the parachute opens.
+Set the density of the human body
+as \( \varrho_b = 1003 \hbox{ kg}/\hbox{m}^3 \)
+and the mass as \( m=80 \) kg, implying \( V=m/\varrho_b = 0.08\hbox{ m}^3 \).
+One can base
+the cross-sectional area \( A \) the assumption of a circular cross section
+of diameter 50 cm,
+giving \( A= \pi R^2 = 0.9\hbox{ m}^2 \).
+The density of air decreases with height, but for a free fall
+we may use the approximation
+\( \varrho = 0.79 \hbox{ kg/m}^3 \) which is relevant for about 5000 m height.
+The \( C_D \) coefficient can be set to 1.2. Start with \( v_0=0 \).
+Filename: <code>parachute_jumper1.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 32: Simulate a complete parachute jump <a name="decay:app:exer:drag:parachute2"></a></h3>
+
+<p>
+A parachute jumper moves a vertical distance of about 5000 m where
+\( A \) and \( C_D \) change dramatically when the parachute is released.
+Moreover, the density of air changes with altitude.
+Add a differential equation for the altitude \( z \),
+
+<p>
+$$
+\begin{equation}
+z'(t) = v(t),
+\end{equation}
+$$
+
+and a differential equation for the air density, based on
+the information for the one-layer atmospheric model in
+the section <a href="#decay:app:atm">Decay of atmospheric pressure with altitude</a>:
+
+<p>
+$$
+\begin{align}
+p'(z) &= -\frac{Mg}{R^*(T_0+Lz)} p,\\ 
+\varrho &= p \frac{M}{R^*T}
+\thinspace .
+\end{align}
+$$
+
+
+<p>
+Extend the program from <a href="#decay:app:exer:drag:prog">Exercise 29: Make a program for vertical motion in a fluid</a> to
+handle three coupled differential equations. With the Crank-Nicolson
+method, one must solve a \( 3\times 3 \) system of equations at each time
+level, since \( p \) depends on \( z \), which depends on \( v \), which depends
+on \( \varrho \), which depends on \( p \).  Switching to the Forward Euler
+method avoids the need to solve coupled equations, but demands smaller
+\( \Delta t \) for accuracy. Make sure \( A \) and \( C_D \) can be changed at
+some time \( t_p \) when the parachute is released.
+Make nose tests of this program based on the
+same verification cases as outlined in <a href="#decay:app:exer:drag:prog">Exercise 29: Make a program for vertical motion in a fluid</a>.
+
+<p>
+Use the program to simulate a jump from \( z=5000 \) m to the ground \( z=0 \).
+Filename: <code>parachute_jumper2.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 33: Simulate a rising ball in water <a name="decay:app:exer:drag:rising"></a></h3>
+
+<p>
+A ball with the size of a soccer ball is placed in somewhat deep
+water, and we seek to model its motion upwards.  The buoyancy force
+\( F_b \) is now the driving force.
+Set \( A=\pi a^2 \) with \( a=11 \) cm, the mass of the ball is 0.43
+kg, the density of water is \( 1000\hbox{ kg/m}^3 \), and \( C_D \) is 0.45.
+Start with \( v_0=0 \) and see how the ball rises.
+Filename: <code>rising_ball.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 34: Radioactive decay of Carbon-14 <a name="decay:app:exer:radio:C14"></a></h3>
+
+<p>
+The <a href="http://en.wikipedia.org/wiki/Carbon-14">Carbon-14</a> isotope,
+whose radioactive decay is used extensively in dating organic material
+that is tens of thousands of years old, has a half-life of \( 5,730 \)
+years.  Determine the age of an organic material that contains 8.4\%
+of its initial amount of Carbon-14.  Use a time unit of 1 year in the
+computations.  The uncertainty in the half time of Carbon-14 is \( \pm
+40 \) years.  What is the corresponding uncertainty in the estimate of
+the age?  (Use simulations, not the exact solution.)
+Filename: <code>carbon14.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 35: Radioactive decay of two substances <a name="decay:app:exer:radio:twosubst"></a></h3>
+
+<p>
+Consider two radioactive substances A and B. The nuclei in substance A
+decay to form nuclei of type B with a half-life \( A_{1/2} \), while
+substance B decay to form type A nuclei with a half-life \( B_{1/2} \).
+Letting \( u_A \) and \( u_B \) be the fractions of the initial amount of
+material in substance A and B, respectively, the following system of
+ODEs governs the evolution of \( u_A(t) \) and \( u_B(t) \):
+$$
+\begin{align}
+\frac{1}{\ln 2} u_A' &= u_B/B_{1/2} - u_A/A_{1/2},\\ 
+\frac{1}{\ln 2} u_B' &= u_A/A_{1/2} - u_B/B_{1/2},
+\end{align}
+$$
+
+with \( u_A(0)=u_B(0)=1 \).
+
+<p>
+Make a simulation program that solves for \( u_A(t) \) and \( u_B(t) \).
+Verify the implementation by computing analytically
+the limiting values of
+\( u_A \) and \( u_B \) as \( t\rightarrow \infty \) (assume \( u_A',u_B'\rightarrow 0 \))
+and comparing these with those obtained numerically.
+
+<p>
+Run the program for the case of \( A_{1/2}=10 \) minutes and \( B_{1/2}=50 \) minutes.
+Use a time unit of 1 minute. Plot \( u_A \) and \( u_B \) versus time in the same
+plot.
+Filename: <code>radioactive_decay_2subst.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 36: Find time of murder from body temperature <a name="decay:app:exer:cooling:pizza"></a></h3>
+
+<p>
+<!-- <a href="http://www.biology.arizona.edu/BioMath/tutorials/Applications/Cooling.html"><tt>http://www.biology.arizona.edu/BioMath/tutorials/Applications/Cooling.html</tt></a> -->
+
+<p>
+A detective measures the temperature of a dead body to be
+26.7 C at 2 pm. One hour later
+the temperature is 25.8 C. The question is when
+death occurred.
+
+<p>
+Assume that Newton's law of cooling \eqref{decay:Newton:cooling}
+is an appropriate mathematical
+model for the evolution of the temperature in the body.
+First, determine \( k \) in \eqref{decay:Newton:cooling} by
+formulating a Forward Euler approximation with one time steep
+from time 2 am to time 3 am, where knowing the two temperatures
+allows for finding \( k \). Thereafter, simulate the temperature evolution
+from the time of murder, taken as \( t=0 \), when \( T=37\hbox{ C} \),
+until the temperature
+reaches 26.7 C. The corresponding time allows for answering when
+death occurred.
+Filename: <code>detective.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 37: Simulate an oscillating cooling process <a name="decay:app:exer:cooling:osc"></a></h3>
+
+<p>
+The surrounding temperature \( T_s \) in Newton's law of cooling
+\eqref{decay:Newton:cooling} may vary in time. Assume that the
+variations are periodic with period \( P \) and amplitude \( a \) around
+a constant mean temperature \( T_m \):
+$$
+\begin{equation}
+T_s(t) = T_m + a\sin\left(\frac{2\pi}{P}t\right)
+\thinspace .
+\end{equation}
+$$
+
+Simulate a process with the following data: \( k=20 \hbox{ min}^{-1} \),
+\( T(0)=5 \) C, \( T_m=25 \) C, \( a=2.5 \) C, and \( P=1 \) h. Also experiment with
+\( P=10 \) min and \( P=3 \) h. Plot \( T \) and \( T_s \) in the same plot.
+Filename: <code>osc_cooling.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 38: Compute \( y=|x| \) by solving an ODE <a name="decay:app:exer:signum"></a></h3>
+
+<p>
+Consider the ODE problem
+$$
+y'(x) = \left\lbrace\begin{array}{ll}
+-1, & x < 0,\\ 
+1, & x \geq 0
+\end{array}\right.\quad x\in (-1, 1],
+\quad y(1-)=1,
+$$
+
+which has the solution \( y(x)=|x| \).
+Using a mesh \( x_0=-1 \), \( x_1=0 \), and \( x_2=1 \), calculate by hand
+\( y_1 \) and \( y_2 \) from the Forward Euler, Backward Euler, Crank-Nicolson,
+and Leapfrog methods. Use all of the former three methods for computing
+the \( y_1 \) value to be used in the Leapfrog calculation of \( y_2 \).
+Thereafter, visualize how these schemes perform for a uniformly partitioned
+mesh with \( N=10 \) and \( N=11 \) points.
+Filename: <code>signum.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 39: Simulate growth of a fortune with random interest rate <a name="decay:app:exer:interest"></a></h3>
+
+<p>
+The goal of this exercise is to compute the value of a fortune subject
+to inflation and a random interest rate.
+Suppose that the inflation is constant at \( i \) percent per year and that the
+annual interest rate, \( p \), changes randomly at each time step,
+starting at some value \( p_0 \) at \( t=0 \).
+The random change is from a value \( p^n \) at \( t=t_n \) to
+\( p_n +\Delta p \) with probability 0.25 and \( p_n -\Delta p \) with probability 0.25.
+No change occurs with probability 0.5. There is also no change if
+\( p^{n+1} \) exceeds 15 or becomes below 1.
+Use a time step of one month, \( p_0=i \), initial fortune scaled to 1,
+and simulate 1000 scenarios of
+length 20 years. Compute the mean evolution of one unit of money and the
+corresponding
+standard deviation. Plot these two curves along with the \( p^n-i \) curve.
+
+<p>
+<!-- --- begin hint in exercise --- -->
+
+<p>
+<b>Hint 1.</b>
+The following code snippet computes \( p^{n+1} \):
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">random</span>
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">new_interest_rate</span>(p_n, dp<span style="color: #666666">=0.5</span>):
+    r <span style="color: #666666">=</span> random<span style="color: #666666">.</span>random()  <span style="color: #408080; font-style: italic"># uniformly distr. random number in [0,1)</span>
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #666666">0</span> <span style="color: #666666">&lt;=</span> r <span style="color: #666666">&lt;</span> <span style="color: #666666">0.25</span>:
+        p_np1 <span style="color: #666666">=</span> p_n <span style="color: #666666">+</span> dp
+    <span style="color: #008000; font-weight: bold">elif</span> <span style="color: #666666">0.25</span> <span style="color: #666666">&lt;=</span> r <span style="color: #666666">&lt;</span> <span style="color: #666666">0.5</span>:
+        p_np1 <span style="color: #666666">=</span> p_n <span style="color: #666666">-</span> dp
+    <span style="color: #008000; font-weight: bold">else</span>:
+        p_np1 <span style="color: #666666">=</span> p_n
+    <span style="color: #008000; font-weight: bold">return</span> (p_np1 <span style="color: #008000; font-weight: bold">if</span> <span style="color: #666666">1</span> <span style="color: #666666">&lt;=</span> p_np1 <span style="color: #666666">&lt;=</span> <span style="color: #666666">15</span> <span style="color: #008000; font-weight: bold">else</span> p_n)
+</pre></div>
+<p>
+<!-- --- end hint in exercise --- -->
+
+<p>
+<!-- --- begin hint in exercise --- -->
+
+<p>
+<b>Hint 2.</b>
+If \( u_i(t) \) is the value of the fortune in experiment number \( i \),
+\( i=0,\ldots,N-1 \),
+the mean evolution of the fortune is
+$$ \bar u(t)= \frac{1}{N}\sum_{i=0}^{N-1} u_i(t),
+$$
+
+and the standard deviation is
+$$ s(t) = \sqrt{\frac{1}{N-1}\left(- (\bar u(t))^2 +
+                \sum_{i=0}^{N-1} (u_i(t))^2\right)}
+\thinspace .
+$$
+
+Suppose \( u_i(t) \) is stored in an array <code>u</code>.
+The mean and the standard deviation of the fortune
+is most efficiently computed by
+using to accumulation arrays, <code>sum_u</code> and <code>sum_u2</code>, and
+performing <code>sum_u += u</code> and <code>sum_u2 += u**2</code> after every experiment.
+This technique avoids storing all the \( u_i(t) \) time series for
+computing the statistics.
+<!-- --- end hint in exercise --- -->
+Filename: <code>random_interest.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 40: Simulate sudden environmental changes for a population <a name="decay:app:exer:pop:at"></a></h3>
+
+<p>
+We shall study a population modeled by \eqref{decay:app:pop:ueq} where
+the environment, represented by \( r \) and \( f \), undergoes changes with time.
+Assume that there is a sudden drop (increase) in the birth (death)
+rate at time \( t=t_r \),
+because of limited nutrition or food supply:
+$$ a(t) =\left\lbrace\begin{array}{ll}
+r_0, & t< t_r,\\ 
+r_0 - A, & t\geq t_r,\end{array}\right.
+$$
+
+This drop in population growth is compensated by a sudden net immigration
+at time \( t_f>t_r \):
+$$ f(t) =\left\lbrace\begin{array}{ll}
+0, & t< t_f,\\ 
+f_0, & t\geq t_a,\end{array}\right.
+$$
+
+Start with \( r_0 \) and make \( A>r_0 \). Experiment these and other parameters to
+illustrate the interplay of growth and decay in such a problem.
+Filename: <code>population_drop.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 41: Simulate oscillating environment for a population <a name="decay:app:exer:pop:osc"></a></h3>
+
+<p>
+This exercise is a variant of <a href="#decay:app:exer:pop:at">Exercise 40: Simulate sudden environmental changes for a population</a>.
+Now we assume that the environmental conditions changes periodically with
+time so that we may take
+$$ r(t) = r_0 + A\sin\left(\frac{2\pi}{P}t\right)
+\thinspace .
+$$
+
+That is, the combined birth and death rate oscillates around \( r_0 \) with
+a maximum change of \( \pm A \) repeating over a period of length \( P \) in time.
+Set \( f=0 \) and experiment with the other parameters to illustrate typical
+features of the solution.
+Filename: <code>population_osc.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 42: Simulate logistic growth <a name="decay:app:exer:pop:logistic1"></a></h3>
+
+<p>
+Solve the logistic ODE
+\eqref{decay:app:pop:logistic} using a Crank-Nicolson scheme where
+\( (u^{n+1/2})^2 \) is approximated by a <em>geometric mean</em>:
+$$ (u^{n+1/2})^2 \approx u^{n+1}u^n
+\thinspace .
+$$
+
+This trick makes the discrete equation linear in \( u^{n+1} \).
+Filename: <code>logistic_growth.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- --- begin exercise --- -->
+
+<h3>Exercise 43: Rederive the equation for continuous compound interest <a name="decay:app:exer:interest:derive"></a></h3>
+
+<p>
+The ODE model \eqref{decay:app:interest:eq2} was derived under the assumption
+that \( r \) was constant. Perform an alternative derivation without
+this assumption: 1) start with \eqref{decay:app:interest:eq1};
+2) introduce a time step \( \Delta t \) instead of \( m \): \( \Delta t = 1/m \) if
+\( t \) is measured in years; 3) divide by \( \Delta t \) and take the
+limit \( \Delta t\rightarrow 0 \). Simulate a case where the inflation is
+at a constant level \( I \) percent per year and the interest rate oscillates
+around \( I/2 + r_0\sin(2\pi t) \), giving \( r=-I/2 + r_0\sin(2\pi t) \).
+Compare solutions for \( r_0=I, 3I/2, 2I \).
+Filename: <code>interest_modeling.py</code>.
+
+<p>
+<!-- --- end exercise --- -->
+
+<p>
+<!-- begin bottom navigation -->
+<a href="._part0007_main_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+<!-- end bottom navigation -->
+
+<!-- ------------------- end of main content --------------- -->
+
+
+</body>
+</html>
+    
+
