@@ -14,9 +14,9 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
                          num_periods=1, I=1, w=2*np.pi):
     P = 2*np.pi/w  # one period
     dt = P/timesteps_per_period
-    N = num_periods*timesteps_per_period
-    T = N*dt
-    t_mesh = np.linspace(0, T, N+1)
+    Nt = num_periods*timesteps_per_period
+    T = Nt*dt
+    t_mesh = np.linspace(0, T, Nt+1)
 
     legends = []
     for solver in solvers:
