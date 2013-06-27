@@ -30,47 +30,18 @@ from scitools.std import *
 def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
            user_action=None, version='scalar',
            dt_safety_factor=1):
-    if version == 'cython':
-        try:
-            #import pyximport; pyximport.install()
-            import wave2D_u0_loop_cy as compiled_loops
-            advance = compiled_loops.advance
-        except ImportError as e:
-            print 'No module wave2D_u0_loop_cy. Run make_wave2D.sh!'
-            print e
-            sys.exit(1)
-    elif version == 'f77':
+    if version == 'f77':
         try:
             import wave2D_u0_loop_f77 as compiled_loops
             advance = compiled_loops.advance
         except ImportError:
             print 'No module wave2D_u0_loop_f77. Run make_wave2D.sh!'
             sys.exit(1)
-    elif version == 'c_f2py':
-        try:
-            import wave2D_u0_loop_c_f2py as compiled_loops
-            advance = compiled_loops.advance
-        except ImportError:
-            print 'No module wave2D_u0_loop_c_f2py. Run make_wave2D.sh!'
-            sys.exit(1)
-    elif version == 'c_cy':
-        try:
-            import wave2D_u0_loop_c_cy as compiled_loops
-            advance = compiled_loops.advance_cwrap
-        except ImportError as e:
-            print 'No module wave2D_u0_loop_c_cy. Run make_wave2D.sh!'
-            print e
-            sys.exit(1)
-    elif version == 'vectorized':
-        advance = advance_vectorized
 
     x = linspace(0, Lx, Nx+1)  # mesh points in x dir
     y = linspace(0, Ly, Ny+1)  # mesh points in y dir
     dx = x[1] - x[0]
     dy = y[1] - y[0]
-
-    xv = x[:,newaxis]          # for vectorized function evaluations
-    yv = y[newaxis,:]
 
     stability_limit = (1/float(c))*(1/sqrt(1/dx**2 + 1/dy**2))
     if dt <= 0:                # max time step?
@@ -103,8 +74,8 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
 
     # Load initial condition into u_1
     if version == 'scalar':
-        for i in range(0, Nx+1):
-            for j in range(0, Ny+1):
+        for i in Ix:
+            for j in Iy:
                 u_1[i,j] = I(x[i], y[j])
     else: # use vectorized version
         u_1[:,:] = I(xv, yv)
@@ -115,19 +86,19 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     # Special formula for first time step
     n = 0
     if version == 'scalar':
-        for i in range(1, Nx):
-            for j in range(1, Ny):
+        for i in Ix[1:-1]:
+            for j in Iy[1:-1]:
                 u[i,j] = u_1[i,j] + dt*V(x[i], y[j]) + \
                 0.5*Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \
                 0.5*Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \
                 0.5*dt2*f(x[i], y[j], t[n])
-        j = 0
+        j = Iy[0]
         for i in range(0, Nx): u[i,j] = 0
-        j = Ny
+        j = Iy[-1]
         for i in range(0, Nx): u[i,j] = 0
-        i = 0
+        i = Ix[0]
         for j in range(0, Ny): u[i,j] = 0
-        i = Nx
+        i = Ix[-1]
         for j in range(0, Ny): u[i,j] = 0
     else:  # use vectorized version
         f_a[:,:] = f(xv, yv, t[n])  # precompute, size as u
@@ -173,21 +144,21 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
 
 def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2):
     Nx = u.shape[0]-1;  Ny = u.shape[1]-1
-    for i in range(1, Nx):
-        for j in range(1, Ny):
+    for i in Ix[1:-1]:
+        for j in Iy[1:-1]:
             u[i,j] = 2*u_1[i,j] - u_2[i,j] + \
                      Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \
                      Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \
                      dt2*f(x[i], y[j], t[n])
     # Boundary condition u=0
-    j = 0
-    for i in range(0, Nx+1): u[i,j] = 0
-    j = Ny
-    for i in range(0, Nx+1): u[i,j] = 0
-    i = 0
-    for j in range(0, Ny+1): u[i,j] = 0
-    i = Nx
-    for j in range(0, Ny+1): u[i,j] = 0
+    j = Iy[0]
+    for i in Ix: u[i,j] = 0
+    j = Iy[-1]
+    for i in Ix: u[i,j] = 0
+    i = Ix[0]
+    for j in Iy: u[i,j] = 0
+    i = Ix[-1]
+    for j in Iy: u[i,j] = 0
     return u
 
 def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt2):

@@ -46,12 +46,12 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    x = linspace(0, L, Nx+1)     # mesh points in space
+    x = linspace(0, L, Nx+1)       # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
-    N = int(round(T/dt))
-    t = linspace(0, N*dt, N+1)   # mesh points in time
-    C2 = C**2; dt2 = dt*dt       # help variables in the scheme
+    Nt = int(round(T/dt))
+    t = linspace(0, Nt*dt, Nt+1)   # mesh points in time
+    C2 = C**2; dt2 = dt*dt         # help variables in the scheme
 
     # Wrap user-given f, V, U_0, U_L
     if f is None or f == 0:
@@ -71,25 +71,29 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     u_1 = zeros(Nx+1)   # solution at 1 time level back
     u_2 = zeros(Nx+1)   # solution at 2 time levels back
 
+    Ix = range(0, Nx+1)
+    It = range(0, Nt+1)
+
     import time;  t0 = time.clock()  # for measuring CPU time
 
     # Load initial condition into u_1
-    for i in range(0,Nx+1):
+    for i in Ix:
         u_1[i] = I(x[i])
 
     if user_action is not None:
         user_action(u_1, x, t, 0)
 
     # Special formula for the first step
-    for i in range(1, Nx):
+    for i in Ix[1:-1]:
         u[i] = u_1[i] + dt*V(x[i]) + \
                0.5*C2*(u_1[i-1] - 2*u_1[i] + u_1[i+1]) + \
                0.5*dt2*f(x[i], t[0])
 
+    i = Ix[0]
     if U_0 is None:
-        # Set boundary values (x=0: i-1 -> i+1 since u[i-1]=u[i+1]
-        # when du/dn = 0, on x=L: i+1 -> i-1 since u[i+1]=u[i-1])
-        i = 0
+        # Set boundary values du/dn = 0
+        # x=0: i-1 -> i+1 since u[i-1]=u[i+1]
+        # x=L: i+1 -> i-1 since u[i+1]=u[i-1])
         ip1 = i+1
         im1 = ip1  # i-1 -> i+1
         u[i] = u_1[i] + dt*V(x[i]) + \
@@ -98,42 +102,42 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     else:
         u[0] = U_0(dt)
 
+    i = Ix[-1]
     if U_L is None:
-        i = Nx
         im1 = i-1
         ip1 = im1  # i+1 -> i-1
         u[i] = u_1[i] + dt*V(x[i]) + \
                0.5*C2*(u_1[im1] - 2*u_1[i] + u_1[ip1]) + \
                0.5*dt2*f(x[i], t[0])
     else:
-        u[Nx] = U_L(dt)
+        u[i] = U_L(dt)
 
     if user_action is not None:
         user_action(u, x, t, 1)
 
     u_2[:], u_1[:] = u_1, u
 
-    for n in range(1, N):
+    for n in It[1:-1]:
         # Update all inner points
         if version == 'scalar':
-            for i in range(1, Nx):
+            for i in Ix[1:-1]:
                 u[i] = - u_2[i] + 2*u_1[i] + \
                        C2*(u_1[i-1] - 2*u_1[i] + u_1[i+1]) + \
                        dt2*f(x[i], t[n])
 
         elif version == 'vectorized':
-            u[1:Nx] = - u_2[1:-1] + 2*u_1[1:-1] + \
+            u[1:-1] = - u_2[1:-1] + 2*u_1[1:-1] + \
                       C2*(u_1[0:-2] - 2*u_1[1:-1] + u_1[2:]) + \
                       dt2*f(x[1:-1], t[n])
         else:
             raise ValueError('version=%s' % version)
 
         # Insert boundary conditions
+        i = Ix[0]
         if U_0 is None:
             # Set boundary values
             # x=0: i-1 -> i+1 since u[i-1]=u[i+1] when du/dn=0
             # x=L: i+1 -> i-1 since u[i+1]=u[i-1] when du/dn=0
-            i = 0
             ip1 = i+1
             im1 = ip1
             u[i] = - u_2[i] + 2*u_1[i] + \
@@ -142,15 +146,15 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
         else:
             u[0] = U_0(t[n+1])
 
+        i = Ix[-1]
         if U_L is None:
-            i = Nx
             im1 = i-1
             ip1 = im1
             u[i] = - u_2[i] + 2*u_1[i] + \
                    C2*(u_1[im1] - 2*u_1[i] + u_1[ip1]) + \
                    dt2*f(x[i], t[n])
         else:
-            u[Nx] = U_L(t[n+1])
+            u[i] = U_L(t[n+1])
 
         if user_action is not None:
             if user_action(u, x, t, n+1):
@@ -240,7 +244,7 @@ def plug(C=1, Nx=50, animate=True, version='scalar', T=2):
               umin=-1.1, umax=1.1, version=version, animate=animate)
 
 def gaussian(C=1, Nx=50, animate=True, version='scalar', T=1):
-    """Plug profile as initial condition."""
+    """Gaussian function as initial condition."""
     L = 10.
     c = 10
     sigma = 0.5
@@ -271,6 +275,7 @@ def test_plug():
     nt.assert_almost_equal(diff, 0, places=13)
 
 def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
+    """Triangular initial condition for simulating a guitar string."""
     L = 1.
     c = 1
     x0 = 0.8*L
@@ -283,6 +288,11 @@ def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
 
 def moving_end(C=1, Nx=50, reflecting_right_boundary=True,
                version='vectorized'):
+    """
+    Sinusoidal variation of u at the left end.
+    Right boundary can be reflecting or have u=0, according to
+    reflecting_right_boundary.
+    """
     L = 1.
     c = 1
     T = 2
@@ -301,6 +311,7 @@ def moving_end(C=1, Nx=50, reflecting_right_boundary=True,
 
 
 def sincos(C=1):
+    """Test of exact analytical solution (sine in space, cosine in time)."""
     L = 10.0
     c = 1
     T = 5

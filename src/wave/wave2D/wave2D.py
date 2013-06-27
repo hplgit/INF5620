@@ -23,70 +23,73 @@ def scheme_ij(u, u_1, u_2, k_1, k_2, k_3, k_4,
 def scheme_scalar_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
                        f, dt2, Cx2, Cy2, x, y, t_1, Nx, Ny,
                        bc):
+    Ix = range(0, u.shape[0])
+    Iy = range(0, u.shape[1])
+
     # Interior points
-    for i in range(1, Nx):
-        for j in range(1, Ny):
+    for i in Ix[1:-1]:
+        for j in Iy[1:-1]:
             im1 = i-1; ip1 = i+1; jm1 = j-1; jp1 = j+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     # Boundary points
-    i = 0
+    i = Ix[0]
     ip1 = i+1
     im1 = ip1
     if bc['W'] is None:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             jm1 = j-1; jp1 = j+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             u[i,j] = bc['W'](x[i], y[j])
-    i = Nx
+    i = Ix[-1]
     im1 = i-1
     ip1 = im1
     if bc['E'] is None:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             jm1 = j-1; jp1 = j+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             u[i,j] = bc['E'](x[i], y[j])
-    j = 0
+    j = Iy[0]
     jp1 = j+1
     jm1 = jp1
     if bc['S'] is None:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             im1 = i-1; ip1 = i+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             u[i,j] = bc['S'](x[i], y[j])
-    j = Ny
+    j = Iy[-1]
     jm1 = j-1
     jp1 = jm1
     if bc['N'] is None:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             im1 = i-1; ip1 = i+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             u[i,j] = bc['N'](x[i], y[j])
 
     # Corner points
-    i = j = 0
+    i = j = Iy[0]
     ip1 = i+1; jp1 = j+1
     im1 = ip1; jm1 = jp1
     if bc['S'] is None:
@@ -97,7 +100,7 @@ def scheme_scalar_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['S'](x[i], y[j])
 
-    i = Nx; j = 0
+    i = Ix[-1]; j = Iy[0]
     im1 = i-1; jp1 = j+1
     ip1 = im1; jm1 = jp1
     if bc['S'] is None:
@@ -108,7 +111,7 @@ def scheme_scalar_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['S'](x[i], y[j])
 
-    i = Nx; j = Ny
+    i = Ix[-1]; j = Iy[-1]
     im1 = i-1; jm1 = j-1
     ip1 = im1; jp1 = jm1
     if bc['N'] is None:
@@ -119,7 +122,7 @@ def scheme_scalar_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['N'](x[i], y[j])
 
-    i = 0; j = Ny
+    i = Ix[0]; j = Iy[-1]
     ip1 = i+1; jm1 = j-1
     im1 = ip1; jp1 = jm1
     if bc['N'] is None:
@@ -163,48 +166,48 @@ def scheme_vectorized_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
         u[i,j] = bc['W'](xv[i,:], yv[:,j])
 
     # The rest is not done yet.....
-    i = Nx
+    i = Ix[-1]
     im1 = i-1
     ip1 = im1
     if bc['E'] is None:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             jm1 = j-1; jp1 = j+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for j in range(1, Ny):
+        for j in Iy[1:-1]:
             u[i,j] = bc['E'](x[i], y[j])
-    j = 0
+    j = Iy[0]
     jp1 = j+1
     jm1 = jp1
     if bc['S'] is None:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             im1 = i-1; ip1 = i+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             u[i,j] = bc['S'](x[i], y[j])
-    j = Ny
+    j = Iy[-1]
     jm1 = j-1
     jp1 = jm1
     if bc['N'] is None:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             im1 = i-1; ip1 = i+1
             u[i,j] = scheme_ij(
                 u, u_1, u_2, k_1, k_2, k_3, k_4,
                 f, dt2, Cx2, Cy2, x[i], y[j], t_1,
                 i, j, im1, ip1, jm1, jp1)
     else:
-        for i in range(1, Nx):
+        for i in Ix[1:-1]:
             u[i,j] = bc['N'](x[i], y[j])
 
     # Corner points
-    i = j = 0
+    i = j = Iy[0]
     ip1 = i+1; jp1 = j+1
     im1 = ip1; jm1 = jp1
     if bc['S'] is None:
@@ -215,7 +218,7 @@ def scheme_vectorized_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['S'](x[i], y[j])
 
-    i = Nx; j = 0
+    i = Ix[-1]; j = Iy[0]
     im1 = i-1; jp1 = j+1
     ip1 = im1; jm1 = jp1
     if bc['S'] is None:
@@ -226,7 +229,7 @@ def scheme_vectorized_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['S'](x[i], y[j])
 
-    i = Nx; j = Ny
+    i = Ix[-1]; j = Iy[-1]
     im1 = i-1; jm1 = j-1
     ip1 = im1; jp1 = jm1
     if bc['N'] is None:
@@ -237,7 +240,7 @@ def scheme_vectorized_mesh(u, u_1, u_2, k_1, k_2, k_3, k_4,
     else:
         u[i,j] = bc['N'](x[i], y[j])
 
-    i = 0; j = Ny
+    i = Ix[0]; j = Iy[-1]
     ip1 = i+1; jm1 = j-1
     im1 = ip1; jp1 = jm1
     if bc['N'] is None:
@@ -282,8 +285,8 @@ def solver(I, f, c, bc, Lx, Ly, Nx, Ny, dt, T,
     yv = y[newaxis,:]
     if dt <= 0:                # max time step?
         dt = (1/float(c))*(1/sqrt(1/dx**2 + 1/dy**2))
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
     Cx2 = (c*dt/dx)**2;  Cy2 = (c*dt/dy)**2    # help variables
     dt2 = dt**2
 
@@ -291,10 +294,13 @@ def solver(I, f, c, bc, Lx, Ly, Nx, Ny, dt, T,
     u_1 = zeros((Nx+1,Ny+1))   # solution at t-dt
     u_2 = zeros((Nx+1,Ny+1))   # solution at t-2*dt
 
+    Ix = range(0, Nx+1)
+    Iy = range(0, Ny+1)
+    It = range(0, Nt+1)
 
     # Load initial condition into u_1
-    for i in range(0, Nx+1):
-        for j in range(0, Ny+1):
+    for i in Ix:
+        for j in Iy:
             u_1[i,j] = I(x[i], y[j])
 
     if user_action is not None:
@@ -311,7 +317,7 @@ def solver(I, f, c, bc, Lx, Ly, Nx, Ny, dt, T,
 
     u_2[:,:] = u_1; u_1[:,:] = u
 
-    for n in range(1, N):
+    for n in It[1:-1]:
         if version == 'scalar':
             u = scheme_scalar_mesh(u, u_1, u_2, 1, 1, 1, 1,
                                    f, dt2, Cx2, Cy2, x, y, t[n],

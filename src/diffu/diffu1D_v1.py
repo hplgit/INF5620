@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# As v1, but using scipy.sparse.diags instead of spdiags
 """
 Functions for solving a 1D diffusion equations of simplest types
 (constant coefficient, no source term):
@@ -36,7 +35,8 @@ spatial mesh point x[i] at time t[n], where the calling code
 can add visualization, error computations, data analysis,
 store solutions, etc.
 """
-import scipy.sparse
+from scipy.sparse import spdiags
+from scipy.sparse.linalg import spsolve, use_solver
 
 def solver_FE_simple(I, a, L, Nx, C, T):
     """
@@ -47,8 +47,8 @@ def solver_FE_simple(I, a, L, Nx, C, T):
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
     u   = zeros(Nx+1)
     u_1 = zeros(Nx+1)
 
@@ -56,7 +56,7 @@ def solver_FE_simple(I, a, L, Nx, C, T):
     for i in range(0, Nx+1):
         u_1[i] = I(x[i])
 
-    for n in range(0, N):
+    for n in range(0, Nt):
         # Compute u at inner mesh points
         for i in range(1, Nx):
             u[i] = u_1[i] + C*(u_1[i-1] - 2*u_1[i] + u_1[i+1])
@@ -80,8 +80,8 @@ def solver_FE(I, a, L, Nx, C, T,
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
 
     u   = zeros(Nx+1)   # solution array
     u_1 = zeros(Nx+1)   # solution at t-dt
@@ -94,7 +94,7 @@ def solver_FE(I, a, L, Nx, C, T,
     if user_action is not None:
         user_action(u_1, x, t, 0)
 
-    for n in range(0, N):
+    for n in range(0, Nt):
         # Update all inner points
         if version == 'scalar':
             for i in range(1, Nx):
@@ -111,8 +111,9 @@ def solver_FE(I, a, L, Nx, C, T,
         if user_action is not None:
             user_action(u, x, t, n+1)
 
-        # Update u_1 before next step
-        u_1[:] = u
+        # Switch variables before next step
+        #u_1[:] = u  # slow
+        u_1, u = u, u_1
 
     t1 = time.clock()
     return u, x, t, t1-t0
@@ -127,8 +128,8 @@ def solver_BE_simple(I, a, L, Nx, C, T):
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
     u   = zeros(Nx+1)
     u_1 = zeros(Nx+1)
 
@@ -146,15 +147,15 @@ def solver_BE_simple(I, a, L, Nx, C, T):
     for i in range(0, Nx+1):
         u_1[i] = I(x[i])
 
-    for n in range(0, N):
+    for n in range(0, Nt):
         # Compute b and solve linear system
         for i in range(1, Nx):
             b[i] = -u_1[i]
         b[0] = b[Nx] = 0
         u[:] = linalg.solve(A, b)
 
-        # Update u_1 before next step
-        u_1[:]= u
+        # Switch variables before next step
+        u_1, u = u, u_1
     return u
 
 
@@ -170,30 +171,32 @@ def solver_BE(I, a, L, Nx, C, T, user_action=None):
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
 
     u   = zeros(Nx+1)   # solution array at t[n+1]
     u_1 = zeros(Nx+1)   # solution at t[n]
 
     # Representation of sparse matrix and right-hand side
-    main  = zeros(Nx+1)
-    lower = zeros(Nx-1)
-    upper = zeros(Nx-1)
-    b     = zeros(Nx+1)
+    diagonal = zeros(Nx+1)
+    lower    = zeros(Nx+1)
+    upper    = zeros(Nx+1)
+    b        = zeros(Nx+1)
+    # "Active" values: diagonal[:], upper[1:], lower[:-1]
 
     # Precompute sparse matrix
-    main[:] = 1 + 2*C
+    diagonal[:] = 1 + 2*C
     lower[:] = -C  #1
     upper[:] = -C  #1
     # Insert boundary conditions
-    main[0] = 1
-    main[Nx] = 1
+    diagonal[0] = 1
+    diagonal[Nx] = 1
+    # Remove unused/inactive values
+    upper[0:2] = 0
+    lower[-2:] = 0
 
-    A = scipy.sparse.diags(
-        diagonals=[main, lower, upper],
-        offsets=[0, -1, 1], shape=(Nx+1, Nx+1),
-        format='csr')
+    diags = [0, -1, 1]
+    A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
     print A.todense()
 
     # Set initial condition
@@ -203,16 +206,16 @@ def solver_BE(I, a, L, Nx, C, T, user_action=None):
     if user_action is not None:
         user_action(u_1, x, t, 0)
 
-    for n in range(0, N):
+    for n in range(0, Nt):
         b = u_1
         b[0] = b[-1] = 0.0  # boundary conditions
-        u[:] = scipy.sparse.linalg.spsolve(A, b)
+        u[:] = spsolve(A, b)
 
         if user_action is not None:
             user_action(u, x, t, n+1)
 
-        # Update u_1 before next step
-        u_1[:] = u
+        # Switch variables before next step
+        u_1, u = u, u_1
 
     t1 = time.clock()
     return u, x, t, t1-t0
@@ -233,8 +236,8 @@ def solver_theta(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
     x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
 
     u   = zeros(Nx+1)   # solution array at t[n+1]
     u_1 = zeros(Nx+1)   # solution at t[n]
@@ -244,22 +247,21 @@ def solver_theta(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
     lower    = zeros(Nx+1)
     upper    = zeros(Nx+1)
     b        = zeros(Nx+1)
+    # "Active" values: diagonal[:], upper[1:], lower[:-1]
 
     # Precompute sparse matrix (scipy format)
-    Cl = C*theta
-    Cr = C*(1-theta)
-    main[:] = 1 + 2*Cl
+    diagonal[:] = 1 + 2*Cl
     lower[:] = -Cl  #1
     upper[:] = -Cl  #1
     # Insert boundary conditions
-    main[0] = 1
-    main[Nx] = 1
+    diagonal[0] = 1
+    diagonal[Nx] = 1
+    # Remove unused/inactive values
+    upper[0:2] = 0
+    lower[-2:] = 0
 
     diags = [0, -1, 1]
-    A = scipy.sparse.diags(
-        diagonals=[main, lower, upper],
-        offsets=[0, -1, 1], shape=(Nx+1, Nx+1),
-        format='csr')
+    A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
     #print A.todense()
 
     # Set initial condition
@@ -270,16 +272,16 @@ def solver_theta(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
         user_action(u_1, x, t, 0)
 
     # Time loop
-    for n in range(0, N):
+    for n in range(0, Nt):
         b[1:-1] = u_1[1:-1] + Cr*(u_1[:-2] - 2*u_1[1:-1] + u_1[2:])
         b[0] = u_L; b[-1] = u_R  # boundary conditions
-        u[:] = scipy.sparse.linalg.spsolve(A, b)
+        u[:] = spsolve(A, b)
 
         if user_action is not None:
             user_action(u, x, t, n+1)
 
-        # Update u_1 before next step
-        u_1[:] = u
+        # Switch variables before next step
+        u_1, u = u, u_1
 
     t1 = time.clock()
     return u, x, t, t1-t0
@@ -319,6 +321,14 @@ def plug(scheme='FE', C=0.5, Nx=50):
                  umin=-0.1, umax=1.1,
                  scheme=scheme, animate=True)
     print 'CPU time:', cpu
+
+    """
+    if not allclose(solutions[0], solutions[-1],
+                    atol=1.0E-10, rtol=1.0E-12):
+        print 'error in computations'
+    else:
+        print 'correct solution'
+    """
 
 
 def expsin(scheme='FE', C=0.5, m=3):

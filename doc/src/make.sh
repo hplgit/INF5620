@@ -1,6 +1,6 @@
 #!/bin/sh
-#names="about index notes plan handwritings background"
-names="about index notes plan handwritings exercise_delivery oblig1 oblig2 default_project"
+#names="about index index2012 notes plan handwritings background"
+names="about index index2012 notes plan handwritings exercise_delivery oblig1 oblig2 default_project"
 dest=../web
 template="--html-template=uio.html"
 

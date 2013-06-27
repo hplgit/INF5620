@@ -25,12 +25,12 @@ from numpy import *
 
 def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx+1)    # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
-    N = int(round(T/dt))
-    t = linspace(0, N*dt, N+1) # mesh points in time
-    C2 = C**2                  # help variable in the scheme
+    Nt = int(round(T/dt))
+    t = linspace(0, N*dt, Nt+1) # mesh points in time
+    C2 = C**2                   # help variable in the scheme
     if f is None or f == 0 :
         f = lambda x, t: 0
     if V is None or V == 0:
@@ -62,7 +62,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
 
     u_2[:], u_1[:] = u_1, u
 
-    for n in range(1, N):
+    for n in range(1, Nt):
         # Update all inner points at time t[n+1]
         for i in range(1, Nx):
             u[i] = - u_2[i] + 2*u_1[i] + \

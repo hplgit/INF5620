@@ -65,8 +65,8 @@ def solver_theta(I, a, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
     dx = x[1] - x[0]
     dt = D*dx**2
     #print 'dt=%g' % dt
-    N = int(round(T/float(dt)))
-    t = linspace(0, T, N+1)    # mesh points in time
+    Nt = int(round(T/float(dt)))
+    t = linspace(0, T, Nt+1)   # mesh points in time
 
     u   = zeros(Nx+1)   # solution array at t[n+1]
     u_1 = zeros(Nx+1)   # solution at t[n]
@@ -112,7 +112,7 @@ def solver_theta(I, a, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
         user_action(u_1, x, t, 0)
 
     # Time loop
-    for n in range(0, N):
+    for n in range(0, Nt):
         b[1:-1] = u_1[1:-1] + Dr*(
             (a[2:] + a[1:-1])*(u_1[:-2] - u_1[1:-1]) -
             (a[2:] + a[0:-2])*(u_1[1:-1] - u_1[:-2]))
