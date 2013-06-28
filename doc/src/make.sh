@@ -2,7 +2,7 @@
 #names="about index index2012 notes plan handwritings background"
 names="about index index2012 notes plan handwritings exercise_delivery oblig1 oblig2 default_project"
 dest=../web
-template="--html-template=uio.html"
+template="--html_template=uio.html"
 
 #cp background_orig.do.txt background.do.txt
 #name=background
