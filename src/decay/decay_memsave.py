@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def solver_memsave(I, a, T, dt, theta, filename='sol.dat'):
     """
     Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
-    Minimum use of memory. The solution is store on file
+    Minimum use of memory. The solution is stored in a file
     (with name filename) for later plotting.
     """
     dt = float(dt)         # avoid integer division
