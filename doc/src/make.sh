@@ -1,5 +1,5 @@
 #!/bin/sh
-names="about index index2012 notes plan lectures exercise_delivery oblig1 oblig2 default_project"
+names="about index index notes plan lectures exercise_delivery oblig1 oblig2 default_project"
 dest=../web
 template="--html_template=uio.html"
 
