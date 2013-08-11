@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,21 +504,50 @@ $$
 <p>
 <!-- !split -->
 
-<h2>Implementing more advanced problem and solver classes <a name="decay:classes2"></a></h2>
+<h3>Improved problem class  <a name="___sec103"></a></h3>
+
+<p>
+More flexible input from the command line:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Problem</span>:
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__init__</span>(<span style="color: #008000">self</span>, I<span style="color: #666666">=1</span>, a<span style="color: #666666">=1</span>, T<span style="color: #666666">=10</span>):
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>T, <span style="color: #008000">self</span><span style="color: #666666">.</span>I, <span style="color: #008000">self</span><span style="color: #666666">.</span>a <span style="color: #666666">=</span> I, <span style="color: #008000">float</span>(a), T
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">define_command_line_options</span>(<span style="color: #008000">self</span>, parser<span style="color: #666666">=</span><span style="color: #008000">None</span>):
+        <span style="color: #008000; font-weight: bold">if</span> parser <span style="color: #AA22FF; font-weight: bold">is</span> <span style="color: #008000">None</span>:
+            <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">argparse</span>
+            parser <span style="color: #666666">=</span> argparse<span style="color: #666666">.</span>ArgumentParser()
+
+        parser<span style="color: #666666">.</span>add_argument(
+            <span style="color: #BA2121">&#39;--I&#39;</span>, <span style="color: #BA2121">&#39;--initial_condition&#39;</span>, <span style="color: #008000">type</span><span style="color: #666666">=</span><span style="color: #008000">float</span>,
+            default<span style="color: #666666">=</span><span style="color: #008000">self</span><span style="color: #666666">.</span>I, help<span style="color: #666666">=</span><span style="color: #BA2121">&#39;initial condition, u(0)&#39;</span>,
+            metavar<span style="color: #666666">=</span><span style="color: #BA2121">&#39;I&#39;</span>)
+        parser<span style="color: #666666">.</span>add_argument(
+            <span style="color: #BA2121">&#39;--a&#39;</span>, <span style="color: #008000">type</span><span style="color: #666666">=</span><span style="color: #008000">float</span>, default<span style="color: #666666">=</span><span style="color: #008000">self</span><span style="color: #666666">.</span>a,
+            help<span style="color: #666666">=</span><span style="color: #BA2121">&#39;coefficient in ODE&#39;</span>, metavar<span style="color: #666666">=</span><span style="color: #BA2121">&#39;a&#39;</span>)
+        parser<span style="color: #666666">.</span>add_argument(
+            <span style="color: #BA2121">&#39;--T&#39;</span>, <span style="color: #BA2121">&#39;--stop_time&#39;</span>, <span style="color: #008000">type</span><span style="color: #666666">=</span><span style="color: #008000">float</span>, default<span style="color: #666666">=</span><span style="color: #008000">self</span><span style="color: #666666">.</span>T,
+            help<span style="color: #666666">=</span><span style="color: #BA2121">&#39;end time of simulation&#39;</span>, metavar<span style="color: #666666">=</span><span style="color: #BA2121">&#39;T&#39;</span>)
+        <span style="color: #008000; font-weight: bold">return</span> parser
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">init_from_command_line</span>(<span style="color: #008000">self</span>, args):
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>I, <span style="color: #008000">self</span><span style="color: #666666">.</span>a, <span style="color: #008000">self</span><span style="color: #666666">.</span>T <span style="color: #666666">=</span> args<span style="color: #666666">.</span>I, args<span style="color: #666666">.</span>a, args<span style="color: #666666">.</span>T
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">exact_solution</span>(<span style="color: #008000">self</span>, t):
+        I, a <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>I, <span style="color: #008000">self</span><span style="color: #666666">.</span>a
+        <span style="color: #008000; font-weight: bold">return</span> I<span style="color: #666666">*</span>exp(<span style="color: #666666">-</span>a<span style="color: #666666">*</span>t)
+</pre></div>
+<p>
+Observe
 
 <p>
 
 <ul>
- <p><li> The previous <code>Problem</code> and <code>Solver</code> classes soon contain
-   much repetitive code when the number of parameters increases</li>
- <p><li> Much of such code can be parameterized and be made more compact</li>
- <p><li> Idea: collect all parameters in a dictionary <code>self.prms</code>,
-   with two associated dictionaries <code>self.types</code> and
-   <code>self.help</code> for holding associated object types and help strings</li>
- <p><li> Collect common code in class <code>Parameters</code></li>
- <p><li> Let <code>Problem</code>, <code>Solver</code>, and maybe <code>Visualizer</code> be subclasses
-   of class <code>Parameters</code>, basically defining <code>self.prms</code>, <code>self.types</code>,
-   <code>self.help</code></li>
+ <p><li> Can utilize user's <code>ArgumentParser</code>, or make one</li>
+ <p><li> <code>None</code> is used to indicate an "empty" (non-initialized) variable</li>
 </ul>
 
 <p>

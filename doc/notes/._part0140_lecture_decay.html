@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,42 +504,80 @@ $$
 <p>
 <!-- !split -->
 
-<h3>The Odespy software  <a name="___sec149"></a></h3>
-
-<p>
-<a href="https://github.com/hplgit/odespy">Odespy</a>
-features simple Python implementations of the most fundamental
-schemes as well as Python interfaces to several famous packages for
-solving ODEs: <a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">ODEPACK</a>,
-<a href="https://computation.llnl.gov/casc/odepack/odepack_home.html">Vode</a>,
-<a href="http://www.netlib.org/ode/rkc.f">rkc.f</a>,
-<a href="http://www.netlib.org/ode/rkf45.f">rkf45.f</a>,
-<a href="http://www.unige.ch/~hairer/software.html">Radau5</a>, as well
-as the ODE solvers in
-<a href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html">SciPy</a>,
-<a href="http://docs.sympy.org/dev/modules/mpmath/calculus/odes.html">SymPy</a>, and
-<a href="http://olivierverdier.github.com/odelab/">odelab</a>.
-
-<p>
-Typical usage:
+<h3>Verification via manufactured solutions <a name="decay:MMS"></a></h3>
 
 <p>
 
-<!-- code=text typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">def f(u, t):
-    return -a*u
+<ul>
+ <p><li> Choose <em>any</em> formula for \( u(t) \).</li>
+ <p><li> Fit I, \( a(t) \), and \( b(t) \) in \( u'=-au+b \), \( u(0)=I \),
+   to make the chosen formula a solution of the ODE problem.</li>
+ <p><li> Then we can always have an analytical solution (!).</li>
+ <p><li> Ideal for verification: testing convergence rates.</li>
+ <p><li> Called the <em>method of manufactured solutions</em> (MMS)</li>
+ <p><li> Special case: \( u \) linear in \( t \), because all sound numerical
+   methods will reproduce a linear \( u \) exactly (machine precision).</li>
+ <p><li> \( u(t) = ct + d \). \( u(0)=0 \) means \( d=I \).</li>
+ <p><li> ODE implies \( c = -a(t)u + b(t) \).</li>
+ <p><li> Choose \( a(t) \) and \( c \), and set \( b(t) = c + a(t)(ct + I) \).</li>
+ <p><li> Any error in the formula for \( u^{n+1} \) makes \( u\neq ct+I \)!</li>
+</ul>
 
-import odespy
-import numpy as np
+We can easily show that a linear \( u^n = ct_n+I \) fulfills the discrete
+equations for the Forward Euler, Backward Euler, and Crank-Nicolson
+schemes. First,
 
-I = 1; a = 2; T = 6; dt = 1
+<p>
+$$
+\begin{align}
+\lbrack D_t^+ t\rbrack^n &= \frac{t_{n+1}-t_n}{\Delta t}=1,\label{decay:fd2:Dop:tn:fw}\\ 
+\lbrack D_t^- t\rbrack^n &= \frac{t_{n}-t_{n-1}}{\Delta t}=1,\label{decay:fd2:Dop:tn:bw}\\ 
+\lbrack D_t t\rbrack^n &= \frac{t_{n+\frac{1}{2}}-t_{n-\frac{1}{2}}}{\Delta t}=\frac{(n+\frac{1}{2})\Delta t - (n-\frac{1}{2})\Delta t}{\Delta t}=1\label{decay:fd2:Dop:tn:cn}
+\thinspace .
+\end{align}
+$$
 
-solver = odespy.RK4(f)
-solver.set_initial_condition(I)
+The difference equation for the Forward Euler scheme
 
-t_mesh = np.linspace(0, T, Nt+1)
+<p>
+$$ [D^+ u = -au + b]^n, $$
 
-u, t = solver.solve(t_mesh)
+with \( a^n=a(t_n) \), \( b^n=c + a(t_n)(ct_n + I) \), and \( u^n=ct_n + I \)
+then results in
+
+<p>
+$$ c = -a(t_n)(ct_n+I) + c + a(t_n)(ct_n + I) = c $$
+
+
+<p>
+Verification function as a nose test:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_linear_solution</span>():
+    <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BA2121; font-style: italic">    Test problem where u=c*t+I is the exact solution, to be</span>
+<span style="color: #BA2121; font-style: italic">    reproduced (to machine precision) by any relevant method.</span>
+<span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">exact_solution</span>(t):
+        <span style="color: #008000; font-weight: bold">return</span> c<span style="color: #666666">*</span>t <span style="color: #666666">+</span> I
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">a</span>(t):
+        <span style="color: #008000; font-weight: bold">return</span> t<span style="color: #666666">**0.5</span>  <span style="color: #408080; font-style: italic"># can be arbitrary</span>
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">b</span>(t):
+        <span style="color: #008000; font-weight: bold">return</span> c <span style="color: #666666">+</span> a(t)<span style="color: #666666">*</span>exact_solution(t)
+
+    theta <span style="color: #666666">=</span> <span style="color: #666666">0.4</span>; I <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>; dt <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>; c <span style="color: #666666">=</span> <span style="color: #666666">-0.5</span>
+    T <span style="color: #666666">=</span> <span style="color: #666666">4</span>
+    Nt <span style="color: #666666">=</span> <span style="color: #008000">int</span>(T<span style="color: #666666">/</span>dt)  <span style="color: #408080; font-style: italic"># no of steps</span>
+    u, t <span style="color: #666666">=</span> solver(I<span style="color: #666666">=</span>I, a<span style="color: #666666">=</span>a, b<span style="color: #666666">=</span>b, T<span style="color: #666666">=</span>Nt<span style="color: #666666">*</span>dt, dt<span style="color: #666666">=</span>dt, theta<span style="color: #666666">=</span>theta)
+    u_e <span style="color: #666666">=</span> exact_solution(t)
+    difference <span style="color: #666666">=</span> <span style="color: #008000">abs</span>(u_e <span style="color: #666666">-</span> u)<span style="color: #666666">.</span>max()  <span style="color: #408080; font-style: italic"># max deviation</span>
+    <span style="color: #008000; font-weight: bold">print</span> difference
+    <span style="color: #408080; font-style: italic"># No of decimal places for comparison depend on size of c</span>
+    nt<span style="color: #666666">.</span>assert_almost_equal(difference, <span style="color: #666666">0</span>, places<span style="color: #666666">=14</span>)
 </pre></div>
 <p>
 <p>

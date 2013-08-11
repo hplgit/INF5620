@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,40 +504,24 @@ $$
 <p>
 <!-- !split -->
 
-<h3>The problem class  <a name="___sec102"></a></h3>
+<h3>Basic use of unittest  <a name="___sec98"></a></h3>
 
 <p>
-
-<ul>
- <p><li> Model problem: \( u'=-au \), \( u(0)=I \), for \( t\in (0,T] \).</li>
- <p><li> Class <code>Problem</code> stores the physical parameters \( a \), \( I \), \( T \)</li>
- <p><li> May also offer other data, e.g., \( \uex(t)=Ie^{-at} \)</li>
-</ul>
-
-Implementation:
+Write file <code>test_mymod.py</code>:
 
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #008000; font-weight: bold">import</span> exp
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">unittest</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">mymod</span>
 
-<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Problem</span>:
-    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__init__</span>(<span style="color: #008000">self</span>, I<span style="color: #666666">=1</span>, a<span style="color: #666666">=1</span>, T<span style="color: #666666">=10</span>):
-        <span style="color: #008000">self</span><span style="color: #666666">.</span>T, <span style="color: #008000">self</span><span style="color: #666666">.</span>I, <span style="color: #008000">self</span><span style="color: #666666">.</span>a <span style="color: #666666">=</span> I, <span style="color: #008000">float</span>(a), T
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">TestMyCode</span>(unittest<span style="color: #666666">.</span>TestCase):
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_double</span>(<span style="color: #008000">self</span>):
+        result <span style="color: #666666">=</span> mymod<span style="color: #666666">.</span>double(<span style="color: #666666">4</span>)
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>assertEqual(result, <span style="color: #666666">8</span>)
 
-    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">exact_solution</span>(<span style="color: #008000">self</span>, t):
-        I, a <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>I, <span style="color: #008000">self</span><span style="color: #666666">.</span>a     <span style="color: #408080; font-style: italic"># extract local variables</span>
-        <span style="color: #008000; font-weight: bold">return</span> I<span style="color: #666666">*</span>exp(<span style="color: #666666">-</span>a<span style="color: #666666">*</span>t)
-</pre></div>
-<p>
-Basic usage:
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">problem <span style="color: #666666">=</span> Problem(T<span style="color: #666666">=5</span>)
-problem<span style="color: #666666">.</span>T <span style="color: #666666">=</span> <span style="color: #666666">8</span>
-problem<span style="color: #666666">.</span>dt <span style="color: #666666">=</span> <span style="color: #666666">1.5</span>
+<span style="color: #008000; font-weight: bold">if</span> __name__ <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;__main__&#39;</span>:
+    unittest<span style="color: #666666">.</span>main()
 </pre></div>
 <p>
 <p>

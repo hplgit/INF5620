@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,28 +504,65 @@ $$
 <p>
 <!-- !split -->
 
-<h3>The problem class  <a name="___sec109"></a></h3>
+<h3>The visualizer class  <a name="___sec105"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Store data about what to plot (if any)</li>
+ <p><li> Offer different types of plots</li>
+ <p><li> Here: make just the same plot as in the previous <code>explore</code> function</li>
+</ul>
+
+Implementation:
 
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Problem</span>(Parameters):
-    <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-<span style="color: #BA2121; font-style: italic">    Physical parameters for the problem u&#39;=-a*u, u(0)=I,</span>
-<span style="color: #BA2121; font-style: italic">    with t in [0,T].</span>
-<span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__init__</span>(<span style="color: #008000">self</span>):
-        <span style="color: #008000">self</span><span style="color: #666666">.</span>prms <span style="color: #666666">=</span> <span style="color: #008000">dict</span>(I<span style="color: #666666">=1</span>, a<span style="color: #666666">=1</span>, T<span style="color: #666666">=10</span>)
-        <span style="color: #008000">self</span><span style="color: #666666">.</span>types <span style="color: #666666">=</span> <span style="color: #008000">dict</span>(I<span style="color: #666666">=</span><span style="color: #008000">float</span>, a<span style="color: #666666">=</span><span style="color: #008000">float</span>, T<span style="color: #666666">=</span><span style="color: #008000">float</span>)
-        <span style="color: #008000">self</span><span style="color: #666666">.</span>help <span style="color: #666666">=</span> <span style="color: #008000">dict</span>(I<span style="color: #666666">=</span><span style="color: #BA2121">&#39;initial condition, u(0)&#39;</span>,
-                         a<span style="color: #666666">=</span><span style="color: #BA2121">&#39;coefficient in ODE&#39;</span>,
-                         T<span style="color: #666666">=</span><span style="color: #BA2121">&#39;end time of simulation&#39;</span>)
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Visualizer</span>:
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__init__</span>(<span style="color: #008000">self</span>, problem, solver):
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>problem, <span style="color: #008000">self</span><span style="color: #666666">.</span>solver <span style="color: #666666">=</span> problem, solver
 
-    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">exact_solution</span>(<span style="color: #008000">self</span>, t):
-        I, a <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>get(<span style="color: #BA2121">&#39;I&#39;</span>), <span style="color: #008000">self</span><span style="color: #666666">.</span>get(<span style="color: #BA2121">&#39;a&#39;</span>)
-        <span style="color: #008000; font-weight: bold">return</span> I<span style="color: #666666">*</span>np<span style="color: #666666">.</span>exp(<span style="color: #666666">-</span>a<span style="color: #666666">*</span>t)
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">plot</span>(<span style="color: #008000">self</span>, include_exact<span style="color: #666666">=</span><span style="color: #008000">True</span>, plt<span style="color: #666666">=</span><span style="color: #008000">None</span>):
+        <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BA2121; font-style: italic">        Add solver.u curve to the plotting object plt,</span>
+<span style="color: #BA2121; font-style: italic">        and include the exact solution if include_exact is True.</span>
+<span style="color: #BA2121; font-style: italic">        This plot function can be called several times (if</span>
+<span style="color: #BA2121; font-style: italic">        the solver object has computed new solutions).</span>
+<span style="color: #BA2121; font-style: italic">        &quot;&quot;&quot;</span>
+        <span style="color: #008000; font-weight: bold">if</span> plt <span style="color: #AA22FF; font-weight: bold">is</span> <span style="color: #008000">None</span>:
+            <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">scitools.std</span>  <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">plt</span> <span style="color: #408080; font-style: italic"># can use matplotlib as well</span>
+
+        plt<span style="color: #666666">.</span>plot(<span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>t, <span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>u, <span style="color: #BA2121">&#39;--o&#39;</span>)
+        plt<span style="color: #666666">.</span>hold(<span style="color: #BA2121">&#39;on&#39;</span>)
+        theta2name <span style="color: #666666">=</span> {<span style="color: #666666">0</span>: <span style="color: #BA2121">&#39;FE&#39;</span>, <span style="color: #666666">1</span>: <span style="color: #BA2121">&#39;BE&#39;</span>, <span style="color: #666666">0.5</span>: <span style="color: #BA2121">&#39;CN&#39;</span>}
+        name <span style="color: #666666">=</span> theta2name<span style="color: #666666">.</span>get(<span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>theta, <span style="color: #BA2121">&#39;&#39;</span>)
+        legends <span style="color: #666666">=</span> [<span style="color: #BA2121">&#39;numerical </span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BA2121">&#39;</span> <span style="color: #666666">%</span> name]
+        <span style="color: #008000; font-weight: bold">if</span> include_exact:
+            t_e <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, <span style="color: #008000">self</span><span style="color: #666666">.</span>problem<span style="color: #666666">.</span>T, <span style="color: #666666">1001</span>)
+            u_e <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>problem<span style="color: #666666">.</span>exact_solution(t_e)
+            plt<span style="color: #666666">.</span>plot(t_e, u_e, <span style="color: #BA2121">&#39;b-&#39;</span>)
+            legends<span style="color: #666666">.</span>append(<span style="color: #BA2121">&#39;exact&#39;</span>)
+        plt<span style="color: #666666">.</span>legend(legends)
+        plt<span style="color: #666666">.</span>xlabel(<span style="color: #BA2121">&#39;t&#39;</span>)
+        plt<span style="color: #666666">.</span>ylabel(<span style="color: #BA2121">&#39;u&#39;</span>)
+        plt<span style="color: #666666">.</span>title(<span style="color: #BA2121">&#39;theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BA2121">, dt=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BA2121">&#39;</span> <span style="color: #666666">%</span>
+                  (<span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>theta, <span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>dt))
+        plt<span style="color: #666666">.</span>savefig(<span style="color: #BA2121">&#39;</span><span style="color: #BB6688; font-weight: bold">%s</span><span style="color: #BA2121">_</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BA2121">.png&#39;</span> <span style="color: #666666">%</span> (name, <span style="color: #008000">self</span><span style="color: #666666">.</span>solver<span style="color: #666666">.</span>dt))
+        <span style="color: #008000; font-weight: bold">return</span> plt
 </pre></div>
 <p>
+Remarks:
+
+<p>
+
+<ul>
+  <p><li> The <code>plt</code> object in <code>plot</code> adds a new curve to a plot,
+    which enables comparing different solutions from different
+    runs of <code>Solver.solve</code></li>
+  <p><li> Such different curves gets different colors</li>
+</ul>
+
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0106_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>

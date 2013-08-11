@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -497,119 +497,54 @@ $$
 <a name="part0143"></a>
 <!-- begin top navigation -->
 <a href="._part0142_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0144_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
 <!-- end top navigation -->
 
 <p>
 <!-- !split -->
 
-<h2>Other schemes <a name="decay:schemes"></a></h2>
-
-<h3>Implicit 2-step backward scheme  <a name="___sec153"></a></h3>
+<h3>Generic form  <a name="___sec148"></a></h3>
 
 <p>
-$$ u'(t_{n+1}) \approx \frac{3u^{n+1} - 4u^{n} + u^{n-1}}{2\Delta t},$$
-
-
-<p>
-Scheme:
-$$ u^{n+1} = \frac{4}{3}u^n - \frac{1}{3}u^{n-1} +
-\frac{2}{3}\Delta t f(u^{n+1}, t_{n+1})
-\thinspace .
-\label{decay:fd2:bw:2step}
-$$
-
-<h3>The Leapfrog scheme  <a name="___sec154"></a></h3>
-
-<p>
+The standard form for ODEs:
 $$
 \begin{equation}
-u'(t_n)\approx \frac{u^{n+1}-u^{n-1}}{2\Delta t} = [D_{2t} u]^n,
+u' = f(u,t),\quad u(0)=I,
+\label{decay:ode:general}
 \end{equation}
 $$
 
 
 <p>
-Scheme:
+\( u \) and \( f \): scalar or vector.
 
 <p>
-$$ [D_{2t} u = -a + b]^n,$$
+Vectors in case of ODE systems:
+$$ u(t) = (u^{(0)}(t),u^{(1)}(t),\ldots,u^{(m-1)}(t)) \thinspace . $$
 
-or, if we write out and solve for the unknown \( u^{n+1} \),
+
+<p>
 $$
-\begin{equation}
-u^{n+1} = u^{n-1} + \Delta t f(u^n, t_n)
+\begin{align*}
+f(u, t) = ( & f^{(0)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)),\\ 
+            & f^{(1)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)),\\ 
+            & \vdots\\ 
+            & f^{(m-1)}(u^{(0)}(t),\ldots,u^{(m-1)}(t)))
 \thinspace .
-\label{decay:fd2:leapfrog}
-\end{equation}
+\end{align*}
 $$
 
 
 <p>
-
-<ul>
- <p><li> Some other scheme must be used as starter (\( u^1 \)).</li>
- <p><li> Leapfrog is an explicit scheme - a nonlinear \( f \) (in \( u \)) is trivial
-   to handle.</li>
- <p><li> Leapfrog is unstable after some time.</li>
-</ul>
-
-<h3>The filtered Leapfrog scheme  <a name="___sec155"></a></h3>
+Higher-order ODEs are most often expressed as first-order systems.
 
 <p>
-After computing \( u^{n+1} \), stabilize Leapfrog by
-$$
-\begin{equation}
-u^n\ \leftarrow\ u^n + \gamma (u^{n-1} - 2u^n + u^{n+1})
-\label{decay:fd2:leapfrog:filtered}
-\thinspace .
-\end{equation}
-$$
-
-<h3>2nd-order Runge-Kutta scheme  <a name="___sec156"></a></h3>
-
-<p>
-Forward-Euler + approximate Crank-Nicolson:
-$$
-\begin{align}
-u^* &= u^n + \Delta t f(u^n, t_n),
-\label{decay:fd2:RK2:s1}\\ 
-u^{n+1} &= u^n + \Delta t \frac{1}{2} \left( f(u^n, t_n) + f(u^*, t_{n+1})
-\right),
-\label{decay:fd2:RK2:s2}
-\end{align}
-$$
-
-<h3>2nd-order Adams-Bashforth scheme  <a name="___sec157"></a></h3>
-
-<p>
-$$
-\begin{equation}
-u^{n+1} = u^n + \frac{1}{2}\Delta t\left( 3f(u^n, t_n) - f(u^{n-1}, t_{n-1})
-\right)
-\thinspace .
-\label{decay:fd2:AB2}
-\end{equation}
-$$
-
-<h3>3rd-order Adams-Bashforth scheme  <a name="___sec158"></a></h3>
-
-<p>
-$$
-\begin{equation}
-u^{n+1} = u^n + \frac{1}{12}\left( 23f(u^n, t_n) - 16 f(u^{n-1},t_{n-1})
-+ 5f(u^{n-2}, t_{n-2})\right)
-\thinspace .
-\label{decay:fd2:AB3}
-\end{equation}
-$$
-
-
-<p>
-<!-- RK4 -->
-
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0142_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0144_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
 <!-- end bottom navigation -->
 
 <!-- ------------------- end of main content --------------- -->

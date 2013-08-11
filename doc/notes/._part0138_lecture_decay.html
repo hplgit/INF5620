@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,7 +504,110 @@ $$
 <p>
 <!-- !split -->
 
-<h2>General first-order ODEs <a name="decay:1stODEs"></a></h2>
+<h3>Implementation of the generalized model problem <a name="decay:general"></a></h3>
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = ((1 - \Delta t(1-\theta)a^n)u^n
++ \Delta t(\theta b^{n+1} + (1-\theta)b^n))(1 + \Delta t\theta a^{n+1})^{-1}
+\thinspace .
+\end{equation}
+$$
+
+<h4>The Python code  <a name="___sec142"></a></h4>
+
+<p>
+Implementation where \( a(t) \) and \( b(t) \) are given as
+Python functions (see file <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_vc.py"><tt>decay_vc.py</tt></a>):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">solver</span>(I, a, b, T, dt, theta):
+    <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
+<span style="color: #BA2121; font-style: italic">    Solve u&#39;=-a(t)*u + b(t), u(0)=I,</span>
+<span style="color: #BA2121; font-style: italic">    for t in (0,T] with steps of dt.</span>
+<span style="color: #BA2121; font-style: italic">    a and b are Python functions of t.</span>
+<span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
+    dt <span style="color: #666666">=</span> <span style="color: #008000">float</span>(dt)            <span style="color: #408080; font-style: italic"># avoid integer division</span>
+    Nt <span style="color: #666666">=</span> <span style="color: #008000">int</span>(<span style="color: #008000">round</span>(T<span style="color: #666666">/</span>dt))     <span style="color: #408080; font-style: italic"># no of time intervals</span>
+    T <span style="color: #666666">=</span> Nt<span style="color: #666666">*</span>dt                 <span style="color: #408080; font-style: italic"># adjust T to fit time step dt</span>
+    u <span style="color: #666666">=</span> zeros(Nt<span style="color: #666666">+1</span>)           <span style="color: #408080; font-style: italic"># array of u[n] values</span>
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, T, Nt<span style="color: #666666">+1</span>)  <span style="color: #408080; font-style: italic"># time mesh</span>
+
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I                  <span style="color: #408080; font-style: italic"># assign initial condition</span>
+    <span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>, Nt):    <span style="color: #408080; font-style: italic"># n=0,1,...,Nt-1</span>
+        u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> ((<span style="color: #666666">1</span> <span style="color: #666666">-</span> dt<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a(t[n]))<span style="color: #666666">*</span>u[n] <span style="color: #666666">+</span> \ 
+                  dt<span style="color: #666666">*</span>(theta<span style="color: #666666">*</span>b(t[n<span style="color: #666666">+1</span>]) <span style="color: #666666">+</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>b(t[n])))<span style="color: #666666">/</span>\ 
+                  (<span style="color: #666666">1</span> <span style="color: #666666">+</span> dt<span style="color: #666666">*</span>theta<span style="color: #666666">*</span>a(t[n<span style="color: #666666">+1</span>]))
+    <span style="color: #008000; font-weight: bold">return</span> u, t
+</pre></div>
+
+<h4>Implementations of variable coefficients  <a name="___sec143"></a></h4>
+
+<p>
+Plain functions:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">a</span>(t):
+    <span style="color: #008000; font-weight: bold">return</span> a_0 <span style="color: #008000; font-weight: bold">if</span> t <span style="color: #666666">&lt;</span> tp <span style="color: #008000; font-weight: bold">else</span> k<span style="color: #666666">*</span>a_0
+
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">b</span>(t):
+    <span style="color: #008000; font-weight: bold">return</span> <span style="color: #666666">1</span>
+</pre></div>
+<p>
+Better implementation: class with the parameters <code>a0</code>, <code>tp</code>, and <code>k</code>
+as attributes and a <em>special method</em> <code>__call__</code> for evaluating \( a(t) \):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">A</span>:
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__init__</span>(<span style="color: #008000">self</span>, a0<span style="color: #666666">=1</span>, k<span style="color: #666666">=2</span>):
+        <span style="color: #008000">self</span><span style="color: #666666">.</span>a0, <span style="color: #008000">self</span><span style="color: #666666">.</span>k <span style="color: #666666">=</span> a0, k
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">__call__</span>(<span style="color: #008000">self</span>, t):
+        <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>a0 <span style="color: #008000; font-weight: bold">if</span> t <span style="color: #666666">&lt;</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>tp <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>k<span style="color: #666666">*</span><span style="color: #008000">self</span><span style="color: #666666">.</span>a0
+
+a <span style="color: #666666">=</span> A(a0<span style="color: #666666">=2</span>, k<span style="color: #666666">=1</span>)  <span style="color: #408080; font-style: italic"># a behaves as a function a(t)</span>
+</pre></div>
+<p>
+Use one-liner <em>lambda function</em>:
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">a <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">lambda</span> t: a_0 <span style="color: #008000; font-weight: bold">if</span> t <span style="color: #666666">&lt;</span> tp <span style="color: #008000; font-weight: bold">else</span> k<span style="color: #666666">*</span>a_0
+</pre></div>
+<p>
+In general,
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">f <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">lambda</span> arg1, arg2, <span style="color: #666666">...</span>: expressin
+</pre></div>
+<p>
+is equivalent to
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">f</span>(arg1, arg2, <span style="color: #666666">...</span>):
+    <span style="color: #008000; font-weight: bold">return</span> expression
+</pre></div>
+<p>
+One can use lambda functions directly in calls:
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u, t <span style="color: #666666">=</span> solver(<span style="color: #666666">1</span>, <span style="color: #008000; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, <span style="color: #008000; font-weight: bold">lambda</span> t: <span style="color: #666666">1</span>, T, dt, theta)
+</pre></div>
+<p>
+for a problem \( u'=-u+1 \), \( u(0)=1 \).
+
+<p>
+A lambda function can appear anywhere where a variable can appear.
 
 <p>
 <p>

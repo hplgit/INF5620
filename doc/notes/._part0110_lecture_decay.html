@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,31 +504,40 @@ $$
 <p>
 <!-- !split -->
 
-<h2>Analysis of finite difference equations <a name="decay:analysis"></a></h2>
+<h3>A generic class for parameters  <a name="___sec108"></a></h3>
 
 <p>
-Model:
-$$
-\begin{equation}
-u'(t) = -au(t),\quad u(0)=I,
-\end{equation}
-$$
 
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Parameters</span>:
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">set</span>(<span style="color: #008000">self</span>, <span style="color: #666666">**</span>parameters):
+        <span style="color: #008000; font-weight: bold">for</span> name <span style="color: #AA22FF; font-weight: bold">in</span> parameters:
+            <span style="color: #008000">self</span><span style="color: #666666">.</span>prms[name] <span style="color: #666666">=</span> parameters[name]
 
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">get</span>(<span style="color: #008000">self</span>, name):
+        <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>prms[name]
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">define_command_line_options</span>(<span style="color: #008000">self</span>, parser<span style="color: #666666">=</span><span style="color: #008000">None</span>):
+        <span style="color: #008000; font-weight: bold">if</span> parser <span style="color: #AA22FF; font-weight: bold">is</span> <span style="color: #008000">None</span>:
+            <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">argparse</span>
+            parser <span style="color: #666666">=</span> argparse<span style="color: #666666">.</span>ArgumentParser()
+
+        <span style="color: #008000; font-weight: bold">for</span> name <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>prms:
+            tp <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>types[name] <span style="color: #008000; font-weight: bold">if</span> name <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>types <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000">str</span>
+            help <span style="color: #666666">=</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>help[name] <span style="color: #008000; font-weight: bold">if</span> name <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>help <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000">None</span>
+            parser<span style="color: #666666">.</span>add_argument(
+                <span style="color: #BA2121">&#39;--&#39;</span> <span style="color: #666666">+</span> name, default<span style="color: #666666">=</span><span style="color: #008000">self</span><span style="color: #666666">.</span>get(name), metavar<span style="color: #666666">=</span>name,
+                <span style="color: #008000">type</span><span style="color: #666666">=</span>tp, help<span style="color: #666666">=</span>help)
+
+        <span style="color: #008000; font-weight: bold">return</span> parser
+
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">init_from_command_line</span>(<span style="color: #008000">self</span>, args):
+        <span style="color: #008000; font-weight: bold">for</span> name <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">self</span><span style="color: #666666">.</span>prms:
+            <span style="color: #008000">self</span><span style="color: #666666">.</span>prms[name] <span style="color: #666666">=</span> <span style="color: #008000">getattr</span>(args, name)
+</pre></div>
 <p>
-Method:
-$$
-\begin{equation}
-u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n
-\label{decay:analysis:scheme}
-\end{equation}
-$$
+Slightly more advanced version in <a href="http://tinyurl.com/jvzzcfn/decay/class_decay_verf1.py"><tt>class_decay_verf1.py</tt></a>.
 
-
-<p>
-<div class="alert alert-block alert-question alert-text-normal"><b>Problem setting.</b>
-How good is this method? Is it safe to use it?
-</div>
 <p>
 <p>
 <!-- begin bottom navigation -->

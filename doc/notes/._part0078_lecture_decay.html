@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -518,141 +518,14 @@ E = C\Delta t^r,
 \end{equation}
 $$
 
-Unknown: \( C \) and \( r \).
-
-<h4>Estimating the convergence rate \( r \)  <a name="___sec77"></a></h4>
-
-<p>
-Perform numerical experiments: \( (\Delta t_i, E_i) \), \( i=0,\ldots,m-1 \).
 
 <p>
 
-<ol>
- <p><li> Take the logarithm of \eqref{decay:E:dt}, \( \ln E = r\ln \Delta t + \ln C \),
-    and fit a straight line to the data points \( (\Delta t_i, E_i) \),
-    \( i=0,\ldots,m-1 \).</li>
- <p><li> Consider two consecutive experiments, \( (\Delta t_i, E_i) \) and
-    \( (\Delta t_{i-1}, E_{i-1}) \). Dividing the equation
-    \( E_{i-1}=C\Delta t_{i-1}^r \) by \( E_{i}=C\Delta t_{i}^r \) and solving
-    for \( r \) yields</li>
-</ol>
+<ul>
+ <p><li> Unknown: \( C \) and \( r \).</li>
+ <p><li> Goal: estimate \( r \) (and \( C \)) from numerical experiments</li>
+</ul>
 
-$$
-\begin{equation}
-r_{i-1} = \frac{\ln (E_{i-1}/E_i)}{\ln (\Delta t_{i-1}/\Delta t_i)}
-\label{decay:conv:rate}
-\end{equation}
-$$
-
-for \( i=1,=\ldots,m-1 \).
-
-<p>
-Method 2 is best.
-
-<h4>Implementation  <a name="___sec78"></a></h4>
-
-<p>
-Compute \( r_0, r_1, \ldots, r_{m-2} \):
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">from</span> <span style="color: #0000FF; font-weight: bold">math</span> <span style="color: #008000; font-weight: bold">import</span> log
-
-<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">main</span>():
-    I, a, T, makeplot, dt_values <span style="color: #666666">=</span> read_command_line()
-    r <span style="color: #666666">=</span> {}  <span style="color: #408080; font-style: italic"># estimated convergence rates</span>
-    <span style="color: #008000; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #666666">0</span>, <span style="color: #666666">0.5</span>, <span style="color: #666666">1</span>:
-        E_values <span style="color: #666666">=</span> []
-        <span style="color: #008000; font-weight: bold">for</span> dt <span style="color: #AA22FF; font-weight: bold">in</span> dt_values:
-            E <span style="color: #666666">=</span> explore(I, a, T, dt, theta, makeplot<span style="color: #666666">=</span><span style="color: #008000">False</span>)
-            E_values<span style="color: #666666">.</span>append(E)
-
-        <span style="color: #408080; font-style: italic"># Compute convergence rates</span>
-        m <span style="color: #666666">=</span> <span style="color: #008000">len</span>(dt_values)
-        r[theta] <span style="color: #666666">=</span> [log(E_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>E_values[i])<span style="color: #666666">/</span>
-                    log(dt_values[i<span style="color: #666666">-1</span>]<span style="color: #666666">/</span>dt_values[i])
-                    <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, m, <span style="color: #666666">1</span>)]
-
-    <span style="color: #008000; font-weight: bold">for</span> theta <span style="color: #AA22FF; font-weight: bold">in</span> r:
-        <span style="color: #008000; font-weight: bold">print</span> <span style="color: #BA2121">&#39;</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BA2121">Pairwise convergence rates for theta=</span><span style="color: #BB6688; font-weight: bold">%g</span><span style="color: #BA2121">:&#39;</span> <span style="color: #666666">%</span> theta
-        <span style="color: #008000; font-weight: bold">print</span> <span style="color: #BA2121">&#39; &#39;</span><span style="color: #666666">.</span>join([<span style="color: #BA2121">&#39;</span><span style="color: #BB6688; font-weight: bold">%.2f</span><span style="color: #BA2121">&#39;</span> <span style="color: #666666">%</span> r_ <span style="color: #008000; font-weight: bold">for</span> r_ <span style="color: #AA22FF; font-weight: bold">in</span> r[theta]])
-    <span style="color: #008000; font-weight: bold">return</span> r
-</pre></div>
-<p>
-Complete program: <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_convrate.py"><tt>decay_convrate.py</tt></a>.
-
-<p>
-Example on execution:
-
-<p>
-
-<!-- code=bash (from !bc sys) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay_convrate.py --dt 0.5 0.25 0.1 0.05 0.025 0.01
-...
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>0:
-1.33 1.15 1.07 1.03 1.02
-
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>0.5:
-2.14 2.07 2.03 2.01 2.01
-
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>1:
-0.98 0.99 0.99 1.00 1.00
-</pre></div>
-
-<h4>Verification  <a name="___sec79"></a></h4>
-
-<p>
-Strong verification method: verify that \( r \) has the expected value!
-
-<h4>Debugging via convergence rates  <a name="___sec80"></a></h4>
-
-<p>
-Potential bug: missing <code>a</code> in the denominator,
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt)<span style="color: #666666">*</span>u[n]
-</pre></div>
-<p>
-Running <code>decay_convrate.py</code> gives same rates.
-
-<p>
-Why? The value of \( a \)... (\( a=1 \))
-
-<p>
-0 and 1 are <em>bad values</em> in tests!
-
-<p>
-Better:
-<p>
-
-<!-- code=bash (from !bc sys) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">Terminal&gt; python decay_convrate.py --a 2.1 --I 0.1  <span style="color: #BB6622; font-weight: bold">\ </span>
-          --dt 0.5 0.25 0.1 0.05 0.025 0.01
-...
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>0:
-1.49 1.18 1.07 1.04 1.02
-
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>0.5:
--1.42 -0.22 -0.07 -0.03 -0.01
-
-Pairwise convergence rates <span style="color: #008000; font-weight: bold">for </span><span style="color: #19177C">theta</span><span style="color: #666666">=</span>1:
-0.21 0.12 0.06 0.03 0.01
-</pre></div>
-<p>
-Forward Euler works...because \( \theta=0 \) hides the bug.
-
-<p>
-This bug gives \( r\approx 0 \):
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> ((<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u[n]
-</pre></div>
-<p>
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0077_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>

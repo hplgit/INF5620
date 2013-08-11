@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,99 +504,34 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Memory-saving implementation  <a name="___sec81"></a></h3>
+<h3>Estimating the convergence rate \( r \)  <a name="___sec77"></a></h3>
+
+<p>
+Perform numerical experiments: \( (\Delta t_i, E_i) \), \( i=0,\ldots,m-1 \).
 
 <p>
 
-<ul>
- <p><li> Note 1: we store the entire array <code>u</code>, i.e., \( u^n \) for \( n=0,1,\ldots,N_t \)</li>
- <p><li> Note 2: the formula for \( u^{n+1} \) needs \( u^n \) only, not \( u^{n-1} \), \( u^{n-2} \), ...</li>
- <p><li> No need to store more than \( u^{n+1} \) and \( u^{n} \)</li>
- <p><li> Extremely important when solving PDEs</li>
- <p><li> No practical importance here (much memory available)</li>
- <p><li> But let's illustrate how to do save memory!</li>
- <p><li> Idea 1: store \( u^{n+1} \) in <code>u</code>, \( u^n \) in <code>u_1</code> (<code>float</code>)</li>
- <p><li> Idea 2: store <code>u</code> in a file, read file later for plotting</li>
-</ul>
+<ol>
+ <p><li> Take the logarithm of \eqref{decay:E:dt}, \( \ln E = r\ln \Delta t + \ln C \),
+    and fit a straight line to the data points \( (\Delta t_i, E_i) \),
+    \( i=0,\ldots,m-1 \).</li>
+ <p><li> Consider two consecutive experiments, \( (\Delta t_i, E_i) \) and
+    \( (\Delta t_{i-1}, E_{i-1}) \). Dividing the equation
+    \( E_{i-1}=C\Delta t_{i-1}^r \) by \( E_{i}=C\Delta t_{i}^r \) and solving
+    for \( r \) yields</li>
+</ol>
+
+$$
+\begin{equation}
+r_{i-1} = \frac{\ln (E_{i-1}/E_i)}{\ln (\Delta t_{i-1}/\Delta t_i)}
+\label{decay:conv:rate}
+\end{equation}
+$$
+
+for \( i=1,=\ldots,m-1 \).
 
 <p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">solver_memsave</span>(I, a, T, dt, theta, filename<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sol.dat&#39;</span>):
-    <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-<span style="color: #BA2121; font-style: italic">    Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.</span>
-<span style="color: #BA2121; font-style: italic">    Minimum use of memory. The solution is stored in a file</span>
-<span style="color: #BA2121; font-style: italic">    (with name filename) for later plotting.</span>
-<span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-    dt <span style="color: #666666">=</span> <span style="color: #008000">float</span>(dt)         <span style="color: #408080; font-style: italic"># avoid integer division</span>
-    Nt <span style="color: #666666">=</span> <span style="color: #008000">int</span>(<span style="color: #008000">round</span>(T<span style="color: #666666">/</span>dt))  <span style="color: #408080; font-style: italic"># no of intervals</span>
-
-    outfile <span style="color: #666666">=</span> <span style="color: #008000">open</span>(filename, <span style="color: #BA2121">&#39;w&#39;</span>)
-    <span style="color: #408080; font-style: italic"># u: time level n+1, u_1: time level n</span>
-    t <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-    u_1 <span style="color: #666666">=</span> I
-    outfile<span style="color: #666666">.</span>write(<span style="color: #BA2121">&#39;</span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BA2121">  </span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BA2121">&#39;</span> <span style="color: #666666">%</span> (t, u_1))
-    <span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Nt<span style="color: #666666">+1</span>):
-        u <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)<span style="color: #666666">*</span>u_1
-        u_1 <span style="color: #666666">=</span> u
-        t <span style="color: #666666">+=</span> dt
-        outfile<span style="color: #666666">.</span>write(<span style="color: #BA2121">&#39;</span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BA2121">  </span><span style="color: #BB6688; font-weight: bold">%.16E</span><span style="color: #BB6622; font-weight: bold">\n</span><span style="color: #BA2121">&#39;</span> <span style="color: #666666">%</span> (t, u))
-    outfile<span style="color: #666666">.</span>close()
-    <span style="color: #008000; font-weight: bold">return</span> u, t
-</pre></div>
-<p>
-Reading the computed data:
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">read_file</span>(filename<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sol.dat&#39;</span>):
-    infile <span style="color: #666666">=</span> <span style="color: #008000">open</span>(filename, <span style="color: #BA2121">&#39;r&#39;</span>)
-    u <span style="color: #666666">=</span> [];  t <span style="color: #666666">=</span> []
-    <span style="color: #008000; font-weight: bold">for</span> line <span style="color: #AA22FF; font-weight: bold">in</span> infile:
-        words <span style="color: #666666">=</span> line<span style="color: #666666">.</span>split()
-        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">len</span>(words) <span style="color: #666666">!=</span> <span style="color: #666666">2</span>:
-            <span style="color: #008000; font-weight: bold">print</span> <span style="color: #BA2121">&#39;Found more than two numbers on a line!&#39;</span>, words
-            sys<span style="color: #666666">.</span>exit(<span style="color: #666666">1</span>)  <span style="color: #408080; font-style: italic"># abort</span>
-        t<span style="color: #666666">.</span>append(<span style="color: #008000">float</span>(words[<span style="color: #666666">0</span>]))
-        u<span style="color: #666666">.</span>append(<span style="color: #008000">float</span>(words[<span style="color: #666666">1</span>]))
-    <span style="color: #008000; font-weight: bold">return</span> np<span style="color: #666666">.</span>array(t), np<span style="color: #666666">.</span>array(u)
-</pre></div>
-<p>
-Simpler code with <code>numpy</code> functionality for reading/writing tabular data:
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">read_file_numpy</span>(filename<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sol.dat&#39;</span>):
-    data <span style="color: #666666">=</span> np<span style="color: #666666">.</span>loadtxt(filename)
-    t <span style="color: #666666">=</span> data[:,<span style="color: #666666">0</span>]
-    u <span style="color: #666666">=</span> data[:,<span style="color: #666666">1</span>]
-    <span style="color: #008000; font-weight: bold">return</span> t, u
-</pre></div>
-<p>
-Similar function <code>np.savetxt</code>, but then we need all \( u^n \) and \( t^n \) values
-in a two-dimensional array (which we try to prevent now!).
-
-<p>
-Usage:
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">explore</span>(I, a, T, dt, theta<span style="color: #666666">=0.5</span>, makeplot<span style="color: #666666">=</span><span style="color: #008000">True</span>):
-    filename <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;u.dat&#39;</span>
-    u, t <span style="color: #666666">=</span> solver_minmem(I, a, T, dt, theta, filename)
-
-    t, u <span style="color: #666666">=</span> read_file(filename)
-    u_e <span style="color: #666666">=</span> exact_solution(t, I, a)
-    e <span style="color: #666666">=</span> u_e <span style="color: #666666">-</span> u
-    E <span style="color: #666666">=</span> np<span style="color: #666666">.</span>sqrt(dt<span style="color: #666666">*</span>np<span style="color: #666666">.</span>sum(e<span style="color: #666666">**2</span>))
-    <span style="color: #008000; font-weight: bold">if</span> makeplot:
-        plt<span style="color: #666666">.</span>figure()
-        <span style="color: #666666">...</span>
-</pre></div>
-<p>
-Complete program: <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_memsave.py"><tt>decay_memsave.py</tt></a>.
+Method 2 is best.
 
 <p>
 <p>

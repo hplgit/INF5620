@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="INF5620 Lectures: Exponential Decay ODEs">
 <meta name="keywords" content="decay (problem),exponential decay,mesh,grid,mesh function,finite differences,difference equation,discrete equation,algebraic equation,finite difference scheme,Forward Euler scheme,backward scheme, 1-step,Backward Euler scheme,Crank-Nicolson scheme,weighted average,theta-rule,$\theta$-rule,finite difference operator notation,operator notation, finite differences,modules (Python),test block (Python modules),module import,doctests,software testing doctests,unit testing,software testing nose,unit testing,problem class,solver class,visualizer class,problem class,solver class,visualizer class,numerical experiments,scientific experiments,script,Unix wildcard notation,stability,consistency,stability,convergence,lambda functions,method of manufactured solutions,MMS (method of manufactured solutions),backward scheme, 2-step,BDF2 scheme,Leapfrog scheme,Leapfrog scheme, filtered,Heun's method,Runge-Kutta, 2nd-order scheme,Adams-Bashforth scheme, 2nd order,Adams-Bashforth scheme, 3rd order">
 
@@ -232,10 +232,10 @@ Automatically generated HTML file from Doconce source
                1,
                'decay:convrates',
                'decay:convrates'),
-              (' Estimating the convergence rate $r$ ', 3, None, '___sec77'),
-              (' Implementation ', 3, None, '___sec78'),
-              (' Verification ', 3, None, '___sec79'),
-              (' Debugging via convergence rates ', 3, None, '___sec80'),
+              (' Estimating the convergence rate $r$ ', 2, None, '___sec77'),
+              (' Implementation ', 2, None, '___sec78'),
+              (' Execution ', 2, None, '___sec79'),
+              (' Debugging via convergence rates ', 2, None, '___sec80'),
               (' Memory-saving implementation ', 2, None, '___sec81'),
               (' Software engineering ', 1, 'decay:softeng', 'decay:softeng'),
               (' Making a module ', 2, None, '___sec83'),
@@ -256,7 +256,7 @@ Automatically generated HTML file from Doconce source
               (' Advantages of nose ', 2, None, '___sec92'),
               (' Demonstrating nose ', 2, None, '___sec93'),
               (' Floats as test results ', 2, None, '___sec94'),
-              (' Testing for wrong use ', 2, None, '___sec95'),
+              (' Test of wrong use ', 2, None, '___sec95'),
               (' Test of convergence rates ', 2, None, '___sec96'),
               (' Classical unit testing with unittest ', 2, None, '___sec97'),
               (' Basic use of unittest ', 2, None, '___sec98'),
@@ -504,32 +504,37 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Consistency, stability, and convergence  <a name="___sec136"></a></h3>
+<h3>The true/global error at a point <a name="decay:analysis:gobal:error"></a></h3>
+
+<p>
+Focus: the global error \( e^n = \uex(t_n) - u^n \)
+
+<p>
+
+<!-- code=text (from !bc ipy) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; n = Symbol(&#39;n&#39;)
+&gt;&gt;&gt; u_e = exp(-p*n)   # I=1
+&gt;&gt;&gt; u_n = A**n        # I=1
+&gt;&gt;&gt; FE = u_e.series(p, 4) - u_n.subs(theta, 0).series(p, 4)
+&gt;&gt;&gt; BE = u_e.series(p, 4) - u_n.subs(theta, 1).series(p, 4)
+&gt;&gt;&gt; CN = u_e.series(p, 4) - u_n.subs(theta, half).series(p, 4)
+&gt;&gt;&gt; FE
+(1/2)*n*p**2 - 1/2*n**2*p**3 + (1/3)*n*p**3 + O(p**4)
+&gt;&gt;&gt; BE
+(1/2)*n**2*p**3 - 1/2*n*p**2 + (1/3)*n*p**3 + O(p**4)
+&gt;&gt;&gt; CN
+(1/12)*n*p**3 + O(p**4)
+</pre></div>
+<p>
+Substitute \( n \) by \( t/\Delta t \):
 
 <p>
 
 <ul>
-  <p><li> Truncation error measures the residual in the difference equations.
-    The scheme is <em>consistent</em> if the truncation error goes to 0
-    as \( \Delta t\rightarrow 0 \). Importance: the difference equations
-    approaches the differential equation as \( \Delta t\rightarrow 0 \).</li>
-  <p><li> <em>Stability</em> means that the numerical solution exhibits the same
-    qualitative properties as the exact solution. Here: monotone,
-    decaying function.</li>
-  <p><li> <em>Convergence</em> implies that the true (global) error
-    \( e^n =\uex(t_n)-u^n\rightarrow 0 \) as \( \Delta t\rightarrow 0 \).
-    This is really what we want!</li>
+ <p><li> Forward and Backward Euler: leading order term \( \frac{1}{2}ta^2t\Delta t \)</li>
+ <p><li> Crank-Nicolson: leading order term \( \frac{1}{12}ta^3\Delta t^2 \)</li>
 </ul>
 
-The Lax equivalence theorem for <em>linear</em> differential equations:
-consistency + stability is equivalent with convergence.
-
-<p>
-(Consistency and stability is in most problems
-much easier to establish than
-convergence.)
-
-<p>
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0129_lecture_decay.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
