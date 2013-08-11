@@ -30,7 +30,7 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
         t_e = linspace(0, T, 1001)       # fine mesh for u_e
         u_e = exact_solution(t_e, I, a)
         theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
-        plot(t,   u,   'r--oo',          # red dashes w/circles
+        plot(t,   u,   'r--o',           # red dashes w/circles
              t_e, u_e, 'b-',             # blue line for exact sol.
              legend=['numerical', 'exact'],
              xlabel='t',
@@ -38,9 +38,9 @@ def explore(I, a, T, dt, theta=0.5, makeplot=True):
              title='theta=%g, dt=%g' %
              (theta, dt),
              savefig='%s_%g.png' % (theta2name[theta], dt),
-             savefig='%s_%g.pdf' % (theta2name[theta], dt),
-             savefig='%s_%g.eps' % (theta2name[theta], dt),
              show=True)
+        savefig='%s_%g.pdf' % (theta2name[theta], dt)
+        savefig='%s_%g.eps' % (theta2name[theta], dt)
     return E
 
 def main(I, a, T, dt_values, theta_values=(0, 0.5, 1)):

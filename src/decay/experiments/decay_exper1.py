@@ -24,7 +24,6 @@ def run_experiments(I=1, a=2, T=5):
         print 'Command failed:', cmd; sys.exit(1)
 
     errors = {'dt': dt_values, 1: [], 0: [], 0.5: []}
-    min_E = 1E+20; max_E = -min_E  # keep track of min/max E for axis
     for line in output.splitlines():
         words = line.split()
         if words[0] in ('0.0', '0.5', '1.0'):  # line with E?
@@ -32,7 +31,12 @@ def run_experiments(I=1, a=2, T=5):
             theta = float(words[0])
             E = float(words[2])
             errors[theta].append(E)
-            min_E = min(min_E, E);  max_E = max(max_E, E)
+
+    # Find min/max for the axis
+    E_min = 1E+20; E_max = -E_min
+    for theta in 0, 0.5, 1:
+        E_min = min(E_min, min(errors[theta]))
+        E_max = max(E_max, max(errors[theta]))
 
     plt.loglog(errors['dt'], errors[0], 'ro-')
     #plt.hold('on')  # Matlab style...
@@ -41,7 +45,7 @@ def run_experiments(I=1, a=2, T=5):
     plt.legend(['FE', 'CN', 'BE'], loc='upper left')
     plt.xlabel('log(time step)')
     plt.ylabel('log(error)')
-    plt.axis([min(dt_values), max(dt_values), min_E, max_E])
+    plt.axis([min(dt_values), max(dt_values), E_min, E_max])
     plt.title('Error vs time step')
     plt.savefig('error.png')
     plt.savefig('error.pdf')

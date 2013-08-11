@@ -64,25 +64,25 @@ class Visualizer:
 
     def plot(self, include_exact=True, plt=None):
         """
-        Add solver.u curve to scitools plotting object plt,
+        Add solver.u curve to the plotting object plt,
         and include the exact solution if include_exact is True.
         This plot function can be called several times (if
         the solver object has computed new solutions).
         """
         if plt is None:
-            import scitools.std
-            plt = scitools.std
+            import scitools.std  as plt # can use matplotlib as well
 
         plt.plot(self.solver.t, self.solver.u, '--o')
         plt.hold('on')
         theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
-        name = self.solver.theta2name.get(self.solver.theta, '')
-        plt.legend('numerical %s' % name)
+        name = theta2name.get(self.solver.theta, '')
+        legends = ['numerical %s' % name]
         if include_exact:
             t_e = linspace(0, self.problem.T, 1001)
             u_e = self.problem.exact_solution(t_e)
             plt.plot(t_e, u_e, 'b-')
-            plt.legend('exact')
+            legends.append('exact')
+        plt.legend(legends)
         plt.xlabel('t')
         plt.ylabel('u')
         plt.title('theta=%g, dt=%g' %
@@ -104,7 +104,9 @@ def main():
 
     # Solve and plot
     solver.solve()
-    plt = viz.plot()
+    import matplotlib.pyplot as plt
+    #import scitools.std as plt
+    plt = viz.plot(plt=plt)
     E = solver.error()
     if E is not None:
         print 'Error: %.4E' % E

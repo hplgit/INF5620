@@ -202,7 +202,7 @@ mv -f tmp.html index.html
 doconce replace 'TITLE: Examples of scientific reports in different formats' 'TITLE: Examples of scientific reports in different formats and how they are made' tmp.do.txt
 doconce format html tmp -DCODE
 if [ $? -ne 0 ]; then failures="$failures:doconce-reports/tmp.do.txt"; fi
-mv -f tmp.html doconce_commands.html
+mv -f tmp.html index_with_doconce_commands.html
 
 pyg="pygmentize -f html -O full,style=emacs"
 for file in *.html; do
@@ -284,7 +284,10 @@ cd ..
 # Archive
 rm -rf archived-reports
 cp -r $dir archived-reports
-rm -rf archived-reports/rootdir  # not to be archived
+cd archived-reports
+# not to be archived:
+rm -rf rootdir  style* latex_figs html_images publish_config.py report.do.txt
+cd ..
 #cp -r archived-reports/* ~/vc/INF5620/doc/writing_reports/
 
 #sh clean.sh

@@ -94,8 +94,7 @@ class Solver(Parameters):
                          theta='time discretization parameter')
 
     def solve(self):
-        #from decay_mod import solver
-        from decay_theta import solver
+        from decay_mod import solver
         self.u, self.t = solver(
             self.problem.get('I'),
             self.problem.get('a'),
@@ -124,20 +123,20 @@ class Visualizer:
         the solver object has computed new solutions).
         """
         if plt is None:
-            import scitools.std
-            plt = scitools.std
+            import scitools.std as plt
 
         plt.plot(self.solver.t, self.solver.u, '--o')
         plt.hold('on')
         theta = self.solver.get('theta')
         theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
         name = theta2name.get(theta, '')
-        plt.legend('numerical %s' % name)
+        legends = ['numerical %s' % name]
         if include_exact:
             t_e = np.linspace(0, self.problem.get('T'), 1001)
             u_e = self.problem.exact_solution(t_e)
             plt.plot(t_e, u_e, 'b-')
-            plt.legend('exact')
+            legends.append('exact')
+        plt.legend(legends)
         plt.xlabel('t')
         plt.ylabel('u')
         dt = self.solver.get('dt')
@@ -159,7 +158,9 @@ def main():
 
     # Solve and plot
     solver.solve()
-    plt = viz.plot()
+    import matplotlib.pyplot as plt
+    #import scitools.std as plt
+    plt = viz.plot(plt=plt)
     E = solver.error()
     if E is not None:
         print 'Error: %.4E' % E

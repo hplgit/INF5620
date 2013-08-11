@@ -27,7 +27,7 @@ def non_physical_behavior(I, a, T, dt, theta):
     st.title('theta=%g' % theta)
     st.xlabel('a'); st.ylabel('dt')
     st.savefig('osc_region_theta_%s.png' % theta)
-    st.savefig('osc_region_theta_%s.eps' % theta)
+    st.savefig('osc_region_theta_%s.pdf' % theta)
 
 non_physical_behavior(
     I=1,

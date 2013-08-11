@@ -14,20 +14,21 @@ def amplification_factor(names):
     curves = {}
     p = linspace(0, 3, 15)
     curves['exact'] = A_exact(p)
+    plot(p, curves['exact'])
+    hold('on')
     name2theta = dict(FE=0, BE=1, CN=0.5)
     for name in names:
         curves[name] = A(p, name2theta[name])
         plot(p, curves[name])
-        hold('on')
     plot([p[0], p[-1]], [0, 0], '--')  # A=0 line
     title('Amplification factors')
     grid('on')
-    legend(names + ['exact'], loc='lower left', fancybox=True)
+    legend(['exact'] + names, loc='lower left', fancybox=True)
     xlabel('a*dt')
     ylabel('A')
     savefig('A_factors.png')
-    savefig('A_factors.eps')
     savefig('A_factors.pdf')
+    savefig('A_factors.eps')
     show()
 
 if __name__ == '__main__':

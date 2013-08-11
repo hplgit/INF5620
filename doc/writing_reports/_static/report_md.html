@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script src="https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<p><em>Summary.</em> This report investigates the accuracy of three finite difference schemes for the ordinary differential equation \(u&#39;=-au\) with the aid of numerical experiments. Numerical artifacts are in particular demonstrated.</p>
+<!-- 
+
+Table of contents: Run pandoc with --toc option -->
+
+
+
+
+<h2 id="mathematical-problem">Mathematical problem</h2>
+<p>We address the initial-value problem</p>
+<p>\[
+\begin{equation}
+u&#39;(t) = -au(t), \quad t \in (0,T], \label{ode}
+\end{equation}
+\]</p>
+<p>\[
+\begin{equation} 
+u(0)  = I,                         \label{initial:value}
+\end{equation}
+\] where \(a\), \(I\), and \(T\) are prescribed parameters, and \(u(t)\) is the unknown function to be estimated. This mathematical model is relevant for physical phenomena featuring exponential decay in time, e.g., vertical pressure variation in the atmosphere, cooling of an object, and radioactive decay.</p>
+<h2 id="numerical-solution-method">Numerical solution method</h2>
+<p>We introduce a mesh in time with points \(0= t_0&lt; t_1 \cdots &lt; t_{N_t}=T\). For simplicity, we assume constant spacing \(\Delta t\) between the mesh points: \(\Delta t = t_{n}-t_{n-1}\), \(n=1,\ldots,N_t\). Let \(u^n\) be the numerical approximation to the exact solution at \(t_n\).</p>
+<p>The \(\theta\)-rule @Iserles_2009 is used to solve \eqref{ode} numerically:</p>
+<p>$$</p>
+<p>u^{n+1} = u^n,</p>
+<p>$$ for \(n=0,1,\ldots,N_t-1\). This scheme corresponds to</p>
+<ul>
+<li><p>The <a href="http://en.wikipedia.org/wiki/Forward_Euler_method">Forward Euler</a> scheme when \(\theta=0\)</p></li>
+<li><p>The <a href="http://en.wikipedia.org/wiki/Backward_Euler_method">Backward Euler</a> scheme when \(\theta=1\)</p></li>
+<li><p>The <a href="http://en.wikipedia.org/wiki/Crank-Nicolson">Crank-Nicolson</a> scheme when \(\theta=1/2\)</p></li>
+</ul>
+<h2 id="implementation">Implementation</h2>
+<p>The numerical method is implemented in a Python function @Langtangen_2012 <code>solver</code> (found in the <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/experiments/dc_mod.py"><code>decay_mod</code></a> module):</p>
+<pre class="sourceCode Python"><code class="sourceCode python"><span class="kw">def</span> solver(I, a, T, dt, theta):
+    <span class="co">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
+    dt = <span class="dt">float</span>(dt)            <span class="co"># avoid integer division</span>
+    Nt = <span class="dt">int</span>(<span class="dt">round</span>(T/dt))     <span class="co"># no of time intervals</span>
+    T = Nt*dt                 <span class="co"># adjust T to fit time step dt</span>
+    u = zeros(Nt<span class="dv">+1</span>)           <span class="co"># array of u[n] values</span>
+    t = linspace(<span class="dv">0</span>, T, Nt<span class="dv">+1</span>)  <span class="co"># time mesh</span>
+
+    u[<span class="dv">0</span>] = I                  <span class="co"># assign initial condition</span>
+    <span class="kw">for</span> n in <span class="dt">range</span>(<span class="dv">0</span>, Nt):    <span class="co"># n=0,1,...,Nt-1</span>
+        u[n<span class="dv">+1</span>] = (<span class="dv">1</span> - (<span class="dv">1</span>-theta)*a*dt)/(<span class="dv">1</span> + theta*dt*a)*u[n]
+    <span class="kw">return</span> u, t</code></pre>
+<h2 id="numerical-experiments">Numerical experiments</h2>
+<p>We define a set of numerical experiments where \(I\), \(a\), and \(T\) are fixed, while \(\Delta t\) and \(\theta\) are varied. In particular, \(I=1\), \(a=2\), \(\Delta t = 1.25, 0.75, 0.5, 0.1\).</p>
+<h3 id="the-backward-euler-method">The Backward Euler method</h3>
+<div class="figure">
+<img src="BE.png" /><p class="caption"></p>
+</div>
+<h3 id="the-crank-nicolson-method">The Crank-Nicolson method</h3>
+<div class="figure">
+<img src="CN.png" /><p class="caption"></p>
+</div>
+<h3 id="the-forward-euler-method">The Forward Euler method</h3>
+<div class="figure">
+<img src="FE.png" /><p class="caption"></p>
+</div>
+<h3 id="error-vs-delta-t">Error vs \(\Delta t\)</h3>
+<p>How \(E\) varies with \(\Delta t\) for \(\theta=0,0.5,1\) is shown below.</p>
+<p><em>Observe:</em> The data points for the three largest \(\Delta t\) values in the Forward Euler method are not relevant as the solution behaves non-physically.</p>
+<div class="figure">
+<img src="error.png" /><p class="caption"></p>
+</div>
+<p><em>Summary.</em> 1. \(\theta =1\): \(E\sim \Delta t\) (first-order convergence).</p>
+<ol start="2" style="list-style-type: decimal">
+<li><p>\(\theta =0.5\): \(E\sim \Delta t^2\) (second-order convergence).</p></li>
+<li><p>\(\theta =1\) is always stable and gives qualitatively corrects results.</p></li>
+<li><p>\(\theta =0.5\) never blows up, but may give oscillating solutions if \(\Delta t\) is not sufficiently small.</p></li>
+<li><p>\(\theta =0\) suffers from fast-growing solution if \(\Delta t\) is not small enough, but even below this limit one can have oscillating solutions that disappear if \(\Delta t\) is sufficiently small.</p></li>
+</ol>
+<h2 id="bibliography">Bibliography</h2>
+<ol style="list-style-type: decimal">
+<li><p> <em>A. Iserles</em>. <em>A First Course in the Numerical Analysis of Differential Equations</em>, Cambridge University Press, 2009.</p></li>
+<li><p> <em>H. P. Langtangen</em>. <em>A Primer on Scientific Programming With Python</em>, Springer, 2012.</p></li>
+</ol>
+</body>
+</html>
