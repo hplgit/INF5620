@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Aug 11, 2013
+:Date: Aug 17, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -125,7 +125,7 @@ A basic model for exponential decay
 -----------------------------------
 
 
-.. index:: decay (problem)
+.. index:: decay ODE
 
 .. index:: exponential decay
 
@@ -555,7 +555,12 @@ therefore be
 expressed by the quantities that we actually produce, i.e.,
 the numerical solution at the
 mesh points. One possibility is to approximate :math:`u^{n+\frac{1}{2}}`
-as an average of the :math:`u` values at the neighboring mesh points:
+as an arithmetic average of the :math:`u` values at the neighboring mesh points:
+
+
+.. index::
+   single: averaging; arithmetic
+
 
 
 .. math::
@@ -1007,10 +1012,10 @@ Python of several reasons:
   * Python code is very similar to MATLAB code (and MATLAB has a
     particularly widespread use for scientific computing).
 
+  * Python is a full-fledged, very powerful programming language.
+
   * Python is similar to, but much simpler to work with and
     results in more reliable code than C++.
-
-  * Python is a full-fledged, very powerful programming language.
 
   * Python has a rich set of modules for scientific computing, and its
     popularity in scientific computing is rapidly growing.
@@ -1229,7 +1234,7 @@ programming languages inherited from C. Another choice is
 Python's recent *format string syntax*.
 
 
-.. index:: printf format (Python)
+.. index:: printf format
 
 
 Writing ``t[i]`` and ``u[i]`` in two nicely formatted columns is done like
@@ -1914,8 +1919,8 @@ the mesh points is to introduce a very fine mesh for :math:`u_{\small\mbox{e}}(t
 
         t_e = linspace(0, T, 1001)      # fine mesh
         u_e = exact_solution(t_e, I, a)
-        plot(t,   u,   'r-')            # red  line for u
         plot(t_e, u_e, 'b-')            # blue line for u_e
+        plot(t,   u,   'r--o')          # red dashes w/circles
 
 
 With more than one curve in the plot we need to associate each curve
@@ -2010,14 +2015,7 @@ Calling ``figure()`` ensures this.
 .. index:: EPS plot
 
 
-.. index::
-   single: view; PNG plot
-
-.. index::
-   single: view; PDF plot
-
-.. index::
-   single: view; EPS plot
+.. index:: viewing graphics files
 
 
 The ``explore`` function stores the plot in three different image file formats:
@@ -2230,7 +2228,7 @@ Creating command-line interfaces
 .. index:: user interfaces to programs
 
 
-.. index:: command-line interfaces
+.. index:: command-line arguments
 
 
 It is good programming practice to let programs read input from the user
@@ -3037,7 +3035,7 @@ Making a module
 ---------------
 
 
-.. index:: modules (Python)
+.. index:: modules
 
 
 
@@ -3147,7 +3145,7 @@ desired functions in other programs. For example, we can in a file do
 
 
 
-.. index:: test block (Python modules)
+.. index:: test block (in modules)
 
 
 However, it should also be possible to both use ``decay_mod.py`` as
@@ -3199,7 +3197,7 @@ Prefixing imported functions by the module name
 -----------------------------------------------
 
 
-.. index:: module import
+.. index:: importing modules
 
 
 Import statements of the form ``from module import *`` import
@@ -3717,17 +3715,9 @@ The final test is to see that the convergence rates corresponding to
             import sys
             sys.argv[1:] = '--I 0.8 --a 2.1 --T 5 '\ 
                            '--dt 0.4 0.2 0.1 0.05 0.025'.split()
-            # Suppress output from decay_mod.main()
-            stdout = sys.stdout  # save standard output for later use
-            scratchfile = open('.tmp', 'w')  # fake standard output
-            sys.stdout = scratchfile
-        
             r = decay_mod.main()
             for theta in r:
                 nt.assert_true(r[theta])  # check for non-empty list
-        
-            scratchfile.close()
-            sys.stdout = stdout  # restore standard output
         
             expected_rates = {0: 1, 1: 1, 0.5: 2}
             for theta in r:
@@ -3800,7 +3790,7 @@ Classical class-based unit testing
 
 
 .. index::
-   single: software testing; unit testing
+   single: software testing; unit testing (class-based)
 
 
 The classical way of implementing unit tests derives from the JUnit
@@ -4877,7 +4867,7 @@ Doconce
 Since it is difficult to choose the right tool or format for writing
 a scientific report, it is advantageous to write the content in a
 format that easily translates to LaTeX, HTML, Sphinx, Markdown,
-and various wikis. `Doconce <http://code.google.com/p/doconce>`_ is such
+and various wikis. `Doconce <https://github.com/hplgit/doconce>`_ is such
 a tool. It is similar to Pandoc, but offers some special convenient
 features for writing about mathematics and programming.
 The `tagging is modest <http://tinyurl.com/k3sdbuv/writing_reports//_static/report.do.txt.html>`_,
@@ -5476,7 +5466,7 @@ Figures :ref:`decay:analysis:BE4c`, :ref:`decay:analysis:CN4c`, and
 
 The characteristics of the displayed curves can be summarized as follows:
 
-  * The Backward Euler scheme always give a monotone solution, lying above
+  * The Backward Euler scheme always gives a monotone solution, lying above
     the exact curve.
 
   * The Crank-Nicolson scheme gives the most accurate results, but for
@@ -5635,7 +5625,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x1272578>('notice', 'Solving difference equations', r"""
+<function admon at 0x2d80578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -6742,7 +6732,8 @@ compute the action of a difference operator on a linear function :math:`t`:
 .. math::
    :label: decay:fd2:Dop:tn:fw
         
-        \lbrack D_t^+ t\rbrack^n = \frac{t_{n+1}-t_n}{\Delta t}=\frac{(n+1)\Delta t - n\Delta t}{\Delta t}=1,\
+        \lbrack D_t^+ t\rbrack^n = \frac{t_{n+1}-t_n}{\Delta t}=1,
+        
         
 
 
@@ -6750,7 +6741,8 @@ compute the action of a difference operator on a linear function :math:`t`:
 .. math::
    :label: decay:fd2:Dop:tn:bw
           
-        \lbrack D_t^- t\rbrack^n = \frac{t_{n}-t_{n-1}}{\Delta t}=\frac{n\Delta t - (n-1)\Delta t}{\Delta t}=1,\
+        \lbrack D_t^- t\rbrack^n = \frac{t_{n}-t_{n-1}}{\Delta t}=1,
+        
         
 
 
@@ -6999,8 +6991,8 @@ on the right-hand side gives
 .. index:: theta-rule
 
 
+
 .. math::
-        !bt
         
         u^{n+1} - \Delta t \theta f(u^{n+1},t_{n+1}) =
         u^n + \Delta t(1-\theta)f(u^n, t_n){\thinspace .}
@@ -7031,7 +7023,8 @@ The resulting scheme for :math:`u'=f(u,t)` reads
 
 .. math::
    :label: decay:fd2:bw:2step
-         u^{n+1} = \frac{4}{3}u^n - \frac{1}{3}u^{n-1} +
+        
+        u^{n+1} = \frac{4}{3}u^n - \frac{1}{3}u^{n-1} +
         \frac{2}{3}\Delta t f(u^{n+1}, t_{n+1})
         \thinspace .
         
@@ -7733,7 +7726,7 @@ scheme is explicit. Verify the implementation using an exact
 solution that is linear in time.
 Analyze the scheme by searching for solutions :math:`u^n=A^n` when :math:`a=\hbox{const}`
 and :math:`b=0`. Compare this second-order secheme to the Crank-Nicolson scheme.
-Filename: ``decay_AdamBashforth2.py``.
+Filename: ``decay_AdamsBashforth2.py``.
 
 .. --- end exercise ---
 
@@ -7755,7 +7748,7 @@ Since the scheme is explicit, allow it to be started by two steps with
 the Forward Euler method.  Investigate experimentally the case where
 :math:`b=0` and :math:`a` is a constant: Can we have oscillatory solutions for
 large :math:`\Delta t`?
-Filename: ``decay_AdamBashforth3.py``.
+Filename: ``decay_AdamsBashforth3.py``.
 
 .. --- end exercise ---
 
@@ -8407,6 +8400,9 @@ The *heat transfer coefficient* :math:`k` reflects the transfer of
 heat from the body to
 the surroundings and must be determined from physical experiments.
 
+We must obviously have an initial condition :math:`T(0)=T_0` in addition
+to the cooling law :eq:`decay:Newton:cooling`.
+
 
 .. _decay:app:atm:
 
@@ -9047,7 +9043,16 @@ years.  Determine the age of an organic material that contains 8.4 percent
 of its initial amount of Carbon-14.  Use a time unit of 1 year in the
 computations.  The uncertainty in the half time of Carbon-14 is :math:`\pm
 40` years.  What is the corresponding uncertainty in the estimate of
-the age?  (Use simulations, not the exact solution.)
+the age?
+
+.. --- begin hint in exercise ---
+
+
+*Hint.* Use simulations with :math:`5,730\pm 40` y as input
+and find the corresponding interval for the result.
+
+.. --- end hint in exercise ---
+
 Filename: ``carbon14.py``.
 
 .. --- end exercise ---
@@ -9475,7 +9480,9 @@ Use a time step of one month, :math:`p_0=i`, initial fortune scaled to 1,
 and simulate 1000 scenarios of
 length 20 years. Compute the mean evolution of one unit of money and the
 corresponding
-standard deviation. Plot these two curves along with the :math:`p^n-i` curve.
+standard deviation. Plot the mean curve along with the mean plus one
+standard deviation and the mean minus one standard deviation. This will
+illustrate the uncertainty in the mean curve.
 
 .. --- begin hint in exercise ---
 
@@ -9521,7 +9528,7 @@ and the standard deviation is
 Suppose :math:`u_i(t)` is stored in an array ``u``.
 The mean and the standard deviation of the fortune
 is most efficiently computed by
-using to accumulation arrays, ``sum_u`` and ``sum_u2``, and
+using two accumulation arrays, ``sum_u`` and ``sum_u2``, and
 performing ``sum_u += u`` and ``sum_u2 += u**2`` after every experiment.
 This technique avoids storing all the :math:`u_i(t)` time series for
 computing the statistics.
@@ -9541,12 +9548,14 @@ Filename: ``random_interest.py``.
 
 .. _decay:app:exer:pop:at:
 
-Exercise 30: Simulate sudden environmental changes for a population
--------------------------------------------------------------------
+Exercise 30: Simulate a population in a changing environment
+------------------------------------------------------------
 
 We shall study a population modeled by :eq:`decay:app:pop:ueq` where
 the environment, represented by :math:`r` and :math:`f`, undergoes changes with time.
-Assume that there is a sudden drop (increase) in the birth (death)
+
+
+*a)* Assume that there is a sudden drop (increase) in the birth (death)
 rate at time :math:`t=t_r`,
 because of limited nutrition or food supply:
 
@@ -9565,26 +9574,12 @@ at time :math:`t_f>t_r`:
         f_0, & t\geq t_a,\end{array}\right.
         
 
-Start with :math:`r_0` and make :math:`A>r_0`. Experiment these and other parameters to
+Start with :math:`r_0` and make :math:`A>r_0`. Experiment with
+these and other parameters to
 illustrate the interplay of growth and decay in such a problem.
 Filename: ``population_drop.py``.
 
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _decay:app:exer:pop:osc:
-
-Exercise 31: Simulate oscillating environment for a population
---------------------------------------------------------------
-
-This exercise is a variant of :ref:`decay:app:exer:pop:at`.
-Now we assume that the environmental conditions changes periodically with
+*b)* Now we assume that the environmental conditions changes periodically with
 time so that we may take
 
 .. math::
@@ -9609,7 +9604,7 @@ Filename: ``population_osc.py``.
 
 .. _decay:app:exer:pop:logistic1:
 
-Exercise 32: Simulate logistic growth
+Exercise 31: Simulate logistic growth
 -------------------------------------
 
 Solve the logistic ODE
@@ -9622,7 +9617,7 @@ Solve the logistic ODE
         
 
 This trick makes the discrete equation linear in :math:`u^{n+1}`.
-Filename: ``logistic_growth.py``.
+Filename: ``logistic_CN.py``.
 
 .. --- end exercise ---
 
@@ -9635,7 +9630,7 @@ Filename: ``logistic_growth.py``.
 
 .. _decay:app:exer:interest:derive:
 
-Exercise 33: Rederive the equation for continuous compound interest
+Exercise 32: Rederive the equation for continuous compound interest
 -------------------------------------------------------------------
 
 The ODE model :eq:`decay:app:interest:eq2` was derived under the assumption
@@ -9644,8 +9639,8 @@ this assumption: 1) start with :eq:`decay:app:interest:eq1`;
 2) introduce a time step :math:`\Delta t` instead of :math:`m`: :math:`\Delta t = 1/m` if
 :math:`t` is measured in years; 3) divide by :math:`\Delta t` and take the
 limit :math:`\Delta t\rightarrow 0`. Simulate a case where the inflation is
-at a constant level :math:`I` percent per year and the interest rate oscillates
-around :math:`I/2 + r_0\sin(2\pi t)`, giving :math:`r=-I/2 + r_0\sin(2\pi t)`.
+at a constant level :math:`I` percent per year and the interest rate oscillates:
+:math:`r=-I/2 + r_0\sin(2\pi t)`.
 Compare solutions for :math:`r_0=I, 3I/2, 2I`.
 Filename: ``interest_modeling.py``.
 

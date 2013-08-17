@@ -68,17 +68,9 @@ def test_convergence_rates():
     import sys
     sys.argv[1:] = '--I 0.8 --a 2.1 --T 5 '\
                    '--dt 0.4 0.2 0.1 0.05 0.025'.split()
-    # Suppress output from decay_mod.main()
-    stdout = sys.stdout  # save standard output for later use
-    scratchfile = open('.tmp', 'w')  # fake standard output
-    sys.stdout = scratchfile
-
     r = decay_mod.main()
     for theta in r:
         nt.assert_true(r[theta])  # check for non-empty list
-
-    scratchfile.close()
-    sys.stdout = stdout  # restore standard output
 
     expected_rates = {0: 1, 1: 1, 0.5: 2}
     for theta in r:
@@ -87,4 +79,4 @@ def test_convergence_rates():
         nt.assert_almost_equal(expected_rates[theta], r_final,
                                places=1, msg='theta=%s' % theta)
 
-# no need for any main
+# no need for any main in a nose test file
