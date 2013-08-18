@@ -13,7 +13,7 @@ done
 #doconce format pdflatex $name
 #doconce ptex2tex $name
 #pdflatex $name
-#doconce format html $name
+#doconce format html $name --html_style=bloodish
 #cp $name.pdf $name.html $dest/
 
 doconce clean  # must do before next line in order to clean background.*
