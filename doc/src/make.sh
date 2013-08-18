@@ -8,12 +8,13 @@ doconce format html $name $template
 cp $name.html $dest/
 done
 
-cp background_orig.do.txt background.do.txt
-name=background
-doconce format pdflatex $name
-doconce ptex2tex $name
-pdflatex $name
-cp $name.pdf $dest/
+#cp background_orig.do.txt background.do.txt
+#name=background
+#doconce format pdflatex $name
+#doconce ptex2tex $name
+#pdflatex $name
+#doconce format html $name
+#cp $name.pdf $name.html $dest/
 
 doconce clean  # must do before next line in order to clean background.*
 rm -f background.do.txt
