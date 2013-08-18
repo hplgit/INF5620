@@ -2,6 +2,7 @@
 # Make automatically generated Doconce report from a program in
 # a wide variety of formats (for demonstrating the layout of
 # the various formats)
+set -x
 
 report=tmp_report
 dt="1.25 0.75 0.5 0.1"
@@ -220,7 +221,7 @@ $pyg -o report_latex.html -l latex report_plain_latex.tex
 
 doconce pygmentize report.do.txt perldoc
 
-rm -f *.aux *.dvi *.log *.idx *.out *.toc tmp* *~ automake* *.tex *.rst *.md
+rm -f *.aux *.dvi *.log *.idx *.out *.toc *.bbl *.blg *.pyc tmp* *~ automake* *.tex *.rst *.md
 mkdir _static
 mv -f *.png *.html *.pdf sphinx-* css js *.ipynb *.mwiki   _static
 mv -f _static/index.html _static/doconce_commands.html .  # don't copy the index file
