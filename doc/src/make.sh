@@ -1,5 +1,5 @@
 #!/bin/sh
-set +x
+set -x
 
 names="about index index notes plan lectures exercise_delivery oblig1 oblig2 default_project"
 dest=../web
