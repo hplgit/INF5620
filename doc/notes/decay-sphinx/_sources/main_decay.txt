@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Aug 17, 2013
+:Date: Aug 18, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -5625,7 +5625,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x2d80578>('notice', 'Solving difference equations', r"""
+<function admon at 0x2090578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -6827,51 +6827,53 @@ Extension to systems of ODEs
 
 Many ODE models involves more than one unknown function and more
 than one equation. Here is an example of two unknown functions :math:`u(t)`
-and :math:`v(t)` (modeling, e.g., the radioactive decay of two substances):
+and :math:`v(t)`:
 
 
 .. math::
         
-        u' = -a_u u + a_vv,
+        u' = a u + bv,
         
 
 
 
 .. math::
           
-        v' = -a_vv + a_uu,
+        v' = cu +  dv,
         
 
-for constants :math:`a_u, a_v>0`.
+for constants :math:`a,b,c,d`.
 Applying the Forward Euler method to each equation results in simple
 updating formula
 
+
 .. math::
         
-        u^{n+1} = u^n + \Delta t (-a_u u^n + a_vv^n),
+        u^{n+1} = u^n + \Delta t (a u^n + b v^n),
         
 
 
 
 .. math::
           
-        v^{n+1} = u^n + \Delta t (-a_vv^n + a_uu^n)
+        v^{n+1} = u^n + \Delta t (cu^n + dv^n)
         \thinspace .
         
 
 On the other hand, the Crank-Nicolson or Backward Euler schemes result in a
 :math:`2\times 2` linear system for the new unknowns. The latter schemes gives
 
+
 .. math::
         
-        u^{n+1} = u^n + \Delta t (-a_u u^{n+1} + a_vv^{n+1}),
+        u^{n+1} = u^n + \Delta t (a u^{n+1} + b v^{n+1}),
         
 
 
 
 .. math::
           
-        v^{n+1} = v^n + \Delta t (-a_vv^{n+1} + a_uu^{n+1}){\thinspace .}
+        v^{n+1} = v^n + \Delta t (c u^{n+1} + d v^{n+1}){\thinspace .}
         
 
 Collecting :math:`u^{n+1}` as well as :math:`v^{n+1}` on the left-hand side results
@@ -6879,14 +6881,14 @@ in
 
 .. math::
         
-        (1 + \Delta t a_u)u^{n+1} + a_vv^{n+1}) = u^n ,
+        (1 - \Delta t a)u^{n+1} + bv^{n+1} = u^n ,
         
 
 
 
 .. math::
           
-        a_uu^{n+1} + (1 + \Delta t a_v) v^{n+1} = v^n ,
+        c u^{n+1} + (1 - \Delta t d) v^{n+1} = v^n ,
         
 
 which is a system of two coupled, linear, algebraic equations in two
@@ -6949,23 +6951,14 @@ ODEs then need auxiliary unknown functions to enable conversion to
 a first-order system.
 
 
-Some popular schemes for ODEs
------------------------------
-
 Next we list some well-known methods for :math:`u'=f(u,t)`, valid both for
 a single ODE (scalar :math:`u`) and systems of ODEs (vector :math:`u`).
 The choice of methods is inspired by the kind of schemes that are
 popular also for partial differential equations.
 
 
-.. index::
-   single: backward scheme, 2-step
-
-.. index:: BDF2 scheme
-
-
 The :math:`\theta`-rule
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 The :math:`\theta`-rule scheme applied to :math:`u'=f(u,t)` becomes
 
@@ -7009,8 +7002,15 @@ case we have an explicit updating formula for :math:`u^{n+1}`. This is known
 as an *explicit* scheme. With :math:`\theta\neq 1` we have to solve
 systems of algebraic equations, and the scheme is said to be *implicit*.
 
-Implicit 2-step backward scheme
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+An implicit 2-step backward scheme
+----------------------------------
+
+
+.. index::
+   single: backward scheme, 2-step
+
+.. index:: BDF2 scheme
+
 
 The implicit backward method with 2 steps applies a
 three-level backward difference as approximation to :math:`u'(t)`,
@@ -7041,11 +7041,15 @@ standard 1st-order Backward Euler method or the Crank-Nicolson scheme
 can be used for the first step.
 
 
+Leapfrog schemes
+----------------
+
+
 .. index:: Leapfrog scheme
 
 
-The Leapfrog scheme
-~~~~~~~~~~~~~~~~~~~
+The ordinary Leapfrog scheme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The derivative of :math:`u` at some point :math:`t_n` can be approximated by
 a central difference over two time steps,
@@ -7079,6 +7083,7 @@ a nonlinear :math:`f` (in :math:`u`) is trivial to handle since it only involves
 the known :math:`u^n` value.
 Some other scheme must be used as starter to compute :math:`u^1`, preferably
 the Forward Euler scheme since it is also explicit.
+
 
 
 .. index::
@@ -7117,15 +7122,16 @@ famous NCAR Climate Model).
 
 
 
+The 2nd-order Runge-Kutta scheme
+--------------------------------
+
+
 .. index:: Heun's method
 
 
 .. index::
    single: Runge-Kutta, 2nd-order scheme
 
-
-2nd-order Runge-Kutta scheme
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The two-step scheme
 
@@ -7156,11 +7162,12 @@ known as Huen's method, but is also a 2nd-order Runge-Kutta method.
 The scheme is explicit, and the error is expected to behave as :math:`\Delta t^2`.
 
 
+A 2nd-order Taylor-series method
+--------------------------------
+
+
 .. index:: Taylor-series methods (for ODEs)
 
-
-A 2nd-order Taylor-series method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One way to compute :math:`u^{n+1}` given :math:`u^n` is to use a Taylor polynomial.
 We may write up a polynomial of 2nd degree:
@@ -7200,12 +7207,13 @@ obtain methods of higher order than 2.
 
 
 
+The 2nd- and 3rd-order Adams-Bashforth schemes
+----------------------------------------------
+
+
 .. index::
    single: Adams-Bashforth scheme, 2nd-order
 
-
-2nd-order Adams-Bashforth scheme
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following method is known as the 2nd-order Adams-Bashforth scheme:
 
@@ -7228,9 +7236,6 @@ As the name implies, the scheme is of order :math:`\Delta t^2`.
 .. index::
    single: Adams-Bashforth scheme, 3rd order
 
-
-3rd-order Adams-Bashforth scheme
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another explicit scheme, involving four time levels, is the
 3rd-order Adams-Bashforth scheme
@@ -7259,15 +7264,18 @@ of :math:`f` at :math:`k` previous time steps:
 where :math:`\beta_j` are known coefficients.
 
 
+.. _decay:fd2:RK4:
+
+4th-order Runge-Kutta scheme
+----------------------------
+
+
 .. index::
    single: Runge-Kutta, 4th-order scheme
 
 
 .. index:: RK4
 
-
-4th-order Runge-Kutta scheme
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The perhaps most widely used method to solve ODEs is the 4th-order
 Runge-Kutta method, often called RK4.
