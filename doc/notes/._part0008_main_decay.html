@@ -494,39 +494,35 @@ Automatically generated HTML file from Doconce source
                2,
                'decay:app:exer:drag:prog',
                'decay:app:exer:drag:prog'),
-              (' Exercise 25: Use classes to make a simulation program ',
-               2,
-               'decay:app:exer:class',
-               'decay:app:exer:class'),
               (' Project 1: Simulate parachuting ',
                2,
                'decay:app:exer:parachute',
                'decay:app:exer:parachute'),
-              (' Exercise 26: Formulate vertical motion in the atmosphere ',
+              (' Exercise 25: Formulate vertical motion in the atmosphere ',
                2,
                'decay:app:exer:drag:atm1',
                'decay:app:exer:drag:atm1'),
-              (' Exercise 27: Simulate vertical motion in the atmosphere ',
+              (' Exercise 26: Simulate vertical motion in the atmosphere ',
                2,
                'decay:app:exer:drag:atm2',
                'decay:app:exer:drag:atm2'),
-              (' Exercise 28: Compute $y=|x|$ by solving an ODE ',
+              (' Exercise 27: Compute $y=|x|$ by solving an ODE ',
                2,
                'decay:app:exer:signum',
                'decay:app:exer:signum'),
-              (' Exercise 29: Simulate growth of a fortune with random interest rate ',
+              (' Exercise 28: Simulate growth of a fortune with random interest rate ',
                2,
                'decay:app:exer:interest',
                'decay:app:exer:interest'),
-              (' Exercise 30: Simulate a population in a changing environment ',
+              (' Exercise 29: Simulate a population in a changing environment ',
                2,
                'decay:app:exer:pop:at',
                'decay:app:exer:pop:at'),
-              (' Exercise 31: Simulate logistic growth ',
+              (' Exercise 30: Simulate logistic growth ',
                2,
                'decay:app:exer:pop:logistic1',
                'decay:app:exer:pop:logistic1'),
-              (' Exercise 32: Rederive the equation for continuous compound interest ',
+              (' Exercise 31: Rederive the equation for continuous compound interest ',
                2,
                'decay:app:exer:interest:derive',
                'decay:app:exer:interest:derive')]}
@@ -1817,35 +1813,26 @@ Filename: <code>atmospheric_pressure.py</code>.
 <p>
 Implement the Stokes' drag model \eqref{decay:app:fallingbody:model:S}
 and the quadratic drag model \eqref{decay:app:fallingbody:model:q} from
-the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a> in a function, using the Crank-Nicolson
+the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a>, using the Crank-Nicolson
 scheme as explained. At each time level, compute the Reynolds number
 Re and choose the Stokes' drag model if \( \hbox{Re} < 1 \) and the
-quadratic drag model otherwise.  Include nose tests (in the file) that
-runs the two suggested verification tests in the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a>.
+quadratic drag model otherwise.
 
 <p>
-Apply the function to a case involving a ball rising in water.  The
+The computation of the numerical solution should take place either in
+a function (as in the section <a href="._part0002_main_decay.html#decay:py1">Making a solver function</a>) or in classes (as in the section <a href="._part0003_main_decay.html#decay:prog:se:class">Implementing simple problem and solver classes</a>). Create a module (see the section <a href="._part0003_main_decay.html#decay:prog:se:module">Making a module</a>) and equip it with nose tests (see the section <a href="._part0003_main_decay.html#decay:prog:se:nose">Unit testing with nose</a>) based on the two suggested verification tests
+in the section <a href="#decay:app:drag">Vertical motion of a body in a viscous fluid</a> and on the method of manufactured
+solutions (see the section <a href="._part0007_main_decay.html#decay:MMS">Verification via manufactured solutions</a>) combined with computing
+convergence rates (see the section <a href="._part0002_main_decay.html#decay:convergence:rate">Computing convergence rates</a>).
+
+<p>
+Apply the software to a case involving a ball rising in water.  The
 buoyancy force is here the driving force, but the drag will be
 significant and balance the other forces after some time.  A soccer
 ball has \( a=11 \) cm and mass 0.43 kg.  Start the motion from rest, set
 the density of water to \( 1000\hbox{ kg/m}^3 \), and use a drag
 coefficient for a ball: 0.45. Plot the velocity of the rising ball.
 Filename: <code>vertical_motion.py</code>.
-
-<p>
-<!-- --- end exercise --- -->
-
-<p>
-<!-- --- begin exercise --- -->
-
-<h3>Exercise 25: Use classes to make a simulation program <a name="decay:app:exer:class"></a></h3>
-
-<p>
-Implement the software from <a href="#decay:app:exer:drag:prog">Exercise 24: Make a program for vertical motion in a fluid</a>
-in terms of problem, solver, and visualization classes in a module as
-explained in the section <a href="._part0003_main_decay.html#decay:prog:se:class">Implementing simple problem and solver classes</a>. Incorporate
-nose tests in the module.
-Filename: <code>problem_simulate_class.py</code>.
 
 <p>
 <!-- --- end exercise --- -->
@@ -1877,17 +1864,31 @@ Identify the input data to the problem.
 
 <p>
 <b>b)</b>
-Make a function <code>solver</code> for computing the velocity of the motion.
-The function takes the input data in the problem as arguments and
-returns the velocity and the mesh points.
+Make a Python module for computing the velocity of the motion.
+Also equip the module with functionality for plotting the velocity.
 
 <p>
 <!-- --- begin hint in exercise --- -->
 
 <p>
-<b>Hint.</b>
+<b>Hint 1.</b>
 Use the Crank-Nicolson scheme with a geometric average in time to
 linearize the equation of motion with quadratic drag.
+<!-- --- end hint in exercise --- -->
+
+<p>
+<!-- --- begin hint in exercise --- -->
+
+<p>
+<b>Hint 2.</b>
+You can either use functions or classes for implementation.
+If you choose functions, make a function
+ <code>solver</code> that takes all the input data in the problem as
+arguments and that returns the velocity (as a mesh function) and
+the time mesh. In case of a class-based implementation, introduce
+a problem class with the physical data
+and a solver class with the numerical data and a <code>solve</code> method
+that stores the velocity and the mesh in the class.
 <!-- --- end hint in exercise --- -->
 
 <p>
@@ -1897,22 +1898,32 @@ used for verification in the sense that the numerical solution should
 produce this solution without errors (to machine precision).
 
 <p>
-Construct verification tests for the <code>solver</code> function in simplified
-physical cases where you have information about the exact solution
+Construct verification tests for computations in simplified
+physical cases where you have information about the exact solution.
 Also use the method of manufactured solutions to create a verification test.
 Convergence rates must be computed in these cases.
 
 <p>
-Implement all tests as nose tests.
+Implement all tests as nose tests in the Python module.
 
 <p>
 <b>d)</b>
-Make a function <code>forces(v, t, plot=None)</code>
-for computing the drag force, the gravity
+Compute the drag force, the gravity
 force, and the buoyancy force as a function of time. Create
-a plot with these three functions if <code>plot</code> is not <code>None</code> but instead
-a string specifying the name of the plot file. Show the plot on
-the screen too.
+a plot with these three forces.
+
+<p>
+<!-- --- begin hint in exercise --- -->
+
+<p>
+<b>Hint.</b>
+You can either make a function <code>forces(v, t, plot=None)</code>
+that returns the forces (as mesh functions) and <code>t</code> and shows
+a plot on the screen and also saves the plot to a file with name <code>plot</code>
+if <code>plot</code> is not <code>None</code>, or you can extend the solver class with
+computation of forces and include plotting of forces in the
+visualization class.
+<!-- --- end hint in exercise --- -->
 
 <p>
 <b>e)</b>
@@ -1974,7 +1985,7 @@ Filename: <code>skydiving.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 26: Formulate vertical motion in the atmosphere <a name="decay:app:exer:drag:atm1"></a></h3>
+<h3>Exercise 25: Formulate vertical motion in the atmosphere <a name="decay:app:exer:drag:atm1"></a></h3>
 
 <p>
 Vertical motion of a body in the atmosphere needs to take into
@@ -2019,11 +2030,11 @@ Filename: <code>falling_in_variable_density.pdf</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 27: Simulate vertical motion in the atmosphere <a name="decay:app:exer:drag:atm2"></a></h3>
+<h3>Exercise 26: Simulate vertical motion in the atmosphere <a name="decay:app:exer:drag:atm2"></a></h3>
 
 <p>
 Implement the Forward Euler or the Crank-Nicolson scheme
-derived in <a href="#decay:app:exer:drag:atm1">Exercise 26: Formulate vertical motion in the atmosphere</a>.
+derived in <a href="#decay:app:exer:drag:atm1">Exercise 25: Formulate vertical motion in the atmosphere</a>.
 Demonstrate the effect of air density variation on a falling
 human, e.g., the famous fall of <a href="http://en.wikipedia.org/wiki/Felix_Baumgartner">Felix Baumgartner</a>. The drag coefficient can be set to 1.2.
 
@@ -2041,7 +2052,7 @@ Filename: <code>falling_in_variable_density.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 28: Compute \( y=|x| \) by solving an ODE <a name="decay:app:exer:signum"></a></h3>
+<h3>Exercise 27: Compute \( y=|x| \) by solving an ODE <a name="decay:app:exer:signum"></a></h3>
 
 <p>
 Consider the ODE problem
@@ -2068,7 +2079,7 @@ Filename: <code>signum.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 29: Simulate growth of a fortune with random interest rate <a name="decay:app:exer:interest"></a></h3>
+<h3>Exercise 28: Simulate growth of a fortune with random interest rate <a name="decay:app:exer:interest"></a></h3>
 
 <p>
 The goal of this exercise is to compute the value of a fortune subject
@@ -2145,7 +2156,7 @@ Filename: <code>random_interest.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 30: Simulate a population in a changing environment <a name="decay:app:exer:pop:at"></a></h3>
+<h3>Exercise 29: Simulate a population in a changing environment <a name="decay:app:exer:pop:at"></a></h3>
 
 <p>
 We shall study a population modeled by \eqref{decay:app:pop:ueq} where
@@ -2193,7 +2204,7 @@ Filename: <code>population_osc.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 31: Simulate logistic growth <a name="decay:app:exer:pop:logistic1"></a></h3>
+<h3>Exercise 30: Simulate logistic growth <a name="decay:app:exer:pop:logistic1"></a></h3>
 
 <p>
 Solve the logistic ODE
@@ -2212,7 +2223,7 @@ Filename: <code>logistic_CN.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 32: Rederive the equation for continuous compound interest <a name="decay:app:exer:interest:derive"></a></h3>
+<h3>Exercise 31: Rederive the equation for continuous compound interest <a name="decay:app:exer:interest:derive"></a></h3>
 
 <p>
 The ODE model \eqref{decay:app:interest:eq2} was derived under the assumption
