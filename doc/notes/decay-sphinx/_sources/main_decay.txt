@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Aug 20, 2013
+:Date: Aug 21, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -580,11 +580,11 @@ Using :eq:`decay:uhalfavg` in :eq:`decay:CN0` results in
         
         
 
-Figure :ref:`decay:sketch:BE` sketches the geometric interpretation of
+Figure :ref:`decay:sketch:CN` sketches the geometric interpretation of
 such a centered difference.
 
 
-.. _decay:sketch:BE:
+.. _decay:sketch:CN:
 
 .. figure:: fd_centered.png
    :width: 400
@@ -2051,7 +2051,7 @@ Running this program results in
 We observe that reducing :math:`\Delta t` by a factor of 10 increases the
 accuracy for all three methods (:math:`\theta` values). We also see that
 the combination of :math:`\theta=0.5` and a small time step :math:`\Delta t =0.04`
-gives a much more accurate solution, and that :math:`\theta=0` and :math:`\theta=0`
+gives a much more accurate solution, and that :math:`\theta=0` and :math:`\theta=1`
 with :math:`\Delta t = 0.4` result in the least accurate solutions.
 
 Figure :ref:`decay:fig:FE1` demonstrates that the numerical solution for
@@ -2220,6 +2220,8 @@ and other resources such as books and web pages.
    explained above as a starting point. Apply the new solver
    to :ref:`decay:app:exer:cooling:murder`.
 
+
+.. _decay:commandline:
 
 Creating command-line interfaces
 --------------------------------
@@ -2440,8 +2442,13 @@ Creating a graphical web user interface
 ---------------------------------------
 
 The Python package `Parampool <https://github.com/hplgit/parampool>`_
-can be used to automatically generate a web-based graphical user interface
-(GUI) for our simulation program.
+can be used to automatically generate a web-based *graphical user interface*
+(GUI) for our simulation program. Although the programming technique
+dramatically simplifies the efforts to create a GUI, the forthcoming
+material on equipping our ``decay_mod`` module with a GUI is quite technical
+and of significantly less importance than knowing how to make
+a command-line interface (the section :ref:`decay:commandline`).
+There is no danger in jumping right to the section :ref:`decay:convergence:rate`.
 
 Making a compute function
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2569,7 +2576,7 @@ Open a web browser at the location ``127.0.0.1:5000``. Input fields for
 ``I``, ``a``, ``T``, ``dt_values``, and ``theta_values`` are presented.
 Setting the latter two to ``[1.25, 0.5]`` and ``[1, 0.5]``,
 respectively, and pressing *Compute* results in four plots, see
-Figure :ref:`decay:fig:GUI`. We the techniques demonstrated here, one
+Figure :ref:`decay:fig:GUI`. With the techniques demonstrated here, one
 can easily create a tailored web GUI for a particular type of application
 and use it to interactively explore physical and numerical effects.
 
@@ -5618,12 +5625,12 @@ can be applied repeatedly :math:`n` times, with the result that
 .. math::
    :label: decay:analysis:unex
         
-        u^{n+1} = IA^n,\quad A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .
+        u^{n} = IA^n,\quad A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .
         
         
 
 
-<function admon at 0x1a6c578>('notice', 'Solving difference equations', r"""
+<function admon at 0x12b7578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -5702,7 +5709,16 @@ level. For a decay process, we must obviously have :math:`|A|\leq 1`, which
 is fulfilled for all :math:`\Delta t` if :math:`\theta \geq 1/2`. Arbitrarily
 large values of :math:`u` can be generated when :math:`|A|>1` and :math:`n` is large
 enough. The numerical solution is in such cases totally irrelevant to
-an ODE modeling decay processes!
+an ODE modeling decay processes! To avoid this situation, we must
+for :math:`\theta < 1/2` have
+
+
+.. math::
+        
+        \Delta t \leq \frac{2}{(1-2\theta)a},
+        
+
+which means :math:`\Delta t < 2/a` for the Forward Euler scheme.
 
 
 .. index:: A-stable methods
@@ -9244,7 +9260,7 @@ apply the solver to a skydiver in free fall, and finally apply the
 solver to a complete parachute jump.
 
 All the pieces of software implemented in this project
-should be realized as Python functions and collected
+should be realized as Python functions and/or classes and collected
 in one module.
 
 
@@ -9272,7 +9288,7 @@ linearize the equation of motion with quadratic drag.
 
 *Hint 2.* You can either use functions or classes for implementation.
 If you choose functions, make a function
- ``solver`` that takes all the input data in the problem as
+``solver`` that takes all the input data in the problem as
 arguments and that returns the velocity (as a mesh function) and
 the time mesh. In case of a class-based implementation, introduce
 a problem class with the physical data
