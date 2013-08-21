@@ -448,15 +448,16 @@ Basic use of nose
 ~~~~~~~~~~~~~~~~~
 
 The ``nose`` package is a versatile tool for implementing unit tests
-in Python. Here is a recommended way of structuring tests:
+in Python. Here is a short explanation of the usage of nose:
 
  1. Implement tests in functions with names starting with ``test_``.
+    Such functions cannot have any arguments.
 
  2. The test functions perform assertions on computed results
     using ``assert`` functions from the ``nose.tools`` module.
 
  3. The test functions can be in the source code files or be
-    collected in separate files, usually with names starting with ``test_``.
+    collected in separate files with names ``test*.py``.
 
 Here comes a very simple illustration of the three points.
 Assume that we have this function in a module ``mymod``:
@@ -481,13 +482,8 @@ to test that the function ``double`` works as intended:
             result = mymod.double(4)
             nt.assert_equal(result, 8)
 
-We need to do an ``import mymod`` if this test is in a separate file, and
-Python needs to be able to find ``mymod`` (it must be avaliable in
-the same directory, installed in a
-registered system library or in a directory listed in ``PYTHONPATH``,
-or the directory containing ``mymod.py``
-must explicitly be added to the ``sys.path`` list).
-
+Notice that ``test_double`` has no arguments.
+We need to do an ``import mymod`` if this test is in a separate file.
 Running
 
 
@@ -499,10 +495,11 @@ makes the ``nose`` tool run all functions with names matching ``test_*()``
 in ``mymod.py``.
 Alternatively, if the test functions are in some ``test_mymod.py`` file,
 we can just write ``nosetests -s``. The nose tool will then look
-for all files with names mathching ``test_*.py`` and run all
+for all files with names mathching ``test*.py`` and run all
 functions ``test_*()`` in these files.
 
-When you have nose tests in files ``test_*.py`` it is common to collect
+When you have nose tests in separate test
+files with names ``test*.py`` it is common to collect
 these files in a subdirectory ``tests``, or ``*_tests`` if
 you have several test subdirectories. Running ``nosetests -s`` will
 then recursively look for all ``tests`` and ``*_tests`` subdirectories
@@ -510,8 +507,11 @@ and run all functions ``test_*()`` in all files ``test_*.py`` in these
 directories. Just one command can then launch a series of tests in
 a directory tree!
 
-An example of a ``tests`` directory with different types of ``test_*.py``
+An example of a ``tests`` directory with different types of ``test*.py``
 files are found in `src/decay/tests <http://tinyurl.com/jvzzcfn/decay/tests>`_.
+Note that these perform imports of modules in the parent directory.
+These imports works well because the tests are supposed to be
+run by ``nosetests -s`` executed in the parent directory (``decay``).
 
 
 

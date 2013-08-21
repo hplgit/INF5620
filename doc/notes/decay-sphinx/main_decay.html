@@ -60,7 +60,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Aug 19, 2013</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Aug 20, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -2358,14 +2358,15 @@ identifies a unit.</p>
 <div class="section" id="basic-use-of-nose">
 <h3>Basic use of nose<a class="headerlink" href="#basic-use-of-nose" title="Permalink to this headline">¶</a></h3>
 <p>The <tt class="docutils literal"><span class="pre">nose</span></tt> package is a versatile tool for implementing unit tests
-in Python. Here is a recommended way of structuring tests:</p>
+in Python. Here is a short explanation of the usage of nose:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Implement tests in functions with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.</li>
+<li>Implement tests in functions with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.
+Such functions cannot have any arguments.</li>
 <li>The test functions perform assertions on computed results
 using <tt class="docutils literal"><span class="pre">assert</span></tt> functions from the <tt class="docutils literal"><span class="pre">nose.tools</span></tt> module.</li>
 <li>The test functions can be in the source code files or be
-collected in separate files, usually with names starting with <tt class="docutils literal"><span class="pre">test_</span></tt>.</li>
+collected in separate files with names <tt class="docutils literal"><span class="pre">test*.py</span></tt>.</li>
 </ol>
 </div></blockquote>
 <p>Here comes a very simple illustration of the three points.
@@ -2384,13 +2385,9 @@ to test that the function <tt class="docutils literal"><span class="pre">double<
     <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We need to do an <tt class="docutils literal"><span class="pre">import</span> <span class="pre">mymod</span></tt> if this test is in a separate file, and
-Python needs to be able to find <tt class="docutils literal"><span class="pre">mymod</span></tt> (it must be avaliable in
-the same directory, installed in a
-registered system library or in a directory listed in <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt>,
-or the directory containing <tt class="docutils literal"><span class="pre">mymod.py</span></tt>
-must explicitly be added to the <tt class="docutils literal"><span class="pre">sys.path</span></tt> list).</p>
-<p>Running</p>
+<p>Notice that <tt class="docutils literal"><span class="pre">test_double</span></tt> has no arguments.
+We need to do an <tt class="docutils literal"><span class="pre">import</span> <span class="pre">mymod</span></tt> if this test is in a separate file.
+Running</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; nosetests -s mymod</span>
 </pre></div>
 </div>
@@ -2398,17 +2395,21 @@ must explicitly be added to the <tt class="docutils literal"><span class="pre">s
 in <tt class="docutils literal"><span class="pre">mymod.py</span></tt>.
 Alternatively, if the test functions are in some <tt class="docutils literal"><span class="pre">test_mymod.py</span></tt> file,
 we can just write <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">-s</span></tt>. The nose tool will then look
-for all files with names mathching <tt class="docutils literal"><span class="pre">test_*.py</span></tt> and run all
+for all files with names mathching <tt class="docutils literal"><span class="pre">test*.py</span></tt> and run all
 functions <tt class="docutils literal"><span class="pre">test_*()</span></tt> in these files.</p>
-<p>When you have nose tests in files <tt class="docutils literal"><span class="pre">test_*.py</span></tt> it is common to collect
+<p>When you have nose tests in separate test
+files with names <tt class="docutils literal"><span class="pre">test*.py</span></tt> it is common to collect
 these files in a subdirectory <tt class="docutils literal"><span class="pre">tests</span></tt>, or <tt class="docutils literal"><span class="pre">*_tests</span></tt> if
 you have several test subdirectories. Running <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">-s</span></tt> will
 then recursively look for all <tt class="docutils literal"><span class="pre">tests</span></tt> and <tt class="docutils literal"><span class="pre">*_tests</span></tt> subdirectories
 and run all functions <tt class="docutils literal"><span class="pre">test_*()</span></tt> in all files <tt class="docutils literal"><span class="pre">test_*.py</span></tt> in these
 directories. Just one command can then launch a series of tests in
 a directory tree!</p>
-<p>An example of a <tt class="docutils literal"><span class="pre">tests</span></tt> directory with different types of <tt class="docutils literal"><span class="pre">test_*.py</span></tt>
-files are found in <a class="reference external" href="http://tinyurl.com/jvzzcfn/decay/tests">src/decay/tests</a>.</p>
+<p>An example of a <tt class="docutils literal"><span class="pre">tests</span></tt> directory with different types of <tt class="docutils literal"><span class="pre">test*.py</span></tt>
+files are found in <a class="reference external" href="http://tinyurl.com/jvzzcfn/decay/tests">src/decay/tests</a>.
+Note that these perform imports of modules in the parent directory.
+These imports works well because the tests are supposed to be
+run by <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">-s</span></tt> executed in the parent directory (<tt class="docutils literal"><span class="pre">decay</span></tt>).</p>
 <div class="admonition-tip admonition">
 <p class="first admonition-title">Tip</p>
 <p class="last">The <tt class="docutils literal"><span class="pre">-s</span></tt> option to <tt class="docutils literal"><span class="pre">nosetests</span></tt> assures that any print statement
@@ -3567,17 +3568,15 @@ and then express this formula in terms of <span class="math">\(T^n\)</span>.</p>
 26.7 C at 2 pm. One hour later
 the temperature is 25.8 C. The question is when
 death occurred.</p>
-<p>Assume that Newton&#8217;s law of cooling <a href="#equation-decay:Newton:cooling">(71)</a>
-is an appropriate mathematical
-model for the evolution of the temperature in the body.
-First, determine <span class="math">\(k\)</span> in <a href="#equation-decay:Newton:cooling">(71)</a> by
-formulating a Forward Euler approximation with one time steep
-from time 2 am to time 3 am, where knowing the two temperatures
-allows for finding <span class="math">\(k\)</span>. Thereafter, simulate the temperature evolution
-from the time of murder, taken as <span class="math">\(t=0\)</span>, when <span class="math">\(T=37\hbox{ C}\)</span>,
-until the temperature
-reaches 25.8 C. The corresponding time allows for answering when
-death occurred.
+<p>Assume that Newton&#8217;s law of cooling <a href="#equation-decay:Newton:cooling">(71)</a> is an
+appropriate mathematical model for the evolution of the temperature in
+the body.  First, determine <span class="math">\(k\)</span> in <a href="#equation-decay:Newton:cooling">(71)</a> by
+formulating a Forward Euler approximation with one time steep from
+time 2 am to time 3 am, where knowing the two temperatures allows for
+finding <span class="math">\(k\)</span>. Assume the temperature in the air to be 20 C. Thereafter,
+simulate the temperature evolution from the time of murder, taken as
+<span class="math">\(t=0\)</span>, when <span class="math">\(T=37\hbox{ C}\)</span>, until the temperature reaches 25.8 C. The
+corresponding time allows for answering when death occurred.
 Filename: <tt class="docutils literal"><span class="pre">detective.py</span></tt>.</p>
 </div>
 <div class="section" id="exercise-4-experiment-with-integer-division">
@@ -3937,7 +3936,7 @@ our numerical experiments.</p>
 can be applied repeatedly <span class="math">\(n\)</span> times, with the result that</p>
 <div class="math" id="equation-decay:analysis:unex">
 <span class="eqno">(43)</span>\[     u^{n+1} = IA^n,\quad A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .\]</div>
-<p>&lt;function admon at 0x1e61578&gt;(&#8216;notice&#8217;, &#8216;Solving difference equations&#8217;, r&#8221;&#8220;&#8221;
+<p>&lt;function admon at 0x1a6c578&gt;(&#8216;notice&#8217;, &#8216;Solving difference equations&#8217;, r&#8221;&#8220;&#8221;
 Difference equations where all terms are linear in
 <span class="math">\(u^{n+1}\)</span>, <span class="math">\(u^n\)</span>, and maybe <span class="math">\(u^{n-1}\)</span>, <span class="math">\(u^{n-2}\)</span>, etc., are
 called <em>homogeneous, linear</em> difference equations, and their solutions
@@ -6219,7 +6218,8 @@ Filename: <tt class="docutils literal"><span class="pre">atmospheric_pressure.py
 <p>Implement the Stokes&#8217; drag model <a href="#equation-decay:app:fallingbody:model:S">(76)</a>
 and the quadratic drag model <a href="#equation-decay:app:fallingbody:model:q">(78)</a> from
 the section <a class="reference internal" href="#decay-app-drag"><em>Vertical motion of a body in a viscous fluid</em></a>, using the Crank-Nicolson
-scheme as explained. At each time level, compute the Reynolds number
+scheme as explained and the assumption of constant fluid density.
+At each time level, compute the Reynolds number
 Re and choose the Stokes&#8217; drag model if <span class="math">\(\hbox{Re} &lt; 1\)</span> and the
 quadratic drag model otherwise.</p>
 <p>The computation of the numerical solution should take place either in
@@ -6230,7 +6230,7 @@ convergence rates (see the section <a class="reference internal" href="#decay-co
 <p>Apply the software to a case involving a ball rising in water.  The
 buoyancy force is here the driving force, but the drag will be
 significant and balance the other forces after some time.  A soccer
-ball has <span class="math">\(a=11\)</span> cm and mass 0.43 kg.  Start the motion from rest, set
+ball has radius 11 cm and mass 0.43 kg.  Start the motion from rest, set
 the density of water to <span class="math">\(1000\hbox{ kg/m}^3\)</span>, and use a drag
 coefficient for a ball: 0.45. Plot the velocity of the rising ball.
 Filename: <tt class="docutils literal"><span class="pre">vertical_motion.py</span></tt>.</p>
@@ -6247,7 +6247,7 @@ in one module.</p>
 <p><em>a)</em> Set up the differential equation problem that governs the velocity
 of the motion.
 The parachute jumper is subject to the gravity force and a quadratic
-drag force.
+drag force. Assume constant density.
 Add an extra source term be used for program verification.
 Identify the input data to the problem.</p>
 <p><em>b)</em> Make a Python module for computing the velocity of the motion.

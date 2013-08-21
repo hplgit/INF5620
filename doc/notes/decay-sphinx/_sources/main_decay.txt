@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Aug 19, 2013
+:Date: Aug 20, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -3456,15 +3456,16 @@ Basic use of nose
 ~~~~~~~~~~~~~~~~~
 
 The ``nose`` package is a versatile tool for implementing unit tests
-in Python. Here is a recommended way of structuring tests:
+in Python. Here is a short explanation of the usage of nose:
 
  1. Implement tests in functions with names starting with ``test_``.
+    Such functions cannot have any arguments.
 
  2. The test functions perform assertions on computed results
     using ``assert`` functions from the ``nose.tools`` module.
 
  3. The test functions can be in the source code files or be
-    collected in separate files, usually with names starting with ``test_``.
+    collected in separate files with names ``test*.py``.
 
 Here comes a very simple illustration of the three points.
 Assume that we have this function in a module ``mymod``:
@@ -3489,13 +3490,8 @@ to test that the function ``double`` works as intended:
             result = mymod.double(4)
             nt.assert_equal(result, 8)
 
-We need to do an ``import mymod`` if this test is in a separate file, and
-Python needs to be able to find ``mymod`` (it must be avaliable in
-the same directory, installed in a
-registered system library or in a directory listed in ``PYTHONPATH``,
-or the directory containing ``mymod.py``
-must explicitly be added to the ``sys.path`` list).
-
+Notice that ``test_double`` has no arguments.
+We need to do an ``import mymod`` if this test is in a separate file.
 Running
 
 
@@ -3507,10 +3503,11 @@ makes the ``nose`` tool run all functions with names matching ``test_*()``
 in ``mymod.py``.
 Alternatively, if the test functions are in some ``test_mymod.py`` file,
 we can just write ``nosetests -s``. The nose tool will then look
-for all files with names mathching ``test_*.py`` and run all
+for all files with names mathching ``test*.py`` and run all
 functions ``test_*()`` in these files.
 
-When you have nose tests in files ``test_*.py`` it is common to collect
+When you have nose tests in separate test
+files with names ``test*.py`` it is common to collect
 these files in a subdirectory ``tests``, or ``*_tests`` if
 you have several test subdirectories. Running ``nosetests -s`` will
 then recursively look for all ``tests`` and ``*_tests`` subdirectories
@@ -3518,8 +3515,11 @@ and run all functions ``test_*()`` in all files ``test_*.py`` in these
 directories. Just one command can then launch a series of tests in
 a directory tree!
 
-An example of a ``tests`` directory with different types of ``test_*.py``
+An example of a ``tests`` directory with different types of ``test*.py``
 files are found in `src/decay/tests <http://tinyurl.com/jvzzcfn/decay/tests>`_.
+Note that these perform imports of modules in the parent directory.
+These imports works well because the tests are supposed to be
+run by ``nosetests -s`` executed in the parent directory (``decay``).
 
 
 
@@ -5029,17 +5029,15 @@ A detective measures the temperature of a dead body to be
 the temperature is 25.8 C. The question is when
 death occurred.
 
-Assume that Newton's law of cooling :eq:`decay:Newton:cooling`
-is an appropriate mathematical
-model for the evolution of the temperature in the body.
-First, determine :math:`k` in :eq:`decay:Newton:cooling` by
-formulating a Forward Euler approximation with one time steep
-from time 2 am to time 3 am, where knowing the two temperatures
-allows for finding :math:`k`. Thereafter, simulate the temperature evolution
-from the time of murder, taken as :math:`t=0`, when :math:`T=37\hbox{ C}`,
-until the temperature
-reaches 25.8 C. The corresponding time allows for answering when
-death occurred.
+Assume that Newton's law of cooling :eq:`decay:Newton:cooling` is an
+appropriate mathematical model for the evolution of the temperature in
+the body.  First, determine :math:`k` in :eq:`decay:Newton:cooling` by
+formulating a Forward Euler approximation with one time steep from
+time 2 am to time 3 am, where knowing the two temperatures allows for
+finding :math:`k`. Assume the temperature in the air to be 20 C. Thereafter,
+simulate the temperature evolution from the time of murder, taken as
+:math:`t=0`, when :math:`T=37\hbox{ C}`, until the temperature reaches 25.8 C. The
+corresponding time allows for answering when death occurred.
 Filename: ``detective.py``.
 
 .. --- end exercise ---
@@ -5625,7 +5623,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x1e61578>('notice', 'Solving difference equations', r"""
+<function admon at 0x1a6c578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -9207,7 +9205,8 @@ Exercise 24: Make a program for vertical motion in a fluid
 Implement the Stokes' drag model :eq:`decay:app:fallingbody:model:S`
 and the quadratic drag model :eq:`decay:app:fallingbody:model:q` from
 the section :ref:`decay:app:drag`, using the Crank-Nicolson
-scheme as explained. At each time level, compute the Reynolds number
+scheme as explained and the assumption of constant fluid density.
+At each time level, compute the Reynolds number
 Re and choose the Stokes' drag model if :math:`\hbox{Re} < 1` and the
 quadratic drag model otherwise.
 
@@ -9220,7 +9219,7 @@ convergence rates (see the section :ref:`decay:convergence:rate`).
 Apply the software to a case involving a ball rising in water.  The
 buoyancy force is here the driving force, but the drag will be
 significant and balance the other forces after some time.  A soccer
-ball has :math:`a=11` cm and mass 0.43 kg.  Start the motion from rest, set
+ball has radius 11 cm and mass 0.43 kg.  Start the motion from rest, set
 the density of water to :math:`1000\hbox{ kg/m}^3`, and use a drag
 coefficient for a ball: 0.45. Plot the velocity of the rising ball.
 Filename: ``vertical_motion.py``.
@@ -9252,7 +9251,7 @@ in one module.
 *a)* Set up the differential equation problem that governs the velocity
 of the motion.
 The parachute jumper is subject to the gravity force and a quadratic
-drag force.
+drag force. Assume constant density.
 Add an extra source term be used for program verification.
 Identify the input data to the problem.
 
