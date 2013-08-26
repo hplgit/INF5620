@@ -1294,16 +1294,40 @@ Exercise 24: Make a program for vertical motion in a fluid
 Implement the Stokes' drag model :eq:`decay:app:fallingbody:model:S`
 and the quadratic drag model :eq:`decay:app:fallingbody:model:q` from
 the section :ref:`decay:app:drag`, using the Crank-Nicolson
-scheme as explained and the assumption of constant fluid density.
+scheme and a geometric mean for :math:`|v|v` as explained, and assume
+constant fluid density.
 At each time level, compute the Reynolds number
 Re and choose the Stokes' drag model if :math:`\hbox{Re} < 1` and the
 quadratic drag model otherwise.
 
 The computation of the numerical solution should take place either in
-a function (as in the section :ref:`decay:py1`) or in classes (as in the section :ref:`decay:prog:se:class`). Create a module (see the section :ref:`decay:prog:se:module`) and equip it with nose tests (see the section :ref:`decay:prog:se:nose`) based on the two suggested verification tests
-in the section :ref:`decay:app:drag` and on the method of manufactured
-solutions (see the section :ref:`decay:MMS`) combined with computing
-convergence rates (see the section :ref:`decay:convergence:rate`).
+a stand-alone function (as in the section :ref:`decay:py1`) or in a solver class
+that looks up a problem class for physical data (as in the section :ref:`decay:prog:se:class`). Create a module (see the section :ref:`decay:prog:se:module`) and equip it with nose tests (see the section :ref:`decay:prog:se:nose`) for automatically verifying the code.
+
+Verification tests can be based on
+
+ * the terminal velocity (see the section :ref:`decay:app:drag`),
+
+ * the exact solution when :math:`\varrho = 0` (see the section :ref:`decay:app:drag`),
+
+ * the method of manufactured solutions (see the section :ref:`decay:MMS`)
+   combined with computing
+   convergence rates (see the section :ref:`decay:convergence:rate`).
+
+Use, e.g., a quadratic polynomial for the velocity in the method of
+manufactured solutions. The expected error is :math:`{{\cal O}(\Delta t^2)}`
+from the centered finite difference approximation and the geometric
+mean for :math:`|v|v`.
+
+A solution that is linear in :math:`t` will also be an exact solution of the
+discrete equations in many problems.  Show that this is true for
+linear drag (by adding a source term that is linear in :math:`t`), but not
+for quadratic drag because of the geometric mean approximation.  Use
+the method of manufactured solutions to add a source term *in the
+discrete equations for quadratic drag* such that a linear function of
+:math:`t` is a solution. Add a nose test for checking that the linear
+function is reproduced to machine precision in the case of both linear
+and quadratic drag.
 
 Apply the software to a case involving a ball rising in water.  The
 buoyancy force is here the driving force, but the drag will be
@@ -1350,7 +1374,7 @@ Also equip the module with functionality for plotting the velocity.
 .. --- begin hint in exercise ---
 
 
-*Hint 1.* Use the Crank-Nicolson scheme with a geometric average in time to
+*Hint 1.* Use the Crank-Nicolson scheme with a geometric average of :math:`|v|v` in time to
 linearize the equation of motion with quadratic drag.
 
 .. --- end hint in exercise ---
@@ -1371,18 +1395,21 @@ that stores the velocity and the mesh in the class.
 .. --- end hint in exercise ---
 
 
-*c)* Check if a linear solution fulfills the discrete equation and can be
-used for verification in the sense that the numerical solution should
-produce this solution without errors (to machine precision).
+*c)* Show that a linear function of :math:`t` does not fulfill the discrete
+equations because of the geometric mean used for the quadratic drag
+term.  Fit a source term, as in the method of manufactured solutions,
+such that a linear function of :math:`t` is a solution of the discrete
+equations. Make a nose test to check that this solution is reproduced
+to machine precision.
 
-Construct verification tests for computations in simplified
-physical cases where you have information about the exact solution.
-Also use the method of manufactured solutions to create a verification test.
-Convergence rates must be computed in these cases.
+*d)* The expected error in this problem goes like :math:`\Delta t^2` because we
+use a centered finite difference approximation with error :math:`{{\cal O}(\Delta t^2)}`
+and a geometric mean approximation with error :math:`{{\cal O}(\Delta t^2)}`.
+Use the method of manufactured solutions combined with computing
+convergence rate to verify the code. Make a nose test for checking
+that the convergence rate is correct.
 
-Implement all tests as nose tests in the Python module.
-
-*d)* Compute the drag force, the gravity
+*e)* Compute the drag force, the gravity
 force, and the buoyancy force as a function of time. Create
 a plot with these three forces.
 
@@ -1399,7 +1426,7 @@ visualization class.
 .. --- end hint in exercise ---
 
 
-*e)* Compute the velocity of
+*f)* Compute the velocity of
 a skydiver in free fall before the parachute opens.
 
 .. --- begin hint in exercise ---
@@ -1421,7 +1448,7 @@ can be used to tune other parameters.)
 .. --- end hint in exercise ---
 
 
-*f)* The next task is to simulate
+*g)* The next task is to simulate
 a parachute jumper during free fall and after the parachute opens.
 At the time the parachute opens, the drag coefficient and the cross-sectional
 area change dramatically.
