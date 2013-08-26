@@ -905,10 +905,10 @@ well-established procedures and corresponding tools for automating
 the execution of tests. We shall briefly demonstrate two important
 techniques: <em>doctest</em> and <em>unit testing</em>. The corresponding files are
 the modules <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_doctest.py"><tt>decay_mod_doctest.py</tt></a>
-and <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_unittest.py"><tt>decay_mod_unittest.py</tt></a>.
+and <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_nosetest.py"><tt>decay_mod_nosetest.py</tt></a>.
 
 <p>
-Doc strings (the first string after the function header) are used to
+A doc string (the first string after the function header) is used to
 document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
@@ -1023,10 +1023,13 @@ Here is an example on a doctest in the <code>explore</code> function:
 This time we limit the output to 10 digits.
 
 <p>
-<div class="alert alert-block alert-warning alert-text-normal"><b>Warning.</b>
-Doctests are not straightforward to construct for
-functions that rely on command-line input and that print results to
-the terminal window.
+<div class="alert alert-block alert-warning alert-text-normal"><b>Caution.</b>
+Doctests requires careful coding if they use command-line input or
+print results to the terminal window. Command-line input must
+be simulated by filling <code>sys.argv</code> correctly, e.g.,
+<code>sys.argv = '--I 1.0 --a 5'.split</code>.
+The output lines of print statements must be copied exactly as they
+appear when running the statements in an interactive Python shell.
 </div>
 <h3>Unit testing with nose <a name="decay:prog:se:nose"></a></h3>
 
@@ -1085,12 +1088,13 @@ to test that the function <code>double</code> works as intended:
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">nose.tools</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">nt</span>
 
 <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_double</span>():
-    result <span style="color: #666666">=</span> mymod<span style="color: #666666">.</span>double(<span style="color: #666666">4</span>)
+    result <span style="color: #666666">=</span> double(<span style="color: #666666">4</span>)
     nt<span style="color: #666666">.</span>assert_equal(result, <span style="color: #666666">8</span>)
 </pre></div>
 <p>
 Notice that <code>test_double</code> has no arguments.
-We need to do an <code>import mymod</code> if this test is in a separate file.
+We need to do an <code>import mymod</code> or <code>from mymod import double</code>
+if this test resides in a separate file.
 Running
 
 <p>
@@ -1212,7 +1216,7 @@ for the exact discrete solution:
     factor <span style="color: #666666">=</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> (<span style="color: #666666">1-</span>theta)<span style="color: #666666">*</span>a<span style="color: #666666">*</span>dt)<span style="color: #666666">/</span>(<span style="color: #666666">1</span> <span style="color: #666666">+</span> theta<span style="color: #666666">*</span>dt<span style="color: #666666">*</span>a)
     <span style="color: #008000; font-weight: bold">return</span> I<span style="color: #666666">*</span>factor<span style="color: #666666">**</span>n
 
-<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_against_discrete_solution</span>():
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_exact_discrete_solution</span>():
     <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
 <span style="color: #BA2121; font-style: italic">    Compare result from solver against</span>
 <span style="color: #BA2121; font-style: italic">    formula for the discrete solution.</span>
@@ -1451,7 +1455,7 @@ slightly different names.
 
 <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">TestDecay</span>(unittest<span style="color: #666666">.</span>TestCase):
 
-    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_against_discrete_solution</span>(<span style="color: #008000">self</span>):
+    <span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">test_exact_discrete_solution</span>(<span style="color: #008000">self</span>):
         <span style="color: #666666">...</span>
         diff <span style="color: #666666">=</span> np<span style="color: #666666">.</span>abs(u_de <span style="color: #666666">-</span> u)<span style="color: #666666">.</span>max()
         <span style="color: #008000">self</span><span style="color: #666666">.</span>assertAlmostEqual(diff, <span style="color: #666666">0</span>, delta<span style="color: #666666">=1E-14</span>)

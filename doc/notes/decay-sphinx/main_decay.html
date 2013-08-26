@@ -2243,8 +2243,8 @@ well-established procedures and corresponding tools for automating
 the execution of tests. We shall briefly demonstrate two important
 techniques: <em>doctest</em> and <em>unit testing</em>. The corresponding files are
 the modules <a class="reference external" href="http://tinyurl.com/jvzzcfn/decay/decay_mod_doctest.py">decay_mod_doctest.py</a>
-and <a class="reference external" href="http://tinyurl.com/jvzzcfn/decay/decay_mod_unittest.py">decay_mod_unittest.py</a>.</p>
-<p>Doc strings (the first string after the function header) are used to
+and <a class="reference external" href="http://tinyurl.com/jvzzcfn/decay/decay_mod_nosetest.py">decay_mod_nosetest.py</a>.</p>
+<p>A doc string (the first string after the function header) is used to
 document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
@@ -2337,11 +2337,14 @@ how a function is used and 2) test that the function works.</p>
 </pre></div>
 </div>
 <p>This time we limit the output to 10 digits.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Doctests are not straightforward to construct for
-functions that rely on command-line input and that print results to
-the terminal window.</p>
+<div class="admonition-caution admonition">
+<p class="first admonition-title">Caution</p>
+<p class="last">Doctests requires careful coding if they use command-line input or
+print results to the terminal window. Command-line input must
+be simulated by filling <tt class="docutils literal"><span class="pre">sys.argv</span></tt> correctly, e.g.,
+<tt class="docutils literal"><span class="pre">sys.argv</span> <span class="pre">=</span> <span class="pre">'--I</span> <span class="pre">1.0</span> <span class="pre">--a</span> <span class="pre">5'.split</span></tt>.
+The output lines of print statements must be copied exactly as they
+appear when running the statements in an interactive Python shell.</p>
 </div>
 </div>
 <div class="section" id="unit-testing-with-nose">
@@ -2386,12 +2389,13 @@ to test that the function <tt class="docutils literal"><span class="pre">double<
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nose.tools</span> <span class="kn">as</span> <span class="nn">nt</span>
 
 <span class="k">def</span> <span class="nf">test_double</span><span class="p">():</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">mymod</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Notice that <tt class="docutils literal"><span class="pre">test_double</span></tt> has no arguments.
-We need to do an <tt class="docutils literal"><span class="pre">import</span> <span class="pre">mymod</span></tt> if this test is in a separate file.
+We need to do an <tt class="docutils literal"><span class="pre">import</span> <span class="pre">mymod</span></tt> or <tt class="docutils literal"><span class="pre">from</span> <span class="pre">mymod</span> <span class="pre">import</span> <span class="pre">double</span></tt>
+if this test resides in a separate file.
 Running</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; nosetests -s mymod</span>
 </pre></div>
@@ -2481,7 +2485,7 @@ for the exact discrete solution:</p>
     <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">theta</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="n">a</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">I</span><span class="o">*</span><span class="n">factor</span><span class="o">**</span><span class="n">n</span>
 
-<span class="k">def</span> <span class="nf">test_against_discrete_solution</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test_exact_discrete_solution</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare result from solver against</span>
 <span class="sd">    formula for the discrete solution.</span>
@@ -2679,7 +2683,7 @@ slightly different names.</p>
 
 <span class="k">class</span> <span class="nc">TestDecay</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">test_against_discrete_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test_exact_discrete_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="o">...</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_de</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1E-14</span><span class="p">)</span>
@@ -3942,7 +3946,7 @@ our numerical experiments.</p>
 can be applied repeatedly <span class="math">\(n\)</span> times, with the result that</p>
 <div class="math" id="equation-decay:analysis:unex">
 <span class="eqno">(43)</span>\[     u^{n} = IA^n,\quad A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .\]</div>
-<p>&lt;function admon at 0x1e315f0&gt;(&#8216;notice&#8217;, &#8216;Solving difference equations&#8217;, r&#8221;&#8220;&#8221;
+<p>&lt;function admon at 0x2ef55f0&gt;(&#8216;notice&#8217;, &#8216;Solving difference equations&#8217;, r&#8221;&#8220;&#8221;
 Difference equations where all terms are linear in
 <span class="math">\(u^{n+1}\)</span>, <span class="math">\(u^n\)</span>, and maybe <span class="math">\(u^{n-1}\)</span>, <span class="math">\(u^{n-2}\)</span>, etc., are
 called <em>homogeneous, linear</em> difference equations, and their solutions
@@ -4063,9 +4067,8 @@ very easy to integrate with our numerical computations in Python.</p>
 mode where we can write expressions and statements and immediately see
 the results.  Here is a simple example. We strongly recommend to use
 <tt class="docutils literal"><span class="pre">isympy</span></tt> (or <tt class="docutils literal"><span class="pre">ipython</span></tt>) for such interactive sessions.</p>
-<p>Let us write <tt class="docutils literal"><span class="pre">sympy</span></tt> (or <tt class="docutils literal"><span class="pre">isympy</span></tt>) in a standard Python shell
-(or <tt class="docutils literal"><span class="pre">ipython</span></tt>) and show how
-we can find the Taylor series for <span class="math">\(e^{-p}\)</span>:</p>
+<p>Let us illustrate <tt class="docutils literal"><span class="pre">sympy</span></tt> with a standard Python shell syntax
+(<tt class="docutils literal"><span class="pre">&gt;&gt;&gt;</span></tt> prompt) to compute a Taylor polynomial approximation to <span class="math">\(e^{-p}\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># Create p as a mathematical symbol with name &#39;p&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">&#39;p&#39;</span><span class="p">)</span>
@@ -4190,7 +4193,7 @@ as <span class="math">\(p\rightarrow 0\)</span> since <span class="math">\(t=n\D
 <span class="math">\(n\)</span> must increase like <span class="math">\(\Delta t^{-1}\)</span>. With <span class="math">\(n\)</span> substituted by
 <span class="math">\(t/\Delta t\)</span> in
 the leading-order error terms, these become <span class="math">\(\frac{1}{2}na^2\Delta
-t^2 = \frac{1}{2}ta^2t\Delta t\)</span> for the Forward and Backward Euler
+t^2 = \frac{1}{2}ta^2\Delta t\)</span> for the Forward and Backward Euler
 scheme, and <span class="math">\(\frac{1}{12}na^3\Delta t^3 = \frac{1}{12}ta^3\Delta t^2\)</span>
 for the Crank-Nicolson scheme.  The global error is therefore of
 second order (in <span class="math">\(\Delta t\)</span>) for the latter scheme and of first order for

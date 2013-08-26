@@ -291,10 +291,10 @@ well-established procedures and corresponding tools for automating
 the execution of tests. We shall briefly demonstrate two important
 techniques: *doctest* and *unit testing*. The corresponding files are
 the modules `decay_mod_doctest.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_doctest.py>`_
-and `decay_mod_unittest.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_unittest.py>`_.
+and `decay_mod_nosetest.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_nosetest.py>`_.
 
 
-Doc strings (the first string after the function header) are used to
+A doc string (the first string after the function header) is used to
 document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
@@ -406,10 +406,14 @@ This time we limit the output to 10 digits.
 
 
 
-.. warning::
-    Doctests are not straightforward to construct for
-    functions that rely on command-line input and that print results to
-    the terminal window.
+.. admonition:: Caution
+
+   Doctests requires careful coding if they use command-line input or
+   print results to the terminal window. Command-line input must
+   be simulated by filling ``sys.argv`` correctly, e.g.,
+   ``sys.argv = '--I 1.0 --a 5'.split``.
+   The output lines of print statements must be copied exactly as they
+   appear when running the statements in an interactive Python shell.
 
 
 .. _decay:prog:se:nose:
@@ -479,11 +483,12 @@ to test that the function ``double`` works as intended:
         import nose.tools as nt
         
         def test_double():
-            result = mymod.double(4)
+            result = double(4)
             nt.assert_equal(result, 8)
 
 Notice that ``test_double`` has no arguments.
-We need to do an ``import mymod`` if this test is in a separate file.
+We need to do an ``import mymod`` or ``from mymod import double``
+if this test resides in a separate file.
 Running
 
 
@@ -596,7 +601,7 @@ for the exact discrete solution:
             factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
             return I*factor**n
         
-        def test_against_discrete_solution():
+        def test_exact_discrete_solution():
             """
             Compare result from solver against
             formula for the discrete solution.
@@ -854,7 +859,7 @@ slightly different names.
         
         class TestDecay(unittest.TestCase):
         
-            def test_against_discrete_solution(self):
+            def test_exact_discrete_solution(self):
                 ...
                 diff = np.abs(u_de - u).max()
                 self.assertAlmostEqual(diff, 0, delta=1E-14)

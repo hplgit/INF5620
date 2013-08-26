@@ -13,7 +13,7 @@ class TestDecay(unittest.TestCase):
         """Initialization for each test."""
         pass
 
-    def test_against_discrete_solution(self):
+    def test_exact_discrete_solution(self):
         """
         Compare result from solver against
         formula for the discrete solution.

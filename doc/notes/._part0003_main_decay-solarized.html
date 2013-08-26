@@ -922,10 +922,10 @@ well-established procedures and corresponding tools for automating
 the execution of tests. We shall briefly demonstrate two important
 techniques: <em>doctest</em> and <em>unit testing</em>. The corresponding files are
 the modules <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_doctest.py"><tt>decay_mod_doctest.py</tt></a>
-and <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_unittest.py"><tt>decay_mod_unittest.py</tt></a>.
+and <a href="http://tinyurl.com/jvzzcfn/decay/decay_mod_nosetest.py"><tt>decay_mod_nosetest.py</tt></a>.
 
 <p>
-Doc strings (the first string after the function header) are used to
+A doc string (the first string after the function header) is used to
 document the purpose of functions and their arguments. Very often it
 is instructive to include an example on how to use the function.
 Interactive examples in the Python shell are most illustrative as
@@ -1040,10 +1040,13 @@ Here is an example on a doctest in the <code>explore</code> function:
 This time we limit the output to 10 digits.
 
 <p>
-<div class="alert alert-block alert-warning alert-text-normal"><b>Warning.</b>
-Doctests are not straightforward to construct for
-functions that rely on command-line input and that print results to
-the terminal window.
+<div class="alert alert-block alert-warning alert-text-normal"><b>Caution.</b>
+Doctests requires careful coding if they use command-line input or
+print results to the terminal window. Command-line input must
+be simulated by filling <code>sys.argv</code> correctly, e.g.,
+<code>sys.argv = '--I 1.0 --a 5'.split</code>.
+The output lines of print statements must be copied exactly as they
+appear when running the statements in an interactive Python shell.
 </div>
 <h3>Unit testing with nose <a name="decay:prog:se:nose"></a></h3>
 
@@ -1102,12 +1105,13 @@ to test that the function <code>double</code> works as intended:
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">nose.tools</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">nt</span>
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">test_double</span>():
-    result = mymod.double(<span style="color: #B452CD">4</span>)
+    result = double(<span style="color: #B452CD">4</span>)
     nt.assert_equal(result, <span style="color: #B452CD">8</span>)
 </pre></div>
 <p>
 Notice that <code>test_double</code> has no arguments.
-We need to do an <code>import mymod</code> if this test is in a separate file.
+We need to do an <code>import mymod</code> or <code>from mymod import double</code>
+if this test resides in a separate file.
 Running
 
 <p>
@@ -1229,7 +1233,7 @@ for the exact discrete solution:
     factor = (<span style="color: #B452CD">1</span> - (<span style="color: #B452CD">1</span>-theta)*a*dt)/(<span style="color: #B452CD">1</span> + theta*dt*a)
     <span style="color: #8B008B; font-weight: bold">return</span> I*factor**n
 
-<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">test_against_discrete_solution</span>():
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">test_exact_discrete_solution</span>():
     <span style="color: #CD5555">&quot;&quot;&quot;</span>
 <span style="color: #CD5555">    Compare result from solver against</span>
 <span style="color: #CD5555">    formula for the discrete solution.</span>
@@ -1468,7 +1472,7 @@ slightly different names.
 
 <span style="color: #8B008B; font-weight: bold">class</span> <span style="color: #008b45; font-weight: bold">TestDecay</span>(unittest.TestCase):
 
-    <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">test_against_discrete_solution</span>(<span style="color: #658b00">self</span>):
+    <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">test_exact_discrete_solution</span>(<span style="color: #658b00">self</span>):
         ...
         diff = np.abs(u_de - u).max()
         <span style="color: #658b00">self</span>.assertAlmostEqual(diff, <span style="color: #B452CD">0</span>, delta=<span style="color: #B452CD">1E-14</span>)

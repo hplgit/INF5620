@@ -8,7 +8,7 @@ def exact_discrete_solution(n, I, a, theta, dt):
     factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
     return I*factor**n
 
-def test_against_discrete_solution():
+def test_exact_discrete_solution():
     """
     Compare result from solver against
     formula for the discrete solution.

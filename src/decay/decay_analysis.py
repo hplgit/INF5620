@@ -44,7 +44,7 @@ A.subs(theta, Rational(1,2)).series(p, 0, 4) # Taylor-expanded A for C-N
 A_e.series(p, 0, 4)               # Taylor-expanded exact A
 
 # Error in amplification factors
-half = Rational(1,2)
+half = Rational(1, 2)
 FE = A_e.series(p, 0, 4) - A.subs(theta, 0).series(p, 0, 4)
 BE = A_e.series(p, 0, 4) - A.subs(theta, 1).series(p, 0, 4)
 CN = A_e.series(p, 0, 4) - A.subs(theta, half).series(p, 0, 4)
