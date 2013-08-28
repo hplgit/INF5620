@@ -98,10 +98,10 @@ def main():
     else:
         visualize_front(u, t, I, w, savefig)
         #visualize_front_ascii(u, t, I, w)
-    empirical_freq_and_amplitude(u, t, I, w)
+    plot_empirical_freq_and_amplitude(u, t, I, w)
     show()
 
-def empirical_freq_and_amplitude(u, t, I, w):
+def plot_empirical_freq_and_amplitude(u, t, I, w):
     minima, maxima = minmax(t, u)
     p = periods(maxima)
     a = amplitudes(minima, maxima)
@@ -142,7 +142,9 @@ def visualize_front(u, t, I, w, savefig=False):
                     axis=plot_manager.axis(),
                     show=not savefig) # drop window if savefig
             if savefig:
-                st.savefig('tmp_vib%04d.png' % n)
+                filename = 'tmp_vib%04d.png' % n
+                st.savefig(filename)
+                print 'making plot file', filename, 'at t=%g' % t[n]
         plot_manager.update(n)
 
 def visualize_front_ascii(u, t, I, w, fps=10):

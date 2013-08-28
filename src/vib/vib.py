@@ -8,10 +8,10 @@ def solver(I, V, m, b, s, F, dt, T, damping='linear'):
     u(0)=I and u'(0)=V,
     by a central finite difference method with time step dt.
     If damping is 'linear', f(u')=b*u, while if damping is
-    'quadratic', we have f(u')=b*u'*abs(u').
+    'quadratic', f(u')=b*u'*abs(u').
     F(t) and s(u) are Python functions.
     """
-    dt = float(dt); b = float(b); m = float(m)
+    dt = float(dt); b = float(b); m = float(m) # avoid integer div.
     Nt = int(round(T/dt))
     u = zeros(Nt+1)
     t = linspace(0, Nt*dt, Nt+1)
@@ -22,10 +22,7 @@ def solver(I, V, m, b, s, F, dt, T, damping='linear'):
     elif damping == 'quadratic':
         u[1] = u[0] + dt*V + \
                dt**2/(2*m)*(-b*V*abs(V) - s(u[0]) + F(t[0]))
-    else:
-        raise ValueError('Wrong value: damping="%s"' % damping)
 
-#    print 'u[0]=%g, u[1]=%g' % (u[0], u[1])
     for n in range(1, Nt):
         if damping == 'linear':
             u[n+1] = (2*m*u[n] + (b*dt/2 - m)*u[n-1] +
@@ -34,8 +31,6 @@ def solver(I, V, m, b, s, F, dt, T, damping='linear'):
             u[n+1] = (2*m*u[n] - m*u[n-1] + b*u[n]*abs(u[n] - u[n-1])
                       + dt**2*(F(t[n]) - s(u[n])))/\
                       (m + b*abs(u[n] - u[n-1]))
-#        print 2*m*u[n], (b*dt/2 - m)*u[n-1], dt**2*(F(t[n]) - s(u[n])), F(t[n]), s(u[n]), (m + b*dt/2)
-#        print 'u[%d]=%.16f' % (n+1, u[n+1])
     return u, t
 
 def visualize(u, t):
@@ -189,17 +184,17 @@ def main():
        a.damping
 
     u, t = solver(I, V, m, b, s, F, dt, T, damping)
-    num_periods = empirical_freq_and_amplitude(u, t)
+    num_periods = plot_empirical_freq_and_amplitude(u, t)
     num_periods = 4
     if num_periods <= 40:
-        figure()  # new matplotlib figure
+        figure()
         visualize(u, t)
     else:
-        visualize_front(u, t, window_width, savefig)  # scitools
+        visualize_front(u, t, window_width, savefig)
         visualize_front_ascii(u, t)
     show()
 
-def empirical_freq_and_amplitude(u, t):
+def plot_empirical_freq_and_amplitude(u, t):
     minima, maxima = minmax(t, u)
     p = periods(maxima)
     a = amplitudes(minima, maxima)

@@ -91,24 +91,26 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
         plt.savefig('vb_%d_%d_a.png' % (timesteps_per_period, num_periods))
         plt.savefig('vb_%d_%d_a.eps' % (timesteps_per_period, num_periods))
 
+# Define different sets of experiments
 solvers_theta = [
     odespy.ForwardEuler(f),
     # Implicit methods must use Newton solver to converge
-    odespy.BackwardEuler   (f, nonlinear_solver='Newton'),
-    odespy.MidpointImplicit(f, nonlinear_solver='Newton'),
+    odespy.BackwardEuler(f, nonlinear_solver='Newton'),
+    odespy.CrankNicolson(f, nonlinear_solver='Newton'),
     ]
 
 solvers_RK = [odespy.RK2(f), odespy.RK4(f)]
 solvers_accurate = [odespy.RK4(f),
-                    odespy.MidpointImplicit(f, nonlinear_solver='Newton'),
+                    odespy.CrankNicolson(f, nonlinear_solver='Newton'),
                     odespy.DormandPrince(f, atol=0.001, rtol=0.02)]
-solvers_CN = [odespy.MidpointImplicit(f, nonlinear_solver='Newton')]
+solvers_CN = [odespy.CrankNicolson(f, nonlinear_solver='Newton')]
 
 if __name__ == '__main__':
     timesteps_per_period = 20
     solver_collection = 'theta'
     num_periods = 1
     try:
+        # Example: python vib_odespy.py 30 accurate 50
         timesteps_per_period = int(sys.argv[1])
         solver_collection = sys.argv[2]
         num_periods = int(sys.argv[3])

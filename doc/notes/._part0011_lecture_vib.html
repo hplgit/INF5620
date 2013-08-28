@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--
+Automatically generated HTML file from Doconce source
+(https://github.com/hplgit/doconce/)
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
+<meta name="description" content="Study Guide: Vibration ODEs">
+<meta name="keywords" content="period (of oscillations),frequency (of oscillations),Hz (unit),stability criterion">
+
+
+
+<style type="text/css">
+    /* bloodish style */
+
+    body {
+      font-family: Helvetica, Verdana, Arial, Sans-serif;
+      color: #404040;
+      background: #ffffff;
+    }
+    h1 { font-size: 1.8em;  color: #8A0808; }
+    h2 { font-size: 1.5em;  color: #8A0808; }
+    h3, h4 { color: #8A0808; }
+    a { color: #8A0808; text-decoration:none; }
+    tt { font-family: "Courier New", Courier; }
+    
+    p { text-indent: 0px; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+</style>
+
+</head>
+
+<!-- tocinfo
+{'highest level': 1,
+ 'sections': [(' A simple vibration problem ', 1, None, '___sec0'),
+              (' A centered finite difference scheme; step 1 and 2 ',
+               2,
+               'vib:model1:fdm',
+               'vib:model1:fdm'),
+              (' A centered finite difference scheme; step 3 ',
+               2,
+               None,
+               '___sec2'),
+              (' A centered finite difference scheme; step 4 ',
+               2,
+               None,
+               '___sec3'),
+              (' Computing the first step ', 2, None, '___sec4'),
+              (' The computational algorithm ', 2, None, '___sec5'),
+              (' Operator notation; ODE ', 2, None, '___sec6'),
+              (' Operator notation; initial condition ', 2, None, '___sec7'),
+              (" Computing $u'$ ", 2, None, '___sec8'),
+              (' Implementation ', 1, None, '___sec9'),
+              (' Core algorithm ', 2, None, '___sec10'),
+              (' Plotting ', 2, None, '___sec11'),
+              (' Main program ', 2, None, '___sec12'),
+              (' User interface: command line ', 2, None, '___sec13'),
+              (' Verification ', 1, None, '___sec14'),
+              (' First steps for testing and debugging ',
+               2,
+               None,
+               '___sec15'),
+              (' Checking convergence rates ', 2, None, '___sec16'),
+              (' Implementational details ', 2, None, '___sec17'),
+              (' Nose test ', 2, None, '___sec18'),
+              (' Long-time simulations ',
+               1,
+               'vib:model1:longseries',
+               'vib:model1:longseries'),
+              (' Effect of the time step on long simulations ',
+               2,
+               None,
+               '___sec20'),
+              (' Using a moving plot window ', 2, None, '___sec21'),
+              (' Analysis of the numerical scheme ',
+               1,
+               'vib:model1:analysis',
+               'vib:model1:analysis'),
+              (' Deriving an exact numerical solution; ideas ',
+               2,
+               None,
+               '___sec23'),
+              (' Deriving an exact numerical; calculations (1) ',
+               2,
+               None,
+               '___sec24'),
+              (' Deriving an exact numerical; calculations (2) ',
+               2,
+               None,
+               '___sec25'),
+              (' Polynomiaaal approximation of the phase error ',
+               2,
+               None,
+               '___sec26'),
+              (' Plot of the phase error ', 2, None, '___sec27'),
+              (' Exact discrete solution ', 2, None, '___sec28'),
+              (' Stability ', 2, None, '___sec29'),
+              (' Alternative schemes based on 1st-order equations ',
+               1,
+               'vib:model2',
+               'vib:model2'),
+              (' Standard methods for 1st-order ODE systems ',
+               1,
+               None,
+               '___sec31'),
+              (' The Forward Euler scheme ', 2, None, '___sec32'),
+              (' The Backward Euler scheme ', 2, None, '___sec33'),
+              (' The Crank-Nicolson scheme ', 2, None, '___sec34'),
+              (' Comparison of schemes ', 2, None, '___sec35'),
+              (' The Euler-Cromer method ',
+               2,
+               'vib:model2:EulerCromer',
+               'vib:model2:EulerCromer'),
+              (' Equivalence with the scheme for the second-order ODE ',
+               2,
+               None,
+               '___sec37')]}
+end of tocinfo -->
+
+<body>
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{u_{\small\mbox{e}}}
+\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{{\cal O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{{\cal I}_x}
+\newcommand{\Iy}{{\cal I}_y}
+\newcommand{\Iz}{{\cal I}_z}
+\newcommand{\It}{{\cal I}_t}
+\newcommand{\setb}[1]{{#1}^0}    % set begin
+\newcommand{\sete}[1]{{#1}^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{{#1}^-}
+\newcommand{\setr}[1]{{#1}^+}
+\newcommand{\seti}[1]{{#1}^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+<a name="part0011"></a>
+<!-- begin top navigation -->
+<a href="._part0010_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0012_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end top navigation -->
+
+<p>
+<!-- !split -->
+
+<h2>Implementation  <a name="___sec9"></a></h2>
+
+<p>
+<p>
+<!-- begin bottom navigation -->
+<a href="._part0010_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0012_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end bottom navigation -->
+
+<!-- ------------------- end of main content --------------- -->
+
+
+</body>
+</html>
+    
+
