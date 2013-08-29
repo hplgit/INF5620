@@ -1,7 +1,7 @@
 #!/bin/sh
 set -x
 
-names="about index index notes plan lectures exercise_delivery oblig1 oblig2 default_project"
+names="about index index notes plan lectures exercise_delivery oblig1 oblig2 default_project software_packages"
 dest=../web
 template="--html_template=uio.html"
 
