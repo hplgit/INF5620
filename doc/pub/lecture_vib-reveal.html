@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="Study Guide: Vibration ODEs">
-<meta name="keywords" content="period (of oscillations),frequency (of oscillations),Hz (unit),stability criterion">
+<meta name="keywords" content="period (of oscillations),frequency (of oscillations),Hz (unit),stability criterion,staggered mesh,staggered Euler-Cromer scheme">
 
 
 
@@ -209,7 +209,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>&nbsp;<br>
-<center><h4>Sep 3, 2013</h4></center> <!-- date -->
+<center><h4>Sep 4, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -648,7 +648,43 @@ $$
 
 <section>
 
-<h2>Verification  <a name="___sec14"></a></h2>
+<h3>Running the program  <a name="___sec14"></a></h3>
+
+<p>
+<a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped.py"><tt>vib_undamped.py</tt></a>:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">Terminal&gt; python vib_undamped.py --dt 0.05 --num_periods 40
+</pre></div>
+<p>
+Generates frames <code>tmp_vib%04d.png</code> in files. Can make movie:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">Terminal&gt; avconv -r 12 -i tmp_vib%04d.png -vcodec flv movie.flv
+</pre></div>
+<p>
+Can use <code>ffmpeg</code> instead of <code>avconv</code>.
+
+<p>
+<table border="1">
+<tr><td align="center"><b>                  Format                  </b></td> <td align="center"><b>            Codec and filename            </b></td> </tr>
+<tr><td align="left">   Flash                                       </td> <td align="left">   <code>-vcodec flv movie.flv</code>          </td> </tr>
+<tr><td align="left">   MP4                                         </td> <td align="left">   <code>-vcodec libx64 movie.mp4</code>       </td> </tr>
+<tr><td align="left">   Webm                                        </td> <td align="left">   <code>-vcodec libvpx movie.webm</code>      </td> </tr>
+<tr><td align="left">   Ogg                                         </td> <td align="left">   <code>-vcodec libtheora movie.ogg</code>    </td> </tr>
+</table>
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Verification  <a name="___sec15"></a></h2>
 
 <p>
 
@@ -657,7 +693,7 @@ $$
 
 <section>
 
-<h3>First steps for testing and debugging  <a name="___sec15"></a></h3>
+<h3>First steps for testing and debugging  <a name="___sec16"></a></h3>
 
 <p>
 
@@ -675,7 +711,7 @@ $$
 
 <section>
 
-<h3>Checking convergence rates  <a name="___sec16"></a></h3>
+<h3>Checking convergence rates  <a name="___sec17"></a></h3>
 
 <p>
 The function below
@@ -698,7 +734,7 @@ The function below
 
 <section>
 
-<h3>Implementational details  <a name="___sec17"></a></h3>
+<h3>Implementational details  <a name="___sec18"></a></h3>
 
 <p>
 
@@ -737,7 +773,7 @@ Result: <code>r</code> contains values equal to 2.00 - as expected!
 
 <section>
 
-<h3>Nose test  <a name="___sec18"></a></h3>
+<h3>Nose test  <a name="___sec19"></a></h3>
 
 <p>
 Use final <code>r[-1]</code> in a unit test:
@@ -769,7 +805,7 @@ Complete code in <a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped.py"><tt>vi
 
 <section>
 
-<h3>Effect of the time step on long simulations  <a name="___sec20"></a></h3>
+<h3>Effect of the time step on long simulations  <a name="___sec21"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_phase_err1.png" align="bottom" width=800,></p></center>
@@ -789,7 +825,7 @@ Complete code in <a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped.py"><tt>vi
 
 <section>
 
-<h3>Using a moving plot window  <a name="___sec21"></a></h3>
+<h3>Using a moving plot window  <a name="___sec22"></a></h3>
 
 <p>
 
@@ -826,7 +862,7 @@ Example:
 
 <section>
 
-<h3>Deriving an exact numerical solution; ideas  <a name="___sec23"></a></h3>
+<h3>Deriving an exact numerical solution; ideas  <a name="___sec24"></a></h3>
 
 <p>
 
@@ -834,7 +870,7 @@ Example:
   <p><li> Linear, homogeneous, difference equation for \( u^n \).</li>
   <p><li> Has solutions \( u^n \sim A^n \), where \( A \) is unknown (number).</li>
   <p><li> Here: \( \uex(t) =I\cos(\omega t) \sim I\exp{(i\omega t)} = I(e^{i\omega\Delta t})^n \)</li>
-  <p><li> Trick for simplifying the algebra: \( A=\exp{(i\tilde\omega\Delta t)} \) (ansatz)</li>
+  <p><li> Trick for simplifying the algebra: \( u^n = A^n \), seek \( A=\exp{(i\tilde\omega\Delta t)} \) and find \( \tilde\omega \)</li>
   <p><li> \( \tilde\omega \): unknown <em>numerical frequency</em> (easier to calculate than \( A \))</li>
   <p><li> \( \omega - \tilde\omega \) is the <em>phase error</em></li>
   <p><li> Use the real part as the physical relevant part of a complex expression</li>
@@ -847,12 +883,12 @@ Example:
 
 <section>
 
-<h3>Deriving an exact numerical solution; calculations (1)  <a name="___sec24"></a></h3>
+<h3>Deriving an exact numerical solution; calculations (1)  <a name="___sec25"></a></h3>
 
 <p>
 <p>&nbsp;<br>
 $$
-A^n = \exp{(\tilde\omega \Delta t\, n)}=\exp{(\tilde\omega t)} =
+u^n = A^n = \exp{(\tilde\omega \Delta t\, n)}=\exp{(\tilde\omega t)} =
 \cos (\tilde\omega t) + i\sin(\tilde \omega t)
 \thinspace .
 $$
@@ -863,11 +899,13 @@ $$
 <p>&nbsp;<br>
 $$
 \begin{align*}
-[D_tD_t u]^n &= \frac{\exp{(i\tilde\omega(t+\Delta t))} - 2\exp{(i\tilde\omega t)} + \exp{(i\tilde\omega(t-\Delta t))}}{\Delta t^2}\\ 
-&= \exp{(i\tilde\omega t)}\frac{1}{\Delta t^2}\left(\exp{(i\tilde\omega(\Delta t))} + \exp{(i\tilde\omega(-\Delta t))} - 2\right)\\ 
-&= \exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cosh(i\tilde\omega\Delta t) -1 \right)\\ 
-&= \exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cos(\tilde\omega\Delta t) -1 \right)\\ 
-&= -\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
+[D_tD_t u]^n &= \frac{u^{n+1} - 2u^n + u^{n-1}}{\Delta t^2}\\ 
+&= I\frac{A^{n+1} - 2A^n + A^{n-1}}{\Delta t^2}\\ 
+&= I\frac{\exp{(i\tilde\omega(t+\Delta t))} - 2\exp{(i\tilde\omega t)} + \exp{(i\tilde\omega(t-\Delta t))}}{\Delta t^2}\\ 
+&= I\exp{(i\tilde\omega t)}\frac{1}{\Delta t^2}\left(\exp{(i\tilde\omega(\Delta t))} + \exp{(i\tilde\omega(-\Delta t))} - 2\right)\\ 
+&= I\exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cosh(i\tilde\omega\Delta t) -1 \right)\\ 
+&= I\exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cos(\tilde\omega\Delta t) -1 \right)\\ 
+&= -I\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
 \end{align*}
 $$
 <p>&nbsp;<br>
@@ -880,7 +918,7 @@ $$
 
 <section>
 
-<h3>Deriving an exact numerical; calculations (2)  <a name="___sec25"></a></h3>
+<h3>Deriving an exact numerical; calculations (2)  <a name="___sec26"></a></h3>
 
 <p>
 The scheme \eqref{vib:model1:step4}
@@ -932,7 +970,7 @@ $$
 
 <section>
 
-<h3>Polynomial approximation of the phase error  <a name="___sec26"></a></h3>
+<h3>Polynomial approximation of the phase error  <a name="___sec27"></a></h3>
 
 <p>
 Taylor series expansion
@@ -967,7 +1005,7 @@ The numerical frequency is too large (to fast oscillations).
 
 <section>
 
-<h3>Plot of the phase error  <a name="___sec27"></a></h3>
+<h3>Plot of the phase error  <a name="___sec28"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/discrete_freq.png" align="bottom" width=600></p></center>
@@ -982,7 +1020,7 @@ The numerical frequency is too large (to fast oscillations).
 
 <section>
 
-<h3>Exact discrete solution  <a name="___sec28"></a></h3>
+<h3>Exact discrete solution  <a name="___sec29"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1007,7 +1045,7 @@ Ideal for verification and analysis!
 
 <section>
 
-<h3>Stability  <a name="___sec29"></a></h3>
+<h3>Stability  <a name="___sec30"></a></h3>
 
 <p>
 
@@ -1040,7 +1078,7 @@ What is the consequence of complex \( \tilde\omega \)?
 
 <section>
 
-<h3>The stability criterion  <a name="___sec30"></a></h3>
+<h3>The stability criterion  <a name="___sec31"></a></h3>
 
 <p>
 Cannot tolerate growth and must therefore demand a <em>stability criterion</em>
@@ -1068,7 +1106,7 @@ Try \( \Delta t = \frac{2}{\omega} + 9.01\cdot 10^{-5} \) (\( \pi^{-1} \):
 
 <section>
 
-<h3>Summary of the analysis  <a name="___sec31"></a></h3>
+<h3>Summary of the analysis  <a name="___sec32"></a></h3>
 
 <p>
 We can draw three important conclusions:
@@ -1099,7 +1137,7 @@ We can draw three important conclusions:
 
 <section>
 
-<h2>Alternative schemes based on 1st-order equations <a name="vib:model2"></a></h2>
+<h2>Alternative schemes based on 1st-order equations <a name="vib:model2x2"></a></h2>
 
 <p>
 
@@ -1108,7 +1146,7 @@ We can draw three important conclusions:
 
 <section>
 
-<h3>Rewriting 2nd-order ODE as system of two 1st-order ODEs  <a name="___sec33"></a></h3>
+<h3>Rewriting 2nd-order ODE as system of two 1st-order ODEs  <a name="___sec34"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1122,9 +1160,9 @@ Introduce auxiliary variable \( v=u' \):
 $$
 \begin{align}
 u' &= v,
-\label{vib:model2:ueq}\\ 
+\label{vib:model2x2:ueq}\\ 
 v' &= -\omega^2 u
-\label{vib:model2:veq}
+\label{vib:model2x2:veq}
 \thinspace .
 \end{align}
 $$
@@ -1141,7 +1179,7 @@ Initial conditions: \( u(0)=I \) and \( v(0)=0 \).
 
 <section>
 
-<h3>The Forward Euler scheme  <a name="___sec34"></a></h3>
+<h3>The Forward Euler scheme  <a name="___sec35"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1175,7 +1213,7 @@ $$
 
 <section>
 
-<h3>The Backward Euler scheme  <a name="___sec35"></a></h3>
+<h3>The Backward Euler scheme  <a name="___sec36"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1208,7 +1246,7 @@ This is a <em>coupled</em> \( 2\times 2 \) system for the new values at \( t=t_{
 
 <section>
 
-<h3>The Crank-Nicolson scheme  <a name="___sec36"></a></h3>
+<h3>The Crank-Nicolson scheme  <a name="___sec37"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1245,7 +1283,7 @@ $$
 
 <section>
 
-<h3>Comparison of schemes via Odespy  <a name="___sec37"></a></h3>
+<h3>Comparison of schemes via Odespy  <a name="___sec38"></a></h3>
 
 <p>
 Can use
@@ -1284,7 +1322,7 @@ for first-order schemes:
 
 <section>
 
-<h3>Forward and Backward Euler and Crank-Nicolson  <a name="___sec38"></a></h3>
+<h3>Forward and Backward Euler and Crank-Nicolson  <a name="___sec39"></a></h3>
 
 <p>
 
@@ -1314,7 +1352,7 @@ Two plot types:
 
 <section>
 
-<h3>Phase plane plot of the numerical solutions  <a name="___sec39"></a></h3>
+<h3>Phase plane plot of the numerical solutions  <a name="___sec40"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_theta_1_pp.png" align="bottom" width=800,></p></center>
@@ -1326,7 +1364,7 @@ Two plot types:
 
 <section>
 
-<h3>Plain solution curves  <a name="___sec40"></a></h3>
+<h3>Plain solution curves  <a name="___sec41"></a></h3>
 
 <p>
 <center> <!-- figure -->
@@ -1342,7 +1380,7 @@ Two plot types:
 
 <section>
 
-<h3>Observations from the figures  <a name="___sec41"></a></h3>
+<h3>Observations from the figures  <a name="___sec42"></a></h3>
 
 <p>
 
@@ -1362,7 +1400,7 @@ Two plot types:
 
 <section>
 
-<h3>Runge-Kutta methods of order 2 and 4; short time series  <a name="___sec42"></a></h3>
+<h3>Runge-Kutta methods of order 2 and 4; short time series  <a name="___sec43"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_RK_1_pp.png" align="bottom" width=800,></p></center>
@@ -1377,7 +1415,7 @@ Two plot types:
 
 <section>
 
-<h3>Runge-Kutta methods of order 2 and 4; longer time series  <a name="___sec43"></a></h3>
+<h3>Runge-Kutta methods of order 2 and 4; longer time series  <a name="___sec44"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_RK_10_pp.png" align="bottom" width=800,></p></center>
@@ -1392,7 +1430,7 @@ Two plot types:
 
 <section>
 
-<h3>Crank-Nicolson; longer time series  <a name="___sec44"></a></h3>
+<h3>Crank-Nicolson; longer time series  <a name="___sec45"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_CN_10_pp.png" align="bottom" width=800,></p></center>
@@ -1410,7 +1448,7 @@ Two plot types:
 
 <section>
 
-<h3>Observations of RK and CN methods  <a name="___sec45"></a></h3>
+<h3>Observations of RK and CN methods  <a name="___sec46"></a></h3>
 
 <p>
 
@@ -1429,10 +1467,10 @@ Two plot types:
 
 <section>
 
-<h3>The Euler-Cromer method <a name="vib:model2:EulerCromer"></a></h3>
+<h3>The Euler-Cromer method; idea <a name="vib:model2x2:EulerCromer"></a></h3>
 
 <p>
-Forward-backward discretization:
+Forward-backward discretization of the 2x2 system:
 
 <p>
 
@@ -1456,14 +1494,27 @@ $$
 
 
 <p>
+
+</section>
+
+
+<section>
+
+<h3>The Euler-Cromer method; complete formulas  <a name="___sec48"></a></h3>
+
+<p>
 Written out:
+
+<p>
 <p>&nbsp;<br>
 $$
 \begin{align}
+u^0 &= I,\\ 
+v^0 &= 0,\\ 
 u^{n+1} &= u^n + \Delta t v^n,
-\label{vib:model2:EulerCromer:ueq1}\\ 
+\label{vib:model2x2:EulerCromer:ueq1}\\ 
 v^{n+1} &= v^n -\Delta t \omega^2u^{n+1}
-\label{vib:model2:EulerCromer:veq1}
+\label{vib:model2x2:EulerCromer:veq1}
 \thinspace .
 \end{align}
 $$
@@ -1485,63 +1536,514 @@ approximations. What about the overall scheme? Expect \( \Oof{\Delta t} \)...
 
 <section>
 
-<h3>Equivalence with the scheme for the second-order ODE  <a name="___sec47"></a></h3>
+<h3>Equivalence with the scheme for the second-order ODE  <a name="___sec49"></a></h3>
 
 <p>
-Eliminate \( v^n \):
-
-<p>
-From \eqref{vib:model2:EulerCromer:veq1}:
+Goal: eliminate \( v^n \). We have
 <p>&nbsp;<br>
 $$ v^n = v^{n-1} - \Delta t \omega^2u^{n},
 $$
 <p>&nbsp;<br>
 
-which can be inserted in \eqref{vib:model2:EulerCromer:ueq1} to yield
+which can be inserted in \eqref{vib:model2x2:EulerCromer:ueq1} to yield
 <p>&nbsp;<br>
 $$
 \begin{equation}
 u^{n+1} = u^n + \Delta t v^{n-1} - \Delta t^2 \omega^2u^{n} .
-\label{vib:model2:EulerCromer:elim1}
+\label{vib:model2x2:EulerCromer:elim1}
 \end{equation}
 $$
 <p>&nbsp;<br>
 
-Using \eqref{vib:model2:EulerCromer:ueq1},
+Using \eqref{vib:model2x2:EulerCromer:ueq1},
 <p>&nbsp;<br>
 $$ v^{n-1} = \frac{u^n - u^{n-1}}{\Delta t},
 $$
 <p>&nbsp;<br>
 
-and when this is inserted in \eqref{vib:model2:EulerCromer:elim1} we get
+and when this is inserted in \eqref{vib:model2x2:EulerCromer:elim1} we get
 <p>&nbsp;<br>
 $$
 \begin{equation}
-u^{n+1} = 2u^n - u^{n-1} - \Delta t^2 \omega^2u^{n},
+u^{n+1} = 2u^n - u^{n-1} - \Delta t^2 \omega^2u^{n}
 \end{equation}
 $$
 <p>&nbsp;<br>
 
-<b>which is nothing but the centered scheme</b> \eqref{vib:model1:step4}!
-<b>The previous analysis of this scheme then also applies to the Euler-Cromer
-method!</b>
 
 <p>
-The initial condition \( u'=0 \):
+
+</section>
+
+
+<section>
+
+<h3>Comparison of the treatment of initial conditions  <a name="___sec50"></a></h3>
 
 <p>
+
+<ul>
+ <p><li> The Euler-Cromer scheme is nothing but the centered scheme
+   for \( u''+\omega^2u=0 \) \eqref{vib:model1:step4}!</li>
+ <p><li> The previous analysis of this scheme then also applies to the Euler-Cromer
+   method!</li>
+ <p><li> What about the initial conditions?</li>
+</ul>
+<p>
+
 <p>&nbsp;<br>
 $$ u'=v=0\quad\Rightarrow\quad v^0=0,$$
 <p>&nbsp;<br>
 
 and
-\eqref{vib:model2:EulerCromer:ueq1} implies \( u^1=u^0 \), while
-\eqref{vib:model2:EulerCromer:veq1} says \( v^1=-\omega^2 u^0 \).
+\eqref{vib:model2x2:EulerCromer:ueq1} implies \( u^1=u^0 \), while
+\eqref{vib:model2x2:EulerCromer:veq1} says \( v^1=-\omega^2 u^0 \).
 
 <p>
 This \( u^1=u^0 \) approximation
 corresponds to a first-order Forward Euler discretization
 of \( u'(0)=0 \): \( [D_t^+ u = 0]^0 \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>A method utilizing a staggered mesh <a name="vib:model2x2:staggered"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> The Euler-Cromer scheme uses two unsymmetric differences
+   in a symmetric way...</li>
+ <p><li> We can derive the method from a more pedagogical point of view
+   where we use a <em>staggered mesh</em> and only centered differences</li>
+</ul>
+<p>
+
+Staggered mesh:
+
+<p>
+
+<ul>
+ <p><li> \( u \) is unknown at mesh points \( t_0,t_1,\ldots,t_n,\ldots \)</li>
+ <p><li> \( v \) is unknown at mesh points \( t_{1/2}, t_{3/2},\ldots, t_{n+1/2},\ldots \)
+   (between the \( u \) points)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Centered differences on a staggered mesh  <a name="___sec52"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\lbrack D_t u &= v\rbrack^{n+\frac{1}{2}},\\ 
+\lbrack D_t v &= -\omega u\rbrack^{n+1}
+\thinspace .
+\end{align}
+$$
+<p>&nbsp;<br>
+
+Written out:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u^{n+1} &= u^{n} + \Delta t v^{n+\frac{1}{2}},
+\label{vib:model2x2:EulerCromer:ueq1s}\\ 
+v^{n+\frac{3}{2}} &= v^{n+\frac{1}{2}} -\Delta t \omega^2u^{n+1}
+\label{vib:model2x2:EulerCromer:veq1s}
+\thinspace .
+\end{align}
+$$
+<p>&nbsp;<br>
+
+or shift one time level back (purely of esthetic reasons):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u^{n} &= u^{n-1} + \Delta t v^{n-\frac{1}{2}},
+\label{vib:model2x2:EulerCromer:ueq1s2}\\ 
+v^{n+\frac{1}{2}} &= v^{n-\frac{1}{2}} -\Delta t \omega^2u^{n}
+\label{vib:model2x2:EulerCromer:veq1s2}
+\thinspace .
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Comparison with the scheme for the 2nd-order ODE  <a name="___sec53"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Can eliminate \( v^{n\pm 1/2} \) and get the centered scheme
+   for \( u''+\omega^2 u = 0 \)</li>
+ <p><li> What about the initial conditions? Their equivalent too!</li>
+</ul>
+<p>
+
+\( u(0)=0 \) and \( u'(0)=v(0)=0 \) give \( u^0=I \) and
+
+<p>
+<p>&nbsp;<br>
+$$ v(0)\approx \frac{1}{2}(v^{-\frac{1}{2}} + v^{\frac{1}{2}}) = 0,
+\quad\Rightarrow\quad v^{-\frac{1}{2}} =- v^{\frac{1}{2}}\ts$$
+<p>&nbsp;<br>
+
+Combined with the scheme on the staggered mesh we get
+
+<p>
+<p>&nbsp;<br>
+$$ u^1 = u^0 - \frac{1}{2}\Delta t^2\omega^2 I,$$
+<p>&nbsp;<br>
+
+<h2>Generalization: damping, nonlinear spring, and external excitation <a name="vib:model2"></a></h2>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+mu'' + f(u') + s(u) = F(t),\quad u(0)=I,\ u'(0)=V,\ t\in (0,T]
+\thinspace .
+\label{vib:ode2}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+Input data: \( m \), \( f(u') \), \( s(u) \), \( F(t) \), \( I \), \( V \), and \( T \).
+
+<p>
+Typical choices of \( f \) and \( s \):
+
+<p>
+
+<ul>
+ <p><li> linear damping \( f(u')=bu \), or</li>
+ <p><li> quadratic damping \( f(u')=bu'|u'| \)</li>
+ <p><li> linear spring \( s(u)=cu \)</li>
+ <p><li> nonlinear spring \( s(u)\sim \sin(u) \) (pendulum)</li>
+</ul>
+<p>
+
+<h3>A centered scheme for linear damping <a name="vib:ode2:fdm:flin"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[mD_tD_t u + f(D_{2t}u) + s(u) = F]^n
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+Written out
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+m\frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
++ f(\frac{u^{n+1}-u^{n-1}}{2\Delta t}) + s(u^n) = F^n
+\label{vib:ode2:step3b}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+Assume \( f(u') \) is linear in \( u'=v \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^{n+1} = \left(2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
+\Delta t^2(F^n - s(u^n))
+\right)(m + \frac{b}{2}\Delta t)^{-1}
+\label{vib:ode2:step4}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+<h3>Initial conditions  <a name="___sec56"></a></h3>
+
+<p>
+\( u(0)=I \), \( u'(0)=V \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\lbrack u &=I\rbrack^0\quad\Rightarrow\quad u^0=I,\\ 
+\lbrack D_{2t}u &=V\rbrack^0\quad\Rightarrow\quad u^{-1} = u^{1} - 2\Delta t V
+\end{align}
+$$
+<p>&nbsp;<br>
+
+End result:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^1 = u^0 + \Delta t\, V
++ \frac{\Delta t^2}{2m}(-bV - s(u^0) + F^0)
+\thinspace .
+\label{vib:ode2:step4b}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+Same formula for \( u^1 \) as when using a centered scheme for \( u''+\omega u=0 \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>A centered scheme for quadratic damping <a name="vib:ode2:fdm:fquad"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> \( f(u')=bu'|u'| \) leads to a quadratic equation for \( u^{n+1} \)</li>
+ <p><li> Instead of solving the quadratic equation, we use a geometric mean
+   approximation</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[mD_tD_t u + bu'|u'| + s(u) = F]^n,
+\label{vib:ode2:quad:idea1}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Compute \( u'|u'| \) by a <em>geometric mean</em>!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Using a geometric mean to linearize the equation  <a name="___sec58"></a></h3>
+
+<p>
+Geometric mean approximation:
+<p>&nbsp;<br>
+$$ w^n \approx w^{n-1/2}w^{n+1/2}\ts$$
+<p>&nbsp;<br>
+
+For \( |u'|u' \):
+
+<p>
+<p>&nbsp;<br>
+$$ [u'|u'|]^n \approx u'(t_n+\frac{1}{2})|u'(t_n-\frac{1}{2})|\ts$$
+<p>&nbsp;<br>
+
+For \( u' \) at \( t_{n\pm 1/2} \) we use centered difference:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u'(t_{n+1/2})\approx [D_t u]^{n+1/2},\quad u'(t_{n-1/2})\approx [D_t u]^{n-1/2}
+\thinspace .
+\label{vib:ode2:quad:idea2}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+After some algebra:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u^{n+1} &=  \left( m + b|u^n-u^{n-1}|\right)^{-1}\times \nonumber\\ 
+& \qquad \left(2m u^n - mu^{n-1} + bu^n|u^n-u^{n-1}| + \Delta t^2 (F^n - s(u^n))
+\right)
+\thinspace .
+\label{vib:ode2:step4:quad}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Initial condition for quadratic damping  <a name="___sec59"></a></h3>
+
+<p>
+Simply use that \( u'=V \) in the scheme:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[mD_tD_t u + bV|V| + s(u) = F]^0
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+which gives
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^1 = u^0 + \Delta t V + \frac{\Delta t^2}{2m}\left(-bV|V| - s(u^0) + F^0\right)
+\thinspace .
+\label{vib:ode2:step4b:quad}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Algorithm  <a name="___sec60"></a></h3>
+
+<p>
+The computational algorithm is a slight variation of the one
+in the section ref{vib:ode1:fdm}:
+
+<p>
+
+<ol>
+ <p><li> \( u^0=I \)</li>
+ <p><li> compute \( u^1 \) from \eqref{vib:ode2:step4b} if linear
+    damping or \eqref{vib:ode2:step4b:quad} if quadratic damping</li>
+ <p><li> for \( n=1,2,\ldots,N_t-1 \):</li>
+
+<ol>
+   <p><li> compute \( u^{n+1} \) from ({vib:ode2:step4}) if linear
+      damping or \eqref{vib:ode2:step4:quad} if quadratic damping</li>
+</ol>
+<p>
+
+</ol>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Implementation  <a name="___sec61"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">solver</span><span style="color: #d0d0d0">(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">m,</span> <span style="color: #d0d0d0">b,</span> <span style="color: #d0d0d0">s,</span> <span style="color: #d0d0d0">F,</span> <span style="color: #d0d0d0">dt,</span> <span style="color: #d0d0d0">T,</span> <span style="color: #d0d0d0">damping=</span><span style="color: #ed9d13">&#39;linear&#39;</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;</span>
+<span style="color: #ed9d13">    Solve m*u&#39;&#39; + f(u&#39;) + s(u) = F(t) for t in (0,T],</span>
+<span style="color: #ed9d13">    u(0)=I and u&#39;(0)=V,</span>
+<span style="color: #ed9d13">    by a central finite difference method with time step dt.</span>
+<span style="color: #ed9d13">    If damping is &#39;linear&#39;, f(u&#39;)=b*u, while if damping is</span>
+<span style="color: #ed9d13">    &#39;quadratic&#39;, f(u&#39;)=b*u&#39;*abs(u&#39;).</span>
+<span style="color: #ed9d13">    F(t) and s(u) are Python functions.</span>
+<span style="color: #ed9d13">    &quot;&quot;&quot;</span>
+    <span style="color: #d0d0d0">dt</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">float</span><span style="color: #d0d0d0">(dt);</span> <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">float</span><span style="color: #d0d0d0">(b);</span> <span style="color: #d0d0d0">m</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">float</span><span style="color: #d0d0d0">(m)</span> <span style="color: #999999; font-style: italic"># avoid integer div.</span>
+    <span style="color: #d0d0d0">Nt</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">int</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">round</span><span style="color: #d0d0d0">(T/dt))</span>
+    <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nt+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">t</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">linspace(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt*dt,</span> <span style="color: #d0d0d0">Nt+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">I</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">damping</span> <span style="color: #d0d0d0">==</span> <span style="color: #ed9d13">&#39;linear&#39;</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">dt*V</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*m)*(-b*V</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">s(u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">])</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">F(t[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]))</span>
+    <span style="color: #6ab825; font-weight: bold">elif</span> <span style="color: #d0d0d0">damping</span> <span style="color: #d0d0d0">==</span> <span style="color: #ed9d13">&#39;quadratic&#39;</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">dt*V</span> <span style="color: #d0d0d0">+</span> \ 
+               <span style="color: #d0d0d0">dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*m)*(-b*V*</span><span style="color: #24909d">abs</span><span style="color: #d0d0d0">(V)</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">s(u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">])</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">F(t[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]))</span>
+
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">n</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt):</span>
+        <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">damping</span> <span style="color: #d0d0d0">==</span> <span style="color: #ed9d13">&#39;linear&#39;</span><span style="color: #d0d0d0">:</span>
+            <span style="color: #d0d0d0">u[n+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*m*u[n]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">(b*dt/</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">m)*u[n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span>
+                      <span style="color: #d0d0d0">dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*(F(t[n])</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">s(u[n])))/(m</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">b*dt/</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">)</span>
+        <span style="color: #6ab825; font-weight: bold">elif</span> <span style="color: #d0d0d0">damping</span> <span style="color: #d0d0d0">==</span> <span style="color: #ed9d13">&#39;quadratic&#39;</span><span style="color: #d0d0d0">:</span>
+            <span style="color: #d0d0d0">u[n+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*m*u[n]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">m*u[n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">b*u[n]*</span><span style="color: #24909d">abs</span><span style="color: #d0d0d0">(u[n]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u[n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+                      <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*(F(t[n])</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">s(u[n])))/</span>\ 
+                      <span style="color: #d0d0d0">(m</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">b*</span><span style="color: #24909d">abs</span><span style="color: #d0d0d0">(u[n]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u[n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">t</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Verification <a name="vib:ode2:verify"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Exact linear solution of the discrete equations with linear \( s \)</li>
+ <p><li> MMS</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Demo program  <a name="___sec63"></a></h3>
+
+<p>
+<a href="http://tinyurl.com/jvzzcfn/vib/vib.py"><tt>vib.py</tt></a> supports input via the command line:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">Terminal&gt; python vib.py --s <span style="color: #ed9d13">&#39;sin(u)&#39;</span> --F <span style="color: #ed9d13">&#39;3*cos(4*t)&#39;</span> --c 0.03
+</pre></div>
+<p>
+This results in a <a href="http://tinyurl.com/k3sdbuv/pub/mov-vib/vib_generalized_dt0.05/index.html">moving window following the function</a> on the screen.
+
+<p>
+<center><p><img src="fig-vib/vib_gen_demo.png" align="bottom" width=600,></p></center>
 
 
 </section>
