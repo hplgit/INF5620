@@ -1,6 +1,6 @@
 import scitools.std as plt
 #import matplotlib.pyplot as plt
-from vb_empirical_analysis import minmax, periods, amplitudes
+from vib_empirical_analysis import minmax, periods, amplitudes
 import sys
 import odespy
 import numpy as np

@@ -68,7 +68,7 @@ Automatically generated HTML file from Doconce source
               (' Checking convergence rates ', 2, None, '___sec16'),
               (' Implementational details ', 2, None, '___sec17'),
               (' Nose test ', 2, None, '___sec18'),
-              (' Long-time simulations ',
+              (' Long time simulations ',
                1,
                'vib:model1:longseries',
                'vib:model1:longseries'),
@@ -85,7 +85,7 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec23'),
-              (' Deriving an exact numerical; calculations (1) ',
+              (' Deriving an exact numerical solution; calculations (1) ',
                2,
                None,
                '___sec24'),
@@ -93,25 +93,47 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec25'),
-              (' Polynomiaaal approximation of the phase error ',
+              (' Polynomial approximation of the phase error ',
                2,
                None,
                '___sec26'),
               (' Plot of the phase error ', 2, None, '___sec27'),
               (' Exact discrete solution ', 2, None, '___sec28'),
               (' Stability ', 2, None, '___sec29'),
+              (' The stability criterion ', 2, None, '___sec30'),
+              (' Summary of the analysis ', 2, None, '___sec31'),
               (' Alternative schemes based on 1st-order equations ',
                1,
                'vib:model2',
                'vib:model2'),
-              (' Standard methods for 1st-order ODE systems ',
-               1,
+              (' Rewriting 2nd-order ODE as system of two 1st-order ODEs ',
+               2,
                None,
-               '___sec31'),
-              (' The Forward Euler scheme ', 2, None, '___sec32'),
-              (' The Backward Euler scheme ', 2, None, '___sec33'),
-              (' The Crank-Nicolson scheme ', 2, None, '___sec34'),
-              (' Comparison of schemes ', 2, None, '___sec35'),
+               '___sec33'),
+              (' The Forward Euler scheme ', 2, None, '___sec34'),
+              (' The Backward Euler scheme ', 2, None, '___sec35'),
+              (' The Crank-Nicolson scheme ', 2, None, '___sec36'),
+              (' Comparison of schemes via Odespy ', 2, None, '___sec37'),
+              (' Forward and Backward Euler and Crank-Nicolson ',
+               2,
+               None,
+               '___sec38'),
+              (' Phase plane plot of the numerical solutions ',
+               2,
+               None,
+               '___sec39'),
+              (' Plain solution curves ', 2, None, '___sec40'),
+              (' Observations from the figures ', 2, None, '___sec41'),
+              (' Runge-Kutta methods of order 2 and 4; short time series ',
+               2,
+               None,
+               '___sec42'),
+              (' Runge-Kutta methods of order 2 and 4; longer time series ',
+               2,
+               None,
+               '___sec43'),
+              (' Crank-Nicolson; longer time series ', 2, None, '___sec44'),
+              (' Observations of RK and CN methods ', 2, None, '___sec45'),
               (' The Euler-Cromer method ',
                2,
                'vib:model2:EulerCromer',
@@ -119,7 +141,7 @@ Automatically generated HTML file from Doconce source
               (' Equivalence with the scheme for the second-order ODE ',
                2,
                None,
-               '___sec37')]}
+               '___sec47')]}
 end of tocinfo -->
 
 <body>
@@ -232,144 +254,27 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Comparison of schemes  <a name="___sec35"></a></h3>
+<h3>The Backward Euler scheme  <a name="___sec35"></a></h3>
 
 <p>
-Can use
-<a href="https://github.com/hplgit/odespy">Odespy</a> to compare many methods
-for first-order schemes:
+$$ [D_t^- u = v]^{n+1},$$
+
 
 <p>
+$$ [D_t^- v = -\omega u]^{n+1} \thinspace . $$
 
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">odespy</span>
-<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
+Written out:
+$$
+\begin{align}
+u^{n+1} - \Delta t v^{n+1} = u^{n},\\ 
+v^{n+1} + \Delta t \omega^2 u^{n+1} = v^{n}
+\thinspace .
+\end{align}
+$$
 
-<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">f</span>(u, t, w<span style="color: #666666">=1</span>):
-    <span style="color: #408080; font-style: italic"># u is array of length 2 holding our [u, v]</span>
-    u, v <span style="color: #666666">=</span> u
-    <span style="color: #008000; font-weight: bold">return</span> [v, <span style="color: #666666">-</span>w<span style="color: #666666">**2*</span>u]
-
-<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">run_solvers_and_plot</span>(solvers, timesteps_per_period<span style="color: #666666">=20</span>,
-                         num_periods<span style="color: #666666">=1</span>, I<span style="color: #666666">=1</span>, w<span style="color: #666666">=2*</span>np<span style="color: #666666">.</span>pi):
-    P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>np<span style="color: #666666">.</span>pi<span style="color: #666666">/</span>w  <span style="color: #408080; font-style: italic"># one period</span>
-    dt <span style="color: #666666">=</span> P<span style="color: #666666">/</span>timesteps_per_period
-    Nt <span style="color: #666666">=</span> num_periods<span style="color: #666666">*</span>timesteps_per_period
-    T <span style="color: #666666">=</span> Nt<span style="color: #666666">*</span>dt
-    t_mesh <span style="color: #666666">=</span> np<span style="color: #666666">.</span>linspace(<span style="color: #666666">0</span>, T, Nt<span style="color: #666666">+1</span>)
-
-    legends <span style="color: #666666">=</span> []
-    <span style="color: #008000; font-weight: bold">for</span> solver <span style="color: #AA22FF; font-weight: bold">in</span> solvers:
-        solver<span style="color: #666666">.</span>set(f_kwargs<span style="color: #666666">=</span>{<span style="color: #BA2121">&#39;w&#39;</span>: w})
-        solver<span style="color: #666666">.</span>set_initial_condition([I, <span style="color: #666666">0</span>])
-        u, t <span style="color: #666666">=</span> solver<span style="color: #666666">.</span>solve(t_mesh)
-</pre></div>
-<p>
-Forward Euler, Backward Euler, and
-Crank-Nicolson (<code>MidpointImplicit</code> in Odespy) are first out:
+This is a <em>coupled</em> \( 2\times 2 \) system for the new values at \( t=t_{n+1} \)!
 
 <p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">solvers <span style="color: #666666">=</span> [
-    odespy<span style="color: #666666">.</span>ForwardEuler(f),
-    <span style="color: #408080; font-style: italic"># Implicit methods must use Newton solver to converge</span>
-    odespy<span style="color: #666666">.</span>BackwardEuler   (f, nonlinear_solver<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Newton&#39;</span>),
-    odespy<span style="color: #666666">.</span>MidpointImplicit(f, nonlinear_solver<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Newton&#39;</span>),
-    ]
-</pre></div>
-<p>
-Two plot types:
-
-<p>
-
-<ul>
-  <p><li> \( u(t) \)</li>
-  <p><li> Parameterized curve \( (u(t), v(t)) \) in <em>phase space</em> (exact: \( (I\cos\omega t, -\omega I\sin\omega t) \) = ellipse)</li>
-  <p><li> Note: The curve \( (u(t), v(t)) \) is closed and periodic (\( P=2\pi/\omega \))</li>
-</ul>
-
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 4:  Comparison of classical schemes in the phase plane. <a name="vib:model1:1st:odespy:theta:phaseplane"></a> </p></center>
-<p><img src="fig-vib/vib_theta_1_pp.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 5:  Comparison of classical schemes. <a name="vib:model1:1st:odespy:theta"></a> </p></center>
-<p><img src="fig-vib/vib_theta_1_u.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-Observations:
-
-<p>
-
-<ul>
-  <p><li> Forward Euler has growing amplitude and outward \( (u,v) \) spiral - pumps
-    energy into the system.</li>
-  <p><li> Backward Euler is opposite: decreasing amplitude, inward sprial,
-    extracts energy.</li>
-  <p><li> <b>Forward and Backward Euler are useless for vibrations.</b></li>
-  <p><li> Crank-Nicolson (MidpointImplicit) looks much better.</li>
-</ul>
-
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 6:  Comparison of Runge-Kutta schemes in the phase plane. <a name="vib:model1:1st:odespy:RK:phaseplane"></a> </p></center>
-<p><img src="fig-vib/vib_RK_1_pp.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 7:  Comparison of Runge-Kutta schemes. <a name="vib:model1:1st:odespy:RK"></a> </p></center>
-<p><img src="fig-vib/vib_RK_1_u.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 8:  Long-time behavior of Runge-Kutta schemes in the phase plane. <a name="vib:model1:1st:odespy:RK:long:phaseplane"></a> </p></center>
-<p><img src="fig-vib/vib_RK_10_pp.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 9:  Long-time behavior of Runge-Kutta schemes. <a name="vib:model1:1st:odespy:RK:long"></a> </p></center>
-<p><img src="fig-vib/vib_RK_10_u.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 10:  Long-time behavior of the Crank-Nicolson scheme in the phase plane. <a name="vib:model1:1st:odespy:CN:long:phaseplane"></a> </p></center>
-<p><img src="fig-vib/vib_CN_10_pp.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-<center> <!-- figure -->
-<hr class="figure">
-<center><p class="caption">Figure 11:  Long-time behavior of the Crank-Nicolson scheme. <a name="vib:model1:1st:odespy:CN:long"></a> </p></center>
-<p><img src="fig-vib/vib_CN_10_u.png" align="bottom" width=800,></p>
-</center>
-
-<p>
-Observations:
-
-<p>
-
-<ul>
-  <p><li> 4th-order Runge-Kutta is very accurate, also for large \( \Delta t \).</li>
-  <p><li> 2th-order Runge-Kutta has almost as big problems as Forward and Backward
-    Euler.</li>
-  <p><li> Crank-Nicolson is accurate, but the amplitude is not as accurate
-    as Stormer/Verlet.</li>
-</ul>
-
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0036_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>

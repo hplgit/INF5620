@@ -68,7 +68,7 @@ Automatically generated HTML file from Doconce source
               (' Checking convergence rates ', 2, None, '___sec16'),
               (' Implementational details ', 2, None, '___sec17'),
               (' Nose test ', 2, None, '___sec18'),
-              (' Long-time simulations ',
+              (' Long time simulations ',
                1,
                'vib:model1:longseries',
                'vib:model1:longseries'),
@@ -85,7 +85,7 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec23'),
-              (' Deriving an exact numerical; calculations (1) ',
+              (' Deriving an exact numerical solution; calculations (1) ',
                2,
                None,
                '___sec24'),
@@ -93,25 +93,47 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec25'),
-              (' Polynomiaaal approximation of the phase error ',
+              (' Polynomial approximation of the phase error ',
                2,
                None,
                '___sec26'),
               (' Plot of the phase error ', 2, None, '___sec27'),
               (' Exact discrete solution ', 2, None, '___sec28'),
               (' Stability ', 2, None, '___sec29'),
+              (' The stability criterion ', 2, None, '___sec30'),
+              (' Summary of the analysis ', 2, None, '___sec31'),
               (' Alternative schemes based on 1st-order equations ',
                1,
                'vib:model2',
                'vib:model2'),
-              (' Standard methods for 1st-order ODE systems ',
-               1,
+              (' Rewriting 2nd-order ODE as system of two 1st-order ODEs ',
+               2,
                None,
-               '___sec31'),
-              (' The Forward Euler scheme ', 2, None, '___sec32'),
-              (' The Backward Euler scheme ', 2, None, '___sec33'),
-              (' The Crank-Nicolson scheme ', 2, None, '___sec34'),
-              (' Comparison of schemes ', 2, None, '___sec35'),
+               '___sec33'),
+              (' The Forward Euler scheme ', 2, None, '___sec34'),
+              (' The Backward Euler scheme ', 2, None, '___sec35'),
+              (' The Crank-Nicolson scheme ', 2, None, '___sec36'),
+              (' Comparison of schemes via Odespy ', 2, None, '___sec37'),
+              (' Forward and Backward Euler and Crank-Nicolson ',
+               2,
+               None,
+               '___sec38'),
+              (' Phase plane plot of the numerical solutions ',
+               2,
+               None,
+               '___sec39'),
+              (' Plain solution curves ', 2, None, '___sec40'),
+              (' Observations from the figures ', 2, None, '___sec41'),
+              (' Runge-Kutta methods of order 2 and 4; short time series ',
+               2,
+               None,
+               '___sec42'),
+              (' Runge-Kutta methods of order 2 and 4; longer time series ',
+               2,
+               None,
+               '___sec43'),
+              (' Crank-Nicolson; longer time series ', 2, None, '___sec44'),
+              (' Observations of RK and CN methods ', 2, None, '___sec45'),
               (' The Euler-Cromer method ',
                2,
                'vib:model2:EulerCromer',
@@ -119,7 +141,7 @@ Automatically generated HTML file from Doconce source
               (' Equivalence with the scheme for the second-order ODE ',
                2,
                None,
-               '___sec37')]}
+               '___sec47')]}
 end of tocinfo -->
 
 <body>
@@ -225,62 +247,51 @@ $$
 <a name="part0039"></a>
 <!-- begin top navigation -->
 <a href="._part0038_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0040_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
 <!-- end top navigation -->
 
 <p>
 <!-- !split -->
 
-<h3>Equivalence with the scheme for the second-order ODE  <a name="___sec37"></a></h3>
+<h3>Comparison of schemes via Odespy  <a name="___sec37"></a></h3>
 
 <p>
-Eliminate \( v^n \):
+Can use
+<a href="https://github.com/hplgit/odespy">Odespy</a> to compare many methods
+for first-order schemes:
 
 <p>
-From \eqref{vib:model2:EulerCromer:veq1}:
-$$ v^n = v^{n-1} - \Delta t \omega^2u^{n},
-$$
 
-which can be inserted in \eqref{vib:model2:EulerCromer:ueq1} to yield
-$$
-\begin{equation}
-u^{n+1} = u^n + \Delta t v^{n-1} - \Delta t^2 \omega^2u^{n} .
-\label{vib:model2:EulerCromer:elim1}
-\end{equation}
-$$
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">odespy</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">numpy</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">np</span>
 
-Using \eqref{vib:model2:EulerCromer:ueq1},
-$$ v^{n-1} = \frac{u^n - u^{n-1}}{\Delta t},
-$$
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">f</span>(u, t, w<span style="color: #666666">=1</span>):
+    <span style="color: #408080; font-style: italic"># u is array of length 2 holding our [u, v]</span>
+    u, v <span style="color: #666666">=</span> u
+    <span style="color: #008000; font-weight: bold">return</span> [v, <span style="color: #666666">-</span>w<span style="color: #666666">**2*</span>u]
 
-and when this is inserted in \eqref{vib:model2:EulerCromer:elim1} we get
-$$
-\begin{equation}
-u^{n+1} = 2u^n - u^{n-1} - \Delta t^2 \omega^2u^{n},
-\end{equation}
-$$
+<span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">run_solvers_and_plot</span>(solvers, timesteps_per_period<span style="color: #666666">=20</span>,
+                         num_periods<span style="color: #666666">=1</span>, I<span style="color: #666666">=1</span>, w<span style="color: #666666">=2*</span>np<span style="color: #666666">.</span>pi):
+    P <span style="color: #666666">=</span> <span style="color: #666666">2*</span>np<span style="color: #666666">.</span>pi<span style="color: #666666">/</span>w  <span style="color: #408080; font-style: italic"># one period</span>
+    dt <span style="color: #666666">=</span> P<span style="color: #666666">/</span>timesteps_per_period
+    Nt <span style="color: #666666">=</span> num_periods<span style="color: #666666">*</span>timesteps_per_period
+    T <span style="color: #666666">=</span> Nt<span style="color: #666666">*</span>dt
+    t_mesh <span style="color: #666666">=</span> np<span style="color: #666666">.</span>linspace(<span style="color: #666666">0</span>, T, Nt<span style="color: #666666">+1</span>)
 
-<b>which is nothing but the centered scheme</b> \eqref{vib:model1:step4}!
-<b>The previous analysis of this scheme then also applies to the Euler-Cromer
-method!</b>
-
+    legends <span style="color: #666666">=</span> []
+    <span style="color: #008000; font-weight: bold">for</span> solver <span style="color: #AA22FF; font-weight: bold">in</span> solvers:
+        solver<span style="color: #666666">.</span>set(f_kwargs<span style="color: #666666">=</span>{<span style="color: #BA2121">&#39;w&#39;</span>: w})
+        solver<span style="color: #666666">.</span>set_initial_condition([I, <span style="color: #666666">0</span>])
+        u, t <span style="color: #666666">=</span> solver<span style="color: #666666">.</span>solve(t_mesh)
+</pre></div>
 <p>
-The initial condition \( u'=0 \):
-
-<p>
-$$ u'=v=0\quad\Rightarrow\quad v^0=0,$$
-
-and
-\eqref{vib:model2:EulerCromer:ueq1} implies \( u^1=u^0 \), while
-\eqref{vib:model2:EulerCromer:veq1} says \( v^1=-\omega^2 u^0 \).
-
-<p>
-This \( u^1=u^0 \) approximation
-corresponds to a first-order Forward Euler discretization
-of \( u'(0)=0 \): \( [D_t^+ u = 0]^0 \).
-
 <p>
 <!-- begin bottom navigation -->
 <a href="._part0038_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0040_lecture_vib.html"><img src="https://doconce.googlecode.com/hg/bundled/html_images/next1.png" border=0 alt="next"></a>
 <!-- end bottom navigation -->
 
 <!-- ------------------- end of main content --------------- -->
