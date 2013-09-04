@@ -419,7 +419,7 @@ Nick names for this scheme: Stormer's method or <a href="http://en.wikipedia.org
 </ul>
 <p>
 
-Discretize \( u'(0) \) by a centered difference
+Discretize \( u'(0)=0 \) by a centered difference
 <p>&nbsp;<br>
 $$
 \begin{equation}
@@ -473,15 +473,15 @@ More precisly expressed in Python:
 
 <p>
 
-<!-- code=text (from !bc cod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">t = linspace(0, T, Nt+1)  # mesh points in time
-dt = t[1] - t[0]          # constant time step.
-u = zeros(Nt+1)           # solution
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">t = linspace(<span style="color: #B452CD">0</span>, T, Nt+<span style="color: #B452CD">1</span>)  <span style="color: #228B22"># mesh points in time</span>
+dt = t[<span style="color: #B452CD">1</span>] - t[<span style="color: #B452CD">0</span>]          <span style="color: #228B22"># constant time step.</span>
+u = zeros(Nt+<span style="color: #B452CD">1</span>)           <span style="color: #228B22"># solution</span>
 
-u[0] = I
-u[1] = u[0] - 0.5*dt**2*w**2*u[0]
-for n in range(1, Nt):
-    u[n+1] = 2*u[n] - u[n-1] - dt**2*w**2*u[n]
+u[<span style="color: #B452CD">0</span>] = I
+u[<span style="color: #B452CD">1</span>] = u[<span style="color: #B452CD">0</span>] - <span style="color: #B452CD">0.5</span>*dt**<span style="color: #B452CD">2</span>*w**<span style="color: #B452CD">2</span>*u[<span style="color: #B452CD">0</span>]
+<span style="color: #8B008B; font-weight: bold">for</span> n <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Nt):
+    u[n+<span style="color: #B452CD">1</span>] = <span style="color: #B452CD">2</span>*u[n] - u[n-<span style="color: #B452CD">1</span>] - dt**<span style="color: #B452CD">2</span>*w**<span style="color: #B452CD">2</span>*u[n]
 </code></pre></div>
 <p>
 Note: <code>w</code> is consistently used for \( \omega \) in code.
@@ -767,7 +767,7 @@ Can use <code>ffmpeg</code> instead of <code>avconv</code>.
 <h3>Checking convergence rates  <a name="___sec17"></a></h3>
 
 <p>
-The function below
+The next function estimates convergence rates, i.e., it
 
 <p>
 
@@ -867,7 +867,7 @@ Complete code in <a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped.py"><tt>vi
 
 <ul>
  <p><li> The numerical solution seems to have right amplitude.</li>
- <p><li> There is a phase error which is reduced by reducing the time step.</li>
+ <p><li> There is a phase error (reduced by reducing the time step).</li>
  <p><li> The total phase error seems to grow with time.</li>
 </ul>
 <p>
@@ -897,7 +897,7 @@ Example:
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; python vib_undamped.py --dt 0.05 --num_periods 40
 </code></pre></div>
 <p>
-<a href="mov-vib/vib_undamped_dt0.05/index.html">Movie of the moving plot window</a>.
+<a href="http://tinyurl.com/k3sdbuv/pub/mov-vib/vib_undamped_dt0.05/index.html">Movie of the moving plot window</a>.
 
 <p>
 
@@ -923,7 +923,7 @@ Example:
   <p><li> Linear, homogeneous, difference equation for \( u^n \).</li>
   <p><li> Has solutions \( u^n \sim A^n \), where \( A \) is unknown (number).</li>
   <p><li> Here: \( \uex(t) =I\cos(\omega t) \sim I\exp{(i\omega t)} = I(e^{i\omega\Delta t})^n \)</li>
-  <p><li> Trick for simplifying the algebra: \( u^n = A^n \), seek \( A=\exp{(i\tilde\omega\Delta t)} \) and find \( \tilde\omega \)</li>
+  <p><li> Trick for simplifying the algebra: \( u^n = A^n \), with \( A=\exp{(i\tilde\omega\Delta t)} \), then find \( \tilde\omega \)</li>
   <p><li> \( \tilde\omega \): unknown <em>numerical frequency</em> (easier to calculate than \( A \))</li>
   <p><li> \( \omega - \tilde\omega \) is the <em>phase error</em></li>
   <p><li> Use the real part as the physical relevant part of a complex expression</li>
@@ -975,19 +975,19 @@ $$
 
 <p>
 The scheme \eqref{vib:model1:step4}
-with \( u^n=\exp{(i\omega\tilde\Delta t\, n)} \) inserted gives
+with \( u^n=I\exp{(i\omega\tilde\Delta t\, n)} \) inserted gives
 
 <p>
 <p>&nbsp;<br>
 $$
 \begin{equation}
--\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
-+ \omega^2 \exp{(i\tilde\omega t)} = 0,
+-I\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
++ \omega^2 I\exp{(i\tilde\omega t)} = 0,
 \end{equation}
 $$
 <p>&nbsp;<br>
 
-which after dividing by \( \exp{(i\tilde\omega t)} \) results in
+which after dividing by \( Io\exp{(i\tilde\omega t)} \) results in
 <p>&nbsp;<br>
 $$
 \begin{equation}
@@ -1089,7 +1089,17 @@ $$
 
 
 <p>
-Ideal for verification and analysis!
+The error mesh function,
+
+<p>
+<p>&nbsp;<br>
+$$ e^n = \uex(t_n) - u^n =
+I\cos\left(\omega n\Delta t\right)
+- I\cos\left(\tilde\omega n\Delta t\right)
+$$
+<p>&nbsp;<br>
+
+is ideal for verification and analysis.
 
 <p>
 
@@ -1098,7 +1108,42 @@ Ideal for verification and analysis!
 
 <section class="slide">
 
-<h3>Stability  <a name="___sec30"></a></h3>
+<h3>Convergence of the numerical scheme  <a name="___sec30"></a></h3>
+
+<p>
+Can easily show <em>convergence</em>:
+
+<p>
+<p>&nbsp;<br>
+$$ e^n\rightarrow 0 \hbox{ as }\Delta t\rightarrow 0,$$
+<p>&nbsp;<br>
+
+because
+
+<p>
+<p>&nbsp;<br>
+$$
+\lim_{\Delta t\rightarrow 0}
+\tilde\omega = \lim_{\Delta t\rightarrow 0}
+\frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+= \omega,
+$$
+<p>&nbsp;<br>
+
+by L'Hopital's rule or simply asking
+<code>(2/x)*asin(w*x/2) as x->0</code> in <a href="http://www.wolframalpha.com/input/?i=%282%2Fx%29*asin%28w*x%2F2%29+as+x-%3E0">WolframAlpha</a>.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Stability  <a name="___sec31"></a></h3>
+
+<p>
+Observations:
 
 <p>
 
@@ -1121,7 +1166,7 @@ What is the consequence of complex \( \tilde\omega \)?
    \( x>1 \), \( \exp{(i\omega\tilde t)}=\exp{(-\tilde\omega_i t)}\exp{(i\tilde\omega_r t)} \)
    leads to exponential growth \( e^{-\tilde\omega_it} \)
    when \( -\tilde\omega_i t > 0 \).</li>
- <p><li> This instability because the qualitative behavior is wrong.</li>
+ <p><li> This is <em>instability</em> because the qualitative behavior is wrong.</li>
 </ul>
 <p>
 
@@ -1131,7 +1176,7 @@ What is the consequence of complex \( \tilde\omega \)?
 
 <section class="slide">
 
-<h3>The stability criterion  <a name="___sec31"></a></h3>
+<h3>The stability criterion  <a name="___sec32"></a></h3>
 
 <p>
 Cannot tolerate growth and must therefore demand a <em>stability criterion</em>
@@ -1147,7 +1192,7 @@ $$
 
 
 <p>
-Try \( \Delta t = \frac{2}{\omega} + 9.01\cdot 10^{-5} \) (\( \pi^{-1} \):
+Try \( \Delta t = \frac{2}{\omega} + 9.01\cdot 10^{-5} \):
 
 <p>
 <center><p><img src="fig-vib/vib_unstable.png" align="bottom" width=400></p></center>
@@ -1159,7 +1204,7 @@ Try \( \Delta t = \frac{2}{\omega} + 9.01\cdot 10^{-5} \) (\( \pi^{-1} \):
 
 <section class="slide">
 
-<h3>Summary of the analysis  <a name="___sec32"></a></h3>
+<h3>Summary of the analysis  <a name="___sec33"></a></h3>
 
 <p>
 We can draw three important conclusions:
@@ -1199,14 +1244,18 @@ We can draw three important conclusions:
 
 <section class="slide">
 
-<h3>Rewriting 2nd-order ODE as system of two 1st-order ODEs  <a name="___sec34"></a></h3>
+<h3>Rewriting 2nd-order ODE as system of two 1st-order ODEs  <a name="___sec35"></a></h3>
 
 <p>
+The vast collection of ODE solvers (e.g., in <a href="https://github.com/hplgit/odespy">Odespy</a>) cannot be applied to
 <p>&nbsp;<br>
 $$ u'' + \omega^2 u = 0$$
 <p>&nbsp;<br>
 
-Introduce auxiliary variable \( v=u' \):
+unless we write this higher-order ODE as a system of 1st-order ODEs.
+
+<p>
+Introduce an auxiliary variable \( v=u' \):
 
 <p>
 <p>&nbsp;<br>
@@ -1232,7 +1281,10 @@ Initial conditions: \( u(0)=I \) and \( v(0)=0 \).
 
 <section class="slide">
 
-<h3>The Forward Euler scheme  <a name="___sec35"></a></h3>
+<h3>The Forward Euler scheme  <a name="___sec36"></a></h3>
+
+<p>
+We apply the Forward Euler scheme to each component equation:
 
 <p>
 <p>&nbsp;<br>
@@ -1266,7 +1318,10 @@ $$
 
 <section class="slide">
 
-<h3>The Backward Euler scheme  <a name="___sec36"></a></h3>
+<h3>The Backward Euler scheme  <a name="___sec37"></a></h3>
+
+<p>
+We apply the Backward Euler scheme to each component equation:
 
 <p>
 <p>&nbsp;<br>
@@ -1299,7 +1354,7 @@ This is a <em>coupled</em> \( 2\times 2 \) system for the new values at \( t=t_{
 
 <section class="slide">
 
-<h3>The Crank-Nicolson scheme  <a name="___sec37"></a></h3>
+<h3>The Crank-Nicolson scheme  <a name="___sec38"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1314,7 +1369,7 @@ $$
 [D_t v = -\omega \overline{u}^t]^{n+\frac{1}{2}}$$
 <p>&nbsp;<br>
 
-Also a coupled system:
+The result is also a coupled system:
 
 <p>
 <p>&nbsp;<br>
@@ -1336,7 +1391,7 @@ $$
 
 <section class="slide">
 
-<h3>Comparison of schemes via Odespy  <a name="___sec38"></a></h3>
+<h3>Comparison of schemes via Odespy  <a name="___sec39"></a></h3>
 
 <p>
 Can use
@@ -1350,8 +1405,7 @@ for first-order schemes:
 <span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">np</span>
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">f</span>(u, t, w=<span style="color: #B452CD">1</span>):
-    <span style="color: #228B22"># u is array of length 2 holding our [u, v]</span>
-    u, v = u
+    u, v = u  <span style="color: #228B22"># u is array of length 2 holding our [u, v]</span>
     <span style="color: #8B008B; font-weight: bold">return</span> [v, -w**<span style="color: #B452CD">2</span>*u]
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">run_solvers_and_plot</span>(solvers, timesteps_per_period=<span style="color: #B452CD">20</span>,
@@ -1375,7 +1429,7 @@ for first-order schemes:
 
 <section class="slide">
 
-<h3>Forward and Backward Euler and Crank-Nicolson  <a name="___sec39"></a></h3>
+<h3>Forward and Backward Euler and Crank-Nicolson  <a name="___sec40"></a></h3>
 
 <p>
 
@@ -1394,8 +1448,9 @@ Two plot types:
 
 <ul>
   <p><li> \( u(t) \) vs \( t \)</li>
-  <p><li> Parameterized curve \( (u(t), v(t)) \) in <em>phase space</em> (exact: \( (I\cos\omega t, -\omega I\sin\omega t) \) = ellipse)</li>
-  <p><li> Notice: The curve \( (u(t), v(t)) \) is closed and periodic (\( P=2\pi/\omega \))</li>
+  <p><li> Parameterized curve \( (u(t), v(t)) \) in <em>phase space</em></li>
+  <p><li> Exact curve is an ellipse: \( (I\cos\omega t, -\omega I\sin\omega t) \),
+    closed and periodic</li>
 </ul>
 <p>
 
@@ -1405,10 +1460,13 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Phase plane plot of the numerical solutions  <a name="___sec40"></a></h3>
+<h3>Phase plane plot of the numerical solutions  <a name="___sec41"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_theta_1_pp.png" align="bottom" width=800,></p></center>
+
+<p>
+Note: CrankNicolson in Odespy leads to the name MidpointImplicit.
 
 <p>
 
@@ -1417,7 +1475,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Plain solution curves  <a name="___sec41"></a></h3>
+<h3>Plain solution curves  <a name="___sec42"></a></h3>
 
 <p>
 <center> <!-- figure -->
@@ -1433,7 +1491,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Observations from the figures  <a name="___sec42"></a></h3>
+<h3>Observations from the figures  <a name="___sec43"></a></h3>
 
 <p>
 
@@ -1453,7 +1511,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Runge-Kutta methods of order 2 and 4; short time series  <a name="___sec43"></a></h3>
+<h3>Runge-Kutta methods of order 2 and 4; short time series  <a name="___sec44"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_RK_1_pp.png" align="bottom" width=800,></p></center>
@@ -1468,7 +1526,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Runge-Kutta methods of order 2 and 4; longer time series  <a name="___sec44"></a></h3>
+<h3>Runge-Kutta methods of order 2 and 4; longer time series  <a name="___sec45"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_RK_10_pp.png" align="bottom" width=800,></p></center>
@@ -1483,7 +1541,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Crank-Nicolson; longer time series  <a name="___sec45"></a></h3>
+<h3>Crank-Nicolson; longer time series  <a name="___sec46"></a></h3>
 
 <p>
 <center><p><img src="fig-vib/vib_CN_10_pp.png" align="bottom" width=800,></p></center>
@@ -1501,7 +1559,7 @@ Two plot types:
 
 <section class="slide">
 
-<h3>Observations of RK and CN methods  <a name="___sec46"></a></h3>
+<h3>Observations of RK and CN methods  <a name="___sec47"></a></h3>
 
 <p>
 
@@ -1553,7 +1611,7 @@ $$
 
 <section class="slide">
 
-<h3>The Euler-Cromer method; complete formulas  <a name="___sec48"></a></h3>
+<h3>The Euler-Cromer method; complete formulas  <a name="___sec49"></a></h3>
 
 <p>
 Written out:
@@ -1589,7 +1647,7 @@ approximations. What about the overall scheme? Expect \( \Oof{\Delta t} \)...
 
 <section class="slide">
 
-<h3>Equivalence with the scheme for the second-order ODE  <a name="___sec49"></a></h3>
+<h3>Equivalence with the scheme for the second-order ODE  <a name="___sec50"></a></h3>
 
 <p>
 Goal: eliminate \( v^n \). We have
@@ -1631,7 +1689,7 @@ $$
 
 <section class="slide">
 
-<h3>Comparison of the treatment of initial conditions  <a name="___sec50"></a></h3>
+<h3>Comparison of the treatment of initial conditions  <a name="___sec51"></a></h3>
 
 <p>
 
@@ -1693,7 +1751,7 @@ Staggered mesh:
 
 <section class="slide">
 
-<h3>Centered differences on a staggered mesh  <a name="___sec52"></a></h3>
+<h3>Centered differences on a staggered mesh  <a name="___sec53"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1744,7 +1802,7 @@ $$
 
 <section class="slide">
 
-<h3>Comparison with the scheme for the 2nd-order ODE  <a name="___sec53"></a></h3>
+<h3>Comparison with the scheme for the 2nd-order ODE  <a name="___sec54"></a></h3>
 
 <p>
 
@@ -1837,7 +1895,7 @@ u^{n+1} = \left(2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
 $$
 <p>&nbsp;<br>
 
-<h3>Initial conditions  <a name="___sec56"></a></h3>
+<h3>Initial conditions  <a name="___sec57"></a></h3>
 
 <p>
 \( u(0)=I \), \( u'(0)=V \):
@@ -1906,7 +1964,7 @@ Compute \( u'|u'| \) by a <em>geometric mean</em>!
 
 <section class="slide">
 
-<h3>Using a geometric mean to linearize the equation  <a name="___sec58"></a></h3>
+<h3>Using a geometric mean to linearize the equation  <a name="___sec59"></a></h3>
 
 <p>
 Geometric mean approximation:
@@ -1957,7 +2015,7 @@ $$
 
 <section class="slide">
 
-<h3>Initial condition for quadratic damping  <a name="___sec59"></a></h3>
+<h3>Initial condition for quadratic damping  <a name="___sec60"></a></h3>
 
 <p>
 Simply use that \( u'=V \) in the scheme:
@@ -1994,7 +2052,7 @@ $$
 
 <section class="slide">
 
-<h3>Algorithm  <a name="___sec60"></a></h3>
+<h3>Algorithm  <a name="___sec61"></a></h3>
 
 <p>
 The computational algorithm is a slight variation of the one
@@ -2009,7 +2067,7 @@ in the section ref{vib:ode1:fdm}:
  <p><li> for \( n=1,2,\ldots,N_t-1 \):</li>
 
 <ol>
-   <p><li> compute \( u^{n+1} \) from ({vib:ode2:step4}) if linear
+   <p><li> compute \( u^{n+1} \) from \eqref{vib:ode2:step4} if linear
       damping or \eqref{vib:ode2:step4:quad} if quadratic damping</li>
 </ol>
 <p>
@@ -2023,7 +2081,7 @@ in the section ref{vib:ode1:fdm}:
 
 <section class="slide">
 
-<h3>Implementation  <a name="___sec61"></a></h3>
+<h3>Implementation  <a name="___sec62"></a></h3>
 
 <p>
 
@@ -2082,7 +2140,7 @@ in the section ref{vib:ode1:fdm}:
 
 <section class="slide">
 
-<h3>Demo program  <a name="___sec63"></a></h3>
+<h3>Demo program  <a name="___sec64"></a></h3>
 
 <p>
 <a href="http://tinyurl.com/jvzzcfn/vib/vib.py"><tt>vib.py</tt></a> supports input via the command line:

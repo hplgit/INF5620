@@ -1040,6 +1040,7 @@ Perhaps more important than the :math:`\tilde\omega = \omega + {\cal O}(\Delta t
 result found above is the fact that we have an exact discrete solution of
 the problem:
 
+
 .. math::
    :label: vib:ode1:un:exact
         
@@ -1049,9 +1050,40 @@ the problem:
         
         
 
-Such an exact discrete solution is ideal for verification purposes
+We can then compute the error mesh function
+
+
+.. math::
+   :label: vib:ode1:en
+        
+        e^n = u_{\small\mbox{e}}(t_n) - u^n =
+        I\cos\left(\omega n\Delta t\right)
+        - I\cos\left(\tilde\omega n\Delta t\right) {\thinspace .}
+        
+        
+
+In particular, we can use this expression to show *convergence* of the
+numerical scheme, i.e., :math:`e^n\rightarrow 0` as :math:`\Delta t\rightarrow 0`.
+We have that
+
+
+.. math::
+        
+        \lim_{\Delta t\rightarrow 0}
+        \tilde\omega = \lim_{\Delta t\rightarrow 0}
+        \frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+        = \omega,
+        
+
+by L'Hopital's rule or simply asking
+``(2/x)*asin(w*x/2) as x->0`` in `WolframAlpha <http://www.wolframalpha.com/input/?i=%282%2Fx%29*asin%28w*x%2F2%29+as+x-%3E0>`_.
+Therefore, :math:`\tilde\omega\rightarrow\omega`, and the two terms in
+:math:`e^n` cancel each other in the limit :math:`\Delta t\rightarrow 0`.
+
+The error mesh function is ideal for verification purposes
 (and you are encouraged to make a test based on :eq:`vib:ode1:un:exact`
 in :ref:`vib:exer:discrete:omega`).
+
 
 Stability
 ---------
@@ -1318,8 +1350,7 @@ a possible program for doing that.
         import numpy as np
         
         def f(u, t, w=1):
-            # u is array of length 2 holding our [u, v]
-            u, v = u
+            u, v = u  # u is array of length 2 holding our [u, v]
             return [v, -w**2*u]
         
         def run_solvers_and_plot(solvers, timesteps_per_period=20,
@@ -1398,6 +1429,7 @@ solutions.
    *Comparison of classical schemes*
 
 
+
 We may run two popular standard methods for first-order ODEs, the 2nd-
 and 4th-order Runge-Kutta methods, to see how they perform. Figures
 :ref:`vib:ode1:1st:odespy:RK:phaseplane` and
@@ -1457,6 +1489,102 @@ how
 
    *Long-time behavior of the Crank-Nicolson scheme*
 
+
+
+.. _vib:model1:energy:
+
+Enegy considerations
+--------------------
+
+The observations of various methods in the previous section can be
+better interpreted if we compute the *energy of the system*.
+To this end, we multiply
+
+
+.. math::
+         u'' + \omega^2 u = 0,
+
+by :math:`u'` and integrate from :math:`0` to :math:`T`:
+
+
+.. math::
+         \int_0^T u''u' dt + \int_0^T\omega^2 u u' dt = 0{\thinspace .}
+
+(When our ODE comes from Newton's section law, this action means that
+we compute the work done on the mechanical system in the time
+interval :math:`[0,T]`.)
+
+Observing that
+
+
+.. math::
+         u''u' = \frac{d}{dt}\frac{1}{2}(u')^2,\quad uu' = \frac{d}{dt} \frac{1}{2}u^2,
+
+we get
+
+
+.. math::
+        
+        \int_0^T (\frac{d}{dt}\frac{1}{2}(u')^2 + \frac{d}{dt} \frac{1}{2}\omega^2u^2)dt = E(T) - E(0),
+        
+
+where we have introduced the *energy* :math:`E(t)`
+
+
+.. math::
+   :label: vib:model1:energy:balance1
+        
+        E(t) = E_k(t) + E_p(t),
+        
+        
+
+as a sum of the kinetic energy
+
+
+.. math::
+   :label: vib:model1:energy:kinetic
+        
+        E_k(t) = \frac{1}{2}(u')^2,
+        
+        
+
+and the potential energy
+
+
+.. math::
+   :label: vib:model1:energy:potential
+        
+        E_p(t) = \frac{1}{2}\omega^2u^2{\thinspace .}
+        
+        
+
+
+The important result from this derivation is that the total energy
+is constant:
+
+
+.. math::
+         E(t) = \hbox{const}{\thinspace .}
+
+
+Analytically, we have :math:`u(t)=I\cos\omega t`,
+so we can easily check the evolution of the energy
+
+
+.. math::
+         E(t) = \frac{1}{2}I^2 (-\omega\sin\omega t)^2
+        + \frac{1}{2}\omega^2 I^2 \cos^2\omega t
+        = \frac{1}{2}\omega^2 (\sin^2\omega t + \cos^2\omega t) = \frac{1}{2}\omega^2
+        {\thinspace .}
+        
+
+We can use this value of the constant for verification, or we can simply
+compute :math:`E(0)` from the initial conditions and check that :math:`E(t_n)=E(0)`
+at all mesh points :math:`t_n`.
+
+.. Link phase plane plot to energy
+
+.. A phase plane plot shows the curve :math:`(u(t), u'(t))`.
 
 
 .. _vib:model2x2:EulerCromer:
@@ -2013,7 +2141,7 @@ in the section :ref:`vib:ode1:fdm`:
 
  3. for :math:`n=1,2,\ldots,N_t-1`:
 
-   1. compute :math:`u^{n+1}` from ({vib:ode2:step4}) if linear
+   1. compute :math:`u^{n+1}` from :eq:`vib:ode2:step4` if linear
       damping or :eq:`vib:ode2:step4:quad` if quadratic damping
 
 

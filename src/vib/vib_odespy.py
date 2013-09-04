@@ -6,8 +6,7 @@ import odespy
 import numpy as np
 
 def f(u, t, w=1):
-    # u is array of length 2 holding our [u, v]
-    u, v = u
+    u, v = u  # u is array of length 2 holding our [u, v]
     return [v, -w**2*u]
 
 def run_solvers_and_plot(solvers, timesteps_per_period=20,
