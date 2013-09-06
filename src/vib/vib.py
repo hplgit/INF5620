@@ -288,8 +288,8 @@ def amplitudes(minima, maxima):
     return array(a)
 
 if __name__ == '__main__':
-    #main()
-    test_constant()
-    test_sinusoidal()
-    test_mms()
-    test_quadratic()
+    main()
+    #test_constant()
+    #test_sinusoidal()
+    #test_mms()
+    #test_quadratic()

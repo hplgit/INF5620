@@ -60,7 +60,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Sep 4, 2013</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Sep 6, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -1000,7 +1000,7 @@ Crank-Nicolson schemes is done like this:</p>
     <span class="p">]</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="http://tinyurl.com/jvzzcfn/vib/vib_odespy.py">vib_odespy.py</a>
+<p>The <tt class="docutils literal"><span class="pre">vib_odespy.py</span></tt>
 program makes two plots of the computed solutions with the various
 methods in the <tt class="docutils literal"><span class="pre">solvers</span></tt> list: one plot with <span class="math">\(u(t)\)</span> versus <span class="math">\(t\)</span>, and
 one <em>phase plane plot</em> where <span class="math">\(v\)</span> is plotted against <span class="math">\(u\)</span>.
@@ -1183,16 +1183,21 @@ Therefore, the Euler-Cromer scheme will start out differently
 and not exactly reproduce the solution of <a href="#equation-vib:ode1:step4">(7)</a>.</p>
 </div>
 </div>
-<div class="section" id="a-method-utilizing-a-staggered-mesh">
-<span id="vib-model2x2-staggered"></span><h2>A method utilizing a staggered mesh<a class="headerlink" href="#a-method-utilizing-a-staggered-mesh" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="the-euler-cromer-scheme-on-a-staggered-mesh">
+<span id="vib-model2x2-staggered"></span><h2>The Euler-Cromer scheme on a staggered mesh<a class="headerlink" href="#the-euler-cromer-scheme-on-a-staggered-mesh" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="index-11"></span><p id="index-12">The Forward and Backward Euler schemes used in the Euler-Cromer
 method are both unsymmetric, but their combination yields a
-symmetric method. This symmetry is much more evident if we
+symmetric method since the resulting scheme is equivalent with
+a centered (symmetric) difference scheme for <span class="math">\(u''+\omega^2u=0\)</span>.
+The symmetric nature of the Euler-Cromer scheme is much more evident if we
 introduce a <em>staggered mesh</em> in time where <span class="math">\(u\)</span> is sought at
 integer time points <span class="math">\(t_n\)</span> and <span class="math">\(v\)</span> is sought at <span class="math">\(t_{n+1/2}\)</span>
-between two <span class="math">\(u\)</span> points.
-The unknowns are then <span class="math">\(u^1, v^{3/2}, u^2, v^{5/2}\)</span>, and so on.</p>
-<p>We can now easily use centered difference approximations, expressed
+<em>between</em> two <span class="math">\(u\)</span> points.
+The unknowns are then <span class="math">\(u^1, v^{3/2}, u^2, v^{5/2}\)</span>, and so on.
+We typically use the notation
+<span class="math">\(u^n\)</span> and <span class="math">\(v^{n+1/2}\)</span> for the two unknown mesh functions.</p>
+<p>On a staggered mesh it is natural to
+use centered difference approximations, expressed
 in operator notation as</p>
 <div class="math">
 \[\lbrack D_t u = v\rbrack^{n+\frac{1}{2}},\]</div>
@@ -1366,11 +1371,8 @@ gives</p>
 <span class="eqno">(38)</span>\[     u^1 = u^0 + \Delta t V + \frac{\Delta t^2}{2m}\left(-bV|V| - s(u^0) + F^0\right)
      \thinspace .\]</div>
 </div>
-</div>
 <div class="section" id="implementation-2">
-<span id="vib-ode2-solver"></span><h1>Implementation  (2)<a class="headerlink" href="#implementation-2" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="algorithm-and-solver-function">
-<h2>Algorithm and solver function<a class="headerlink" href="#algorithm-and-solver-function" title="Permalink to this headline">¶</a></h2>
+<span id="vib-ode2-solver"></span><h2>Implementation  (2)<a class="headerlink" href="#implementation-2" title="Permalink to this headline">¶</a></h2>
 <p>The algorithm is very similar to the undamped case. The difference is
 basically a question of different formulas for <span class="math">\(u^1\)</span> and
 <span class="math">\(u^{n+1}\)</span>. This is actually quite remarkable. The equation
@@ -1517,6 +1519,52 @@ Figure <a class="reference internal" href="#vib-ode2-fig-demo"><em>Damped oscill
 <img alt="_images/vib_gen_demo1.png" src="_images/vib_gen_demo1.png" style="width: 600px;" />
 <p class="caption"><em>Damped oscillator excited by a sinusoidal function</em></p>
 </div>
+</div>
+<div class="section" id="the-generalized-model-as-a-1st-order-system-on-a-staggered-mesh">
+<span id="vib-ode2-staggered"></span><h2>The generalized model as a 1st-order system on a staggered mesh<a class="headerlink" href="#the-generalized-model-as-a-1st-order-system-on-a-staggered-mesh" title="Permalink to this headline">¶</a></h2>
+<p>The model</p>
+<div class="math">
+\[mu'' + f(u') + s(u) = F(t),\quad u(0)=I,\ u'(0)=V,\ t\in (0,T],\]</div>
+<p>can be rewritten as a first-order ODE system</p>
+<div class="math" id="equation-vib:ode2:staggered:ueq">
+<span class="eqno">(39)</span>\[     u' = v,\]</div>
+<div class="math" id="equation-vib:ode2:staggered:veq">
+<span class="eqno">(40)</span>\[     v' = m^{-1}\left(F(t) - f(v) - s(u)\right){\thinspace .}\]</div>
+<p>It is natural to introduce a staggered mesh (see the section <a class="reference internal" href="#vib-model2x2-staggered"><em>The Euler-Cromer scheme on a staggered mesh</em></a>) and seek <span class="math">\(u\)</span> at mesh points <span class="math">\(t_n\)</span> (the numerical value is
+denoted by <span class="math">\(u^n\)</span>) and <span class="math">\(v\)</span> between mesh points at <span class="math">\(t_{n+1/2}\)</span> (the numerical
+value is denoted by <span class="math">\(v^{n+1/2}\)</span>).
+A centered difference approximation to <a href="#equation-vib:ode2:staggered:ueq">(39)</a>-(<em class="xref std std-ref">vib:ode2:staggered:vueq</em>) can then be written in operator notation as</p>
+<div class="math" id="equation-vib:ode2:staggered:dueq">
+<span class="eqno">(41)</span>\[     \lbrack D_t u = v\rbrack^{n-1/2},\]</div>
+<div class="math" id="equation-vib:ode2:staggered:dveq">
+<span class="eqno">(42)</span>\[     \lbrack D_tv = m^{-1}\left(F(t) - f(v) - s(u)\right)\rbrack^n{\thinspace .}\]</div>
+<p>Written out,</p>
+<div class="math" id="equation-vib:ode2:staggered:dueq2">
+<span class="eqno">(43)</span>\[     \frac{u^n - u^{n-1}}{\Delta t} = v^{n-\frac{1}{2}},\]</div>
+<div class="math" id="equation-vib:ode2:staggered:dveq2">
+<span class="eqno">(44)</span>\[     \frac{v^{n+\frac{1}{2}} - v^{n-\frac{1}{2}}}{\Delta t}
+     = m^{-1}\left(F^n - f(v^n) - s(u^n)\right){\thinspace .}\]</div>
+<p>With linear damping, <span class="math">\(f(v)=bv\)</span>, we can use an arithmetic mean
+for <span class="math">\(f(v^n)\)</span>: <span class="math">\(f(v^n)\approx = \frac{1}{2}(f(v^{n-1/2}) +
+f(v^{n+1/2}))\)</span>. The system
+<a href="#equation-vib:ode2:staggered:dueq2">(43)</a>-<a href="#equation-vib:ode2:staggered:dveq2">(44)</a>
+can then be solved with respect to the unknowns <span class="math">\(u^n\)</span> and <span class="math">\(v^{n+1/2}\)</span>:</p>
+<div class="math" id="equation-vib:ode2:staggered:u:scheme:lin">
+<span class="eqno">(45)</span>\[     u^n  = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},\]</div>
+<div class="math" id="equation-vib:ode2:staggered:v:scheme:lin">
+<span class="eqno">(46)</span>\[     v^{n+\frac{1}{2}} = \left(1 + \frac{b}{2m}\Delta t\right)^{-1}\left(
+     v^{n-\frac{1}{2}} + {\Delta t}
+     m^{-1}\left(F^n - \frac{1}{2}f(v^{n-\frac{1}{2}}) - s(u^n)\right)\right){\thinspace .}\]</div>
+<p>In case of quadratic damping, <span class="math">\(f(v)=b|v|v\)</span>, we can use a geometric mean:
+<span class="math">\(f(v^n)\approx b|v^{n-1/2}|v^{n+1/2}\)</span>. Inserting this approximation
+in <a href="#equation-vib:ode2:staggered:dueq2">(43)</a>-<a href="#equation-vib:ode2:staggered:dveq2">(44)</a> and
+solving for the unknowns <span class="math">\(u^n\)</span> and <span class="math">\(v^{n+1/2}\)</span> results in</p>
+<div class="math" id="equation-vib:ode2:staggered:u:scheme:quad">
+<span class="eqno">(47)</span>\[     u^n  = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},\]</div>
+<div class="math" id="equation-vib:ode2:staggered:v:scheme:quad">
+<span class="eqno">(48)</span>\[     v^{n+\frac{1}{2}} = (1 + \frac{b}{m}|v^{n-1/2}|\Delta t)^{-1}\left(
+     v^{n-\frac{1}{2}} + {\Delta t}
+     m^{-1}\left(F^n - s(u^n)\right)\right){\thinspace .}\]</div>
 </div>
 </div>
 <div class="section" id="exercises">
@@ -1702,7 +1750,7 @@ Try to call up as much existing functionality in <tt class="docutils literal"><s
 <span id="vib-exer-schemes-equiv"></span><h2>Exercise 15: Show equivalence between schemes<a class="headerlink" href="#exercise-15-show-equivalence-between-schemes" title="Permalink to this headline">¶</a></h2>
 <p>Show that the schemes from the sections <a class="reference internal" href="#vib-ode1-fdm"><em>A centered finite difference scheme</em></a>,
 <a class="reference internal" href="#vib-model2x2-eulercromer"><em>The Euler-Cromer method</em></a>, and
-<a class="reference internal" href="#vib-model2x2-staggered"><em>A method utilizing a staggered mesh</em></a> are all equivalent.</p>
+<a class="reference internal" href="#vib-model2x2-staggered"><em>The Euler-Cromer scheme on a staggered mesh</em></a> are all equivalent.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">vib_scheme_equivalence.pdf</span></tt>.</p>
 </div>
 </div>
@@ -1711,7 +1759,7 @@ Try to call up as much existing functionality in <tt class="docutils literal"><s
 <table class="docutils citation" frame="void" id="ref1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[Ref1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id6">3</a>)</em> <strong>H. P. Langtangen</strong>. Introduction to Computing With Finite Difference Methods,
+<tr><td class="label">[Ref1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id5">3</a>)</em> <strong>H. P. Langtangen</strong>. Introduction to Computing With Finite Difference Methods,
 <em>Simula Research Laboratory and University of Oslo</em>,
 2013,
 <a class="reference external" href="http://hplgit.github.com/INF5620/doc/pub/decay-sphinx/main_decay.html">http://hplgit.github.com/INF5620/doc/pub/decay-sphinx/main_decay.html</a>.</td></tr>
@@ -1783,19 +1831,17 @@ Try to call up as much existing functionality in <tt class="docutils literal"><s
 <li><a class="reference internal" href="#equivalence-with-the-scheme-for-the-second-order-ode">Equivalence with the scheme for the second-order ODE</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#a-method-utilizing-a-staggered-mesh">A method utilizing a staggered mesh</a></li>
+<li><a class="reference internal" href="#the-euler-cromer-scheme-on-a-staggered-mesh">The Euler-Cromer scheme on a staggered mesh</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#generalization-damping-nonlinear-spring-and-external-excitation">Generalization: damping, nonlinear spring, and external excitation</a><ul>
 <li><a class="reference internal" href="#a-centered-scheme-for-linear-damping">A centered scheme for linear damping</a></li>
 <li><a class="reference internal" href="#a-centered-scheme-for-quadratic-damping">A centered scheme for quadratic damping</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#implementation-2">Implementation  (2)</a><ul>
-<li><a class="reference internal" href="#algorithm-and-solver-function">Algorithm and solver function</a></li>
+<li><a class="reference internal" href="#implementation-2">Implementation  (2)</a></li>
 <li><a class="reference internal" href="#verification-2">Verification  (2)</a></li>
 <li><a class="reference internal" href="#visualization">Visualization</a></li>
 <li><a class="reference internal" href="#user-interface">User interface</a></li>
+<li><a class="reference internal" href="#the-generalized-model-as-a-1st-order-system-on-a-staggered-mesh">The generalized model as a 1st-order system on a staggered mesh</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#exercises">Exercises</a><ul>

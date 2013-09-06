@@ -5,7 +5,7 @@ Finite difference methods for vibration problems
 ================================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 4, 2013
+:Date: Sep 6, 2013
 
 Note: **PRELIMINARY VERSION** (expect typos)
 
@@ -1386,7 +1386,7 @@ Crank-Nicolson schemes is done like this:
             ]
 
 
-The `vib_odespy.py <http://tinyurl.com/jvzzcfn/vib/vib_odespy.py>`_
+The ``vib_odespy.py``
 program makes two plots of the computed solutions with the various
 methods in the ``solvers`` list: one plot with :math:`u(t)` versus :math:`t`, and
 one *phase plane plot* where :math:`v` is plotted against :math:`u`.
@@ -1716,8 +1716,8 @@ and not exactly reproduce the solution of :eq:`vib:ode1:step4`.
 
 .. _vib:model2x2:staggered:
 
-A method utilizing a staggered mesh
------------------------------------
+The Euler-Cromer scheme on a staggered mesh
+-------------------------------------------
 
 
 .. index:: staggered mesh
@@ -1728,13 +1728,18 @@ A method utilizing a staggered mesh
 
 The Forward and Backward Euler schemes used in the Euler-Cromer
 method are both unsymmetric, but their combination yields a
-symmetric method. This symmetry is much more evident if we
+symmetric method since the resulting scheme is equivalent with
+a centered (symmetric) difference scheme for :math:`u''+\omega^2u=0`.
+The symmetric nature of the Euler-Cromer scheme is much more evident if we
 introduce a *staggered mesh* in time where :math:`u` is sought at
 integer time points :math:`t_n` and :math:`v` is sought at :math:`t_{n+1/2}`
-between two :math:`u` points.
+*between* two :math:`u` points.
 The unknowns are then :math:`u^1, v^{3/2}, u^2, v^{5/2}`, and so on.
+We typically use the notation
+:math:`u^n` and :math:`v^{n+1/2}` for the two unknown mesh functions.
 
-We can now easily use centered difference approximations, expressed
+On a staggered mesh it is natural to
+use centered difference approximations, expressed
 in operator notation as
 
 .. math::
@@ -2117,10 +2122,7 @@ Writing this equation out and using :eq:`vib:ode2:ic:du` gives
 .. _vib:ode2:solver:
 
 Implementation  (2)
-===================
-
-Algorithm and solver function
------------------------------
+-------------------
 
 The algorithm is very similar to the undamped case. The difference is
 basically a question of different formulas for :math:`u^1` and
@@ -2300,7 +2302,132 @@ Figure :ref:`vib:ode2:fig:demo` shows a part of the time series.
    *Damped oscillator excited by a sinusoidal function*
 
 
-.. More: staggered mesh and 1st order eqs for nonlinear problem
+.. _vib:ode2:staggered:
+
+The generalized model as a 1st-order system on a staggered mesh
+---------------------------------------------------------------
+
+The model
+
+
+.. math::
+        
+        mu'' + f(u') + s(u) = F(t),\quad u(0)=I,\ u'(0)=V,\ t\in (0,T],
+        
+
+can be rewritten as a first-order ODE system
+
+
+.. math::
+   :label: vib:ode2:staggered:ueq
+        
+        u' = v,
+         
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:veq
+          
+        v' = m^{-1}\left(F(t) - f(v) - s(u)\right){\thinspace .}
+        
+        
+
+It is natural to introduce a staggered mesh (see the section :ref:`vib:model2x2:staggered`) and seek :math:`u` at mesh points :math:`t_n` (the numerical value is
+denoted by :math:`u^n`) and :math:`v` between mesh points at :math:`t_{n+1/2}` (the numerical
+value is denoted by :math:`v^{n+1/2}`).
+A centered difference approximation to :eq:`vib:ode2:staggered:ueq`-(:ref:`vib:ode2:staggered:vueq`) can then be written in operator notation as
+
+
+.. math::
+   :label: vib:ode2:staggered:dueq
+        
+        \lbrack D_t u = v\rbrack^{n-1/2},
+         
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:dveq
+          
+        \lbrack D_tv = m^{-1}\left(F(t) - f(v) - s(u)\right)\rbrack^n{\thinspace .}
+        
+        
+
+Written out,
+
+
+.. math::
+   :label: vib:ode2:staggered:dueq2
+        
+        \frac{u^n - u^{n-1}}{\Delta t} = v^{n-\frac{1}{2}},
+         
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:dveq2
+          
+        \frac{v^{n+\frac{1}{2}} - v^{n-\frac{1}{2}}}{\Delta t}
+        = m^{-1}\left(F^n - f(v^n) - s(u^n)\right){\thinspace .}
+        
+        
+
+With linear damping, :math:`f(v)=bv`, we can use an arithmetic mean
+for :math:`f(v^n)`: :math:`f(v^n)\approx = \frac{1}{2}(f(v^{n-1/2}) +
+f(v^{n+1/2}))`. The system
+:eq:`vib:ode2:staggered:dueq2`-:eq:`vib:ode2:staggered:dveq2`
+can then be solved with respect to the unknowns :math:`u^n` and :math:`v^{n+1/2}`:
+
+
+.. math::
+   :label: vib:ode2:staggered:u:scheme:lin
+        
+        u^n  = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+         
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:v:scheme:lin
+          
+        v^{n+\frac{1}{2}} = \left(1 + \frac{b}{2m}\Delta t\right)^{-1}\left(
+        v^{n-\frac{1}{2}} + {\Delta t}
+        m^{-1}\left(F^n - \frac{1}{2}f(v^{n-\frac{1}{2}}) - s(u^n)\right)\right){\thinspace .}
+        
+        
+
+
+In case of quadratic damping, :math:`f(v)=b|v|v`, we can use a geometric mean:
+:math:`f(v^n)\approx b|v^{n-1/2}|v^{n+1/2}`. Inserting this approximation
+in :eq:`vib:ode2:staggered:dueq2`-:eq:`vib:ode2:staggered:dveq2` and
+solving for the unknowns :math:`u^n` and :math:`v^{n+1/2}` results in
+
+
+.. math::
+   :label: vib:ode2:staggered:u:scheme:quad
+        
+        u^n  = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+         
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:v:scheme:quad
+          
+        v^{n+\frac{1}{2}} = (1 + \frac{b}{m}|v^{n-1/2}|\Delta t)^{-1}\left(
+        v^{n-\frac{1}{2}} + {\Delta t}
+        m^{-1}\left(F^n - s(u^n)\right)\right){\thinspace .}
+        
+        
+
+
+.. Implementation
 
 
 Exercises

@@ -141,7 +141,7 @@ Automatically generated HTML file from Doconce source
                3,
                None,
                '___sec35'),
-              (' A method utilizing a staggered mesh ',
+              (' The Euler-Cromer scheme on a staggered mesh ',
                2,
                'vib:model2x2:staggered',
                'vib:model2x2:staggered'),
@@ -157,11 +157,14 @@ Automatically generated HTML file from Doconce source
                2,
                'vib:ode2:fdm:fquad',
                'vib:ode2:fdm:fquad'),
-              (' Implementation ', 1, 'vib:ode2:solver', 'vib:ode2:solver'),
-              (' Algorithm and solver function ', 2, None, '___sec41'),
+              (' Implementation ', 2, 'vib:ode2:solver', 'vib:ode2:solver'),
               (' Verification ', 2, 'vib:ode2:verify', 'vib:ode2:verify'),
               (' Visualization ', 2, 'vib:ode2:viz', 'vib:ode2:viz'),
               (' User interface ', 2, 'vib:ode2:ui', 'vib:ode2:ui'),
+              (' The generalized model as a 1st-order system on a staggered mesh ',
+               2,
+               'vib:ode2:staggered',
+               'vib:ode2:staggered'),
               (' Exercises ', 1, None, '___sec45'),
               (' Exercise 1: Use a linear function for verification ',
                2,
@@ -351,7 +354,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Sep 4, 2013</h4></center> <!-- date -->
+<center><h4>Sep 6, 2013</h4></center> <!-- date -->
 <p>
 Note: <b>PRELIMINARY VERSION</b> (expect typos)
 
@@ -394,15 +397,15 @@ Note: <b>PRELIMINARY VERSION</b> (expect typos)
 &nbsp; &nbsp; &nbsp; <a href="#vib:model2x2:EulerCromer"> The Euler-Cromer method </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec34"> Forward-backward discretization </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec35"> Equivalence with the scheme for the second-order ODE </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#vib:model2x2:staggered"> A method utilizing a staggered mesh </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:model2x2:staggered"> The Euler-Cromer scheme on a staggered mesh </a><br>
 <a href="#vib:model2"> Generalization: damping, nonlinear spring, and external excitation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:fdm:flin"> A centered scheme for linear damping </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:fdm:fquad"> A centered scheme for quadratic damping </a><br>
-<a href="#vib:ode2:solver"> Implementation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec41"> Algorithm and solver function </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:ode2:solver"> Implementation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:verify"> Verification </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:viz"> Visualization </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:ui"> User interface </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:ode2:staggered"> The generalized model as a 1st-order system on a staggered mesh </a><br>
 <a href="#___sec45"> Exercises </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:undamped:verify:linear"> Exercise 1: Use a linear function for verification </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:undamped:verify:quadratic"> Exercise 2: Use a quadratic function for verification </a><br>
@@ -1699,7 +1702,7 @@ Crank-Nicolson schemes is done like this:
     ]
 </pre></div>
 <p>
-The <a href="http://tinyurl.com/jvzzcfn/vib/vib_odespy.py"><tt>vib_odespy.py</tt></a>
+The <code>vib_odespy.py</code>
 program makes two plots of the computed solutions with the various
 methods in the <code>solvers</code> list: one plot with \( u(t) \) versus \( t \), and
 one <em>phase plane plot</em> where \( v \) is plotted against \( u \).
@@ -1987,19 +1990,24 @@ of the initial condition \( u'(0)=0 \): \( [D_t^+ u = 0]^0 \).
 Therefore, the Euler-Cromer scheme will start out differently
 and not exactly reproduce the solution of \eqref{vib:ode1:step4}.
 
-<h3>A method utilizing a staggered mesh <a name="vib:model2x2:staggered"></a></h3>
+<h3>The Euler-Cromer scheme on a staggered mesh <a name="vib:model2x2:staggered"></a></h3>
 
 <p>
 The Forward and Backward Euler schemes used in the Euler-Cromer
 method are both unsymmetric, but their combination yields a
-symmetric method. This symmetry is much more evident if we
+symmetric method since the resulting scheme is equivalent with
+a centered (symmetric) difference scheme for \( u''+\omega^2u=0 \).
+The symmetric nature of the Euler-Cromer scheme is much more evident if we
 introduce a <em>staggered mesh</em> in time where \( u \) is sought at
 integer time points \( t_n \) and \( v \) is sought at \( t_{n+1/2} \)
-between two \( u \) points.
+<em>between</em> two \( u \) points.
 The unknowns are then \( u^1, v^{3/2}, u^2, v^{5/2} \), and so on.
+We typically use the notation
+\( u^n \) and \( v^{n+1/2} \) for the two unknown mesh functions.
 
 <p>
-We can now easily use centered difference approximations, expressed
+On a staggered mesh it is natural to
+use centered difference approximations, expressed
 in operator notation as
 $$
 \begin{align}
@@ -2330,9 +2338,7 @@ u^1 = u^0 + \Delta t V + \frac{\Delta t^2}{2m}\left(-bV|V| - s(u^0) + F^0\right)
 \end{equation}
 $$
 
-<h2>Implementation <a name="vib:ode2:solver"></a></h2>
-
-<h3>Algorithm and solver function  <a name="___sec41"></a></h3>
+<h3>Implementation <a name="vib:ode2:solver"></a></h3>
 
 <p>
 The algorithm is very similar to the undamped case. The difference is
@@ -2506,8 +2512,98 @@ Figure <a href="#vib:ode2:fig:demo">10</a> shows a part of the time series.
 <p><img src="fig-vib/vib_gen_demo.png" align="bottom" width=600,></p>
 </center>
 
+<h3>The generalized model as a 1st-order system on a staggered mesh <a name="vib:ode2:staggered"></a></h3>
+
 <p>
-<!-- More: staggered mesh and 1st order eqs for nonlinear problem -->
+The model
+
+<p>
+$$
+\begin{equation}
+mu'' + f(u') + s(u) = F(t),\quad u(0)=I,\ u'(0)=V,\ t\in (0,T],
+\end{equation}
+$$
+
+can be rewritten as a first-order ODE system
+
+<p>
+$$
+\begin{align}
+u' &= v,
+\label{vib:ode2:staggered:ueq} \\ 
+v' &= m^{-1}\left(F(t) - f(v) - s(u)\right)\ts
+\label{vib:ode2:staggered:veq}
+\end{align}
+$$
+
+It is natural to introduce a staggered mesh (see the section <a href="#vib:model2x2:staggered">The Euler-Cromer scheme on a staggered mesh</a>) and seek \( u \) at mesh points \( t_n \) (the numerical value is
+denoted by \( u^n \)) and \( v \) between mesh points at \( t_{n+1/2} \) (the numerical
+value is denoted by \( v^{n+1/2} \)).
+A centered difference approximation to \eqref{vib:ode2:staggered:ueq}-\eqref{vib:ode2:staggered:vueq} can then be written in operator notation as
+
+<p>
+$$
+\begin{align}
+\lbrack D_t u &= v\rbrack^{n-1/2},
+\label{vib:ode2:staggered:dueq} \\ 
+\lbrack D_tv &= m^{-1}\left(F(t) - f(v) - s(u)\right)\rbrack^n\ts
+\label{vib:ode2:staggered:dveq}
+\end{align}
+$$
+
+Written out,
+
+<p>
+$$
+\begin{align}
+\frac{u^n - u^{n-1}}{\Delta t} &= v^{n-\frac{1}{2}},
+\label{vib:ode2:staggered:dueq2} \\ 
+\frac{v^{n+\frac{1}{2}} - v^{n-\frac{1}{2}}}{\Delta t}
+&= m^{-1}\left(F^n - f(v^n) - s(u^n)\right)\ts
+\label{vib:ode2:staggered:dveq2}
+\end{align}
+$$
+
+With linear damping, \( f(v)=bv \), we can use an arithmetic mean
+for \( f(v^n) \): \( f(v^n)\approx = \frac{1}{2}(f(v^{n-1/2}) +
+f(v^{n+1/2})) \). The system
+\eqref{vib:ode2:staggered:dueq2}-\eqref{vib:ode2:staggered:dveq2}
+can then be solved with respect to the unknowns \( u^n \) and \( v^{n+1/2} \):
+
+<p>
+$$
+\begin{align}
+u^n & = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+\label{vib:ode2:staggered:u:scheme:lin} \\ 
+v^{n+\frac{1}{2}} &= \left(1 + \frac{b}{2m}\Delta t\right)^{-1}\left(
+v^{n-\frac{1}{2}} + {\Delta t}
+m^{-1}\left(F^n - \frac{1}{2}f(v^{n-\frac{1}{2}}) - s(u^n)\right)\right)\ts
+\label{vib:ode2:staggered:v:scheme:lin}
+\end{align}
+$$
+
+
+<p>
+In case of quadratic damping, \( f(v)=b|v|v \), we can use a geometric mean:
+\( f(v^n)\approx b|v^{n-1/2}|v^{n+1/2} \). Inserting this approximation
+in \eqref{vib:ode2:staggered:dueq2}-\eqref{vib:ode2:staggered:dveq2} and
+solving for the unknowns \( u^n \) and \( v^{n+1/2} \) results in
+
+<p>
+$$
+\begin{align}
+u^n & = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+\label{vib:ode2:staggered:u:scheme:quad} \\ 
+v^{n+\frac{1}{2}} &= (1 + \frac{b}{m}|v^{n-1/2}|\Delta t)^{-1}\left(
+v^{n-\frac{1}{2}} + {\Delta t}
+m^{-1}\left(F^n - s(u^n)\right)\right)\ts
+\label{vib:ode2:staggered:v:scheme:quad}
+\end{align}
+$$
+
+
+<p>
+<!-- Implementation -->
 
 <h2>Exercises  <a name="___sec45"></a></h2>
 
@@ -2796,6 +2892,8 @@ More specifically, make a superclass <code>Problem</code> for holding the scalar
 physical parameters of a problem and let subclasses implement the
 \( s(u) \) and \( F(t) \) functions as methods.
 Try to call up as much existing functionality in <code>vib.py</code> as possible.
+
+<p>
 <!-- --- end hint in exercise --- -->
 Filename: <code>vib_class.py</code>.
 
@@ -2810,7 +2908,7 @@ Filename: <code>vib_class.py</code>.
 <p>
 Show that the schemes from the sections <a href="#vib:ode1:fdm">A centered finite difference scheme</a>,
 <a href="#vib:model2x2:EulerCromer">The Euler-Cromer method</a>, and
-<a href="#vib:model2x2:staggered">A method utilizing a staggered mesh</a> are all equivalent.
+<a href="#vib:model2x2:staggered">The Euler-Cromer scheme on a staggered mesh</a> are all equivalent.
 <!-- mech systems: horizontal, vertical/hanging -->
 <!-- pendulum -->
 <!-- bumpy road -->
