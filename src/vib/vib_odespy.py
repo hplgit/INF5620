@@ -1,17 +1,62 @@
 import scitools.std as plt
 #import matplotlib.pyplot as plt
-from vib_empirical_analysis import minmax, periods, amplitudes
 import sys
 import odespy
 import numpy as np
 
-def f(u, t, w=1):
-    u, v = u  # u is array of length 2 holding our [u, v]
-    return [v, -w**2*u]
+class RHS:
+    """m*u'' + b*u' + k*u = A_F*cos(w_F*t)."""
 
+    def __init__(self, m=1, b=0, k=1, A_F=0.01, w_F=1.5,
+                 I=1, V=0):
+        self.m, self.b, self.k = float(m), b, k
+        self.A_F, self.w_F = A_F, w_F
+        self.I, self.V = I, V
+
+    def __call__(self, u, t):
+        """Right-hand side function defining the ODE."""
+        u, v = u  # u is array of length 2 holding our [u, v]
+        return [v, (-self.b*v - self.k*u +
+                    self.A_F*np.cos(self.w_F*t))/self.m]
+
+    def exact(self, t):
+        # Valid for linear s(u)
+        k, b, m, A_F, w_F, I, V = self.k, self.b, self.m, \
+                                  self.A_F, self.w_F, self.I, self.V
+        b_crit = 2*np.sqrt(k*m)
+        w_e = np.sqrt(k/m)
+        zeta = b/b_crit
+        zeta1p = zeta + np.sqrt(zeta**2 - 1)
+        zeta1m = zeta - np.sqrt(zeta**2 - 1)
+        zeta2 = np.sqrt(zeta**2 - 1)
+
+        if zeta > 1:
+            # No oscillations
+            sol1 = (V + w_e*zeta1p*I)/(2*w_e*zeta2)*np.exp(-w_e*zeta1m*t)
+            sol2 = (V + w_e*zeta1m*I)/(2*w_e*zeta2)*np.exp(-w_e*zeta1p*t)
+            u_h = sol1 - sol2
+        elif zeta == 1:
+            u_h = (I + (V + w_e*I)*t)*np.exp(-w_e*t)
+        else:
+            # Oscillations
+            A = np.sqrt(I**2 + ((V + zeta*w_e*I)/(w_e*zeta2))**2)
+            phi = np.arctan((V + zeta*w_e*I)/(I*w_e*zeta2))
+            u_h = A*np.exp(-zeta*w_e*t)*np.cos(zeta2*w_e*t - phi)
+
+        # Excitation: F=F_0*cos(w_F*t)
+        # F_0 and w_F must be extracted from F......?
+        phi_0 = np.arctan(b*w_F/(k - m*w_F**2))
+        A_0 = A_F/np.sqrt((k - m*w_F**2)**2 + (b*w_F)**2)
+        u_p = A_0*np.cos(omega*t - phi_0)
+
+        # Test: all special cases...
+        return u_h + u_p
+
+# NOT FINISHED
 def run_solvers_and_plot(solvers, timesteps_per_period=20,
-                         num_periods=1, I=1, w=2*np.pi):
-    P = 2*np.pi/w  # one period
+                         num_periods=1, b=0):
+    w = 2*np.pi    # frequency of undamped free oscillations
+    P = 2*np.pi/w  # duration of one period
     dt = P/timesteps_per_period
     Nt = num_periods*timesteps_per_period
     T = Nt*dt
@@ -19,19 +64,11 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
 
     legends = []
     for solver in solvers:
-        solver.set(f_kwargs={'w': w})
-        solver.set_initial_condition([I, 0])
+        solver.set_initial_condition([solver.users_f.I, 0])
         u, t = solver.solve(t_mesh)
 
-        # Compute energy
-        dt = t[1] - t[0]
-        E = 0.5*((u[2:,0] - u[:-2,0])/(2*dt))**2 + 0.5*w**2*u[1:-1,0]**2
-        # Compute error in energy
-        E0 = 0.5*0**2 + 0.5*w**2*I**2
-        e_E = E - E0
         solver_name = 'CrankNicolson' if solver.__class__.__name__ == \
                       'MidpointImplicit' else solver.__class__.__name__
-        print '*** Relative max error in energy for %s [0,%g] with dt=%g: %.3E' % (solver_name, t[-1], dt, np.abs(e_E).max()/E0)
 
         # Make plots
         if num_periods <= 80:
@@ -42,28 +79,10 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
                 plt.plot(t, u[:,0], '-2')       # no markers
             plt.hold('on')
             legends.append(solver.__class__.__name__)
-            plt.figure(2)
-            if len(t_mesh) <= 50:
-                plt.plot(u[:,0], u[:,1])        # markers by default
-            else:
-                plt.plot(u[:,0], u[:,1], '-2')  # no markers
-            plt.hold('on')
-
-        if num_periods > 20:
-            minima, maxima = minmax(t, u[:,0])
-            p = periods(maxima)
-            a = amplitudes(minima, maxima)
-            plt.figure(3)
-            plt.plot(range(len(p)), 2*np.pi/p, '-')
-            plt.hold('on')
-            plt.figure(4)
-            plt.plot(range(len(a)), a, '-')
-            plt.hold('on')
 
     # Compare with exact solution plotted on a very fine mesh
     t_fine = np.linspace(0, T, 10001)
-    u_e = I*np.cos(w*t_fine)
-    v_e = -w*I*np.sin(w*t_fine)
+    u_e = solver.users_f.exact(t_fine)
 
     if num_periods < 80:
         plt.figure(1)
@@ -76,29 +95,7 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
         plt.savefig('vib_%d_%d_u.pdf' % (timesteps_per_period, num_periods))
         plt.savefig('vib_%d_%d_u.eps' % (timesteps_per_period, num_periods))
 
-        plt.figure(2)
-        plt.plot(u_e, v_e, '-') # avoid markers by spec. line type
-        plt.legend(legends, loc='lower right')
-        plt.xlabel('u(t)');  plt.ylabel('v(t)')
-        plt.title('Time step: %g' % dt)
-        plt.savefig('vib_%d_%d_pp.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_pp.pdf' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_pp.eps' % (timesteps_per_period, num_periods))
-        del legends[-1]  # fig 3 and 4 does not have exact value
-
-    if num_periods > 20:
-        plt.figure(3)
-        plt.legend(legends, loc='center right')
-        plt.title('Empirically estimated periods')
-        plt.savefig('vib_%d_%d_p.eps' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_p.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_p.eps' % (timesteps_per_period, num_periods))
-        plt.figure(4)
-        plt.legend(legends, loc='center right')
-        plt.title('Empirically estimated amplitudes')
-        plt.savefig('vib_%d_%d_a.eps' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_a.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vib_%d_%d_a.eps' % (timesteps_per_period, num_periods))
+f = RHS(b=0.1)
 
 # Define different sets of experiments
 solvers_theta = [

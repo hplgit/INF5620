@@ -136,6 +136,12 @@ Automatically generated HTML file from Doconce source
                '___sec45'),
               (' Crank-Nicolson; longer time series ', 2, None, '___sec46'),
               (' Observations of RK and CN methods ', 2, None, '___sec47'),
+              (' Energy conservation property ', 2, None, '___sec48'),
+              (' Derivation of the energy conservation property ',
+               2,
+               None,
+               '___sec49'),
+              (' Remark about $E(t)$ ', 2, None, '___sec50'),
               (' The Euler-Cromer method; idea ',
                2,
                'vib:model2x2:EulerCromer',
@@ -143,15 +149,15 @@ Automatically generated HTML file from Doconce source
               (' The Euler-Cromer method; complete formulas ',
                2,
                None,
-               '___sec49'),
+               '___sec52'),
               (' Equivalence with the scheme for the second-order ODE ',
                2,
                None,
-               '___sec50'),
+               '___sec53'),
               (' Comparison of the treatment of initial conditions ',
                2,
                None,
-               '___sec51'),
+               '___sec54'),
               (' A method utilizing a staggered mesh ',
                2,
                'vib:model2x2:staggered',
@@ -159,11 +165,23 @@ Automatically generated HTML file from Doconce source
               (' Centered differences on a staggered mesh ',
                2,
                None,
-               '___sec53'),
+               '___sec56'),
               (' Comparison with the scheme for the 2nd-order ODE ',
                2,
                None,
-               '___sec54'),
+               '___sec57'),
+              (' Implementation of a staggered mesh; integer indices ',
+               2,
+               None,
+               '___sec58'),
+              (' Implementation of a staggered mesh; half-integer indices (1) ',
+               2,
+               None,
+               '___sec59'),
+              (' Implementation of a staggered mesh; half-integer indices (2) ',
+               2,
+               None,
+               '___sec60'),
               (' Generalization: damping, nonlinear spring, and external excitation ',
                1,
                'vib:model2',
@@ -172,7 +190,7 @@ Automatically generated HTML file from Doconce source
                2,
                'vib:ode2:fdm:flin',
                'vib:ode2:fdm:flin'),
-              (' Initial conditions ', 2, None, '___sec57'),
+              (' Initial conditions ', 2, None, '___sec63'),
               (' Linearization via a geometric mean approximation ',
                2,
                'vib:ode2:fdm:fquad',
@@ -180,20 +198,20 @@ Automatically generated HTML file from Doconce source
               (' A centered scheme for quadratic damping ',
                2,
                None,
-               '___sec59'),
+               '___sec65'),
               (' Initial condition for quadratic damping ',
                2,
                None,
-               '___sec60'),
-              (' Algorithm ', 2, None, '___sec61'),
-              (' Implementation ', 2, None, '___sec62'),
+               '___sec66'),
+              (' Algorithm ', 2, None, '___sec67'),
+              (' Implementation ', 2, None, '___sec68'),
               (' Verification ', 2, 'vib:ode2:verify', 'vib:ode2:verify'),
-              (' Demo program ', 2, None, '___sec64'),
-              (' Euler-Cromer formulation ', 2, None, '___sec65'),
-              (' Staggered grid ', 2, None, '___sec66'),
-              (' Linear damping ', 2, None, '___sec67'),
-              (' Quadratic damping ', 2, None, '___sec68'),
-              (' Initial conditions ', 2, None, '___sec69')]}
+              (' Demo program ', 2, None, '___sec70'),
+              (' Euler-Cromer formulation ', 2, None, '___sec71'),
+              (' Staggered grid ', 2, None, '___sec72'),
+              (' Linear damping ', 2, None, '___sec73'),
+              (' Quadratic damping ', 2, None, '___sec74'),
+              (' Initial conditions ', 2, None, '___sec75')]}
 end of tocinfo -->
 
 <body>
@@ -306,29 +324,34 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Quadratic damping  <a name="___sec68"></a></h3>
+<h3>Implementation  <a name="___sec68"></a></h3>
 
 <p>
-With \( f(v)=b|v|v \), we can use a geometric mean
 
-<p>
-$$
-b|v^n|v^n\approx b|v^{n-\frac{1}{2}}|v^{n+\frac{1}{2}},
-$$
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">solver</span>(I, V, m, b, s, F, dt, T, damping<span style="color: #666666">=</span><span style="color: #BA2121">&#39;linear&#39;</span>):
+    dt <span style="color: #666666">=</span> <span style="color: #008000">float</span>(dt); b <span style="color: #666666">=</span> <span style="color: #008000">float</span>(b); m <span style="color: #666666">=</span> <span style="color: #008000">float</span>(m) <span style="color: #408080; font-style: italic"># avoid integer div.</span>
+    Nt <span style="color: #666666">=</span> <span style="color: #008000">int</span>(<span style="color: #008000">round</span>(T<span style="color: #666666">/</span>dt))
+    u <span style="color: #666666">=</span> zeros(Nt<span style="color: #666666">+1</span>)
+    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, Nt<span style="color: #666666">*</span>dt, Nt<span style="color: #666666">+1</span>)
 
-resulting in
+    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
+    <span style="color: #008000; font-weight: bold">if</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;linear&#39;</span>:
+        u[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>] <span style="color: #666666">+</span> dt<span style="color: #666666">*</span>V <span style="color: #666666">+</span> dt<span style="color: #666666">**2/</span>(<span style="color: #666666">2*</span>m)<span style="color: #666666">*</span>(<span style="color: #666666">-</span>b<span style="color: #666666">*</span>V <span style="color: #666666">-</span> s(u[<span style="color: #666666">0</span>]) <span style="color: #666666">+</span> F(t[<span style="color: #666666">0</span>]))
+    <span style="color: #008000; font-weight: bold">elif</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;quadratic&#39;</span>:
+        u[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>] <span style="color: #666666">+</span> dt<span style="color: #666666">*</span>V <span style="color: #666666">+</span> \ 
+               dt<span style="color: #666666">**2/</span>(<span style="color: #666666">2*</span>m)<span style="color: #666666">*</span>(<span style="color: #666666">-</span>b<span style="color: #666666">*</span>V<span style="color: #666666">*</span><span style="color: #008000">abs</span>(V) <span style="color: #666666">-</span> s(u[<span style="color: #666666">0</span>]) <span style="color: #666666">+</span> F(t[<span style="color: #666666">0</span>]))
 
-<p>
-$$
-\begin{align*}
-u^n & = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},\\ 
-v^{n+\frac{1}{2}} &= (1 + \frac{b}{m}|v^{n-1/2}|\Delta t)^{-1}\left(
-v^{n-\frac{1}{2}} + {\Delta t}
-m^{-1}\left(F^n - s(u^n)\right)\right)\ts
-\end{align*}
-$$
-
-
+    <span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Nt):
+        <span style="color: #008000; font-weight: bold">if</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;linear&#39;</span>:
+            u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">2*</span>m<span style="color: #666666">*</span>u[n] <span style="color: #666666">+</span> (b<span style="color: #666666">*</span>dt<span style="color: #666666">/2</span> <span style="color: #666666">-</span> m)<span style="color: #666666">*</span>u[n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span>
+                      dt<span style="color: #666666">**2*</span>(F(t[n]) <span style="color: #666666">-</span> s(u[n])))<span style="color: #666666">/</span>(m <span style="color: #666666">+</span> b<span style="color: #666666">*</span>dt<span style="color: #666666">/2</span>)
+        <span style="color: #008000; font-weight: bold">elif</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;quadratic&#39;</span>:
+            u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">2*</span>m<span style="color: #666666">*</span>u[n] <span style="color: #666666">-</span> m<span style="color: #666666">*</span>u[n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> b<span style="color: #666666">*</span>u[n]<span style="color: #666666">*</span><span style="color: #008000">abs</span>(u[n] <span style="color: #666666">-</span> u[n<span style="color: #666666">-1</span>])
+                      <span style="color: #666666">+</span> dt<span style="color: #666666">**2*</span>(F(t[n]) <span style="color: #666666">-</span> s(u[n])))<span style="color: #666666">/</span>\ 
+                      (m <span style="color: #666666">+</span> b<span style="color: #666666">*</span><span style="color: #008000">abs</span>(u[n] <span style="color: #666666">-</span> u[n<span style="color: #666666">-1</span>]))
+    <span style="color: #008000; font-weight: bold">return</span> u, t
+</pre></div>
 <p>
 <p>
 <!-- begin bottom navigation -->

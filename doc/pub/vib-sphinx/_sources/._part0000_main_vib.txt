@@ -1362,7 +1362,7 @@ a sketch of the code.
         
         def run_solvers_and_plot(solvers, timesteps_per_period=20,
                                  num_periods=1, I=1, w=2*np.pi):
-            P = 2*np.pi/w  # one period
+            P = 2*np.pi/w  # duration of one period
             dt = P/timesteps_per_period
             Nt = num_periods*timesteps_per_period
             T = Nt*dt
@@ -1375,7 +1375,7 @@ a sketch of the code.
                 u, t = solver.solve(t_mesh)
 
 There is quite some more code dealing with plots also, and we refer
-to the source file `vib_odespy.py <http://tinyurl.com/jvzzcfn/vib/vib_odespy.py>`_
+to the source file `vib_undamped_odespy.py <http://tinyurl.com/jvzzcfn/vib/vib_undamped_odespy.py>`_
 for details. Observe that keyword arguments in ``f(u,t,w=1)`` can
 be supplied through a solver parameter ``f_kwargs`` (dictionary).
 
@@ -1393,7 +1393,7 @@ Crank-Nicolson schemes is done like this:
             ]
 
 
-The ``vib_odespy.py``
+The ``vib_undamped_odespy.py``
 program makes two plots of the computed solutions with the various
 methods in the ``solvers`` list: one plot with :math:`u(t)` versus :math:`t`, and
 one *phase plane plot* where :math:`v` is plotted against :math:`u`.
@@ -1510,8 +1510,17 @@ Enegy considerations
 
 
 The observations of various methods in the previous section can be
-better interpreted if we compute an expression reflecting
-the *energy of the system*.
+better interpreted if we compute an quantity reflecting
+the total *energy of the system*. It turns out that this quantity,
+
+
+.. math::
+         E(t) = \frac{1}{2}(u')^2 + \frac{1}{2}\omega^2u^2,
+
+is *constant* for all :math:`t`. Checking that :math:`E(t)` really remains constant
+brings evidence that the numerical computations are sound.
+Such energy measures, when they exist, are much used to check numerical
+simulations.
 
 Derivation of the energy expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1982,15 +1991,25 @@ The conclusion is that a staggered mesh is fully equivalent with
 that scheme, while the forward-backward version gives a slight
 deviation in the computation of :math:`u^1`.
 
-
-Implementation of the scheme on a staggered mesh
-------------------------------------------------
-
-To summarize the formulas, the initial conditions are
+We can redo the derivation of the initial conditions when :math:`u'(0)=V`:
 
 
 .. math::
-   :label: vib:model2x2:EulerCromer:u0s2
+         v(0)\approx \frac{1}{2}(v^{-\frac{1}{2}} + v^{\frac{1}{2}}) = V,
+        \quad\Rightarrow\quad v^{-\frac{1}{2}} = 2V - v^{\frac{1}{2}}{\thinspace .}
+
+Using this :math:`v^{-\frac{1}{2}}` in
+
+
+.. math::
+         v^{\frac{1}{2}} = v^{-\frac{1}{2}} -\Delta t\omega^2 I,
+
+then gives :math:`v^{\frac{1}{2}} = V - \frac{1}{2}\Delta t\omega^2 I`.
+The general initial conditions are therefore
+
+
+.. math::
+   :label: vib:ode2:staggered:u0
         
         u^0 = I,
         
@@ -1999,18 +2018,135 @@ To summarize the formulas, the initial conditions are
 
 
 .. math::
-   :label: vib:model2x2:EulerCromer:v0s2
+   :label: vib:ode2:staggered:v0
           
-        v^{\frac{1}{2}} = \frac{1}{2}\Delta t\omega^2I {\thinspace .}
-        
+        v^{\frac{1}{2}} = V - \frac{1}{2}\Delta t\omega^2I
+        {\thinspace .}
         
 
-We then realize that for :math:`n=1,2,\ldots`, :math:`u^{n}` can be computed from
-:eq:`vib:model2x2:EulerCromer:ueq1s2` and then :math:`v^{n+1/2}` from
-:eq:`vib:model2x2:EulerCromer:veq1s2` using the recently computed value
-:math:`u^{n}` on the right-hand side.
 
-*NOT FINISHED.* .. implement the staggered scheme
+
+Implementation of the scheme on a staggered mesh
+------------------------------------------------
+
+The algorithm goes like this:
+
+1. Set the initial values :eq:`vib:ode2:staggered:u0` and
+   :eq:`vib:ode2:staggered:v0`.
+
+2. For :math:`n=1,2,\ldots`:
+
+  1. Compute :math:`u^{n}` from :eq:`vib:model2x2:EulerCromer:ueq1s2`.
+
+  2. Compute :math:`v^{n+1/2}` from :eq:`vib:model2x2:EulerCromer:veq1s2`.
+
+
+Implementation with integer indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Translating the schemes :eq:`vib:model2x2:EulerCromer:ueq1s2`
+and :eq:`vib:model2x2:EulerCromer:veq1s2` to computer code
+faces the problem of how to store and access :math:`v^{n+\frac{1}{2}}`,
+since arrays only allow integer indices with base 0.
+We must then introduce a convention: :math:`v^{1+\frac{1}{2}}` is stored
+in ``v[n]`` while :math:`v^{1-\frac{1}{2}}` is stored in ``v[n-1]``.
+We can then write the algorithm in Python as
+
+
+.. code-block:: python
+
+        def solver(I, w, dt, T):
+            dt = float(dt)
+            Nt = int(round(T/dt))
+            u = zeros(Nt+1)
+            v = zeros(Nt+1)
+            t = linspace(0, Nt*dt, Nt+1)  # mesh for u
+            t_v = t + dt/2                # mesh for v
+        
+            u[0] = I
+            v[0] = 0 - 0.5*dt*w**2*u[0]
+            for n in range(1, Nt+1):
+                u[n] = u[n-1] + dt*v[n-1]
+                v[n] = v[n-1] - dt*w**2*u[n]
+            return u, t, v, t_v
+
+Note that the return :math:`u` and :math:`v` together with the mesh points such
+that the complete mesh function for :math:`u` is described by ``u`` and ``t``,
+while ``v`` and ``t_v`` represents the mesh function for :math:`v`.
+
+Implementation with half-integer indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some prefer to see a closer relationship between the code and
+the mathematics for the quantities with half-integer indices.
+For example, we would like to replace the updating equation for
+``v[n]`` by
+
+
+.. code-block:: python
+
+        v[n+half] = v[n-half] - dt*w**2*u[n]
+
+This is easy to do if we could be sure that ``n+half`` means ``n`` and
+``n-half`` means ``n-1``. A possible solution is to define ``half`` as a
+special object such that an integer plus ``half`` results in the integer,
+while an integer minus ``half`` equals the integer minus 1.
+A simple Python class may realize the ``half`` object:
+
+
+.. code-block:: python
+
+        class HalfInt:
+            def __radd__(self, other):
+                return other
+        
+            def __rsub__(self, other):
+                return other - 1
+        
+        half = HalfInt()
+
+The ``__radd__`` function is invoked for all expressions ``n+half``
+("right add" with ``self`` as ``half`` and ``other`` as ``n``). Similarly,
+the ``__rsub__`` function is invoked for ``n-half`` and results in ``n-1``.
+
+Using the ``half`` object, we can implement the algorithms in an even
+more readable way:
+
+
+.. code-block:: python
+
+        def solver(I, w, dt, T):
+            """
+            Solve u'=v, v' = - w**2*u for t in (0,T], u(0)=I and v(0)=0,
+            by a central finite difference method with time step dt.
+            """
+            dt = float(dt)
+            Nt = int(round(T/dt))
+            u = zeros(Nt+1)
+            v = zeros(Nt+1)
+            t = linspace(0, Nt*dt, Nt+1)  # mesh for u
+            t_v = t + dt/2                # mesh for v
+        
+            u[0] = I
+            v[0+half] = 0 - 0.5*dt*w**2*u[0]
+            for n in range(1, Nt+1):
+                print n, n+half, n-half
+                u[n] = u[n-1] + dt*v[n-half]
+                v[n+half] = v[n-half] - dt*w**2*u[n]
+            return u, t, v, t_v
+
+
+Verification of this code is easy as we can just compare the computed ``u``
+with the ``u`` arising from the ``solver`` function in ``vib_undamped.py``.
+The values should coincide to machine precision.
+The file `vib_undamped_staggered.py <http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py>`_
+contains a nose test for checking this property.
+
+.. is anything gained? is v of higher order than D_2t u from the
+
+.. other approach, i.e., if we need v, is this alg better? Probably not
+
+.. since v is related u through a difference
 
 
 .. make exercises:
@@ -2517,8 +2653,8 @@ Figure :ref:`vib:ode2:fig:demo` shows a part of the time series.
 
 .. _vib:ode2:staggered:
 
-An Euler-Cromer scheme for the generalized model
-------------------------------------------------
+A staggered Euler-Cromer scheme for the generalized model
+---------------------------------------------------------
 
 The model
 
@@ -2640,13 +2776,12 @@ solving for the unknowns :math:`u^n` and :math:`v^{n+1/2}` results in
         
 
 
-The initial conditions can be derived as in
-the section :ref:`vib:model2x2:staggered`. Assuming the general conditions
-:math:`u(0)=I` and :math:`u'(0)=V`, we can repeat the derivation and arrive at
+The initial conditions are derived at the end of
+the section :ref:`vib:model2x2:staggered`:
 
 
 .. math::
-   :label: vib:ode2:staggered:u0
+   :label: vib:ode2:staggered:u02
         
         u^0 = I,
         
@@ -2655,15 +2790,12 @@ the section :ref:`vib:model2x2:staggered`. Assuming the general conditions
 
 
 .. math::
-   :label: vib:ode2:staggered:v0
+   :label: vib:ode2:staggered:v02
           
         v^{\frac{1}{2}} = V - \frac{1}{2}\Delta t\omega^2I
         {\thinspace .}
         
 
-
-
-.. Implementation
 
 
 Exercises and Problems
@@ -2683,7 +2815,7 @@ Consider the ODE problem
 
 
 .. math::
-         u'+\omega^2u=f(t), \quad u(0)=I,\ u'(0)=V,\ t\in(0,T]{\thinspace .}
+         u'' + \omega^2u=f(t), \quad u(0)=I,\ u'(0)=V,\ t\in(0,T]{\thinspace .}
 
 Discretize this equation according to
 :math:`[D_tD_t u + \omega^2 u = f]^n`.
@@ -2738,40 +2870,51 @@ sketch of the program ``vib_undamped_verify_mms.py``:
             R = ...
             return sm.simplify(R)
         
-        def linear():
-            print '=== Testing linear exact solution ==='
+        def main(u):
+            """
+            Given some chosen solution u (as a function of t, implemented
+            as a Python function), use the method of manufactured solutions
+            to compute the source term f, and check if u also solves
+            the discrete equations.
+            """
+            print '=== Testing exact solution: %s ===' % u
             print "Initial conditions u(0)=%s, u'(0)=%s:" % \ 
-                  (u_e(t).subs(t, 0), sm.diff(u_e(t), t).subs(t, 0))
+                  (u(t).subs(t, 0), sm.diff(u(t), t).subs(t, 0))
         
             # Method of manufactured solution requires fitting f
-            global f
-            f = ode_lhs(u_e)
+            global f  # source term in the ODE
+            f = sm.simplify(ode_lhs(u))
         
             # Residual in discrete equations (should be 0)
-            print 'residual step1:', residual_discrete_eq_step1(u_e)
-            print 'residual:', residual_discrete_eq(u_e)
+            print 'residual step1:', residual_discrete_eq_step1(u)
+            print 'residual:', residual_discrete_eq(u)
+        
+        def linear():
+            main(lambda t: V*t + I)
         
         if __name__ == '__main__':
             linear()
 
-Fill in the various functions such that the calls in the ``linear``
+Fill in the various functions such that the calls in the ``main``
 function works.
 
 *d)* The purpose now is to choose a quadratic function
 :math:`u_{\small\mbox{e}} = bt^2 + ct + d` as exact solution. Extend the ``sympy``
-code above with a function ``quadratic`` that computes the
-right source term ``f`` and evaluates the residual
-in the two types of finite difference equations.
+code above with a function ``quadratic`` for fitting ``f`` and checking
+if the discrete equations are fulfilled. (The function is very similar
+to ``linear``.)
 
 .. Check with hand calculations that the ``sympy`` implementation
 
 .. is correct.
 
 
-*e)* Implement a ``solver`` function for computing the numerical
+*e)* Will a polynomial of degree three fulfill the discrete equations?
+
+*f)* Implement a ``solver`` function for computing the numerical
 solution of this problem.
 
-*f)* Write a nose test for checking that the quadratic solution
+*g)* Write a nose test for checking that the quadratic solution
 is computed to correctly (too machine precision, but the
 round-off errors accumulate and increase with :math:`T`) by the ``solver``
 function.
@@ -3061,7 +3204,7 @@ Filename: ``vib_conv_rate.py``.
 Exercise 11: Investigate the amplitude errors of many solvers
 -------------------------------------------------------------
 
-Use the program ``vib_odespy.py`` from the section :ref:`vib:undamped:1stODE`
+Use the program ``vib_undamped_odespy.py`` from the section :ref:`vib:undamped:1stODE`
 and the amplitude estimation from the ``amplitudes`` function
 in the ``vib_undamped.py`` file (see the section :ref:`vib:ode1:empirical`)
 to investigate how well famous methods for 1st-order ODEs

@@ -173,6 +173,11 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec41'),
+              (' Implementation with integer indices ', 3, None, '___sec42'),
+              (' Implementation with half-integer indices ',
+               3,
+               None,
+               '___sec43'),
               (' Generalization: damping, nonlinear spring, and external excitation ',
                1,
                'vib:model2',
@@ -187,16 +192,16 @@ Automatically generated HTML file from Doconce source
                'vib:ode2:fdm:fquad'),
               (' Implementation ', 2, 'vib:ode2:solver', 'vib:ode2:solver'),
               (' Verification ', 2, 'vib:ode2:verify', 'vib:ode2:verify'),
-              (' Constant solution ', 3, None, '___sec47'),
-              (' Linear solution ', 3, None, '___sec48'),
-              (' Quadratic solution ', 3, None, '___sec49'),
+              (' Constant solution ', 3, None, '___sec49'),
+              (' Linear solution ', 3, None, '___sec50'),
+              (' Quadratic solution ', 3, None, '___sec51'),
               (' Visualization ', 2, 'vib:ode2:viz', 'vib:ode2:viz'),
               (' User interface ', 2, 'vib:ode2:ui', 'vib:ode2:ui'),
-              (' An Euler-Cromer scheme for the generalized model ',
+              (' A staggered Euler-Cromer scheme for the generalized model ',
                2,
                'vib:ode2:staggered',
                'vib:ode2:staggered'),
-              (' Exercises and Problems ', 1, None, '___sec53'),
+              (' Exercises and Problems ', 1, None, '___sec55'),
               (' Problem 1: Use linear/quadratic functions for verification ',
                2,
                'vib:exer:undamped:verify:linquad',
@@ -257,7 +262,7 @@ Automatically generated HTML file from Doconce source
                2,
                'vib:exer:schemes:equiv',
                'vib:exer:schemes:equiv'),
-              (' References ', 1, None, '___sec69')]}
+              (' References ', 1, None, '___sec71')]}
 end of tocinfo -->
 
 <body>
@@ -434,18 +439,20 @@ Note: <b>PRELIMINARY VERSION</b> (expect typos)
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec39"> Equivalence with the scheme for the second-order ODE </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:model2x2:staggered"> The Euler-Cromer scheme on a staggered mesh </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec41"> Implementation of the scheme on a staggered mesh </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec42"> Implementation with integer indices </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec43"> Implementation with half-integer indices </a><br>
 <a href="#vib:model2"> Generalization: damping, nonlinear spring, and external excitation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:fdm:flin"> A centered scheme for linear damping </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:fdm:fquad"> A centered scheme for quadratic damping </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:solver"> Implementation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:verify"> Verification </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec47"> Constant solution </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec48"> Linear solution </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec49"> Quadratic solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec49"> Constant solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec50"> Linear solution </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec51"> Quadratic solution </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:viz"> Visualization </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:ode2:ui"> User interface </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#vib:ode2:staggered"> An Euler-Cromer scheme for the generalized model </a><br>
-<a href="#___sec53"> Exercises and Problems </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#vib:ode2:staggered"> A staggered Euler-Cromer scheme for the generalized model </a><br>
+<a href="#___sec55"> Exercises and Problems </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:undamped:verify:linquad"> Problem 1: Use linear/quadratic functions for verification </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:phase:err:growth"> Exercise 1: Show linear growth of the phase with time </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:w:adjust"> Exercise 2: Improve the accuracy by adjusting the frequency </a><br>
@@ -461,7 +468,7 @@ Note: <b>PRELIMINARY VERSION</b> (expect typos)
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:memsave"> Exercise 12: Minimize memory usage of a vibration solver </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:gen:class"> Exercise 13: Implement the solver via classes </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#vib:exer:schemes:equiv"> Exercise 14: Show equivalence between schemes </a><br>
-<a href="#___sec69"> References </a><br>
+<a href="#___sec71"> References </a><br>
 
 <p>
 <!-- Externaldocuments: ../decay/main_decay -->
@@ -1708,7 +1715,7 @@ a sketch of the code.
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">run_solvers_and_plot</span>(solvers, timesteps_per_period=<span style="color: #B452CD">20</span>,
                          num_periods=<span style="color: #B452CD">1</span>, I=<span style="color: #B452CD">1</span>, w=<span style="color: #B452CD">2</span>*np.pi):
-    P = <span style="color: #B452CD">2</span>*np.pi/w  <span style="color: #228B22"># one period</span>
+    P = <span style="color: #B452CD">2</span>*np.pi/w  <span style="color: #228B22"># duration of one period</span>
     dt = P/timesteps_per_period
     Nt = num_periods*timesteps_per_period
     T = Nt*dt
@@ -1722,7 +1729,7 @@ a sketch of the code.
 </pre></div>
 <p>
 There is quite some more code dealing with plots also, and we refer
-to the source file <a href="http://tinyurl.com/jvzzcfn/vib/vib_odespy.py"><tt>vib_odespy.py</tt></a>
+to the source file <a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped_odespy.py"><tt>vib_undamped_odespy.py</tt></a>
 for details. Observe that keyword arguments in <code>f(u,t,w=1)</code> can
 be supplied through a solver parameter <code>f_kwargs</code> (dictionary).
 
@@ -1741,7 +1748,7 @@ Crank-Nicolson schemes is done like this:
     ]
 </pre></div>
 <p>
-The <code>vib_odespy.py</code>
+The <code>vib_undamped_odespy.py</code>
 program makes two plots of the computed solutions with the various
 methods in the <code>solvers</code> list: one plot with \( u(t) \) versus \( t \), and
 one <em>phase plane plot</em> where \( v \) is plotted against \( u \).
@@ -1838,8 +1845,16 @@ how
 
 <p>
 The observations of various methods in the previous section can be
-better interpreted if we compute an expression reflecting
-the <em>energy of the system</em>.
+better interpreted if we compute an quantity reflecting
+the total <em>energy of the system</em>. It turns out that this quantity,
+
+<p>
+$$ E(t) = \frac{1}{2}(u')^2 + \frac{1}{2}\omega^2u^2,$$
+
+is <em>constant</em> for all \( t \). Checking that \( E(t) \) really remains constant
+brings evidence that the numerical computations are sound.
+Such energy measures, when they exist, are much used to check numerical
+simulations.
 
 <h4>Derivation of the energy expression  <a name="___sec33"></a></h4>
 
@@ -2242,30 +2257,159 @@ The conclusion is that a staggered mesh is fully equivalent with
 that scheme, while the forward-backward version gives a slight
 deviation in the computation of \( u^1 \).
 
-<h3>Implementation of the scheme on a staggered mesh  <a name="___sec41"></a></h3>
+<p>
+We can redo the derivation of the initial conditions when \( u'(0)=V \):
 
 <p>
-To summarize the formulas, the initial conditions are
+$$ v(0)\approx \frac{1}{2}(v^{-\frac{1}{2}} + v^{\frac{1}{2}}) = V,
+\quad\Rightarrow\quad v^{-\frac{1}{2}} = 2V - v^{\frac{1}{2}}\ts$$
+
+Using this \( v^{-\frac{1}{2}} \) in
+
+<p>
+$$ v^{\frac{1}{2}} = v^{-\frac{1}{2}} -\Delta t\omega^2 I,$$
+
+then gives \( v^{\frac{1}{2}} = V - \frac{1}{2}\Delta t\omega^2 I \).
+The general initial conditions are therefore
 
 <p>
 $$
 \begin{align}
 u^0 &= I,
-\label{vib:model2x2:EulerCromer:u0s2}\\ 
-v^{\frac{1}{2}} &= \frac{1}{2}\Delta t\omega^2I \ts
-\label{vib:model2x2:EulerCromer:v0s2}
+\label{vib:ode2:staggered:u0}\\ 
+v^{\frac{1}{2}} &= V - \frac{1}{2}\Delta t\omega^2I
+\label{vib:ode2:staggered:v0}\ts
 \end{align}
 $$
 
-We then realize that for \( n=1,2,\ldots \), \( u^{n} \) can be computed from
-\eqref{vib:model2x2:EulerCromer:ueq1s2} and then \( v^{n+1/2} \) from
-\eqref{vib:model2x2:EulerCromer:veq1s2} using the recently computed value
-\( u^{n} \) on the right-hand side.
+<h3>Implementation of the scheme on a staggered mesh  <a name="___sec41"></a></h3>
 
 <p>
-<b>NOT FINISHED.</b>
+The algorithm goes like this:
+
 <p>
-<!-- implement the staggered scheme -->
+
+<ol>
+<li> Set the initial values \eqref{vib:ode2:staggered:u0} and
+   \eqref{vib:ode2:staggered:v0}.</li>
+<li> For \( n=1,2,\ldots \):</li>
+
+<ol>
+  <li> Compute \( u^{n} \) from \eqref{vib:model2x2:EulerCromer:ueq1s2}.</li>
+  <li> Compute \( v^{n+1/2} \) from \eqref{vib:model2x2:EulerCromer:veq1s2}.</li>
+</ol>
+
+</ol>
+
+<h4>Implementation with integer indices  <a name="___sec42"></a></h4>
+
+<p>
+Translating the schemes \eqref{vib:model2x2:EulerCromer:ueq1s2}
+and \eqref{vib:model2x2:EulerCromer:veq1s2} to computer code
+faces the problem of how to store and access \( v^{n+\frac{1}{2}} \),
+since arrays only allow integer indices with base 0.
+We must then introduce a convention: \( v^{1+\frac{1}{2}} \) is stored
+in <code>v[n]</code> while \( v^{1-\frac{1}{2}} \) is stored in <code>v[n-1]</code>.
+We can then write the algorithm in Python as
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">solver</span>(I, w, dt, T):
+    dt = <span style="color: #658b00">float</span>(dt)
+    Nt = <span style="color: #658b00">int</span>(<span style="color: #658b00">round</span>(T/dt))
+    u = zeros(Nt+<span style="color: #B452CD">1</span>)
+    v = zeros(Nt+<span style="color: #B452CD">1</span>)
+    t = linspace(<span style="color: #B452CD">0</span>, Nt*dt, Nt+<span style="color: #B452CD">1</span>)  <span style="color: #228B22"># mesh for u</span>
+    t_v = t + dt/<span style="color: #B452CD">2</span>                <span style="color: #228B22"># mesh for v</span>
+
+    u[<span style="color: #B452CD">0</span>] = I
+    v[<span style="color: #B452CD">0</span>] = <span style="color: #B452CD">0</span> - <span style="color: #B452CD">0.5</span>*dt*w**<span style="color: #B452CD">2</span>*u[<span style="color: #B452CD">0</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> n <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Nt+<span style="color: #B452CD">1</span>):
+        u[n] = u[n-<span style="color: #B452CD">1</span>] + dt*v[n-<span style="color: #B452CD">1</span>]
+        v[n] = v[n-<span style="color: #B452CD">1</span>] - dt*w**<span style="color: #B452CD">2</span>*u[n]
+    <span style="color: #8B008B; font-weight: bold">return</span> u, t, v, t_v
+</pre></div>
+<p>
+Note that the return \( u \) and \( v \) together with the mesh points such
+that the complete mesh function for \( u \) is described by <code>u</code> and <code>t</code>,
+while <code>v</code> and <code>t_v</code> represents the mesh function for \( v \).
+
+<h4>Implementation with half-integer indices  <a name="___sec43"></a></h4>
+
+<p>
+Some prefer to see a closer relationship between the code and
+the mathematics for the quantities with half-integer indices.
+For example, we would like to replace the updating equation for
+<code>v[n]</code> by
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">v[n+half] = v[n-half] - dt*w**<span style="color: #B452CD">2</span>*u[n]
+</pre></div>
+<p>
+This is easy to do if we could be sure that <code>n+half</code> means <code>n</code> and
+<code>n-half</code> means <code>n-1</code>. A possible solution is to define <code>half</code> as a
+special object such that an integer plus <code>half</code> results in the integer,
+while an integer minus <code>half</code> equals the integer minus 1.
+A simple Python class may realize the <code>half</code> object:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">class</span> <span style="color: #008b45; font-weight: bold">HalfInt</span>:
+    <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">__radd__</span>(<span style="color: #658b00">self</span>, other):
+        <span style="color: #8B008B; font-weight: bold">return</span> other
+
+    <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">__rsub__</span>(<span style="color: #658b00">self</span>, other):
+        <span style="color: #8B008B; font-weight: bold">return</span> other - <span style="color: #B452CD">1</span>
+
+half = HalfInt()
+</pre></div>
+<p>
+The <code>__radd__</code> function is invoked for all expressions <code>n+half</code>
+("right add" with <code>self</code> as <code>half</code> and <code>other</code> as <code>n</code>). Similarly,
+the <code>__rsub__</code> function is invoked for <code>n-half</code> and results in <code>n-1</code>.
+
+<p>
+Using the <code>half</code> object, we can implement the algorithms in an even
+more readable way:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">solver</span>(I, w, dt, T):
+    <span style="color: #CD5555">&quot;&quot;&quot;</span>
+<span style="color: #CD5555">    Solve u&#39;=v, v&#39; = - w**2*u for t in (0,T], u(0)=I and v(0)=0,</span>
+<span style="color: #CD5555">    by a central finite difference method with time step dt.</span>
+<span style="color: #CD5555">    &quot;&quot;&quot;</span>
+    dt = <span style="color: #658b00">float</span>(dt)
+    Nt = <span style="color: #658b00">int</span>(<span style="color: #658b00">round</span>(T/dt))
+    u = zeros(Nt+<span style="color: #B452CD">1</span>)
+    v = zeros(Nt+<span style="color: #B452CD">1</span>)
+    t = linspace(<span style="color: #B452CD">0</span>, Nt*dt, Nt+<span style="color: #B452CD">1</span>)  <span style="color: #228B22"># mesh for u</span>
+    t_v = t + dt/<span style="color: #B452CD">2</span>                <span style="color: #228B22"># mesh for v</span>
+
+    u[<span style="color: #B452CD">0</span>] = I
+    v[<span style="color: #B452CD">0</span>+half] = <span style="color: #B452CD">0</span> - <span style="color: #B452CD">0.5</span>*dt*w**<span style="color: #B452CD">2</span>*u[<span style="color: #B452CD">0</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> n <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Nt+<span style="color: #B452CD">1</span>):
+        <span style="color: #8B008B; font-weight: bold">print</span> n, n+half, n-half
+        u[n] = u[n-<span style="color: #B452CD">1</span>] + dt*v[n-half]
+        v[n+half] = v[n-half] - dt*w**<span style="color: #B452CD">2</span>*u[n]
+    <span style="color: #8B008B; font-weight: bold">return</span> u, t, v, t_v
+</pre></div>
+<p>
+Verification of this code is easy as we can just compare the computed <code>u</code>
+with the <code>u</code> arising from the <code>solver</code> function in <code>vib_undamped.py</code>.
+The values should coincide to machine precision.
+The file <a href="http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py"><tt>vib_undamped_staggered.py</tt></a>
+contains a nose test for checking this property.
+
+<p>
+<!-- is anything gained? is v of higher order than D_2t u from the -->
+<!-- other approach, i.e., if we need v, is this alg better? Probably not -->
+<!-- since v is related u through a difference -->
 
 <p>
 <!-- make exercises: -->
@@ -2582,7 +2726,7 @@ the type of damping:
 
 <h3>Verification <a name="vib:ode2:verify"></a></h3>
 
-<h4>Constant solution  <a name="___sec47"></a></h4>
+<h4>Constant solution  <a name="___sec49"></a></h4>
 
 <p>
 For debugging and initial verification, a constant solution is often
@@ -2594,7 +2738,7 @@ of a constant vanishes (in particular, \( [D_{2t}I]^n=0 \),
 the discrete equations. The constant should therefore be reproduced
 to machine precision.
 
-<h4>Linear solution  <a name="___sec48"></a></h4>
+<h4>Linear solution  <a name="___sec50"></a></h4>
 
 <p>
 Now we choose a linear solution: \( \uex = ct + d \). The initial condition
@@ -2615,7 +2759,7 @@ is also a solution of the discrete equations.
 <a href="#vib:exer:verify:gen:linear">Exercise 8: Use linear/quadratic functions for verification</a> asks you to carry out
 all the details.
 
-<h4>Quadratic solution  <a name="___sec49"></a></h4>
+<h4>Quadratic solution  <a name="___sec51"></a></h4>
 
 <p>
 Choosing \( \uex = bt^2 + Vt + I \), with \( b \) arbitrary,
@@ -2727,7 +2871,7 @@ Figure <a href="#vib:ode2:fig:demo">10</a> shows a part of the time series.
 <p><img src="fig-vib/vib_gen_demo.png" align="bottom" width=600,></p>
 </center>
 
-<h3>An Euler-Cromer scheme for the generalized model <a name="vib:ode2:staggered"></a></h3>
+<h3>A staggered Euler-Cromer scheme for the generalized model <a name="vib:ode2:staggered"></a></h3>
 
 <p>
 The model
@@ -2818,25 +2962,20 @@ $$
 
 
 <p>
-The initial conditions can be derived as in
-the section <a href="#vib:model2x2:staggered">The Euler-Cromer scheme on a staggered mesh</a>. Assuming the general conditions
-\( u(0)=I \) and \( u'(0)=V \), we can repeat the derivation and arrive at
+The initial conditions are derived at the end of
+the section <a href="#vib:model2x2:staggered">The Euler-Cromer scheme on a staggered mesh</a>:
 
 <p>
 $$
 \begin{align}
 u^0 &= I,
-\label{vib:ode2:staggered:u0}\\ 
+\label{vib:ode2:staggered:u02}\\ 
 v^{\frac{1}{2}} &= V - \frac{1}{2}\Delta t\omega^2I
-\label{vib:ode2:staggered:v0}\ts
+\label{vib:ode2:staggered:v02}\ts
 \end{align}
 $$
 
-
-<p>
-<!-- Implementation -->
-
-<h2>Exercises and Problems  <a name="___sec53"></a></h2>
+<h2>Exercises and Problems  <a name="___sec55"></a></h2>
 
 <p>
 <!-- --- begin exercise --- -->
@@ -2847,7 +2986,7 @@ $$
 Consider the ODE problem
 
 <p>
-$$ u'+\omega^2u=f(t), \quad u(0)=I,\ u'(0)=V,\ t\in(0,T]\ts$$
+$$ u'' + \omega^2u=f(t), \quad u(0)=I,\ u'(0)=V,\ t\in(0,T]\ts$$
 
 Discretize this equation according to
 \( [D_tD_t u + \omega^2 u = f]^n \).
@@ -2907,33 +3046,42 @@ f = <span style="color: #658b00">None</span>  <span style="color: #228B22"># glo
     R = ...
     <span style="color: #8B008B; font-weight: bold">return</span> sm.simplify(R)
 
-<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">linear</span>():
-    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;=== Testing linear exact solution ===&#39;</span>
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">main</span>(u):
+    <span style="color: #CD5555">&quot;&quot;&quot;</span>
+<span style="color: #CD5555">    Given some chosen solution u (as a function of t, implemented</span>
+<span style="color: #CD5555">    as a Python function), use the method of manufactured solutions</span>
+<span style="color: #CD5555">    to compute the source term f, and check if u also solves</span>
+<span style="color: #CD5555">    the discrete equations.</span>
+<span style="color: #CD5555">    &quot;&quot;&quot;</span>
+    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;=== Testing exact solution: %s ===&#39;</span> % u
     <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&quot;Initial conditions u(0)=%s, u&#39;(0)=%s:&quot;</span> % \ 
-          (u_e(t).subs(t, <span style="color: #B452CD">0</span>), sm.diff(u_e(t), t).subs(t, <span style="color: #B452CD">0</span>))
+          (u(t).subs(t, <span style="color: #B452CD">0</span>), sm.diff(u(t), t).subs(t, <span style="color: #B452CD">0</span>))
 
     <span style="color: #228B22"># Method of manufactured solution requires fitting f</span>
-    <span style="color: #8B008B; font-weight: bold">global</span> f
-    f = ode_lhs(u_e)
+    <span style="color: #8B008B; font-weight: bold">global</span> f  <span style="color: #228B22"># source term in the ODE</span>
+    f = sm.simplify(ode_lhs(u))
 
     <span style="color: #228B22"># Residual in discrete equations (should be 0)</span>
-    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;residual step1:&#39;</span>, residual_discrete_eq_step1(u_e)
-    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;residual:&#39;</span>, residual_discrete_eq(u_e)
+    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;residual step1:&#39;</span>, residual_discrete_eq_step1(u)
+    <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;residual:&#39;</span>, residual_discrete_eq(u)
+
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">linear</span>():
+    main(<span style="color: #8B008B; font-weight: bold">lambda</span> t: V*t + I)
 
 <span style="color: #8B008B; font-weight: bold">if</span> __name__ == <span style="color: #CD5555">&#39;__main__&#39;</span>:
     linear()
 </pre></div>
 <p>
-Fill in the various functions such that the calls in the <code>linear</code>
+Fill in the various functions such that the calls in the <code>main</code>
 function works.
 
 <p>
 <b>d)</b>
 The purpose now is to choose a quadratic function
 \( \uex = bt^2 + ct + d \) as exact solution. Extend the <code>sympy</code>
-code above with a function <code>quadratic</code> that computes the
-right source term <code>f</code> and evaluates the residual
-in the two types of finite difference equations.
+code above with a function <code>quadratic</code> for fitting <code>f</code> and checking
+if the discrete equations are fulfilled. (The function is very similar
+to <code>linear</code>.)
 
 <p>
 <!-- Check with hand calculations that the <code>sympy</code> implementation -->
@@ -2941,11 +3089,15 @@ in the two types of finite difference equations.
 
 <p>
 <b>e)</b>
+Will a polynomial of degree three fulfill the discrete equations?
+
+<p>
+<b>f)</b>
 Implement a <code>solver</code> function for computing the numerical
 solution of this problem.
 
 <p>
-<b>f)</b>
+<b>g)</b>
 Write a nose test for checking that the quadratic solution
 is computed to correctly (too machine precision, but the
 round-off errors accumulate and increase with \( T \)) by the <code>solver</code>
@@ -3176,7 +3328,7 @@ Filename: <code>vib_conv_rate.py</code>.
 <h3>Exercise 11: Investigate the amplitude errors of many solvers <a name="vib:exer:undamped:odespy"></a></h3>
 
 <p>
-Use the program <code>vib_odespy.py</code> from the section <a href="#vib:undamped:1stODE">Standard methods for 1st-order ODE systems</a>
+Use the program <code>vib_undamped_odespy.py</code> from the section <a href="#vib:undamped:1stODE">Standard methods for 1st-order ODE systems</a>
 and the amplitude estimation from the <code>amplitudes</code> function
 in the <code>vib_undamped.py</code> file (see the section <a href="#vib:ode1:empirical">Empirical analysis of the solution</a>)
 to investigate how well famous methods for 1st-order ODEs
@@ -3292,7 +3444,7 @@ Filename: <code>vib_scheme_equivalence.pdf</code>.
 <p>
 <!-- --- end exercise --- -->
 
-<h2>References  <a name="___sec69"></a></h2>
+<h2>References  <a name="___sec71"></a></h2>
 
 <p>
 
