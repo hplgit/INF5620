@@ -98,7 +98,7 @@ def main():
     else:
         visualize_front(u, t, I, w, savefig)
         #visualize_front_ascii(u, t, I, w)
-    plot_empirical_freq_and_amplitude(u, t, I, w)
+    #plot_empirical_freq_and_amplitude(u, t, I, w)
     show()
 
 def plot_empirical_freq_and_amplitude(u, t, I, w):

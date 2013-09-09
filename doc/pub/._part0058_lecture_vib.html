@@ -7,7 +7,7 @@ Automatically generated HTML file from Doconce source
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
-<meta name="description" content="Study Guide: Vibration ODEs">
+<meta name="description" content="Study Guide: Finite difference methods for vibration problems">
 <meta name="keywords" content="period (of oscillations),frequency (of oscillations),Hz (unit),stability criterion,staggered mesh,staggered Euler-Cromer scheme">
 
 
@@ -173,11 +173,11 @@ Automatically generated HTML file from Doconce source
                'vib:ode2:fdm:flin',
                'vib:ode2:fdm:flin'),
               (' Initial conditions ', 2, None, '___sec57'),
-              (' A centered scheme for quadratic damping ',
+              (' Linearization via a geometric mean approximation ',
                2,
                'vib:ode2:fdm:fquad',
                'vib:ode2:fdm:fquad'),
-              (' Using a geometric mean to linearize the equation ',
+              (' A centered scheme for quadratic damping ',
                2,
                None,
                '___sec59'),
@@ -188,7 +188,12 @@ Automatically generated HTML file from Doconce source
               (' Algorithm ', 2, None, '___sec61'),
               (' Implementation ', 2, None, '___sec62'),
               (' Verification ', 2, 'vib:ode2:verify', 'vib:ode2:verify'),
-              (' Demo program ', 2, None, '___sec64')]}
+              (' Demo program ', 2, None, '___sec64'),
+              (' Euler-Cromer formulation ', 2, None, '___sec65'),
+              (' Staggered grid ', 2, None, '___sec66'),
+              (' Linear damping ', 2, None, '___sec67'),
+              (' Quadratic damping ', 2, None, '___sec68'),
+              (' Initial conditions ', 2, None, '___sec69')]}
 end of tocinfo -->
 
 <body>
@@ -301,39 +306,37 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Using a geometric mean to linearize the equation  <a name="___sec59"></a></h3>
-
-<p>
-Geometric mean approximation:
-$$ w^n \approx w^{n-1/2}w^{n+1/2}\ts$$
-
-For \( |u'|u' \):
-
-<p>
-$$ [u'|u'|]^n \approx u'(t_n+\frac{1}{2})|u'(t_n-\frac{1}{2})|\ts$$
-
-For \( u' \) at \( t_{n\pm 1/2} \) we use centered difference:
+<h3>A centered scheme for linear damping <a name="vib:ode2:fdm:flin"></a></h3>
 
 <p>
 $$
 \begin{equation}
-u'(t_{n+1/2})\approx [D_t u]^{n+1/2},\quad u'(t_{n-1/2})\approx [D_t u]^{n-1/2}
-\thinspace .
-\label{vib:ode2:quad:idea2}
+[mD_tD_t u + f(D_{2t}u) + s(u) = F]^n
 \end{equation}
 $$
 
-After some algebra:
+Written out
 
 <p>
 $$
-\begin{align}
-u^{n+1} &=  \left( m + b|u^n-u^{n-1}|\right)^{-1}\times \nonumber\\ 
-& \qquad \left(2m u^n - mu^{n-1} + bu^n|u^n-u^{n-1}| + \Delta t^2 (F^n - s(u^n))
-\right)
+\begin{equation}
+m\frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
++ f(\frac{u^{n+1}-u^{n-1}}{2\Delta t}) + s(u^n) = F^n
+\label{vib:ode2:step3b}
+\end{equation}
+$$
+
+Assume \( f(u') \) is linear in \( u'=v \):
+
+<p>
+$$
+\begin{equation}
+u^{n+1} = \left(2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
+\Delta t^2(F^n - s(u^n))
+\right)(m + \frac{b}{2}\Delta t)^{-1}
+\label{vib:ode2:step4}
 \thinspace .
-\label{vib:ode2:step4:quad}
-\end{align}
+\end{equation}
 $$
 
 

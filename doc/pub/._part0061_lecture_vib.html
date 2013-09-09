@@ -7,7 +7,7 @@ Automatically generated HTML file from Doconce source
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
-<meta name="description" content="Study Guide: Vibration ODEs">
+<meta name="description" content="Study Guide: Finite difference methods for vibration problems">
 <meta name="keywords" content="period (of oscillations),frequency (of oscillations),Hz (unit),stability criterion,staggered mesh,staggered Euler-Cromer scheme">
 
 
@@ -173,11 +173,11 @@ Automatically generated HTML file from Doconce source
                'vib:ode2:fdm:flin',
                'vib:ode2:fdm:flin'),
               (' Initial conditions ', 2, None, '___sec57'),
-              (' A centered scheme for quadratic damping ',
+              (' Linearization via a geometric mean approximation ',
                2,
                'vib:ode2:fdm:fquad',
                'vib:ode2:fdm:fquad'),
-              (' Using a geometric mean to linearize the equation ',
+              (' A centered scheme for quadratic damping ',
                2,
                None,
                '___sec59'),
@@ -188,7 +188,12 @@ Automatically generated HTML file from Doconce source
               (' Algorithm ', 2, None, '___sec61'),
               (' Implementation ', 2, None, '___sec62'),
               (' Verification ', 2, 'vib:ode2:verify', 'vib:ode2:verify'),
-              (' Demo program ', 2, None, '___sec64')]}
+              (' Demo program ', 2, None, '___sec64'),
+              (' Euler-Cromer formulation ', 2, None, '___sec65'),
+              (' Staggered grid ', 2, None, '___sec66'),
+              (' Linear damping ', 2, None, '___sec67'),
+              (' Quadratic damping ', 2, None, '___sec68'),
+              (' Initial conditions ', 2, None, '___sec69')]}
 end of tocinfo -->
 
 <body>
@@ -301,42 +306,23 @@ $$
 <p>
 <!-- !split -->
 
-<h3>Implementation  <a name="___sec62"></a></h3>
+<h3>A centered scheme for quadratic damping  <a name="___sec59"></a></h3>
 
 <p>
+After some algebra:
 
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">solver</span>(I, V, m, b, s, F, dt, T, damping<span style="color: #666666">=</span><span style="color: #BA2121">&#39;linear&#39;</span>):
-    <span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-<span style="color: #BA2121; font-style: italic">    Solve m*u&#39;&#39; + f(u&#39;) + s(u) = F(t) for t in (0,T],</span>
-<span style="color: #BA2121; font-style: italic">    u(0)=I and u&#39;(0)=V,</span>
-<span style="color: #BA2121; font-style: italic">    by a central finite difference method with time step dt.</span>
-<span style="color: #BA2121; font-style: italic">    If damping is &#39;linear&#39;, f(u&#39;)=b*u, while if damping is</span>
-<span style="color: #BA2121; font-style: italic">    &#39;quadratic&#39;, f(u&#39;)=b*u&#39;*abs(u&#39;).</span>
-<span style="color: #BA2121; font-style: italic">    F(t) and s(u) are Python functions.</span>
-<span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-    dt <span style="color: #666666">=</span> <span style="color: #008000">float</span>(dt); b <span style="color: #666666">=</span> <span style="color: #008000">float</span>(b); m <span style="color: #666666">=</span> <span style="color: #008000">float</span>(m) <span style="color: #408080; font-style: italic"># avoid integer div.</span>
-    Nt <span style="color: #666666">=</span> <span style="color: #008000">int</span>(<span style="color: #008000">round</span>(T<span style="color: #666666">/</span>dt))
-    u <span style="color: #666666">=</span> zeros(Nt<span style="color: #666666">+1</span>)
-    t <span style="color: #666666">=</span> linspace(<span style="color: #666666">0</span>, Nt<span style="color: #666666">*</span>dt, Nt<span style="color: #666666">+1</span>)
+<p>
+$$
+\begin{align}
+u^{n+1} &=  \left( m + b|u^n-u^{n-1}|\right)^{-1}\times \nonumber\\ 
+& \qquad \left(2m u^n - mu^{n-1} + bu^n|u^n-u^{n-1}| + \Delta t^2 (F^n - s(u^n))
+\right)
+\thinspace .
+\label{vib:ode2:step4:quad}
+\end{align}
+$$
 
-    u[<span style="color: #666666">0</span>] <span style="color: #666666">=</span> I
-    <span style="color: #008000; font-weight: bold">if</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;linear&#39;</span>:
-        u[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>] <span style="color: #666666">+</span> dt<span style="color: #666666">*</span>V <span style="color: #666666">+</span> dt<span style="color: #666666">**2/</span>(<span style="color: #666666">2*</span>m)<span style="color: #666666">*</span>(<span style="color: #666666">-</span>b<span style="color: #666666">*</span>V <span style="color: #666666">-</span> s(u[<span style="color: #666666">0</span>]) <span style="color: #666666">+</span> F(t[<span style="color: #666666">0</span>]))
-    <span style="color: #008000; font-weight: bold">elif</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;quadratic&#39;</span>:
-        u[<span style="color: #666666">1</span>] <span style="color: #666666">=</span> u[<span style="color: #666666">0</span>] <span style="color: #666666">+</span> dt<span style="color: #666666">*</span>V <span style="color: #666666">+</span> \ 
-               dt<span style="color: #666666">**2/</span>(<span style="color: #666666">2*</span>m)<span style="color: #666666">*</span>(<span style="color: #666666">-</span>b<span style="color: #666666">*</span>V<span style="color: #666666">*</span><span style="color: #008000">abs</span>(V) <span style="color: #666666">-</span> s(u[<span style="color: #666666">0</span>]) <span style="color: #666666">+</span> F(t[<span style="color: #666666">0</span>]))
 
-    <span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Nt):
-        <span style="color: #008000; font-weight: bold">if</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;linear&#39;</span>:
-            u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">2*</span>m<span style="color: #666666">*</span>u[n] <span style="color: #666666">+</span> (b<span style="color: #666666">*</span>dt<span style="color: #666666">/2</span> <span style="color: #666666">-</span> m)<span style="color: #666666">*</span>u[n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span>
-                      dt<span style="color: #666666">**2*</span>(F(t[n]) <span style="color: #666666">-</span> s(u[n])))<span style="color: #666666">/</span>(m <span style="color: #666666">+</span> b<span style="color: #666666">*</span>dt<span style="color: #666666">/2</span>)
-        <span style="color: #008000; font-weight: bold">elif</span> damping <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;quadratic&#39;</span>:
-            u[n<span style="color: #666666">+1</span>] <span style="color: #666666">=</span> (<span style="color: #666666">2*</span>m<span style="color: #666666">*</span>u[n] <span style="color: #666666">-</span> m<span style="color: #666666">*</span>u[n<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> b<span style="color: #666666">*</span>u[n]<span style="color: #666666">*</span><span style="color: #008000">abs</span>(u[n] <span style="color: #666666">-</span> u[n<span style="color: #666666">-1</span>])
-                      <span style="color: #666666">+</span> dt<span style="color: #666666">**2*</span>(F(t[n]) <span style="color: #666666">-</span> s(u[n])))<span style="color: #666666">/</span>\ 
-                      (m <span style="color: #666666">+</span> b<span style="color: #666666">*</span><span style="color: #008000">abs</span>(u[n] <span style="color: #666666">-</span> u[n<span style="color: #666666">-1</span>]))
-    <span style="color: #008000; font-weight: bold">return</span> u, t
-</pre></div>
 <p>
 <p>
 <!-- begin bottom navigation -->

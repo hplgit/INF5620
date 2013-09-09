@@ -23,6 +23,16 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
         solver.set_initial_condition([I, 0])
         u, t = solver.solve(t_mesh)
 
+        # Compute energy
+        dt = t[1] - t[0]
+        E = 0.5*((u[2:,0] - u[:-2,0])/(2*dt))**2 + 0.5*w**2*u[1:-1,0]**2
+        # Compute error in energy
+        E0 = 0.5*0**2 + 0.5*w**2*I**2
+        e_E = E - E0
+        solver_name = 'CrankNicolson' if solver.__class__.__name__ == \
+                      'MidpointImplicit' else solver.__class__.__name__
+        print '*** Relative max error in energy for %s [0,%g] with dt=%g: %.3E' % (solver_name, t[-1], dt, np.abs(e_E).max()/E0)
+
         # Make plots
         if num_periods <= 80:
             plt.figure(1)
@@ -62,33 +72,33 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
         plt.legend(legends, loc='upper left')
         plt.xlabel('t');  plt.ylabel('u')
         plt.title('Time step: %g' % dt)
-        plt.savefig('vb_%d_%d_u.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_u.pdf' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_u.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_u.png' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_u.pdf' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_u.eps' % (timesteps_per_period, num_periods))
 
         plt.figure(2)
         plt.plot(u_e, v_e, '-') # avoid markers by spec. line type
         plt.legend(legends, loc='lower right')
         plt.xlabel('u(t)');  plt.ylabel('v(t)')
         plt.title('Time step: %g' % dt)
-        plt.savefig('vb_%d_%d_pp.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_pp.pdf' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_pp.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_pp.png' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_pp.pdf' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_pp.eps' % (timesteps_per_period, num_periods))
         del legends[-1]  # fig 3 and 4 does not have exact value
 
     if num_periods > 20:
         plt.figure(3)
         plt.legend(legends, loc='center right')
         plt.title('Empirically estimated periods')
-        plt.savefig('vb_%d_%d_p.eps' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_p.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_p.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_p.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_p.png' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_p.eps' % (timesteps_per_period, num_periods))
         plt.figure(4)
         plt.legend(legends, loc='center right')
         plt.title('Empirically estimated amplitudes')
-        plt.savefig('vb_%d_%d_a.eps' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_a.png' % (timesteps_per_period, num_periods))
-        plt.savefig('vb_%d_%d_a.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_a.eps' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_a.png' % (timesteps_per_period, num_periods))
+        plt.savefig('vib_%d_%d_a.eps' % (timesteps_per_period, num_periods))
 
 # Define different sets of experiments
 solvers_theta = [
@@ -119,6 +129,6 @@ if __name__ == '__main__':
     run_solvers_and_plot(solvers,
                          timesteps_per_period,
                          num_periods)
-    plt.show()
-    raw_input()
+    #plt.show()
+    #raw_input()
 

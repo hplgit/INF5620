@@ -5,7 +5,7 @@ Finite difference methods for vibration problems
 ================================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 6, 2013
+:Date: Sep 9, 2013
 
 Note: **PRELIMINARY VERSION** (expect typos)
 
@@ -157,6 +157,13 @@ The ODE is to be satisfied at each mesh point:
         
 
 
+
+.. index:: centered difference
+
+.. index::
+   single: finite differences; centered
+
+
 Step 3: Replacing derivatives by finite differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -210,7 +217,7 @@ unknown value, which we can readily solve for:
 .. math::
    :label: vib:ode1:step4
         
-        u^{n+1} = 2u^n - u^{n-1} - \omega^2 u^n
+        u^{n+1} = 2u^n - u^{n-1} - \Delta t^2\omega^2 u^n
         \thinspace .
         
         
@@ -488,8 +495,8 @@ We must therefore add a source in the equation:
 :math:`u'' + \omega^2 u = f` to allow a solution :math:`u=t^2` for :math:`f=(\omega t)^2`.
 By simple insertion we can show that the mesh function :math:`u^n = t_n^2` is
 also a solution of the discrete equations.
-:ref:`vib:exer:undamped:verify:linear` and
-:ref:`vib:exer:undamped:verify:quadratic` ask you to carry out all
+:ref:`vib:exer:undamped:verify:linquad`
+asks you to carry out all
 details with showing that linear and quadratic solutions are solutions
 of the discrete equations. Such results are very useful
 for debugging and verification.
@@ -1341,7 +1348,7 @@ Comparison of schemes
 We can easily compare methods like the ones above (and many more!)
 with the aid of the
 `Odespy <https://github.com/hplgit/odespy>`_ package. Below is
-a possible program for doing that.
+a sketch of the code.
 
 
 .. code-block:: python
@@ -1496,23 +1503,30 @@ how
 Enegy considerations
 --------------------
 
+
+.. index:: mechanical energy
+
+.. index:: energy principle
+
+
 The observations of various methods in the previous section can be
-better interpreted if we compute the *energy of the system*.
-To this end, we multiply
+better interpreted if we compute an expression reflecting
+the *energy of the system*.
+
+Derivation of the energy expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We starting multiplying
 
 
 .. math::
          u'' + \omega^2 u = 0,
 
-by :math:`u'` and integrate from :math:`0` to :math:`T`:
+by :math:`u'` and integrating from :math:`0` to :math:`T`:
 
 
 .. math::
          \int_0^T u''u' dt + \int_0^T\omega^2 u u' dt = 0{\thinspace .}
-
-(When our ODE comes from Newton's section law, this action means that
-we compute the work done on the mechanical system in the time
-interval :math:`[0,T]`.)
 
 Observing that
 
@@ -1528,36 +1542,15 @@ we get
         \int_0^T (\frac{d}{dt}\frac{1}{2}(u')^2 + \frac{d}{dt} \frac{1}{2}\omega^2u^2)dt = E(T) - E(0),
         
 
-where we have introduced the *energy* :math:`E(t)`
+where we have introduced the energy measure :math:`E(t)`
 
 
 .. math::
    :label: vib:model1:energy:balance1
         
-        E(t) = E_k(t) + E_p(t),
+        E(t) = \frac{1}{2}(u')^2 + \frac{1}{2}\omega^2u^2{\thinspace .}
         
         
-
-as a sum of the kinetic energy
-
-
-.. math::
-   :label: vib:model1:energy:kinetic
-        
-        E_k(t) = \frac{1}{2}(u')^2,
-        
-        
-
-and the potential energy
-
-
-.. math::
-   :label: vib:model1:energy:potential
-        
-        E_p(t) = \frac{1}{2}\omega^2u^2{\thinspace .}
-        
-        
-
 
 The important result from this derivation is that the total energy
 is constant:
@@ -1567,8 +1560,77 @@ is constant:
          E(t) = \hbox{const}{\thinspace .}
 
 
-Analytically, we have :math:`u(t)=I\cos\omega t`,
-so we can easily check the evolution of the energy
+
+
+.. admonition:: Remark on the energy expression
+
+   The quantity :math:`E(t)` derived above is physically not the energy of a
+   vibrating mechanical system, but the energy per unit mass. To see this,
+   we start with Newton's second law :math:`F=ma` (:math:`F` is the sum of forces, :math:`m`
+   is the mass of the system, and :math:`a` is the acceleration).
+   The displacement :math:`u` is related to :math:`a` through
+   :math:`a=u''`. With a spring force as the only force we have :math:`F=-ku`, where
+   :math:`k` is a spring constant measuring the stiffness of the spring.
+   Newton's second law then implies the differential equation
+   
+   
+   .. math::
+            -ku = mu''\quad\Rightarrow mu'' + ku = 0{\thinspace .}
+   
+   This equation of motion can be turned into an energy balance equation
+   by finding the work done by each term during a time interval :math:`[0,T]`.
+   To this end, we multiply the equation by :math:`du=u'dt` and integrate:
+   
+   
+   .. math::
+            \int_0^T muu'dt + \int_0^T kuu'dt = 0{\thinspace .}
+   
+   The result is
+   
+   
+   .. math::
+            E(t) = E_k(t) + E_p(t) = 0,
+   
+   where
+   
+   
+   .. math::
+      :label: vib:model1:energy:kinetic
+           
+           E_k(t) = \frac{1}{}2mv^2,\quad v=u',
+           
+           
+   
+   is the *kinetic energy* of the system,
+   
+   
+   .. math::
+      :label: vib:model1:energy:potential
+           
+           E_p(t) = \frac{1}{2}ku^2
+           
+           
+   
+   is the *potential energy*, and the sum :math:`E(t)` is the total energy.
+   The derivation demonstrates the famous energy principle that any
+   change in the kinetic energy is due to a change in potential energy
+   and vice versa.
+   
+   The equation :math:`mu''+ku=0` can be divided by :math:`m` and written as
+   :math:`u'' + \omega^2u=0` for :math:`\omega=\sqrt{k/m}`. The energy expression
+   :math:`E(t)=\frac{1}{2}(u')^2 + \frac{1}{2}\omega^2u^2` derived earlier is then
+   simply the
+   true physical total
+   energy :math:`\frac{1}{2}m(u')^2 + \frac{1}{2}k^2u^2` divided by :math:`m`, i.e.,
+   total energy per unit mass.
+
+
+Example
+~~~~~~~
+
+Analytically, we have :math:`u(t)=I\cos\omega t`, if :math:`u(0)=I` and :math:`u'(0)=0`,
+so we can easily check that the evolution of the energy :math:`E(t)` is
+constant:
 
 
 .. math::
@@ -1578,9 +1640,90 @@ so we can easily check the evolution of the energy
         {\thinspace .}
         
 
-We can use this value of the constant for verification, or we can simply
-compute :math:`E(0)` from the initial conditions and check that :math:`E(t_n)=E(0)`
-at all mesh points :math:`t_n`.
+
+Discrete total energy
+~~~~~~~~~~~~~~~~~~~~~
+
+The total energy :math:`E(t)` can be computed as soon as
+:math:`u^n` is available. Using :math:`(u')^n\approx [D_{2t} u^n]` we have
+
+
+.. math::
+         E^n = \frac{1}{2}([D_{2t} u]^n)^2 + \frac{1}{2}\omega^2 (u^n)^2{\thinspace .}
+
+The errors involved in :math:`E^n` get a contribution :math:`{{\cal O}(\Delta t^2)}`
+from the difference approximation of :math:`u'` and a contribution from
+the numerical error in :math:`u^n`. With a second-order scheme for computing
+:math:`u^n`, the overall error in :math:`E^n` is expected to be :math:`{{\cal O}(\Delta t^2)}`.
+
+An error measure based on total energy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The error in total energy, as a mesh function, can be computed by
+
+
+.. math::
+        
+        e_E^n = \frac{1}{2}\left(\frac{u^{n+1}-u^{n-1}}{2\Delta t}\right)^2
+        + \frac{1}{2}\omega^2 (u^n)^2 - E(0),
+        \quad n=1,\ldots,N_t-1,
+        
+
+where
+
+
+.. math::
+         E(0) = \frac{1}{2}V^2 + \frac{1}{2}\omega^2I^2,
+
+if :math:`u(0)=I` and :math:`u'(0)=V`.
+A useful norm can be the maximum absolute value of :math:`e_E^n`:
+
+
+.. math::
+         ||e_E^n||_{\ell^\infty} = \max_{1\leq n <N_t} |e_E^n|{\thinspace .}
+
+The corresponding Python implementation takes the form
+
+
+.. code-block:: python
+
+        # import numpy as np and compute u, t
+        dt = t[1]-t[0]
+        E = 0.5*((u[2:] - u[:-2])/(2*dt))**2 + 0.5*w**2*u[1:-1]**2
+        E0 = 0.5*V**2 + 0.5**w**2*I**2
+        e_E = E - E0
+        e_E_norm = np.abs(e_E).max()
+
+
+The convergence rates of the quantity ``e_E_norm`` can be used for verification.
+The value of ``e_E_norm`` is also useful for comparing schemes
+through their ability to preserve energy. Below is a table demonstrating
+the error in total energy for various schemes. We clearly see that
+the Crank-Nicolson and 4th-order Runge-Kutta schemes are superior to
+the 2nd-order Runge-Kutta method and even more superior to the Forward
+and Backward Euler schemes.
+
+========================================  ========================================  ========================================  ========================================  
+                 Method                                  :math:`T`                              :math:`\Delta t`              :math:`\max \left\vert e_E^n\right\vert`  
+========================================  ========================================  ========================================  ========================================  
+             Forward Euler                               :math:`1`                                :math:`0.05`                       :math:`1.113\cdot 10^{2}`          
+             Forward Euler                               :math:`1`                               :math:`0.025`                       :math:`3.312\cdot 10^{1}`          
+             Backward Euler                              :math:`1`                                :math:`0.05`                       :math:`1.683\cdot 10^{1}`          
+             Backward Euler                              :math:`1`                               :math:`0.025`                       :math:`1.231\cdot 10^{1}`          
+         Runge-Kutta 2nd-order                           :math:`1`                                :math:`0.1`                              :math:`8.401`                
+         Runge-Kutta 2nd-order                           :math:`1`                                :math:`0.05`                       :math:`9.637\cdot 10^{-1}`         
+             Crank-Nicolson                              :math:`1`                                :math:`0.05`                       :math:`9.389\cdot 10^{-1}`         
+             Crank-Nicolson                              :math:`1`                               :math:`0.025`                       :math:`2.411\cdot 10^{-1}`         
+         Runge-Kutta 4th-order                           :math:`1`                                :math:`0.1`                              :math:`2.387`                
+         Runge-Kutta 4th-order                           :math:`1`                                :math:`0.05`                       :math:`6.476\cdot 10^{-1}`         
+             Crank-Nicolson                              :math:`10`                               :math:`0.1`                              :math:`3.389`                
+             Crank-Nicolson                              :math:`10`                               :math:`0.05`                       :math:`9.389\cdot 10^{-1}`         
+         Runge-Kutta 4th-order                           :math:`10`                               :math:`0.1`                              :math:`3.686`                
+         Runge-Kutta 4th-order                           :math:`10`                               :math:`0.05`                       :math:`6.928\cdot 10^{-1}`         
+========================================  ========================================  ========================================  ========================================  
+
+.. Should build a verification test on the energy error.
+
 
 .. Link phase plane plot to energy
 
@@ -1727,7 +1870,7 @@ The Euler-Cromer scheme on a staggered mesh
 
 
 The Forward and Backward Euler schemes used in the Euler-Cromer
-method are both unsymmetric, but their combination yields a
+method are both non-symmetric, but their combination yields a
 symmetric method since the resulting scheme is equivalent with
 a centered (symmetric) difference scheme for :math:`u''+\omega^2u=0`.
 The symmetric nature of the Euler-Cromer scheme is much more evident if we
@@ -1839,12 +1982,35 @@ The conclusion is that a staggered mesh is fully equivalent with
 that scheme, while the forward-backward version gives a slight
 deviation in the computation of :math:`u^1`.
 
-We realize that :math:`u^{n+1}` can be computed from
-:eq:`vib:model2x2:EulerCromer:ueq1` and then :math:`v^{n+1}` from
-:eq:`vib:model2x2:EulerCromer:veq1` using the recently computed value
-:math:`u^{n+1}` on the right-hand side.
 
-.. implement the staggered scheme
+Implementation of the scheme on a staggered mesh
+------------------------------------------------
+
+To summarize the formulas, the initial conditions are
+
+
+.. math::
+   :label: vib:model2x2:EulerCromer:u0s2
+        
+        u^0 = I,
+        
+        
+
+
+
+.. math::
+   :label: vib:model2x2:EulerCromer:v0s2
+          
+        v^{\frac{1}{2}} = \frac{1}{2}\Delta t\omega^2I {\thinspace .}
+        
+        
+
+We then realize that for :math:`n=1,2,\ldots`, :math:`u^{n}` can be computed from
+:eq:`vib:model2x2:EulerCromer:ueq1s2` and then :math:`v^{n+1/2}` from
+:eq:`vib:model2x2:EulerCromer:veq1s2` using the recently computed value
+:math:`u^{n}` on the right-hand side.
+
+*NOT FINISHED.* .. implement the staggered scheme
 
 
 .. make exercises:
@@ -2020,7 +2186,7 @@ a *geometric mean*, defined by
 
 
 .. math::
-         w^n \approx w^{n-1/2}w^{n+1/2},
+         (w^2)^n \approx w^{n-1/2}w^{n+1/2},
 
 for some quantity :math:`w` depending on time. The error in the geometric mean
 approximation is :math:`{{\cal O}(\Delta t^2)}`, the same as in the
@@ -2191,9 +2357,56 @@ the type of damping:
 Verification  (2)
 -----------------
 
- * Exact linear solution of the discrete equations with linear :math:`s`
+Constant solution
+~~~~~~~~~~~~~~~~~
 
- * MMS
+For debugging and initial verification, a constant solution is often
+very useful. We choose :math:`u_{\small\mbox{e}}(t)=I`, which implies :math:`V=0`.
+Inserted in the ODE, we get
+:math:`F(t)=s(I)` for any choice of :math:`f`. Since the discrete derivative
+of a constant vanishes (in particular, :math:`[D_{2t}I]^n=0`,
+:math:`[D_tI]^n=0`, and :math:`[D_tD_t I]^n=0`), the constant solution also fulfills
+the discrete equations. The constant should therefore be reproduced
+to machine precision.
+
+Linear solution
+~~~~~~~~~~~~~~~
+
+Now we choose a linear solution: :math:`u_{\small\mbox{e}} = ct + d`. The initial condition
+:math:`u(0)=I` implies :math:`d=I`, and :math:`u'(0)=V` forces :math:`c` to be :math:`V`.
+Inserting :math:`u_{\small\mbox{e}}=Vt+I` in the ODE with linear damping results in
+
+
+.. math::
+         0 + bV + s(Vt+I) = F(t),
+
+while quadratic damping requires the source term
+
+
+.. math::
+         0 + b|V|V + s(Vt+I) = F(t){\thinspace .}
+
+Since the finite difference approximations used to compute :math:`u'` all
+are exact for a linear function, it turns out that the linear :math:`u_{\small\mbox{e}}`
+is also a solution of the discrete equations.
+:ref:`vib:exer:verify:gen:linear` asks you to carry out
+all the details.
+
+Quadratic solution
+~~~~~~~~~~~~~~~~~~
+
+Choosing :math:`u_{\small\mbox{e}} = bt^2 + Vt + I`, with :math:`b` arbitrary,
+fulfills the initial conditions and
+fits the ODE if :math:`F` is adjusted properly. The solution also solves
+the discrete equations with linear damping. However, this quadratic
+polynomial in :math:`t` does not fulfill the discrete equations in case
+of quadratic damping, because the geometric mean used in the approximation
+of this term introduces an error.
+Doing :ref:`vib:exer:verify:gen:linear` will reveal
+the details. One can fit :math:`F^n` in the discrete equations such that
+the quadratic polynomial is reproduced by the numerical method (to
+machine precision).
+
 .. More: classes, cases with pendulum approx u vs sin(u),
 
 .. making UI via parampool
@@ -2304,8 +2517,8 @@ Figure :ref:`vib:ode2:fig:demo` shows a part of the time series.
 
 .. _vib:ode2:staggered:
 
-The generalized model as a 1st-order system on a staggered mesh
----------------------------------------------------------------
+An Euler-Cromer scheme for the generalized model
+------------------------------------------------
 
 The model
 
@@ -2337,7 +2550,7 @@ can be rewritten as a first-order ODE system
 It is natural to introduce a staggered mesh (see the section :ref:`vib:model2x2:staggered`) and seek :math:`u` at mesh points :math:`t_n` (the numerical value is
 denoted by :math:`u^n`) and :math:`v` between mesh points at :math:`t_{n+1/2}` (the numerical
 value is denoted by :math:`v^{n+1/2}`).
-A centered difference approximation to :eq:`vib:ode2:staggered:ueq`-(:ref:`vib:ode2:staggered:vueq`) can then be written in operator notation as
+A centered difference approximation to :eq:`vib:ode2:staggered:ueq`-:eq:`vib:ode2:staggered:veq` can then be written in operator notation as
 
 
 .. math::
@@ -2427,53 +2640,143 @@ solving for the unknowns :math:`u^n` and :math:`v^{n+1/2}` results in
         
 
 
+The initial conditions can be derived as in
+the section :ref:`vib:model2x2:staggered`. Assuming the general conditions
+:math:`u(0)=I` and :math:`u'(0)=V`, we can repeat the derivation and arrive at
+
+
+.. math::
+   :label: vib:ode2:staggered:u0
+        
+        u^0 = I,
+        
+        
+
+
+
+.. math::
+   :label: vib:ode2:staggered:v0
+          
+        v^{\frac{1}{2}} = V - \frac{1}{2}\Delta t\omega^2I
+        {\thinspace .}
+        
+
+
+
 .. Implementation
 
 
-Exercises
-=========
+Exercises and Problems
+======================
 
 
 
 .. --- begin exercise ---
 
 
-.. _vib:exer:undamped:verify:linear:
+.. _vib:exer:undamped:verify:linquad:
 
-Exercise 1: Use a linear function for verification
---------------------------------------------------
+Problem 1: Use linear/quadratic functions for verification
+----------------------------------------------------------
 
-Add a source term to the ODE problem :eq:`vib:ode1`,
-:math:`u'+\omega^2u=f(t)`, and a more general initial condition :math:`u'(0)=V`,
-where :math:`V` is a given constant.  Discretize this equation according to
-:math:`[D_tD_t u + \omega^2 u = f]^n_i` and derive a new equation for the
-first time step (:math:`u^1`).  Let :math:`u_{\small\mbox{e}}(x,t)= ct+I` and show that this is
-a solution of the ODE if :math:`f(x,t)=\omega^2(ct+I)` and :math:`V=c`.  Show that
-:math:`[D_tD_t t]^n_i=0` and therefore that :math:`u_{\small\mbox{e}}` *also* solves the
-discrete equations. Implement the modified problem and make a nose
-test with the linear :math:`u_{\small\mbox{e}}` to verify the solution.
-Filename: ``vib_undamped_verify_linear.py``.
-
-.. --- end exercise ---
+Consider the ODE problem
 
 
+.. math::
+         u'+\omega^2u=f(t), \quad u(0)=I,\ u'(0)=V,\ t\in(0,T]{\thinspace .}
+
+Discretize this equation according to
+:math:`[D_tD_t u + \omega^2 u = f]^n`.
 
 
+*a)* Derive the equation for the
+first time step (:math:`u^1`).
 
-.. --- begin exercise ---
+*b)* For verification purposes,
+we use the method of manufactured solutions (MMS) with the
+choice of :math:`u_{\small\mbox{e}}(x,t)= ct+d`.
+Find restrictions on :math:`c` and :math:`d` from
+the initial conditions. Compute the corresponding source term :math:`f` by term.
+Show that :math:`[D_tD_t t]^n=0` and use the fact
+that the :math:`D_tD_t` operator is linear,
+:math:`[D_tD_t (ct+d)]^n = c[D_tD_t t]^n + [D_tD_t d]^n = 0`, to show that
+:math:`u_{\small\mbox{e}}` is also a perfect solution of the discrete equations.
+
+*c)* Use ``sympy`` to do the symbolic calculations above. Here is a
+sketch of the program ``vib_undamped_verify_mms.py``:
 
 
-.. _vib:exer:undamped:verify:quadratic:
+.. code-block:: python
 
-Exercise 2: Use a quadratic function for verification
------------------------------------------------------
+        import sympy as sm
+        V, t, I, w, dt = sm.symbols('V t I w dt')  # global symbols
+        f = None  # global variable for the source term in the ODE
+        
+        def ode_lhs(u):
+            """Return left-hand side of ODE: u'' + w**2*u.
+            u is symbolic Python function of t."""
+            return ...
+        
+        def u_e(t):
+            """Return chosen linear exact solution."""
+            return V*t + I
+        
+        def DtDt(u, dt):
+            """Return 2nd-order finite difference for u_tt.
+            u is a symbolic Python function of t.
+            """
+            return ...
+        
+        def residual_discrete_eq(u):
+            """Return the residual of the discrete eq. with u inserted."""
+            R = ...
+            return sm.simplify(R)
+        
+        def residual_discrete_eq_step1(u):
+            """Return the residual of the discrete eq. at the first
+            step with u inserted."""
+            R = ...
+            return sm.simplify(R)
+        
+        def linear():
+            print '=== Testing linear exact solution ==='
+            print "Initial conditions u(0)=%s, u'(0)=%s:" % \ 
+                  (u_e(t).subs(t, 0), sm.diff(u_e(t), t).subs(t, 0))
+        
+            # Method of manufactured solution requires fitting f
+            global f
+            f = ode_lhs(u_e)
+        
+            # Residual in discrete equations (should be 0)
+            print 'residual step1:', residual_discrete_eq_step1(u_e)
+            print 'residual:', residual_discrete_eq(u_e)
+        
+        if __name__ == '__main__':
+            linear()
 
-This is a variation of :ref:`vib:exer:undamped:verify:linear`
-where we test a quadratic function rather than a linear.
-Let :math:`u_{\small\mbox{e}}(x,t)= at^2 + ct+I`, find the corresponding :math:`f` term,
-and show that :math:`u_{\small\mbox{e}}` fulfills all discrete equations.
-You will need to show that :math:`[D_tD_t t^2]^n = 2`.
-Filename: ``vib_undamped_verify_quadratic.py``.
+Fill in the various functions such that the calls in the ``linear``
+function works.
+
+*d)* The purpose now is to choose a quadratic function
+:math:`u_{\small\mbox{e}} = bt^2 + ct + d` as exact solution. Extend the ``sympy``
+code above with a function ``quadratic`` that computes the
+right source term ``f`` and evaluates the residual
+in the two types of finite difference equations.
+
+.. Check with hand calculations that the ``sympy`` implementation
+
+.. is correct.
+
+
+*e)* Implement a ``solver`` function for computing the numerical
+solution of this problem.
+
+*f)* Write a nose test for checking that the quadratic solution
+is computed to correctly (too machine precision, but the
+round-off errors accumulate and increase with :math:`T`) by the ``solver``
+function.
+
+Filenames: ``vib_undamped_verify_mms.pdf``, ``vib_undamped_verify_mms.py``.
 
 .. --- end exercise ---
 
@@ -2486,7 +2789,7 @@ Filename: ``vib_undamped_verify_quadratic.py``.
 
 .. _vib:exer:phase:err:growth:
 
-Exercise 3: Show linear growth of the phase with time
+Exercise 1: Show linear growth of the phase with time
 -----------------------------------------------------
 
 Consider an exact solution :math:`I\cos (\omega t)` and an
@@ -2508,15 +2811,19 @@ Filename: ``vib_phase_error_growth.pdf``.
 
 .. _vib:exer:w:adjust:
 
-Exercise 4: Improve the accuracy by adjusting the frequency
+Exercise 2: Improve the accuracy by adjusting the frequency
 -----------------------------------------------------------
 
 According to :eq:`vib:ode1:tildeomega:series`, the numerical
 frequency deviates from the exact frequency by a (dominating) amount
 :math:`\omega^3\Delta t^2/24 >0`. Replace the ``w`` parameter in the algorithm
-in the ``solver`` function (in ``vib_undamped.py``) by ``w*(1 -
+in the ``solver`` function in ``vib_undamped.py`` by ``w*(1 -
 (1./24)*w**2*dt**2`` and test how this adjustment in the numerical
-algorithm improves the accuracy.
+algorithm improves the accuracy (use :math:`\Delta t =0.1` and simulate
+for 80 periods, with and without adjustment of :math:`\omega`).
+
+.. How does this go if
+
 Filename: ``vib_adjust_w.py``.
 
 .. --- end exercise ---
@@ -2530,7 +2837,7 @@ Filename: ``vib_adjust_w.py``.
 
 .. _vib:exer:undamped:adaptive:
 
-Exercise 5: See if adaptive methods improve the phase error
+Exercise 3: See if adaptive methods improve the phase error
 -----------------------------------------------------------
 
 Adaptive methods for solving ODEs aim at adjusting :math:`\Delta t` such
@@ -2559,7 +2866,7 @@ Filename: ``vib_undamped_adaptive.py``.
 
 .. _vib:exer:step4b:alt:
 
-Exercise 6: Use a Taylor polynomial to compute :math:`u^1`
+Exercise 4: Use a Taylor polynomial to compute :math:`u^1`
 ----------------------------------------------------------
 
 As an alternative to the derivation of :eq:`vib:ode1:step4b` for
@@ -2586,7 +2893,7 @@ Filename: ``vib_first_step.pdf``.
 
 .. _vib:exer:wdt:limit:
 
-Exercise 7: Find the minimal resolution of an oscillatory function
+Exercise 5: Find the minimal resolution of an oscillatory function
 ------------------------------------------------------------------
 
 .. Short: Find the largest relevant value of :math:`\omega\Delta t`
@@ -2612,7 +2919,7 @@ Filename: ``vib_largest_wdt.pdf``.
 
 .. _vib:exer:fd:exp:plot:
 
-Exercise 8: Visualize the accuracy of finite differences for a cosine function
+Exercise 6: Visualize the accuracy of finite differences for a cosine function
 ------------------------------------------------------------------------------
 
 .. Short: Visualize the accuracy of finite differences
@@ -2653,18 +2960,46 @@ Filename: ``vib_plot_fd_exp_error.py``.
 .. --- begin exercise ---
 
 
-.. _vib:exer:verify:linear:
+.. _vib:exer:energy:convrate:
 
-Exercise 9: Use a linear function for verification
---------------------------------------------------
+Exercise 7: verify convergence rates of the error in energy
+-----------------------------------------------------------
 
-This is a continuation of :ref:`vib:exer:undamped:verify:linear` where
-we consider the extended model problem :eq:`vib:ode2`.
-Prescribe :math:`u_{\small\mbox{e}} = Vt + I`, which fulfills the initial conditions, and
-show that this :math:`u_{\small\mbox{e}}` solves :eq:`vib:ode2` if :math:`F(t)=I+(c+t)V`.
-Import the ``solver`` function from ``vib.py`` and add a nose test using
-this linear solution.
-Filename: ``vib_verify_linear.py``.
+We consider the ODE problem :math:`u'' + \omega^2u=0`, :math:`u(0)=I`, :math:`u'(0)=V`,
+for :math:`t\in (0,T]`. The total energy of the solution
+:math:`E(t)=\frac{1}{2}(u')^2 + \frac{1}{2}\omega^2 u^2` should stay
+constant.
+The error in energy can be computed as explained in
+the section :ref:`vib:model1:energy`.
+
+Make a nose test in a file ``test_error_conv.py``, where code
+from ``vib_undamped.py`` is important, but ``convergence_rates``
+and ``test_convergence_rates`` are modified to also incorporate
+computations of the error in energy and the convergence
+rate of this error. The expected rate is 2.
+Filename: ``test_error_conv.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _vib:exer:verify:gen:linear:
+
+Exercise 8: Use linear/quadratic functions for verification
+-----------------------------------------------------------
+
+This exercise is a generalization of :ref:`vib:exer:undamped:verify:linquad` to the extended model problem
+:eq:`vib:ode2` where the damping term is either linear or quadratic.
+Solve the various subproblems and see how the results and problem
+settings change with the generalized ODE in case of linear or
+quadratic damping. By modifying the code from :ref:`vib:exer:undamped:verify:linquad`, ``sympy`` will do most
+of the work required to analyze the generalized problem.
+Filename: ``vib_verify_mms.py``.
 
 .. --- end exercise ---
 
@@ -2677,12 +3012,15 @@ Filename: ``vib_verify_linear.py``.
 
 .. _vib:exer:discrete:omega:
 
-Exercise 10: Use an exact discrete solution for verification
-------------------------------------------------------------
+Exercise 9: Use an exact discrete solution for verification
+-----------------------------------------------------------
 
-Write a nose test function that employs the exact discrete solution
+Write a nose test function in a separate file
+that employs the exact discrete solution
 :eq:`vib:ode1:un:exact` to verify the implementation of the
 ``solver`` function in the file ``vib_undamped.py``.
+Just import ``solver`` and make functions for the exact discrete
+solution and the nose test.
 Filename: ``vib_verify_discrete_omega.py``.
 
 .. --- end exercise ---
@@ -2696,7 +3034,7 @@ Filename: ``vib_verify_discrete_omega.py``.
 
 .. _vib:exer:conv:rate:
 
-Exercise 11: Use analytical solution for convergence rate tests
+Exercise 10: Use analytical solution for convergence rate tests
 ---------------------------------------------------------------
 
 The purpose of this exercise is to perform convergence tests of
@@ -2720,7 +3058,7 @@ Filename: ``vib_conv_rate.py``.
 
 .. _vib:exer:undamped:odespy:
 
-Exercise 12: Investigate the amplitude errors of many solvers
+Exercise 11: Investigate the amplitude errors of many solvers
 -------------------------------------------------------------
 
 Use the program ``vib_odespy.py`` from the section :ref:`vib:undamped:1stODE`
@@ -2747,7 +3085,7 @@ Filename: ``vib_amplitude_errors.py``.
 
 .. _vib:exer:memsave:
 
-Exercise 13: Minimize memory usage of a vibration solver
+Exercise 12: Minimize memory usage of a vibration solver
 --------------------------------------------------------
 
 The program `vib.py <http://tinyurl.com/jvzzcfn/vib/vib.py>`_
@@ -2774,7 +3112,7 @@ Filename: ``vib_memsave.py``.
 
 .. _vib:exer:gen:class:
 
-Exercise 14: Implement the solver via classes
+Exercise 13: Implement the solver via classes
 ---------------------------------------------
 
 Reimplement the ``vib.py``
@@ -2808,7 +3146,7 @@ Filename: ``vib_class.py``.
 
 .. _vib:exer:schemes:equiv:
 
-Exercise 15: Show equivalence between schemes
+Exercise 14: Show equivalence between schemes
 ---------------------------------------------
 
 Show that the schemes from the sections :ref:`vib:ode1:fdm`,
@@ -2816,6 +3154,8 @@ Show that the schemes from the sections :ref:`vib:ode1:fdm`,
 :ref:`vib:model2x2:staggered` are all equivalent.
 
 .. mech systems: horizontal, vertical/hanging
+
+.. box with mu*M*g*v/|v| friction force, treat nonlinearity with geometric mean
 
 .. pendulum
 
