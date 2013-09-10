@@ -60,7 +60,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Sep 9, 2013</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Sep 10, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -1523,11 +1523,13 @@ more readable way:</p>
     <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t_v</span>
 </pre></div>
 </div>
-<p>Verification of this code is easy as we can just compare the computed <tt class="docutils literal"><span class="pre">u</span></tt>
-with the <tt class="docutils literal"><span class="pre">u</span></tt> arising from the <tt class="docutils literal"><span class="pre">solver</span></tt> function in <tt class="docutils literal"><span class="pre">vib_undamped.py</span></tt>.
-The values should coincide to machine precision.
-The file <a class="reference external" href="http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py">vib_undamped_staggered.py</a>
-contains a nose test for checking this property.</p>
+<p>Verification of this code is easy as we can just compare the computed
+<tt class="docutils literal"><span class="pre">u</span></tt> with the <tt class="docutils literal"><span class="pre">u</span></tt> produced by the <tt class="docutils literal"><span class="pre">solver</span></tt> function in
+<tt class="docutils literal"><span class="pre">vib_undamped.py</span></tt> (which solves <span class="math">\(u''+\omega^2u=0\)</span> directly).  The
+values should coincide to machine precision since the two numerical
+methods are mathematically equivalent.  We refer to the file
+<a class="reference external" href="http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py">vib_undamped_staggered.py</a>
+for the details of a nose test that checks this property.</p>
 </div>
 </div>
 </div>
@@ -1572,9 +1574,8 @@ Then</p>
 <p>which gives an explicit formula for <span class="math">\(u\)</span> at each
 new time level:</p>
 <div class="math" id="equation-vib:ode2:step4">
-<span class="eqno">(33)</span>\[     u^{n+1} = \left(2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
-     \Delta t^2(F^n - s(u^n))
-     \right)(m + \frac{b}{2}\Delta t)^{-1}\]\[     \thinspace .\]</div>
+<span class="eqno">(33)</span>\[     u^{n+1} = (2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
+     \Delta t^2(F^n - s(u^n)))(m + \frac{b}{2}\Delta t)^{-1}\]\[     \thinspace .\]</div>
 <p>For the first time step we need to discretize <span class="math">\(u'(0)=V\)</span>
 as <span class="math">\([D_{2t}u = V]^0\)</span> and combine
 with <a href="#equation-vib:ode2:step4">(33)</a> for <span class="math">\(n=0\)</span>. The discretized initial condition
@@ -1597,7 +1598,7 @@ be solved, but we can also avoid the nonlinearity by
 performing an approximation that is within
 other numerical errors that we have already committed by replacing
 derivatives with finite differences.</p>
-<p id="index-20">The idea is to reconsider <a href="#equation-vib:ode2">(30)</a> and only replace
+<span class="target" id="index-20"></span><p id="index-21">The idea is to reconsider <a href="#equation-vib:ode2">(30)</a> and only replace
 <span class="math">\(u''\)</span> by <span class="math">\(D_tD_tu\)</span>, giving</p>
 <div class="math" id="equation-vib:ode2:quad:idea1">
 <span class="eqno">(36)</span>\[     [mD_tD_t u + bu'|u'| + s(u) = F]^n,\]</div>
@@ -1619,7 +1620,7 @@ that</p>
 <p>We then get</p>
 <div class="math">
 \[[u'|u'|]^n
-\approx [D_tu]^{n+1/2}[|D_tu|]^{n-1/2} = \frac{u^{n+1}-u^n}{\Delta t}
+\approx [D_tu]^{n+1/2}|[D_tu]^{n-1/2}| = \frac{u^{n+1}-u^n}{\Delta t}
 \frac{|u^n-u^{n-1}|}{\Delta t}
 \thinspace .\]</div>
 <p>The counterpart to <a href="#equation-vib:ode2:step3b">(31)</a> is then</p>
@@ -1636,32 +1637,35 @@ the explicit updating formula</p>
 <span class="eqno">(39)</span>\[      \qquad \left(2m u^n - mu^{n-1} + bu^n|u^n-u^{n-1}| + \Delta t^2 (F^n - s(u^n))
      \right)
      \thinspace .\]</div>
-<p>For <span class="math">\(n=0\)</span> we run into some trouble: inserting <a href="#equation-vib:ode2:ic:du">(34)</a>
-in <a href="#equation-vib:ode2:step4:quad">(39)</a> results in a complicated nonlinear
+<p>In the derivation of a special equation for the first
+time step we run into some trouble: inserting <a href="#equation-vib:ode2:ic:du">(34)</a>
+in <a href="#equation-vib:ode2:step4:quad">(39)</a> for <span class="math">\(n=0\)</span> results in a complicated nonlinear
 equation for <span class="math">\(u^1\)</span>. By thinking differently about the problem we can
-get away with the nonlinearity (again). We have for <span class="math">\(n=0\)</span> that
+easily get away with the nonlinearity again. We have for <span class="math">\(n=0\)</span> that
 <span class="math">\(b[u'|u'|]^0 = bV|V|\)</span>. Using this value in <a href="#equation-vib:ode2:quad:idea1">(36)</a>
 gives</p>
 <div class="math">
 \[[mD_tD_t u + bV|V| + s(u) = F]^0
 \thinspace .\]</div>
-<p>Writing this equation out and using <a href="#equation-vib:ode2:ic:du">(34)</a> gives</p>
+<p>Writing this equation out and using <a href="#equation-vib:ode2:ic:du">(34)</a> results in the
+special equation for the first time step:</p>
 <div class="math" id="equation-vib:ode2:step4b:quad">
 <span class="eqno">(40)</span>\[     u^1 = u^0 + \Delta t V + \frac{\Delta t^2}{2m}\left(-bV|V| - s(u^0) + F^0\right)
      \thinspace .\]</div>
 </div>
 <div class="section" id="implementation-2">
 <span id="vib-ode2-solver"></span><h2>Implementation  (2)<a class="headerlink" href="#implementation-2" title="Permalink to this headline">¶</a></h2>
-<p>The algorithm is very similar to the undamped case. The difference is
+<p>The algorithm is very similar to the undamped case in
+the section <a class="reference internal" href="#vib-ode1-fdm"><em>A centered finite difference scheme</em></a>. The difference is
 basically a question of different formulas for <span class="math">\(u^1\)</span> and
 <span class="math">\(u^{n+1}\)</span>. This is actually quite remarkable. The equation
 <a href="#equation-vib:ode2">(30)</a> is normally impossible to solve by pen and paper, but
 possible for some special choices of <span class="math">\(F\)</span>, <span class="math">\(s\)</span>, and <span class="math">\(f\)</span>. On the
-contrary, the nonlinear generalized model <a href="#equation-vib:ode2">(30)</a> versus the
-simple undamped model does not make much sense when we solve the
+contrary, the complexity of the
+nonlinear generalized model <a href="#equation-vib:ode2">(30)</a> versus the
+simple undamped model is not a big deal when we solve the
 problem numerically!</p>
-<p>The computational algorithm is a slight variation of the one
-in the section <a class="reference internal" href="#vib-ode1-fdm"><em>A centered finite difference scheme</em></a>:</p>
+<p>The computational algorithm takes the form</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><span class="math">\(u^0=I\)</span></li>
@@ -1777,7 +1781,7 @@ and for visualizing the solutions.</p>
 </div>
 <div class="section" id="user-interface">
 <span id="vib-ode2-ui"></span><h2>User interface<a class="headerlink" href="#user-interface" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="index-21"></span><p id="index-22">The <tt class="docutils literal"><span class="pre">main</span></tt> function has substantial changes from
+<span class="target" id="index-22"></span><p id="index-23">The <tt class="docutils literal"><span class="pre">main</span></tt> function has substantial changes from
 the <tt class="docutils literal"><span class="pre">vib_undamped.py</span></tt> code since we need to
 specify the new data <span class="math">\(c\)</span>, <span class="math">\(s(u)\)</span>, and <span class="math">\(F(t)\)</span>.  In addition, we must
 set <span class="math">\(T\)</span> and the plot window width (instead of the number of periods we
@@ -1830,7 +1834,7 @@ the above code snippets and can solve the model problem
 <p>This results in a <a class="reference external" href="http://tinyurl.com/k3sdbuv/pub/mov-vib/vib_generalized_dt0.05/index.html">moving window following the function</a> on the screen.
 Figure <a class="reference internal" href="#vib-ode2-fig-demo"><em>Damped oscillator excited by a sinusoidal function</em></a> shows a part of the time series.</p>
 <div class="figure" id="vib-ode2-fig-demo">
-<img alt="_images/vib_gen_demo1.png" src="_images/vib_gen_demo1.png" style="width: 600px;" />
+<img alt="_images/vib_gen_demo.png" src="_images/vib_gen_demo.png" style="width: 600px;" />
 <p class="caption"><em>Damped oscillator excited by a sinusoidal function</em></p>
 </div>
 </div>
@@ -2054,7 +2058,7 @@ for the specific choice of a cosine/sine function of the
 form <span class="math">\(u=\exp{(i\omega t)}\)</span> and show that</p>
 <div class="math">
 \[E = \left(\frac{2}{\omega\Delta t}\right)^2
-\sin^2(\frac{\tilde\omega\Delta t}{2})
+\sin^2(\frac{\omega\Delta t}{2})
 \thinspace .\]</div>
 <p>Plot <span class="math">\(E\)</span> as a function of <span class="math">\(p=\omega\Delta t\)</span>. The relevant
 values of <span class="math">\(p\)</span> are <span class="math">\([0,\pi]\)</span> (see <a class="reference internal" href="#vib-exer-wdt-limit"><em>Exercise 5: Find the minimal resolution of an oscillatory function</em></a>
@@ -2065,7 +2069,7 @@ fourth degree (use, e.g., <tt class="docutils literal"><span class="pre">sympy</
 Filename: <tt class="docutils literal"><span class="pre">vib_plot_fd_exp_error.py</span></tt>.</p>
 </div>
 <div class="section" id="exercise-7-verify-convergence-rates-of-the-error-in-energy">
-<span id="vib-exer-energy-convrate"></span><h2>Exercise 7: verify convergence rates of the error in energy<a class="headerlink" href="#exercise-7-verify-convergence-rates-of-the-error-in-energy" title="Permalink to this headline">¶</a></h2>
+<span id="vib-exer-energy-convrate"></span><h2>Exercise 7: Verify convergence rates of the error in energy<a class="headerlink" href="#exercise-7-verify-convergence-rates-of-the-error-in-energy" title="Permalink to this headline">¶</a></h2>
 <p>We consider the ODE problem <span class="math">\(u'' + \omega^2u=0\)</span>, <span class="math">\(u(0)=I\)</span>, <span class="math">\(u'(0)=V\)</span>,
 for <span class="math">\(t\in (0,T]\)</span>. The total energy of the solution
 <span class="math">\(E(t)=\frac{1}{2}(u')^2 + \frac{1}{2}\omega^2 u^2\)</span> should stay
@@ -2278,7 +2282,7 @@ Try to call up as much existing functionality in <tt class="docutils literal"><s
 <li><a class="reference internal" href="#exercise-4-use-a-taylor-polynomial-to-compute">Exercise 4: Use a Taylor polynomial to compute <span class="math">\(u^1\)</span></a></li>
 <li><a class="reference internal" href="#exercise-5-find-the-minimal-resolution-of-an-oscillatory-function">Exercise 5: Find the minimal resolution of an oscillatory function</a></li>
 <li><a class="reference internal" href="#exercise-6-visualize-the-accuracy-of-finite-differences-for-a-cosine-function">Exercise 6: Visualize the accuracy of finite differences for a cosine function</a></li>
-<li><a class="reference internal" href="#exercise-7-verify-convergence-rates-of-the-error-in-energy">Exercise 7: verify convergence rates of the error in energy</a></li>
+<li><a class="reference internal" href="#exercise-7-verify-convergence-rates-of-the-error-in-energy">Exercise 7: Verify convergence rates of the error in energy</a></li>
 <li><a class="reference internal" href="#exercise-8-use-linear-quadratic-functions-for-verification">Exercise 8: Use linear/quadratic functions for verification</a></li>
 <li><a class="reference internal" href="#exercise-9-use-an-exact-discrete-solution-for-verification">Exercise 9: Use an exact discrete solution for verification</a></li>
 <li><a class="reference internal" href="#exercise-10-use-analytical-solution-for-convergence-rate-tests">Exercise 10: Use analytical solution for convergence rate tests</a></li>

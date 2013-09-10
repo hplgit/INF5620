@@ -5,7 +5,7 @@ Finite difference methods for vibration problems
 ================================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 9, 2013
+:Date: Sep 10, 2013
 
 Note: **PRELIMINARY VERSION** (expect typos)
 
@@ -2136,11 +2136,13 @@ more readable way:
             return u, t, v, t_v
 
 
-Verification of this code is easy as we can just compare the computed ``u``
-with the ``u`` arising from the ``solver`` function in ``vib_undamped.py``.
-The values should coincide to machine precision.
-The file `vib_undamped_staggered.py <http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py>`_
-contains a nose test for checking this property.
+Verification of this code is easy as we can just compare the computed
+``u`` with the ``u`` produced by the ``solver`` function in
+``vib_undamped.py`` (which solves :math:`u''+\omega^2u=0` directly).  The
+values should coincide to machine precision since the two numerical
+methods are mathematically equivalent.  We refer to the file
+`vib_undamped_staggered.py <http://tinyurl.com/jvzzcfn/vib/vib_undamped_staggered.py>`_
+for the details of a nose test that checks this property.
 
 .. is anything gained? is v of higher order than D_2t u from the
 
@@ -2163,6 +2165,8 @@ contains a nose test for checking this property.
 
 .. exercise: damping analysis, see geophysics book first...
 
+
+.. !split
 
 .. _vib:model2:
 
@@ -2254,9 +2258,8 @@ new time level:
 .. math::
    :label: vib:ode2:step4
         
-        u^{n+1} = \left(2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
-        \Delta t^2(F^n - s(u^n))
-        \right)(m + \frac{b}{2}\Delta t)^{-1}
+        u^{n+1} = (2mu^n + (\frac{b}{2}\Delta t - m)u^{n-1} +
+        \Delta t^2(F^n - s(u^n)))(m + \frac{b}{2}\Delta t)^{-1}
         
         \thinspace .
         
@@ -2306,6 +2309,10 @@ derivatives with finite differences.
 .. index:: geometric mean
 
 
+.. index::
+   single: averaging; geometric
+
+
 The idea is to reconsider :eq:`vib:ode2` and only replace
 :math:`u''` by :math:`D_tD_tu`, giving
 
@@ -2352,7 +2359,7 @@ We then get
 .. math::
         
         [u'|u'|]^n
-        \approx [D_tu]^{n+1/2}[|D_tu|]^{n-1/2} = \frac{u^{n+1}-u^n}{\Delta t}
+        \approx [D_tu]^{n+1/2}|[D_tu]^{n-1/2}| = \frac{u^{n+1}-u^n}{\Delta t}
         \frac{|u^n-u^{n-1}|}{\Delta t}
         \thinspace .
         
@@ -2394,10 +2401,11 @@ the explicit updating formula
 .. Make exercise to solve complicated u^1 equation with Bisection/Newton
 
 
-For :math:`n=0` we run into some trouble: inserting :eq:`vib:ode2:ic:du`
-in :eq:`vib:ode2:step4:quad` results in a complicated nonlinear
+In the derivation of a special equation for the first
+time step we run into some trouble: inserting :eq:`vib:ode2:ic:du`
+in :eq:`vib:ode2:step4:quad` for :math:`n=0` results in a complicated nonlinear
 equation for :math:`u^1`. By thinking differently about the problem we can
-get away with the nonlinearity (again). We have for :math:`n=0` that
+easily get away with the nonlinearity again. We have for :math:`n=0` that
 :math:`b[u'|u'|]^0 = bV|V|`. Using this value in :eq:`vib:ode2:quad:idea1`
 gives
 
@@ -2408,7 +2416,8 @@ gives
         \thinspace .
         
 
-Writing this equation out and using :eq:`vib:ode2:ic:du` gives
+Writing this equation out and using :eq:`vib:ode2:ic:du` results in the
+special equation for the first time step:
 
 
 .. math::
@@ -2426,17 +2435,18 @@ Writing this equation out and using :eq:`vib:ode2:ic:du` gives
 Implementation  (2)
 -------------------
 
-The algorithm is very similar to the undamped case. The difference is
+The algorithm is very similar to the undamped case in
+the section :ref:`vib:ode1:fdm`. The difference is
 basically a question of different formulas for :math:`u^1` and
 :math:`u^{n+1}`. This is actually quite remarkable. The equation
 :eq:`vib:ode2` is normally impossible to solve by pen and paper, but
 possible for some special choices of :math:`F`, :math:`s`, and :math:`f`. On the
-contrary, the nonlinear generalized model :eq:`vib:ode2` versus the
-simple undamped model does not make much sense when we solve the
+contrary, the complexity of the
+nonlinear generalized model :eq:`vib:ode2` versus the
+simple undamped model is not a big deal when we solve the
 problem numerically!
 
-The computational algorithm is a slight variation of the one
-in the section :ref:`vib:ode1:fdm`:
+The computational algorithm takes the form
 
  1. :math:`u^0=I`
 
@@ -3082,7 +3092,7 @@ form :math:`u=\exp{(i\omega t)}` and show that
 
 .. math::
          E = \left(\frac{2}{\omega\Delta t}\right)^2
-        \sin^2(\frac{\tilde\omega\Delta t}{2})
+        \sin^2(\frac{\omega\Delta t}{2})
         \thinspace .
         
 
@@ -3105,7 +3115,7 @@ Filename: ``vib_plot_fd_exp_error.py``.
 
 .. _vib:exer:energy:convrate:
 
-Exercise 7: verify convergence rates of the error in energy
+Exercise 7: Verify convergence rates of the error in energy
 -----------------------------------------------------------
 
 We consider the ODE problem :math:`u'' + \omega^2u=0`, :math:`u(0)=I`, :math:`u'(0)=V`,
