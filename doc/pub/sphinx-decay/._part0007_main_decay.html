@@ -887,8 +887,8 @@ the decay and larger time steps when the solution flattens out.</p>
 </div>
 </div>
 </div>
-<div class="section" id="exercises-3">
-<h1>Exercises  (3)<a class="headerlink" href="#exercises-3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="exercises-2">
+<h1>Exercises  (2)<a class="headerlink" href="#exercises-2" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="exercise-14-experiment-with-precision-in-tests-and-the-size-of">
 <span id="decay-fd2-exer-precision"></span><h2>Exercise 14: Experiment with precision in tests and the size of <span class="math">\(u\)</span><a class="headerlink" href="#exercise-14-experiment-with-precision-in-tests-and-the-size-of" title="Permalink to this headline">¶</a></h2>
 <p>It is claimed in the section <a class="reference internal" href="main_decay.html#decay-mms"><em>Verification via manufactured solutions</em></a> that most numerical methods will
@@ -955,13 +955,47 @@ Filename: <tt class="docutils literal"><span class="pre">decay_RK2_Taylor2.py</s
 for the ODE <span class="math">\(u'(t) = -a(t)u(t) + b(t)\)</span> is defined by</p>
 <div class="math">
 \[\lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}\]</div>
-<p>A separate scheme is needed to compute <span class="math">\(u^1\)</span>, and the Forward Euler
-scheme is a candidate.</p>
+<p>A separate scheme is needed to compute <span class="math">\(u^1\)</span>. The Forward Euler
+is a possible candidate.</p>
 <p><em>a)</em> Implement the Leapfrog scheme for the model equation.</p>
 <p><em>b)</em> Show mathematically that a linear solution in <span class="math">\(t\)</span> fulfills the
 Forward Euler scheme for the first step and the Leapfrog scheme
 for the subsequent steps. Use this linear solution to verify
 the implementation, and automate the verification through a nose test.</p>
+<p><em>Hint.</em> It can be wise to automate the calculations such that it is easy to
+redo the calculations for other types of solutions. Here is
+a possible <tt class="docutils literal"><span class="pre">sympy</span></tt> function that takes a symbolic expression <tt class="docutils literal"><span class="pre">u</span></tt>
+(implemented as a Python function of <tt class="docutils literal"><span class="pre">t</span></tt>), fits the <tt class="docutils literal"><span class="pre">b</span></tt> term, and
+checks if <tt class="docutils literal"><span class="pre">u</span></tt> fulfills the discrete equations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sm</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;t I dt a b c&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&#39;Analyzing u_e(t)=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;u(0)=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c"># Fit source term to the given u(t)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Source term b:&#39;</span><span class="p">,</span> <span class="n">b</span>
+
+    <span class="c"># Residual in discrete equations; Forward Euler step</span>
+    <span class="n">R_step1</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="n">dt</span><span class="p">)</span> <span class="o">-</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">/</span><span class="n">dt</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span>
+    <span class="n">R_step1</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">R_step1</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Residual Forward Euler step:&#39;</span><span class="p">,</span> <span class="n">R_step1</span>
+
+    <span class="c"># Residual in discrete equations; Leapfrog steps</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="n">dt</span><span class="p">)</span> <span class="o">-</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">dt</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="o">*</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;Residual Leapfrog steps:&#39;</span><span class="p">,</span> <span class="n">R</span>
+
+<span class="k">def</span> <span class="nf">u_e</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">c</span><span class="o">*</span><span class="n">t</span> <span class="o">+</span> <span class="n">I</span>
+
+<span class="n">analyze</span><span class="p">(</span><span class="n">u_e</span><span class="p">)</span>
+<span class="c"># or short form: analyze(lambda t: c*t + I)</span>
+</pre></div>
+</div>
 <p><em>c)</em> Create a manufactured solution <span class="math">\(u(t)=\sin(t)\)</span> for the ODE
 <span class="math">\(u'=-au+b\)</span>.
 Compute the convergence rate of the Leapfrog scheme using this
@@ -973,29 +1007,25 @@ Leapfrog scheme is <span class="math">\({{\cal O}(\Delta t^2)}\)</span>. Does th
 (instabilities). Document the main results from this investigation.</p>
 <p><em>e)</em> Analyze and explain the
 instabilities of the Leapfrog scheme <a href="#equation-decay:fd2:leapfrog">(11)</a>:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Choose <span class="math">\(a=\mbox{const}\)</span> and <span class="math">\(b=0\)</span>.</li>
-<li>Assume that an exact solution of the discrete equations has
+<ol class="arabic simple">
+<li>Choose <span class="math">\(a=\mbox{const}\)</span> and <span class="math">\(b=0\)</span>. Assume that an exact solution
+of the discrete equations has
 the form <span class="math">\(u^n=A^n\)</span>, where <span class="math">\(A\)</span> is an amplification factor to
-be determined.</li>
-<li>Compute <span class="math">\(A\)</span> either by and or with the aid of <tt class="docutils literal"><span class="pre">sympy</span></tt>.
-The polynomial for <span class="math">\(A\)</span> has two roots, <span class="math">\(A_1\)</span> and <span class="math">\(A_2\)</span>. We let
+be determined. Derive an equation for <span class="math">\(A\)</span> by inserting <span class="math">\(u^n=A^n\)</span>
+in the Leapfrog scheme.</li>
+<li>Compute <span class="math">\(A\)</span> either by hand and/or with the aid of <tt class="docutils literal"><span class="pre">sympy</span></tt>.
+The polynomial for <span class="math">\(A\)</span> has two roots, <span class="math">\(A_1\)</span> and <span class="math">\(A_2\)</span>. Let
 <span class="math">\(u^n\)</span> be a linear combination <span class="math">\(u^n=C_1A_1^n + C_2A_2^n\)</span>.</li>
 <li>Show that one of the roots is the explanation of the instability.</li>
-<li>Determine <span class="math">\(C_1\)</span> and <span class="math">\(C_2\)</span> and compare <span class="math">\(A\)</span> with the exact
-expression, using a Taylor series approximation.</li>
-</ul>
-</div></blockquote>
-<p><em>f)</em> Since the original Leapfrog scheme
-is unconditionally unstable
-as time grows, it demands some stabilization.
-This can be done by filtering, where we first find <span class="math">\(u^{n+1}\)</span>
-from the original Leapfrog scheme and then replace <span class="math">\(u^{n+1}\)</span>
-by the average <span class="math">\(\gamma (u^{n-1} - 2u^n + u^{n+1}\)</span>, where <span class="math">\(\gamma\)</span>
-can be taken as 0.6.
-Implement the filtered Leapfrog
-scheme and check that it can handle tests where the original
+<li>Compare <span class="math">\(A\)</span> with the exact expression, using a Taylor series approximation.</li>
+<li>How can <span class="math">\(C_1\)</span> and <span class="math">\(C_2\)</span> be determined?</li>
+</ol>
+<p><em>f)</em> Since the original Leapfrog scheme is unconditionally unstable as time
+grows, it demands some stabilization.  This can be done by filtering,
+where we first find <span class="math">\(u^{n+1}\)</span> from the original Leapfrog scheme and
+then replace <span class="math">\(u^{n}\)</span> by <span class="math">\(u^n + \gamma (u^{n-1} - 2u^n +
+u^{n+1}\)</span>, where <span class="math">\(\gamma\)</span> can be taken as 0.6.  Implement the filtered
+Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.</p>
 <p>Filenames: <tt class="docutils literal"><span class="pre">decay_leapfrog.py</span></tt>, <tt class="docutils literal"><span class="pre">decay_leapfrog.pdf</span></tt>.</p>
 </div>
@@ -1073,7 +1103,7 @@ Filename: <tt class="docutils literal"><span class="pre">decay_schemes_oo.py</sp
 <li><a class="reference internal" href="#example-adaptive-runge-kutta-methods">Example: Adaptive Runge-Kutta methods</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#exercises-3">Exercises  (3)</a><ul>
+<li><a class="reference internal" href="#exercises-2">Exercises  (2)</a><ul>
 <li><a class="reference internal" href="#exercise-14-experiment-with-precision-in-tests-and-the-size-of">Exercise 14: Experiment with precision in tests and the size of <span class="math">\(u\)</span></a></li>
 <li><a class="reference internal" href="#exercise-15-implement-the-2-step-backward-scheme">Exercise 15: Implement the 2-step backward scheme</a></li>
 <li><a class="reference internal" href="#exercise-16-implement-the-2nd-order-adams-bashforth-scheme">Exercise 16: Implement the 2nd-order Adams-Bashforth scheme</a></li>

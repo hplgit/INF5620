@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 6, 2013
+:Date: Sep 10, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -312,6 +312,13 @@ derivative :math:`u'` by a finite difference approximation. Let us first
 try a one-sided difference approximation (see Figure :ref:`decay:sketch:FE`),
 
 
+.. index:: forward difference
+
+.. index::
+   single: finite differences; forward
+
+
+
 .. math::
    :label: decay:FEdiff
         
@@ -433,6 +440,13 @@ the model problem :eq:`decay:problem`.
 The Backward Euler scheme
 -------------------------
 
+
+.. index:: backward difference
+
+.. index::
+   single: finite differences; backward
+
+
 There are several choices of difference approximations in step 3 of
 the finite difference method as presented in the previous section.
 Another alternative is
@@ -502,6 +516,13 @@ The Crank-Nicolson scheme
 .. index:: Crank-Nicolson scheme
 
 
+.. index:: centered difference
+
+.. index::
+   single: finite differences; centered
+
+
+
 The finite difference approximations used to derive the schemes
 :eq:`decay:FE` and :eq:`decay:BE` are both one-sided differences,
 known to be less accurate than central (or midpoint)
@@ -555,7 +576,7 @@ therefore be
 expressed by the quantities that we actually produce, i.e.,
 the numerical solution at the
 mesh points. One possibility is to approximate :math:`u^{n+\frac{1}{2}}`
-as an arithmetic average of the :math:`u` values at the neighboring mesh points:
+as an arithmetic mean of the :math:`u` values at the neighboring mesh points:
 
 
 .. index::
@@ -679,7 +700,7 @@ the "theta-rule".
    :math:`u^n` and :math:`u^{n+1}`. Following the averaging idea from
    the section :ref:`decay:schemes:CN`,
    the value of :math:`u` at an arbitrary point :math:`\tilde t` can be
-   calculated as a *weighted average*, which generalizes the arithmetic average
+   calculated as a *weighted average*, which generalizes the arithmetic mean
    :math:`\frac{1}{2}u^n + \frac{1}{2}u^{n+1}`.
    If we express :math:`\tilde t` as a weighted average
    
@@ -931,7 +952,7 @@ if we define a new time difference and a *weighted averaging operator*:
         
 
 where :math:`\theta\in [0,1]`. Note that for :math:`\theta =1/2` we recover
-the standard centered difference and the standard arithmetic average.
+the standard centered difference and the standard arithmetic mean.
 The idea in :eq:`decay:fd1:op:theta` is to sample the equation at
 :math:`t_{n+\theta}`, use a skew difference at that
 point :math:`[\bar D_t u]^{n+\theta}`, and a skew mean value.
@@ -4946,8 +4967,8 @@ the ``report.html`` file.
 
 .. !split
 
-Exercises  (1)
-==============
+Exercises and Problems
+======================
 
 
 
@@ -5636,7 +5657,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x2b3b578>('notice', 'Solving difference equations', r"""
+<function admon at 0x2c1f578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -6189,7 +6210,7 @@ the truncation error, and the stability criteria.
 .. Look in Asher and Petzold, p 40
 
 
-Exercises  (2)
+Exercises  (1)
 ==============
 
 
@@ -7680,7 +7701,7 @@ the decay and larger time steps when the solution flattens out.
 
 
 
-Exercises  (3)
+Exercises  (2)
 ==============
 
 
@@ -7821,8 +7842,8 @@ for the ODE :math:`u'(t) = -a(t)u(t) + b(t)` is defined by
 .. math::
          \lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}
 
-A separate scheme is needed to compute :math:`u^1`, and the Forward Euler
-scheme is a candidate.
+A separate scheme is needed to compute :math:`u^1`. The Forward Euler
+is a possible candidate.
 
 
 
@@ -7842,6 +7863,50 @@ Forward Euler scheme for the first step and the Leapfrog scheme
 for the subsequent steps. Use this linear solution to verify
 the implementation, and automate the verification through a nose test.
 
+.. --- begin hint in exercise ---
+
+
+*Hint.* It can be wise to automate the calculations such that it is easy to
+redo the calculations for other types of solutions. Here is
+a possible ``sympy`` function that takes a symbolic expression ``u``
+(implemented as a Python function of ``t``), fits the ``b`` term, and
+checks if ``u`` fulfills the discrete equations:
+
+
+.. code-block:: python
+
+        import sympy as sm
+        t, I, dt, a, b, c = sm.symbols('t I dt a b c')
+        
+        def analyze(u):
+            print 'Analyzing u_e(t)=%s' % u(t)
+            print 'u(0)=%s' % u(t).subs(t, 0)
+        
+            # Fit source term to the given u(t)
+            b = sm.diff(u(t), t) + a*u(t)
+            b = sm.simplify(b)
+            print 'Source term b:', b
+        
+            # Residual in discrete equations; Forward Euler step
+            R_step1 = (u(t+dt) - u(t))/dt + a*u(t) - b
+            R_step1 = sm.simplify(R_step1)
+            print 'Residual Forward Euler step:', R_step1
+        
+            # Residual in discrete equations; Leapfrog steps
+            R = (u(t+dt) - u(t-dt))/(2*dt) + a*u(t) - b
+            R = sm.simplify(R)
+            print 'Residual Leapfrog steps:', R
+        
+        def u_e(t):
+            return c*t + I
+        
+        analyze(u_e)
+        # or short form: analyze(lambda t: c*t + I)
+
+
+.. --- end hint in exercise ---
+
+
 *c)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
 :math:`u'=-au+b`.
 Compute the convergence rate of the Leapfrog scheme using this
@@ -7856,30 +7921,28 @@ Leapfrog scheme is :math:`{{\cal O}(\Delta t^2)}`. Does the use of a
 *e)* Analyze and explain the
 instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
- * Choose :math:`a=\mbox{const}` and :math:`b=0`.
-
- * Assume that an exact solution of the discrete equations has
+1. Choose :math:`a=\mbox{const}` and :math:`b=0`. Assume that an exact solution
+   of the discrete equations has
    the form :math:`u^n=A^n`, where :math:`A` is an amplification factor to
-   be determined.
+   be determined. Derive an equation for :math:`A` by inserting :math:`u^n=A^n`
+   in the Leapfrog scheme.
 
- * Compute :math:`A` either by and or with the aid of ``sympy``.
-   The polynomial for :math:`A` has two roots, :math:`A_1` and :math:`A_2`. We let
+2. Compute :math:`A` either by hand and/or with the aid of ``sympy``.
+   The polynomial for :math:`A` has two roots, :math:`A_1` and :math:`A_2`. Let
    :math:`u^n` be a linear combination :math:`u^n=C_1A_1^n + C_2A_2^n`.
 
- * Show that one of the roots is the explanation of the instability.
+3. Show that one of the roots is the explanation of the instability.
 
- * Determine :math:`C_1` and :math:`C_2` and compare :math:`A` with the exact
-   expression, using a Taylor series approximation.
+4. Compare :math:`A` with the exact expression, using a Taylor series approximation.
 
-*f)* Since the original Leapfrog scheme
-is unconditionally unstable
-as time grows, it demands some stabilization.
-This can be done by filtering, where we first find :math:`u^{n+1}`
-from the original Leapfrog scheme and then replace :math:`u^{n+1}`
-by the average :math:`\gamma (u^{n-1} - 2u^n + u^{n+1}`, where :math:`\gamma`
-can be taken as 0.6.
-Implement the filtered Leapfrog
-scheme and check that it can handle tests where the original
+5. How can :math:`C_1` and :math:`C_2` be determined?
+
+*f)* Since the original Leapfrog scheme is unconditionally unstable as time
+grows, it demands some stabilization.  This can be done by filtering,
+where we first find :math:`u^{n+1}` from the original Leapfrog scheme and
+then replace :math:`u^{n}` by :math:`u^n + \gamma (u^{n-1} - 2u^n +
+u^{n+1}`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
+Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.
 
 Filenames: ``decay_leapfrog.py``, ``decay_leapfrog.pdf``.
@@ -8807,17 +8870,19 @@ a nonlinear equation in :math:`v` when applied to
 
 
 .. math::
+   :label: decay:app:fallingbody:gmodel:CN
         
         \frac{v^{n+1}-v^n}{\Delta t}
         = -a\frac{1}{2}(|v^{n+1}|v^{n+1} + |v^n|v^n) + b
+        
         \thinspace .
         
 
 However, instead of approximating the term :math:`-|v|v` by an arithmetic
-average, we can use a *geometric average*:
+average, we can use a *geometric mean*:
 
 
-.. index:: geometric average
+.. index:: geometric mean
 
 
 .. index::
@@ -8832,7 +8897,9 @@ average, we can use a *geometric average*:
         
 
 The error is of second order in :math:`\Delta t`, just as for the arithmetic
-average. With this approximation trick,
+average and the centered finite difference approximation in
+:eq:`decay:app:fallingbody:gmodel:CN`. With this approximation trick,
+the discrete equation
 
 
 .. math::
@@ -9019,8 +9086,8 @@ partial differential equations of the type considered in this
 example.
 
 
-Exercises  (4)
-==============
+Exercises and Projects
+======================
 
 
 
@@ -9308,7 +9375,7 @@ Also equip the module with functionality for plotting the velocity.
 .. --- begin hint in exercise ---
 
 
-*Hint 1.* Use the Crank-Nicolson scheme with a geometric average of :math:`|v|v` in time to
+*Hint 1.* Use the Crank-Nicolson scheme with a geometric mean of :math:`|v|v` in time to
 linearize the equation of motion with quadratic drag.
 
 .. --- end hint in exercise ---
@@ -9392,13 +9459,15 @@ At time :math:`t_p`, the parachute opens and
 the drag coefficient and the cross-sectional
 area change dramatically.
 Use the program to simulate a jump from :math:`z=3000` m to the ground :math:`z=0`.
+What is the maximum acceleration, measured in units of :math:`g`,
+experienced by the jumper?
 
 .. --- begin hint in exercise ---
 
 
 *Hint.* Following Meade and Struthers [Ref6]_, one can set the
 cross-section area perpendicular to the motion to 44 :math:`\hbox{m}^2`
-when the parachute is open. Assume that it takes 5 s to increase
+when the parachute is open. Assume that it takes 8 s to increase
 the area linearly from the original to the final value.
 The drag coefficient for an open
 parachute can be taken as 1.8, but tuned using the known value

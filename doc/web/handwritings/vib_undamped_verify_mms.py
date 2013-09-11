@@ -4,16 +4,11 @@ import numpy as np
 V, t, I, w, dt = sm.symbols('V t I w dt')  # global symbols
 f = None  # global variable for the source term in the ODE
 
-def ode_lhs(u):
-    """Return left-hand side of ODE: u'' + w**2*u.
+def ode_source_term(u):
+    """Return the terms in the ODE that the source term
+    must balance, here u'' + w**2*u.
     u is symbolic Python function of t."""
     return sm.diff(u(t), t, t) + w**2*u(t)
-
-def DtDt(u, dt):
-    """Return 2nd-order finite difference for u_tt.
-    u is a symbolic Python function of t.
-    """
-    return (u(t+dt) - 2*u(t) + u(t-dt))/dt**2
 
 def residual_discrete_eq(u):
     """Return the residual of the discrete eq. with u inserted."""
@@ -29,6 +24,12 @@ def residual_discrete_eq_step1(u):
     R = R.subs(t, 0)  # t=0 in the rhs of the first step eq.
     return sm.simplify(R)
 
+def DtDt(u, dt):
+    """Return 2nd-order finite difference for u_tt.
+    u is a symbolic Python function of t.
+    """
+    return (u(t+dt) - 2*u(t) + u(t-dt))/dt**2
+
 def main(u):
     """
     Given some chosen solution u (as a function of t, implemented
@@ -42,7 +43,7 @@ def main(u):
 
     # Method of manufactured solution requires fitting f
     global f  # source term in the ODE
-    f = sm.simplify(ode_lhs(u))
+    f = sm.simplify(ode_source_term(u))
 
     # Residual in discrete equations (should be 0)
     print 'residual step1:', residual_discrete_eq_step1(u)
@@ -99,7 +100,7 @@ def test_quadratic_exact_solution():
     b, V, I, w = 2.3, 0.9, 1.2, 1.5
     global f, t
     u_e = lambda t: b*t**2 + V*t + I # compute with b, V, I, w as numbers
-    f = ode_lhs(u_e)                 # fit source term
+    f = ode_source_term(u_e)         # fit source term
     f = sm.lambdify(t, f)            # turn to numerical Python function
 
     dt = 2./w

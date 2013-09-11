@@ -1374,7 +1374,7 @@ the decay and larger time steps when the solution flattens out.
 
 
 
-Exercises  (3)
+Exercises  (2)
 ==============
 
 
@@ -1515,8 +1515,8 @@ for the ODE :math:`u'(t) = -a(t)u(t) + b(t)` is defined by
 .. math::
          \lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}
 
-A separate scheme is needed to compute :math:`u^1`, and the Forward Euler
-scheme is a candidate.
+A separate scheme is needed to compute :math:`u^1`. The Forward Euler
+is a possible candidate.
 
 
 
@@ -1536,6 +1536,50 @@ Forward Euler scheme for the first step and the Leapfrog scheme
 for the subsequent steps. Use this linear solution to verify
 the implementation, and automate the verification through a nose test.
 
+.. --- begin hint in exercise ---
+
+
+*Hint.* It can be wise to automate the calculations such that it is easy to
+redo the calculations for other types of solutions. Here is
+a possible ``sympy`` function that takes a symbolic expression ``u``
+(implemented as a Python function of ``t``), fits the ``b`` term, and
+checks if ``u`` fulfills the discrete equations:
+
+
+.. code-block:: python
+
+        import sympy as sm
+        t, I, dt, a, b, c = sm.symbols('t I dt a b c')
+        
+        def analyze(u):
+            print 'Analyzing u_e(t)=%s' % u(t)
+            print 'u(0)=%s' % u(t).subs(t, 0)
+        
+            # Fit source term to the given u(t)
+            b = sm.diff(u(t), t) + a*u(t)
+            b = sm.simplify(b)
+            print 'Source term b:', b
+        
+            # Residual in discrete equations; Forward Euler step
+            R_step1 = (u(t+dt) - u(t))/dt + a*u(t) - b
+            R_step1 = sm.simplify(R_step1)
+            print 'Residual Forward Euler step:', R_step1
+        
+            # Residual in discrete equations; Leapfrog steps
+            R = (u(t+dt) - u(t-dt))/(2*dt) + a*u(t) - b
+            R = sm.simplify(R)
+            print 'Residual Leapfrog steps:', R
+        
+        def u_e(t):
+            return c*t + I
+        
+        analyze(u_e)
+        # or short form: analyze(lambda t: c*t + I)
+
+
+.. --- end hint in exercise ---
+
+
 *c)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
 :math:`u'=-au+b`.
 Compute the convergence rate of the Leapfrog scheme using this
@@ -1550,30 +1594,28 @@ Leapfrog scheme is :math:`{{\cal O}(\Delta t^2)}`. Does the use of a
 *e)* Analyze and explain the
 instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
- * Choose :math:`a=\mbox{const}` and :math:`b=0`.
-
- * Assume that an exact solution of the discrete equations has
+1. Choose :math:`a=\mbox{const}` and :math:`b=0`. Assume that an exact solution
+   of the discrete equations has
    the form :math:`u^n=A^n`, where :math:`A` is an amplification factor to
-   be determined.
+   be determined. Derive an equation for :math:`A` by inserting :math:`u^n=A^n`
+   in the Leapfrog scheme.
 
- * Compute :math:`A` either by and or with the aid of ``sympy``.
-   The polynomial for :math:`A` has two roots, :math:`A_1` and :math:`A_2`. We let
+2. Compute :math:`A` either by hand and/or with the aid of ``sympy``.
+   The polynomial for :math:`A` has two roots, :math:`A_1` and :math:`A_2`. Let
    :math:`u^n` be a linear combination :math:`u^n=C_1A_1^n + C_2A_2^n`.
 
- * Show that one of the roots is the explanation of the instability.
+3. Show that one of the roots is the explanation of the instability.
 
- * Determine :math:`C_1` and :math:`C_2` and compare :math:`A` with the exact
-   expression, using a Taylor series approximation.
+4. Compare :math:`A` with the exact expression, using a Taylor series approximation.
 
-*f)* Since the original Leapfrog scheme
-is unconditionally unstable
-as time grows, it demands some stabilization.
-This can be done by filtering, where we first find :math:`u^{n+1}`
-from the original Leapfrog scheme and then replace :math:`u^{n+1}`
-by the average :math:`\gamma (u^{n-1} - 2u^n + u^{n+1}`, where :math:`\gamma`
-can be taken as 0.6.
-Implement the filtered Leapfrog
-scheme and check that it can handle tests where the original
+5. How can :math:`C_1` and :math:`C_2` be determined?
+
+*f)* Since the original Leapfrog scheme is unconditionally unstable as time
+grows, it demands some stabilization.  This can be done by filtering,
+where we first find :math:`u^{n+1}` from the original Leapfrog scheme and
+then replace :math:`u^{n}` by :math:`u^n + \gamma (u^{n-1} - 2u^n +
+u^{n+1}`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
+Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.
 
 Filenames: ``decay_leapfrog.py``, ``decay_leapfrog.pdf``.
