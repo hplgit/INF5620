@@ -1070,8 +1070,8 @@ We have now used the Forward and Backward Euler methods as well as the
 Crank-Nicolson method in the context of Simpson's rule. The hope is
 that the combination of these methods yields an overall time-stepping
 scheme from :math:`t_n` to :math:`t_n{+1}` that is much more accurate than the
-:math:`{{\cal O}(\Delta t)}` and :math:`{{\cal O}(\Delta t^2)}` of the individual steps.
-This is indeed true: the overall accuracy is :math:`{{\cal O}(\Delta t^4)}`!
+:math:`{\mathcal{O}(\Delta t)}` and :math:`{\mathcal{O}(\Delta t^2)}` of the individual steps.
+This is indeed true: the overall accuracy is :math:`{\mathcal{O}(\Delta t^4)}`!
 
 To summarize, the 4th-order Runge-Kutta method becomes
 
@@ -1423,7 +1423,7 @@ Compute convergence rates (see the section :ref:`decay:convergence:rate`) in
 a test case :math:`a=\hbox{const}` and :math:`b=0`, where we easily have an exact
 solution, and determine if the choice of a first-order scheme
 (Backward Euler) for the first step has any impact on the overall
-accuracy of this scheme. The expected error goes like :math:`{{\cal O}(\Delta t^2)}`.
+accuracy of this scheme. The expected error goes like :math:`{\mathcal{O}(\Delta t^2)}`.
 Filename: ``decay_backward2step.py``.
 
 .. --- end exercise ---
@@ -1515,8 +1515,10 @@ for the ODE :math:`u'(t) = -a(t)u(t) + b(t)` is defined by
 .. math::
          \lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}
 
-A separate scheme is needed to compute :math:`u^1`. The Forward Euler
-is a possible candidate.
+A separate method is needed to compute :math:`u^1`. The Forward Euler
+scheme is a possible candidate.
+
+
 
 
 
@@ -1530,6 +1532,9 @@ is a possible candidate.
 
 
 *a)* Implement the Leapfrog scheme for the model equation.
+Plot the solution in the case :math:`a=1`, :math:`b=0`, :math:`I=1`,
+:math:`\Delta t = 0.01`, :math:`t\in [0,4]`. Compare with the exact
+solution :math:`u_{\small\mbox{e}}(t)=e^{-t}`.
 
 *b)* Show mathematically that a linear solution in :math:`t` fulfills the
 Forward Euler scheme for the first step and the Leapfrog scheme
@@ -1549,9 +1554,10 @@ checks if ``u`` fulfills the discrete equations:
 .. code-block:: python
 
         import sympy as sm
-        t, I, dt, a, b, c = sm.symbols('t I dt a b c')
         
         def analyze(u):
+            t, dt, a = sm.symbols('t dt a')
+        
             print 'Analyzing u_e(t)=%s' % u(t)
             print 'u(0)=%s' % u(t).subs(t, 0)
         
@@ -1580,18 +1586,22 @@ checks if ``u`` fulfills the discrete equations:
 .. --- end hint in exercise ---
 
 
-*c)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
+*c)* Show that a second-order polynomial in :math:`t` cannot be a solution of the discrete
+equations. However, if a Crank-Nicolson scheme is used for the first
+step, a second-order polynomial solves the equations exactly.
+
+*d)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
 :math:`u'=-au+b`.
 Compute the convergence rate of the Leapfrog scheme using this
 manufactured solution. The expected convergence rate of the
-Leapfrog scheme is :math:`{{\cal O}(\Delta t^2)}`. Does the use of a
+Leapfrog scheme is :math:`{\mathcal{O}(\Delta t^2)}`. Does the use of a
 1st-order method for the first step impact the convergence rate?
 
-*d)* Set up a set of experiments to demonstrate that the Leapfrog scheme
+*e)* Set up a set of experiments to demonstrate that the Leapfrog scheme
 :eq:`decay:fd2:leapfrog` is associated with numerical artifacts
 (instabilities). Document the main results from this investigation.
 
-*e)* Analyze and explain the
+*f)* Analyze and explain the
 instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
 1. Choose :math:`a=\mbox{const}` and :math:`b=0`. Assume that an exact solution
@@ -1610,11 +1620,11 @@ instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
 5. How can :math:`C_1` and :math:`C_2` be determined?
 
-*f)* Since the original Leapfrog scheme is unconditionally unstable as time
+*g)* Since the original Leapfrog scheme is unconditionally unstable as time
 grows, it demands some stabilization.  This can be done by filtering,
 where we first find :math:`u^{n+1}` from the original Leapfrog scheme and
 then replace :math:`u^{n}` by :math:`u^n + \gamma (u^{n-1} - 2u^n +
-u^{n+1}`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
+u^{n+1})`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
 Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.
 

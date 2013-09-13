@@ -5,7 +5,7 @@ Introduction to computing with finite difference methods
 ========================================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 10, 2013
+:Date: Sep 13, 2013
 
 Note: **PRELIMINARY VERSION**
 
@@ -1855,6 +1855,11 @@ norm :eq:`decay:norms:l2` or the max norm :math:`\ell^\infty`
 :eq:`decay:norms:vl2`-:eq:`decay:norms:vlinf` are also much used
 in numerical computations, so it is important to know the different
 norms and the relations between them.
+
+
+.. index::
+   single: error; norms
+
 
 A single number that expresses the size of the numerical error
 will be taken as :math:`||e^n||_{\ell^2}` and called :math:`E`:
@@ -5657,7 +5662,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x2c1f578>('notice', 'Solving difference equations', r"""
+<function admon at 0x27fc578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -5901,9 +5906,9 @@ We are now in a position to compare Taylor series:
         >>> CN
         (1/12)*p**3 + O(p**4)
 
-From these expressions we see that the error :math:`A-A_{\small\mbox{e}}\sim {{\cal O}(p^2)}`
+From these expressions we see that the error :math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^2)}`
 for the Forward and Backward Euler schemes, while
-:math:`A-A_{\small\mbox{e}}\sim {{\cal O}(p^3)}` for the Crank-Nicolson scheme.
+:math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^3)}` for the Crank-Nicolson scheme.
 It is the *leading order term*,
 i.e., the term of the lowest order (polynomial degree),
 that is of interest, because as :math:`p\rightarrow 0`, this term is
@@ -5917,8 +5922,8 @@ terms :math:`\Delta t`. When then have
 .. math::
         
         A-A_{\small\mbox{e}} = \left\lbrace\begin{array}{ll}
-        {{\cal O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
-        {{\cal O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
+        {\mathcal{O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
+        {\mathcal{O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
         \end{array}\right.
         
 
@@ -5936,6 +5941,11 @@ scheme reduces the error more efficiently than the other schemes.
 
 The fraction of numerical and exact amplification factors
 ---------------------------------------------------------
+
+
+.. index::
+   single: error; amplification factor
+
 
 An alternative comparison of the schemes is to look at the
 ratio :math:`A/A_{\small\mbox{e}}`, or the error :math:`1-A/A_{\small\mbox{e}}` in this ratio:
@@ -5955,8 +5965,13 @@ in the analysis of :math:`A-A_{\small\mbox{e}}`.
 
 .. _decay:analysis:gobal:error:
 
-The true error at a point
--------------------------
+The global error at a point
+---------------------------
+
+
+.. index::
+   single: error; global
+
 
 The error in the amplification factor reflects the error when
 progressing from time level :math:`t_n` to :math:`t_{n-1}`.
@@ -5998,8 +6013,38 @@ Integrated errors
 
 It is common to study the norm of the numerical error, as
 explained in detail in the section :ref:`decay:computing:error:norm`.
-Let us calculate the discrete :math:`\ell^2` norm of the error mesh
-function :math:`e^n`:
+The :math:`L^2` norm can be computed by treating :math:`e^n` as a function
+of :math:`t` in ``sympy`` and performing symbolic integration. For
+the Forward Euler scheme we have
+
+
+.. code-block:: python
+
+        p, n, a, dt, t, T, theta = symbols('p n a dt t T 'theta')
+        A = (1-(1-theta)*p)/(1+theta*p)
+        u_e = exp(-p*n)
+        u_n = A**n
+        error = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+        # Introduce t and dt instead of n and p
+        error = error.subs('n', 't/dt').subs(p, 'a*dt')
+        error = error.as_leading_term(dt) # study only the first term
+        print error
+        error_L2 = sqrt(integrate(error**2, (t, 0, T)))
+        print error_L2
+
+The output reads
+
+
+.. code-block:: text
+
+
+        sqrt(30)*sqrt(T**3*a**4*dt**2*(6*T**2*a**2 - 15*T*a + 10))/60
+
+which means that the :math:`L^2` error behaves like :math:`a^2\Delta t`.
+
+Strictly speaking, the numerical error is only defined at the
+mesh points so it makes most sense to compute the
+:math:`\ell^2` error
 
 
 .. math::
@@ -6007,20 +6052,23 @@ function :math:`e^n`:
         {\thinspace .} 
 
 We have obtained an exact analytical expressions for the error at :math:`t=t_n`,
-but here we use the leading-order error term only. For the Forward Euler scheme,
-:math:`u_{\small\mbox{e}}(t_n) - u^n \approx \frac{1}{2}np^2`, giving
+but here we use the leading-order error term only since we are mostly
+interested in how the error behaves as a polynomial in :math:`\Delta t`, and then
+the leading order term will dominate.
+For the Forward Euler scheme,
+:math:`u_{\small\mbox{e}}(t_n) - u^n \approx \frac{1}{2}np^2`, and we have
 
 
 .. math::
          ||e^n||_{\ell^2}^2 = \Delta t\sum_{n=0}^{N_t} \frac{1}{4}n^2p^4
         =\Delta t\frac{1}{4}p^4 \sum_{n=0}^{N_t} n^2{\thinspace .}
 
-Now, :math:`\sum_{n=0}^{N_t} n^2\approx \frac{1}{3}N_t^3`. Using this approximation
-and :math:`N_t =T/\Delta_t` gives the expression
+Now, :math:`\sum_{n=0}^{N_t} n^2\approx \frac{1}{3}N_t^3`. Using this approximation,
+setting :math:`N_t =T/\Delta t`, and taking the square root gives the expression
 
 
 .. math::
-         ||e^n||_{\ell^2} = \frac{1}{4}\sqrt{\frac{T^3}{3}} a^2\Delta t{\thinspace .}
+         ||e^n||_{\ell^2} = \frac{1}{2}\sqrt{\frac{T^3}{3}} a^2\Delta t{\thinspace .}
 
 Calculations for the Backward Euler scheme are very similar and provide
 the same result, while the Crank-Nicolson scheme leads to
@@ -6257,7 +6305,7 @@ Illustrate such errors for the finite difference operators :math:`[D_t^+u]^n`
 
 Perform a Taylor series expansions of the error fractions and find
 the leading order :math:`r` in the expressions of type
-:math:`1 + C\Delta t^r + {{\cal O}(\Delta t^{r+1)}}`, where :math:`C` is some constant.
+:math:`1 + C\Delta t^r + {\mathcal{O}(\Delta t^{r+1)}}`, where :math:`C` is some constant.
 Filename: ``decay_plot_fd_exp_error.py``.
 
 .. --- end exercise ---
@@ -7397,8 +7445,8 @@ We have now used the Forward and Backward Euler methods as well as the
 Crank-Nicolson method in the context of Simpson's rule. The hope is
 that the combination of these methods yields an overall time-stepping
 scheme from :math:`t_n` to :math:`t_n{+1}` that is much more accurate than the
-:math:`{{\cal O}(\Delta t)}` and :math:`{{\cal O}(\Delta t^2)}` of the individual steps.
-This is indeed true: the overall accuracy is :math:`{{\cal O}(\Delta t^4)}`!
+:math:`{\mathcal{O}(\Delta t)}` and :math:`{\mathcal{O}(\Delta t^2)}` of the individual steps.
+This is indeed true: the overall accuracy is :math:`{\mathcal{O}(\Delta t^4)}`!
 
 To summarize, the 4th-order Runge-Kutta method becomes
 
@@ -7750,7 +7798,7 @@ Compute convergence rates (see the section :ref:`decay:convergence:rate`) in
 a test case :math:`a=\hbox{const}` and :math:`b=0`, where we easily have an exact
 solution, and determine if the choice of a first-order scheme
 (Backward Euler) for the first step has any impact on the overall
-accuracy of this scheme. The expected error goes like :math:`{{\cal O}(\Delta t^2)}`.
+accuracy of this scheme. The expected error goes like :math:`{\mathcal{O}(\Delta t^2)}`.
 Filename: ``decay_backward2step.py``.
 
 .. --- end exercise ---
@@ -7842,8 +7890,10 @@ for the ODE :math:`u'(t) = -a(t)u(t) + b(t)` is defined by
 .. math::
          \lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}
 
-A separate scheme is needed to compute :math:`u^1`. The Forward Euler
-is a possible candidate.
+A separate method is needed to compute :math:`u^1`. The Forward Euler
+scheme is a possible candidate.
+
+
 
 
 
@@ -7857,6 +7907,9 @@ is a possible candidate.
 
 
 *a)* Implement the Leapfrog scheme for the model equation.
+Plot the solution in the case :math:`a=1`, :math:`b=0`, :math:`I=1`,
+:math:`\Delta t = 0.01`, :math:`t\in [0,4]`. Compare with the exact
+solution :math:`u_{\small\mbox{e}}(t)=e^{-t}`.
 
 *b)* Show mathematically that a linear solution in :math:`t` fulfills the
 Forward Euler scheme for the first step and the Leapfrog scheme
@@ -7876,9 +7929,10 @@ checks if ``u`` fulfills the discrete equations:
 .. code-block:: python
 
         import sympy as sm
-        t, I, dt, a, b, c = sm.symbols('t I dt a b c')
         
         def analyze(u):
+            t, dt, a = sm.symbols('t dt a')
+        
             print 'Analyzing u_e(t)=%s' % u(t)
             print 'u(0)=%s' % u(t).subs(t, 0)
         
@@ -7907,18 +7961,22 @@ checks if ``u`` fulfills the discrete equations:
 .. --- end hint in exercise ---
 
 
-*c)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
+*c)* Show that a second-order polynomial in :math:`t` cannot be a solution of the discrete
+equations. However, if a Crank-Nicolson scheme is used for the first
+step, a second-order polynomial solves the equations exactly.
+
+*d)* Create a manufactured solution :math:`u(t)=\sin(t)` for the ODE
 :math:`u'=-au+b`.
 Compute the convergence rate of the Leapfrog scheme using this
 manufactured solution. The expected convergence rate of the
-Leapfrog scheme is :math:`{{\cal O}(\Delta t^2)}`. Does the use of a
+Leapfrog scheme is :math:`{\mathcal{O}(\Delta t^2)}`. Does the use of a
 1st-order method for the first step impact the convergence rate?
 
-*d)* Set up a set of experiments to demonstrate that the Leapfrog scheme
+*e)* Set up a set of experiments to demonstrate that the Leapfrog scheme
 :eq:`decay:fd2:leapfrog` is associated with numerical artifacts
 (instabilities). Document the main results from this investigation.
 
-*e)* Analyze and explain the
+*f)* Analyze and explain the
 instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
 1. Choose :math:`a=\mbox{const}` and :math:`b=0`. Assume that an exact solution
@@ -7937,11 +7995,11 @@ instabilities of the Leapfrog scheme :eq:`decay:fd2:leapfrog`:
 
 5. How can :math:`C_1` and :math:`C_2` be determined?
 
-*f)* Since the original Leapfrog scheme is unconditionally unstable as time
+*g)* Since the original Leapfrog scheme is unconditionally unstable as time
 grows, it demands some stabilization.  This can be done by filtering,
 where we first find :math:`u^{n+1}` from the original Leapfrog scheme and
 then replace :math:`u^{n}` by :math:`u^n + \gamma (u^{n-1} - 2u^n +
-u^{n+1}`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
+u^{n+1})`, where :math:`\gamma` can be taken as 0.6.  Implement the filtered
 Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.
 
@@ -8726,7 +8784,7 @@ where :math:`C_D` is a dimensionless drag coefficient depending on the body's sh
 and :math:`A` is the cross-sectional area as
 produced by a cut plane, perpendicular to the motion, through the thickest
 part of the body. The superscripts :math:`\,{}^q` and :math:`\,{}^S` in
-:math:`F_d^{(S)}` and :math:`F_d^{(q)}` indicates Stokes drag and quadratic drag,
+:math:`F_d^{(S)}` and :math:`F_d^{(q)}` indicate Stokes drag and quadratic drag,
 respectively.
 
 Equation of motion
@@ -8739,9 +8797,9 @@ these forces must equal the mass of the body times its acceleration
 
 
 .. math::
-         ma = F_g + F_d^{(S)} + F_b ,
+         ma = F_g + F_d^{(S)} + F_b {\thinspace .}
 
-if we choose to work with the Stokes drag.
+Here we have chosen to model the fluid resistance by the Stokes drag.
 Inserting the expressions for the forces yields
 
 
@@ -8783,7 +8841,7 @@ We may introduce the constants
         b = g\left(\frac{\varrho}{\varrho_b} -1\right),
         
 
-so that the structure of the differential equation becomes evident:
+so that the structure of the differential equation becomes obvious:
 
 
 .. math::
@@ -8798,7 +8856,7 @@ The corresponding initial condition is :math:`v(0)=v_0` for some prescribed
 starting velocity :math:`v_0`.
 
 This derivation can be repeated with the quadratic drag force
-:math:`F_d^{(q)}`, giving the result
+:math:`F_d^{(q)}`, leading to the result
 
 
 .. math::
@@ -8838,10 +8896,12 @@ Terminal velocity
 ~~~~~~~~~~~~~~~~~
 
 An interesting aspect of :eq:`decay:app:fallingbody:gmodel:S` and
-:eq:`decay:app:fallingbody:gmodel:q` is whether we can approach
-a constant, so-called *terminal velocity* :math:`v_T`, as :math:`t\rightarrow\infty`. The
-existence of :math:`v_T` assumes that
+:eq:`decay:app:fallingbody:gmodel:q` is whether :math:`v` will approach
+a final constant value,
+the so-called *terminal velocity* :math:`v_T`, as :math:`t\rightarrow\infty`.
+A constant :math:`v` means that
 :math:`v'(t)\rightarrow 0` as :math:`t\rightarrow\infty` and therefore
+the terminal velocity :math:`v_T` solves
 
 
 .. math::
@@ -8864,8 +8924,10 @@ A Crank-Nicolson scheme
 Both governing equations, the Stokes' drag model
 :eq:`decay:app:fallingbody:gmodel:S` and the quadratic drag model
 :eq:`decay:app:fallingbody:gmodel:q`, can be readily solved
-by the Forward Euler scheme. The Crank-Nicolson method gives
-a nonlinear equation in :math:`v` when applied to
+by the Forward Euler scheme. For higher accuracy one can use
+the Crank-Nicolson method, but a straightforward application
+this method results
+a nonlinear equation in the new unknown value :math:`v^{n+1}` when applied to
 :eq:`decay:app:fallingbody:gmodel:q`:
 
 
@@ -8926,13 +8988,14 @@ and :math:`8.9\cdot 10^{-4}\hbox{ Pa}\, \hbox{s}` for water.
 Densities can be taken as :math:`1.2\hbox{ kg/m}^3` for air and as
 :math:`1.0\cdot 10^3\hbox{ kg/m}^3` for water. For considerable vertical
 displacement in the atmosphere one should take into account that
-the density of air varies with height, see the section :ref:`decay:app:atm`.
+the density of air varies with the altitude, see the section :ref:`decay:app:atm`.
 One possible density variation arises from the one-layer model
-in the section :ref:`decay:app:atm`.
+in the mentioned section.
 
 Any density variation makes :math:`b` time dependent and we need
 :math:`b^{n+\frac{1}{2}}` in :eq:`decay:app:fallingbody:gmodel:q:CN`.
-To compute :math:`b^{n+\frac{1}{2}}` we must also compute the vertical
+To compute the density that enters
+:math:`b^{n+\frac{1}{2}}` we must also compute the vertical
 position :math:`z(t)` of the body. Since :math:`v=dz/dt`, we can use a centered
 difference approximation:
 
@@ -8946,11 +9009,11 @@ to compute :math:`\varrho(z^{n+\frac{1}{2}})` and then :math:`b^{n+\frac{1}{2}}`
 
 The `drag coefficient <http://en.wikipedia.org/wiki/Drag_coefficient>`_ :math:`C_D` depends heavily
 on the shape of the body.  Some values are: 0.45 for a sphere, 0.42
-for a semi-sphere, 1.05 for a cube, 0.82 for a long cylinder (with the
-length along the vertical direction), 0.75 for a rocket,
+for a semi-sphere, 1.05 for a cube, 0.82 for a long cylinder (when the
+center axis is in the vertical direction), 0.75 for a rocket,
 1.0-1.3 for a man in upright position, 1.3 for a flat plate perpendicular
 to the flow, and
-0.04 for a streamlined (droplet-like) body.
+0.04 for a streamlined, droplet-like body.
 
 Verification
 ~~~~~~~~~~~~
@@ -8970,8 +9033,9 @@ the exact expressions.
 The advantage of this verification is that we can also
 the test situation :math:`\varrho\neq 0`.
 
-Obviously, the method of manufactured solutions can be applied to
-test the implementation of all terms in the governing equation.
+As always, the method of manufactured solutions can be applied to
+test the implementation of all terms in the governing equation, but
+the solution then has no physical relevance in general.
 
 
 .. index:: scaling
@@ -8982,19 +9046,22 @@ Scaling  (2)
 
 Applying scaling, as described in the section :ref:`decay:app:scaling`,
 will for the linear case reduce the need to estimate values for
-seven parameters to choose values of *one* dimensionless parameter
+seven parameters down to choosing one value of a single dimensionless parameter
 
 
 .. math::
-         \beta = \frac{\varrho_bgV\left(\frac{\varrho}{\varrho_b} -1\right)}{3\pi d\mu I},
+         \beta = \frac{\varrho_b gV\left(\frac{\varrho}{\varrho_b} -1\right)}{3\pi d\mu I},
 
-if :math:`I\neq 0`, and if the motion starts from rest (:math:`I=0`), the scaled
+provided :math:`I\neq 0`. If the motion starts from rest, :math:`I=0`, the scaled
 problem :math:`\bar u'=1-\bar u`, :math:`\bar u(0)=0`, has no need for
 estimating physical parameters.
-This means that there is one universal solution to the problem,
-the scaled solution :math:`\bar u(t) = 1 - e^{-\bar t}`, and all
+This means that there is a single universal solution to the problem
+of a falling body starting from rest:
+:math:`\bar u(t) = 1 - e^{-\bar t}`. All real
 physical cases correspond to stretching the :math:`\bar t` axis and the :math:`\bar u`
-axis, i.e.,
+axis in this dimensionless solution. More precisely, the physical velocity
+:math:`u(t)` is related to the dimensionless velocity :math:`\bar u(\bar t)` through
+
 
 
 .. math::
@@ -9315,9 +9382,9 @@ Verification tests can be based on
    convergence rates (see the section :ref:`decay:convergence:rate`).
 
 Use, e.g., a quadratic polynomial for the velocity in the method of
-manufactured solutions. The expected error is :math:`{{\cal O}(\Delta t^2)}`
+manufactured solutions. The expected error is :math:`{\mathcal{O}(\Delta t^2)}`
 from the centered finite difference approximation and the geometric
-mean for :math:`|v|v`.
+mean approximation for :math:`|v|v`.
 
 A solution that is linear in :math:`t` will also be an exact solution of the
 discrete equations in many problems.  Show that this is true for
@@ -9400,15 +9467,16 @@ formula for the drag force.
 
 
 *c)* Show that a linear function of :math:`t` does not fulfill the discrete
-equations because of the geometric mean used for the quadratic drag
+equations because of the geometric mean approximation
+used for the quadratic drag
 term.  Fit a source term, as in the method of manufactured solutions,
 such that a linear function of :math:`t` is a solution of the discrete
 equations. Make a nose test to check that this solution is reproduced
 to machine precision.
 
 *d)* The expected error in this problem goes like :math:`\Delta t^2` because we
-use a centered finite difference approximation with error :math:`{{\cal O}(\Delta t^2)}`
-and a geometric mean approximation with error :math:`{{\cal O}(\Delta t^2)}`.
+use a centered finite difference approximation with error :math:`{\mathcal{O}(\Delta t^2)}`
+and a geometric mean approximation with error :math:`{\mathcal{O}(\Delta t^2)}`.
 Use the method of manufactured solutions combined with computing
 convergence rate to verify the code. Make a nose test for checking
 that the convergence rate is correct.

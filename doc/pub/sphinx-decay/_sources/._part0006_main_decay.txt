@@ -225,7 +225,7 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x2c1f578>('notice', 'Solving difference equations', r"""
+<function admon at 0x27fc578>('notice', 'Solving difference equations', r"""
 Difference equations where all terms are linear in
 :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
 called *homogeneous, linear* difference equations, and their solutions
@@ -469,9 +469,9 @@ We are now in a position to compare Taylor series:
         >>> CN
         (1/12)*p**3 + O(p**4)
 
-From these expressions we see that the error :math:`A-A_{\small\mbox{e}}\sim {{\cal O}(p^2)}`
+From these expressions we see that the error :math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^2)}`
 for the Forward and Backward Euler schemes, while
-:math:`A-A_{\small\mbox{e}}\sim {{\cal O}(p^3)}` for the Crank-Nicolson scheme.
+:math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^3)}` for the Crank-Nicolson scheme.
 It is the *leading order term*,
 i.e., the term of the lowest order (polynomial degree),
 that is of interest, because as :math:`p\rightarrow 0`, this term is
@@ -485,8 +485,8 @@ terms :math:`\Delta t`. When then have
 .. math::
         
         A-A_{\small\mbox{e}} = \left\lbrace\begin{array}{ll}
-        {{\cal O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
-        {{\cal O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
+        {\mathcal{O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
+        {\mathcal{O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
         \end{array}\right.
         
 
@@ -504,6 +504,11 @@ scheme reduces the error more efficiently than the other schemes.
 
 The fraction of numerical and exact amplification factors
 ---------------------------------------------------------
+
+
+.. index::
+   single: error; amplification factor
+
 
 An alternative comparison of the schemes is to look at the
 ratio :math:`A/A_{\small\mbox{e}}`, or the error :math:`1-A/A_{\small\mbox{e}}` in this ratio:
@@ -523,8 +528,13 @@ in the analysis of :math:`A-A_{\small\mbox{e}}`.
 
 .. _decay:analysis:gobal:error:
 
-The true error at a point
--------------------------
+The global error at a point
+---------------------------
+
+
+.. index::
+   single: error; global
+
 
 The error in the amplification factor reflects the error when
 progressing from time level :math:`t_n` to :math:`t_{n-1}`.
@@ -566,8 +576,38 @@ Integrated errors
 
 It is common to study the norm of the numerical error, as
 explained in detail in the section :ref:`decay:computing:error:norm`.
-Let us calculate the discrete :math:`\ell^2` norm of the error mesh
-function :math:`e^n`:
+The :math:`L^2` norm can be computed by treating :math:`e^n` as a function
+of :math:`t` in ``sympy`` and performing symbolic integration. For
+the Forward Euler scheme we have
+
+
+.. code-block:: python
+
+        p, n, a, dt, t, T, theta = symbols('p n a dt t T 'theta')
+        A = (1-(1-theta)*p)/(1+theta*p)
+        u_e = exp(-p*n)
+        u_n = A**n
+        error = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+        # Introduce t and dt instead of n and p
+        error = error.subs('n', 't/dt').subs(p, 'a*dt')
+        error = error.as_leading_term(dt) # study only the first term
+        print error
+        error_L2 = sqrt(integrate(error**2, (t, 0, T)))
+        print error_L2
+
+The output reads
+
+
+.. code-block:: text
+
+
+        sqrt(30)*sqrt(T**3*a**4*dt**2*(6*T**2*a**2 - 15*T*a + 10))/60
+
+which means that the :math:`L^2` error behaves like :math:`a^2\Delta t`.
+
+Strictly speaking, the numerical error is only defined at the
+mesh points so it makes most sense to compute the
+:math:`\ell^2` error
 
 
 .. math::
@@ -575,20 +615,23 @@ function :math:`e^n`:
         {\thinspace .} 
 
 We have obtained an exact analytical expressions for the error at :math:`t=t_n`,
-but here we use the leading-order error term only. For the Forward Euler scheme,
-:math:`u_{\small\mbox{e}}(t_n) - u^n \approx \frac{1}{2}np^2`, giving
+but here we use the leading-order error term only since we are mostly
+interested in how the error behaves as a polynomial in :math:`\Delta t`, and then
+the leading order term will dominate.
+For the Forward Euler scheme,
+:math:`u_{\small\mbox{e}}(t_n) - u^n \approx \frac{1}{2}np^2`, and we have
 
 
 .. math::
          ||e^n||_{\ell^2}^2 = \Delta t\sum_{n=0}^{N_t} \frac{1}{4}n^2p^4
         =\Delta t\frac{1}{4}p^4 \sum_{n=0}^{N_t} n^2{\thinspace .}
 
-Now, :math:`\sum_{n=0}^{N_t} n^2\approx \frac{1}{3}N_t^3`. Using this approximation
-and :math:`N_t =T/\Delta_t` gives the expression
+Now, :math:`\sum_{n=0}^{N_t} n^2\approx \frac{1}{3}N_t^3`. Using this approximation,
+setting :math:`N_t =T/\Delta t`, and taking the square root gives the expression
 
 
 .. math::
-         ||e^n||_{\ell^2} = \frac{1}{4}\sqrt{\frac{T^3}{3}} a^2\Delta t{\thinspace .}
+         ||e^n||_{\ell^2} = \frac{1}{2}\sqrt{\frac{T^3}{3}} a^2\Delta t{\thinspace .}
 
 Calculations for the Backward Euler scheme are very similar and provide
 the same result, while the Crank-Nicolson scheme leads to
@@ -825,7 +868,7 @@ Illustrate such errors for the finite difference operators :math:`[D_t^+u]^n`
 
 Perform a Taylor series expansions of the error fractions and find
 the leading order :math:`r` in the expressions of type
-:math:`1 + C\Delta t^r + {{\cal O}(\Delta t^{r+1)}}`, where :math:`C` is some constant.
+:math:`1 + C\Delta t^r + {\mathcal{O}(\Delta t^{r+1)}}`, where :math:`C` is some constant.
 Filename: ``decay_plot_fd_exp_error.py``.
 
 .. --- end exercise ---

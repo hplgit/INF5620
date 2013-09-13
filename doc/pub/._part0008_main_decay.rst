@@ -731,7 +731,7 @@ where :math:`C_D` is a dimensionless drag coefficient depending on the body's sh
 and :math:`A` is the cross-sectional area as
 produced by a cut plane, perpendicular to the motion, through the thickest
 part of the body. The superscripts :math:`\,{}^q` and :math:`\,{}^S` in
-:math:`F_d^{(S)}` and :math:`F_d^{(q)}` indicates Stokes drag and quadratic drag,
+:math:`F_d^{(S)}` and :math:`F_d^{(q)}` indicate Stokes drag and quadratic drag,
 respectively.
 
 Equation of motion
@@ -744,9 +744,9 @@ these forces must equal the mass of the body times its acceleration
 
 
 .. math::
-         ma = F_g + F_d^{(S)} + F_b ,
+         ma = F_g + F_d^{(S)} + F_b {\thinspace .}
 
-if we choose to work with the Stokes drag.
+Here we have chosen to model the fluid resistance by the Stokes drag.
 Inserting the expressions for the forces yields
 
 
@@ -788,7 +788,7 @@ We may introduce the constants
         b = g\left(\frac{\varrho}{\varrho_b} -1\right),
         
 
-so that the structure of the differential equation becomes evident:
+so that the structure of the differential equation becomes obvious:
 
 
 .. math::
@@ -803,7 +803,7 @@ The corresponding initial condition is :math:`v(0)=v_0` for some prescribed
 starting velocity :math:`v_0`.
 
 This derivation can be repeated with the quadratic drag force
-:math:`F_d^{(q)}`, giving the result
+:math:`F_d^{(q)}`, leading to the result
 
 
 .. math::
@@ -843,10 +843,12 @@ Terminal velocity
 ~~~~~~~~~~~~~~~~~
 
 An interesting aspect of :eq:`decay:app:fallingbody:gmodel:S` and
-:eq:`decay:app:fallingbody:gmodel:q` is whether we can approach
-a constant, so-called *terminal velocity* :math:`v_T`, as :math:`t\rightarrow\infty`. The
-existence of :math:`v_T` assumes that
+:eq:`decay:app:fallingbody:gmodel:q` is whether :math:`v` will approach
+a final constant value,
+the so-called *terminal velocity* :math:`v_T`, as :math:`t\rightarrow\infty`.
+A constant :math:`v` means that
 :math:`v'(t)\rightarrow 0` as :math:`t\rightarrow\infty` and therefore
+the terminal velocity :math:`v_T` solves
 
 
 .. math::
@@ -869,8 +871,10 @@ A Crank-Nicolson scheme
 Both governing equations, the Stokes' drag model
 :eq:`decay:app:fallingbody:gmodel:S` and the quadratic drag model
 :eq:`decay:app:fallingbody:gmodel:q`, can be readily solved
-by the Forward Euler scheme. The Crank-Nicolson method gives
-a nonlinear equation in :math:`v` when applied to
+by the Forward Euler scheme. For higher accuracy one can use
+the Crank-Nicolson method, but a straightforward application
+this method results
+a nonlinear equation in the new unknown value :math:`v^{n+1}` when applied to
 :eq:`decay:app:fallingbody:gmodel:q`:
 
 
@@ -931,13 +935,14 @@ and :math:`8.9\cdot 10^{-4}\hbox{ Pa}\, \hbox{s}` for water.
 Densities can be taken as :math:`1.2\hbox{ kg/m}^3` for air and as
 :math:`1.0\cdot 10^3\hbox{ kg/m}^3` for water. For considerable vertical
 displacement in the atmosphere one should take into account that
-the density of air varies with height, see the section :ref:`decay:app:atm`.
+the density of air varies with the altitude, see the section :ref:`decay:app:atm`.
 One possible density variation arises from the one-layer model
-in the section :ref:`decay:app:atm`.
+in the mentioned section.
 
 Any density variation makes :math:`b` time dependent and we need
 :math:`b^{n+\frac{1}{2}}` in :eq:`decay:app:fallingbody:gmodel:q:CN`.
-To compute :math:`b^{n+\frac{1}{2}}` we must also compute the vertical
+To compute the density that enters
+:math:`b^{n+\frac{1}{2}}` we must also compute the vertical
 position :math:`z(t)` of the body. Since :math:`v=dz/dt`, we can use a centered
 difference approximation:
 
@@ -951,11 +956,11 @@ to compute :math:`\varrho(z^{n+\frac{1}{2}})` and then :math:`b^{n+\frac{1}{2}}`
 
 The `drag coefficient <http://en.wikipedia.org/wiki/Drag_coefficient>`_ :math:`C_D` depends heavily
 on the shape of the body.  Some values are: 0.45 for a sphere, 0.42
-for a semi-sphere, 1.05 for a cube, 0.82 for a long cylinder (with the
-length along the vertical direction), 0.75 for a rocket,
+for a semi-sphere, 1.05 for a cube, 0.82 for a long cylinder (when the
+center axis is in the vertical direction), 0.75 for a rocket,
 1.0-1.3 for a man in upright position, 1.3 for a flat plate perpendicular
 to the flow, and
-0.04 for a streamlined (droplet-like) body.
+0.04 for a streamlined, droplet-like body.
 
 Verification
 ~~~~~~~~~~~~
@@ -975,8 +980,9 @@ the exact expressions.
 The advantage of this verification is that we can also
 the test situation :math:`\varrho\neq 0`.
 
-Obviously, the method of manufactured solutions can be applied to
-test the implementation of all terms in the governing equation.
+As always, the method of manufactured solutions can be applied to
+test the implementation of all terms in the governing equation, but
+the solution then has no physical relevance in general.
 
 
 .. index:: scaling
@@ -987,19 +993,22 @@ Scaling  (2)
 
 Applying scaling, as described in the section :ref:`decay:app:scaling`,
 will for the linear case reduce the need to estimate values for
-seven parameters to choose values of *one* dimensionless parameter
+seven parameters down to choosing one value of a single dimensionless parameter
 
 
 .. math::
-         \beta = \frac{\varrho_bgV\left(\frac{\varrho}{\varrho_b} -1\right)}{3\pi d\mu I},
+         \beta = \frac{\varrho_b gV\left(\frac{\varrho}{\varrho_b} -1\right)}{3\pi d\mu I},
 
-if :math:`I\neq 0`, and if the motion starts from rest (:math:`I=0`), the scaled
+provided :math:`I\neq 0`. If the motion starts from rest, :math:`I=0`, the scaled
 problem :math:`\bar u'=1-\bar u`, :math:`\bar u(0)=0`, has no need for
 estimating physical parameters.
-This means that there is one universal solution to the problem,
-the scaled solution :math:`\bar u(t) = 1 - e^{-\bar t}`, and all
+This means that there is a single universal solution to the problem
+of a falling body starting from rest:
+:math:`\bar u(t) = 1 - e^{-\bar t}`. All real
 physical cases correspond to stretching the :math:`\bar t` axis and the :math:`\bar u`
-axis, i.e.,
+axis in this dimensionless solution. More precisely, the physical velocity
+:math:`u(t)` is related to the dimensionless velocity :math:`\bar u(\bar t)` through
+
 
 
 .. math::
@@ -1320,9 +1329,9 @@ Verification tests can be based on
    convergence rates (see the section :ref:`decay:convergence:rate`).
 
 Use, e.g., a quadratic polynomial for the velocity in the method of
-manufactured solutions. The expected error is :math:`{{\cal O}(\Delta t^2)}`
+manufactured solutions. The expected error is :math:`{\mathcal{O}(\Delta t^2)}`
 from the centered finite difference approximation and the geometric
-mean for :math:`|v|v`.
+mean approximation for :math:`|v|v`.
 
 A solution that is linear in :math:`t` will also be an exact solution of the
 discrete equations in many problems.  Show that this is true for
@@ -1405,15 +1414,16 @@ formula for the drag force.
 
 
 *c)* Show that a linear function of :math:`t` does not fulfill the discrete
-equations because of the geometric mean used for the quadratic drag
+equations because of the geometric mean approximation
+used for the quadratic drag
 term.  Fit a source term, as in the method of manufactured solutions,
 such that a linear function of :math:`t` is a solution of the discrete
 equations. Make a nose test to check that this solution is reproduced
 to machine precision.
 
 *d)* The expected error in this problem goes like :math:`\Delta t^2` because we
-use a centered finite difference approximation with error :math:`{{\cal O}(\Delta t^2)}`
-and a geometric mean approximation with error :math:`{{\cal O}(\Delta t^2)}`.
+use a centered finite difference approximation with error :math:`{\mathcal{O}(\Delta t^2)}`
+and a geometric mean approximation with error :math:`{\mathcal{O}(\Delta t^2)}`.
 Use the method of manufactured solutions combined with computing
 convergence rate to verify the code. Make a nose test for checking
 that the convergence rate is correct.

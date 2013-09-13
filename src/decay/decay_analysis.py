@@ -64,16 +64,18 @@ print "Error in solution:"
 n, a, dt, t, T = symbols('n a dt t T')
 u_e = exp(-p*n)
 u_n = A**n
-FE = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
-print FE
-FE = FE.subs('n', 't/dt').subs(p, 'a*dt')
-FE = FE.extract_leading_order(dt)[0][0]
-FEi = integrate(FE**2, (t, 0, T))
-print FEi, type(FEi)
-FEi = sqrt(FEi)
-print FEi.series(dt, 0, 3)
-FEi = simplify(FEi.series(dt, 0, 3).extract_leading_order(dt)[0][0])
-print FEi
+error = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+print error
+FE = error
+error = error.subs('n', 't/dt').subs(p, 'a*dt')
+#error = error.extract_leading_order(dt)[0][0]  # as_leading_term is simpler
+error = error.as_leading_term(dt)
+print 'Global error at a point t:', error
+# error = sum(error.as_ordered_terms()[:-1]) # get rid of O() term, keep the rest
+error_error_L2 = sqrt(integrate(error**2, (t, 0, T)))
+print 'L2 error:', simplify(error_error_L2)
+#error_error_L2 = error_error_L2.series(dt, 0, 3).as_leading_term(dt)  # series breaks down
+
 
 sys.exit(0)
 #BE = u_e.series(p, 4) - u_n.subs(theta, 1).series(p, 4)

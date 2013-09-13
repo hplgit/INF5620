@@ -644,8 +644,8 @@ a Crank-Nicolson method to approximate <span class="math">\(u^{n+1}\)</span>:</p
 Crank-Nicolson method in the context of Simpson&#8217;s rule. The hope is
 that the combination of these methods yields an overall time-stepping
 scheme from <span class="math">\(t_n\)</span> to <span class="math">\(t_n{+1}\)</span> that is much more accurate than the
-<span class="math">\({{\cal O}(\Delta t)}\)</span> and <span class="math">\({{\cal O}(\Delta t^2)}\)</span> of the individual steps.
-This is indeed true: the overall accuracy is <span class="math">\({{\cal O}(\Delta t^4)}\)</span>!</p>
+<span class="math">\({\mathcal{O}(\Delta t)}\)</span> and <span class="math">\({\mathcal{O}(\Delta t^2)}\)</span> of the individual steps.
+This is indeed true: the overall accuracy is <span class="math">\({\mathcal{O}(\Delta t^4)}\)</span>!</p>
 <p>To summarize, the 4th-order Runge-Kutta method becomes</p>
 <div class="math">
 \[u^{n+1} = u^n +
@@ -914,7 +914,7 @@ solution of the discrete equations.</p>
 a test case <span class="math">\(a=\hbox{const}\)</span> and <span class="math">\(b=0\)</span>, where we easily have an exact
 solution, and determine if the choice of a first-order scheme
 (Backward Euler) for the first step has any impact on the overall
-accuracy of this scheme. The expected error goes like <span class="math">\({{\cal O}(\Delta t^2)}\)</span>.
+accuracy of this scheme. The expected error goes like <span class="math">\({\mathcal{O}(\Delta t^2)}\)</span>.
 Filename: <tt class="docutils literal"><span class="pre">decay_backward2step.py</span></tt>.</p>
 </div>
 <div class="section" id="exercise-16-implement-the-2nd-order-adams-bashforth-scheme">
@@ -955,9 +955,12 @@ Filename: <tt class="docutils literal"><span class="pre">decay_RK2_Taylor2.py</s
 for the ODE <span class="math">\(u'(t) = -a(t)u(t) + b(t)\)</span> is defined by</p>
 <div class="math">
 \[\lbrack D_{2t}u = -au+b\rbrack^n{\thinspace .}\]</div>
-<p>A separate scheme is needed to compute <span class="math">\(u^1\)</span>. The Forward Euler
-is a possible candidate.</p>
-<p><em>a)</em> Implement the Leapfrog scheme for the model equation.</p>
+<p>A separate method is needed to compute <span class="math">\(u^1\)</span>. The Forward Euler
+scheme is a possible candidate.</p>
+<p><em>a)</em> Implement the Leapfrog scheme for the model equation.
+Plot the solution in the case <span class="math">\(a=1\)</span>, <span class="math">\(b=0\)</span>, <span class="math">\(I=1\)</span>,
+<span class="math">\(\Delta t = 0.01\)</span>, <span class="math">\(t\in [0,4]\)</span>. Compare with the exact
+solution <span class="math">\(u_{\small\mbox{e}}(t)=e^{-t}\)</span>.</p>
 <p><em>b)</em> Show mathematically that a linear solution in <span class="math">\(t\)</span> fulfills the
 Forward Euler scheme for the first step and the Leapfrog scheme
 for the subsequent steps. Use this linear solution to verify
@@ -968,9 +971,10 @@ a possible <tt class="docutils literal"><span class="pre">sympy</span></tt> func
 (implemented as a Python function of <tt class="docutils literal"><span class="pre">t</span></tt>), fits the <tt class="docutils literal"><span class="pre">b</span></tt> term, and
 checks if <tt class="docutils literal"><span class="pre">u</span></tt> fulfills the discrete equations:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sm</span>
-<span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;t I dt a b c&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">analyze</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;t dt a&#39;</span><span class="p">)</span>
+
     <span class="k">print</span> <span class="s">&#39;Analyzing u_e(t)=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     <span class="k">print</span> <span class="s">&#39;u(0)=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
@@ -996,16 +1000,19 @@ checks if <tt class="docutils literal"><span class="pre">u</span></tt> fulfills 
 <span class="c"># or short form: analyze(lambda t: c*t + I)</span>
 </pre></div>
 </div>
-<p><em>c)</em> Create a manufactured solution <span class="math">\(u(t)=\sin(t)\)</span> for the ODE
+<p><em>c)</em> Show that a second-order polynomial in <span class="math">\(t\)</span> cannot be a solution of the discrete
+equations. However, if a Crank-Nicolson scheme is used for the first
+step, a second-order polynomial solves the equations exactly.</p>
+<p><em>d)</em> Create a manufactured solution <span class="math">\(u(t)=\sin(t)\)</span> for the ODE
 <span class="math">\(u'=-au+b\)</span>.
 Compute the convergence rate of the Leapfrog scheme using this
 manufactured solution. The expected convergence rate of the
-Leapfrog scheme is <span class="math">\({{\cal O}(\Delta t^2)}\)</span>. Does the use of a
+Leapfrog scheme is <span class="math">\({\mathcal{O}(\Delta t^2)}\)</span>. Does the use of a
 1st-order method for the first step impact the convergence rate?</p>
-<p><em>d)</em> Set up a set of experiments to demonstrate that the Leapfrog scheme
+<p><em>e)</em> Set up a set of experiments to demonstrate that the Leapfrog scheme
 <a href="#equation-decay:fd2:leapfrog">(11)</a> is associated with numerical artifacts
 (instabilities). Document the main results from this investigation.</p>
-<p><em>e)</em> Analyze and explain the
+<p><em>f)</em> Analyze and explain the
 instabilities of the Leapfrog scheme <a href="#equation-decay:fd2:leapfrog">(11)</a>:</p>
 <ol class="arabic simple">
 <li>Choose <span class="math">\(a=\mbox{const}\)</span> and <span class="math">\(b=0\)</span>. Assume that an exact solution
@@ -1020,11 +1027,11 @@ The polynomial for <span class="math">\(A\)</span> has two roots, <span class="m
 <li>Compare <span class="math">\(A\)</span> with the exact expression, using a Taylor series approximation.</li>
 <li>How can <span class="math">\(C_1\)</span> and <span class="math">\(C_2\)</span> be determined?</li>
 </ol>
-<p><em>f)</em> Since the original Leapfrog scheme is unconditionally unstable as time
+<p><em>g)</em> Since the original Leapfrog scheme is unconditionally unstable as time
 grows, it demands some stabilization.  This can be done by filtering,
 where we first find <span class="math">\(u^{n+1}\)</span> from the original Leapfrog scheme and
 then replace <span class="math">\(u^{n}\)</span> by <span class="math">\(u^n + \gamma (u^{n-1} - 2u^n +
-u^{n+1}\)</span>, where <span class="math">\(\gamma\)</span> can be taken as 0.6.  Implement the filtered
+u^{n+1})\)</span>, where <span class="math">\(\gamma\)</span> can be taken as 0.6.  Implement the filtered
 Leapfrog scheme and check that it can handle tests where the original
 Leapfrog scheme is unstable.</p>
 <p>Filenames: <tt class="docutils literal"><span class="pre">decay_leapfrog.py</span></tt>, <tt class="docutils literal"><span class="pre">decay_leapfrog.pdf</span></tt>.</p>
