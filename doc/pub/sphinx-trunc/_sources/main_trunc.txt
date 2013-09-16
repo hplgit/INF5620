@@ -5,7 +5,19 @@ Truncation Error Analysis
 =========================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 15, 2013
+:Date: Sep 16, 2013
+
+**WARNING**: Preliminary version (expect typos!)
+
+
+
+
+
+
+
+
+
+
 
 
 .. admonition:: Purpose
@@ -48,6 +60,12 @@ of differential equations.
    single: truncation error; general
 
 
+Overview of truncation error analysis
+=====================================
+
+Abstract problem setting
+------------------------
+
 Consider an abstract differential equation
 
 
@@ -58,60 +76,95 @@ where :math:`\mathcal{L}(u)` is some formula involving the unknown :math:`u` and
 its derivatives. One example is :math:`\mathcal{L}(u)=u'(t)+a(t)u(t)-b(t)`, where
 :math:`a` and :math:`b` are contants or functions of time.
 We can discretize the differential equation and obtain a corresponding
-discrete equation
+discrete model, here written as
 
 
 .. math::
          \mathcal{L}_{\Delta}(u) =0{\thinspace .}
 
-The solution here is the *numerical solution*. To distinguish the
+The solution :math:`u` of this equation is the *numerical solution*.
+To distinguish the
 numerical solution from the exact solution of the differential
-equation problem, we denote the latter by :math:`u_{\small\mbox{e}}`. That is, we
-have the differential equation
+equation problem,
+we denote the latter by :math:`{u_{\small\mbox{e}}}` and write the
+differential equation and its discrete counterpart as
 
 
 .. math::
-         \mathcal{L}(u_{\small\mbox{e}})=0,
+        
+        \mathcal{L}({u_{\small\mbox{e}}})&=0,\\ 
+        \mathcal{L}_\Delta (u)&=0{\thinspace .}
+        
 
-and its discrete counterpart
-
-
-.. math::
-         \mathcal{L}_\Delta (u)=0{\thinspace .}
-
+Initial and/or boundary conditions can usually be left out of the truncation
+error analysis and are omitted in the following.
 
 The numerical solution :math:`u` is in a finite difference method computed
-at some mesh points :math:`t_n`, :math:`n=0,1,\ldots,N_t`. The computed values
-are here denoted by :math:`u^n`.
+at a collection of mesh points. The discrete equations represented
+by the abstract equation :math:`\mathcal{L}_\Delta (u)=0` are usually
+algebraic equations involving :math:`u` at some
+neighboring mesh points.
+
+Error measures
+--------------
+
 A key issue is how accurate the numerical solution is.
 The ultimate way of addressing this issue would be to compute
-the error :math:`u_{\small\mbox{e}}(t_n)-u^n`. This is usually impossible,
-except in very simple problems.
+the error :math:`{u_{\small\mbox{e}}} - u` at the mesh points. This is usually extremely demanding.
+In very simplified problem settings we may, however, manage to
+derive formulas for the numerical solution :math:`u`, and
+therefore closed form expressions
+for the error :math:`{u_{\small\mbox{e}}} - u`. Such special cases can provide
+considerable insight regarding accuracy and stability, but
+the results are established for special problems.
+
+The error :math:`{u_{\small\mbox{e}}} -u` can be computed empirically in special cases where
+we know :math:`{u_{\small\mbox{e}}}`. Such cases can be constructed by the method of
+manufactured solutions, where we choose some exact solution :math:`{u_{\small\mbox{e}}} = v`
+and fit a source term :math:`f` in the governing differential equation
+:math:`\mathcal{L}({u_{\small\mbox{e}}})=f` such that :math:`{u_{\small\mbox{e}}}=v` is a solution (i.e.,
+:math:`f=\mathcal{L}(v)`).  Assuming an error model of the form :math:`Ch^r`,
+where :math:`h` is the discretization parameter, such as :math:`\Delta t` or
+:math:`\Delta x`, one can estimate the convergence rate :math:`r`. This is a
+widely applicable procedure, but the valididity of the results is,
+strictly speaking, tied to the chosen test problems.
 
 Another error measure is to ask to what extent the exact solution
-:math:`u_{\small\mbox{e}}` fits the discrete equations. Clearly, :math:`u_{\small\mbox{e}}` is in general
+:math:`{u_{\small\mbox{e}}}` fits the discrete equations. Clearly, :math:`{u_{\small\mbox{e}}}` is in general
 not a solution of :math:`\mathcal{L}_\Delta(u)=0`, but we can define
 the residual
 
 
 .. math::
-         R = \mathcal{L}_\Delta(u_{\small\mbox{e}}),
+         R = \mathcal{L}_\Delta({u_{\small\mbox{e}}}),
 
 and investigate how close :math:`R` is to zero. A small :math:`R` means
 intuitively that the discrete equations are close to the
-differential equations, and then we are tempted to think that
-:math:`u^n` must also be close to :math:`u_{\small\mbox{e}}(t_n)`.
+differential equation, and then we are tempted to think that
+:math:`u^n` must also be close to :math:`{u_{\small\mbox{e}}}(t_n)`.
 
 The residual :math:`R` is known as the truncation error of the finite
 difference scheme :math:`\mathcal{L}_\Delta(u)=0`.  It appears that the
 truncation error is relatively straightforward to compute by hand or
-symbolic software. The resulting :math:`R` is found
+symbolic software *without specializing the differential equation
+and the discrete model to a special case*. The resulting :math:`R` is found
 as a power series in the discretization parameters. The leading-order
 terms in the series provide an asymptotic measure of the accuracy of
-the numerical solution method. Knowing the truncation error (or other
-error measures) is important for verification of programs by
-empirically establishing convergence rates. The forthcoming text will provide
-many examples on how to compute truncation errors.
+the numerical solution method (as the discretization parameters
+tend to zero). An advantage of truncation error analysis compared
+empricial estimation of convergence rates or detailed analysis
+of a special problem with a mathematical expression for the numerical
+solution, is that the truncation error analysis reveals the
+accuracy of the various building blocks in the numerical method and
+how each building block impacts the overall accuracy. The analysis
+can therefore be used to detect building blocks with lower accuracy
+than the others.
+
+Knowing the truncation error or other error measures is important for
+verification of programs by empirically establishing convergence
+rates. The forthcoming text will provide many examples on how to
+compute truncation errors for finite difference discretizations of
+ODEs and PDEs.
 
 
 .. _trunc:finite:differences:
@@ -128,6 +181,7 @@ in the most common finite difference approximation formulas.
 
 Example: The backward difference for :math:`u'(t)`
 --------------------------------------------------
+
 
 
 .. index::
@@ -160,7 +214,7 @@ the approximation is
 .. math::
    :label: trunc:fd:bw3
         
-        R^n = u'(t_n) - [D^-_tu]^n{\thinspace .}
+        R^n = [D^-_tu]^n - u'(t_n){\thinspace .}
         
         
 
@@ -208,22 +262,22 @@ Inserting the Taylor series above in the left-hand side of1
 
 .. math::
         
-        u'(t_n) - [D_t^-u]^n &= u'(t_n) - \frac{u(t_n) - u(t_{n-1})}{\Delta t}\\ 
-        &= u'(t_n) - \frac{u(t_n) - (u(t_n) - u'(t_n)\Delta t + \frac{1}{2}u''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^3)} )}{\Delta t}\\ 
-        &= \frac{1}{2}u''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)} ),
+        [D_t^-u]^n - u'(t_n) &= \frac{u(t_n) - u(t_{n-1})}{\Delta t} - u'(t_n)\\ 
+        &= \frac{u(t_n) - (u(t_n) - u'(t_n)\Delta t + \frac{1}{2}u''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^3)} )}{\Delta t} - u'(t_n)\\ 
+        &= -\frac{1}{2}u''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)} ),
         
 
 which is, according to
-:eq:`trunc:fd:bw3`, the truncation error, and we have found
+:eq:`trunc:fd:bw3`, the truncation error:
 
 
 .. math::
         
-        R^n = \frac{1}{2}u''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)} )
+        R^n = - \frac{1}{2}u''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)} )
         \thinspace .
         
 
-The dominating term for small :math:`\Delta t` is :math:`\frac{1}{2}u''(t_n)\Delta t`,
+The dominating term for small :math:`\Delta t` is :math:`-\frac{1}{2}u''(t_n)\Delta t`,
 which is proportional to :math:`\Delta t`, and we say that the truncation error
 is of *first order* in :math:`\Delta t`.
 
@@ -251,7 +305,7 @@ We can analyze the approximation error in the forward difference
 by writing
 
 .. math::
-         u'(t_n) = [D_t^+ u]^n + R^n,
+         R^n = [D_t^+ u]^n - u'(t_n),
 
 and expanding :math:`u^{n+1}` in a Taylor series around :math:`t_n`,
 
@@ -263,7 +317,7 @@ and expanding :math:`u^{n+1}` in a Taylor series around :math:`t_n`,
 The result becomes
 
 .. math::
-         R = -\frac{1}{2}u''(t_n)\Delta t +
+         R = \frac{1}{2}u''(t_n)\Delta t +
         {\mathcal{O}(\Delta t^2)},
 
 showing that also the forward difference is of first order.
@@ -293,7 +347,7 @@ we write
 
 
 .. math::
-         u'(t_n) - [ D_tu]^n = R^n,
+         R^n = [ D_tu]^n - u'(t_n),
 
 and expand :math:`u(t_{n+\frac{1}{2}})` and
 :math:`u(t_{n-1/2})` in Taylor series around the point :math:`t_n` where
@@ -322,12 +376,13 @@ Now,
         \thinspace .
         
 
-Collecting terms in :math:`[u'=D_tu + R]^n` we find that the truncation
-error becomes
+By collecting terms in :math:`[D_t u]^n - u(t_n)` we find the truncation error
+to be
+
 
 .. math::
         
-        R = -\frac{1}{24}u'''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
+        R^n = \frac{1}{24}u'''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
         
 
 with only even powers of :math:`\Delta t`. Since :math:`R\sim \Delta t^2` we say
@@ -629,6 +684,7 @@ The indexing of ``diffop`` applies names that correspond to the operators:
 :math:`D_{2t}`, ``DtDt`` for :math:`D_tD_t`.
 
 
+.. !split
 
 .. _trunc:decay:
 
@@ -642,13 +698,13 @@ Truncation errors in exponential decay ODE
 We shall now compute the truncation error of a finite difference
 scheme for a differential equation.
 Our first problem involves the following
-the linear ODE problem modeling exponential decay,
+the linear ODE modeling exponential decay,
 
 
 .. math::
    :label: trunc:decay:ode
         
-        u'(t)=-au(t),\quad u(0)=I\thinspace .
+        u'(t)=-au(t){\thinspace .}
         
         
 
@@ -658,7 +714,7 @@ the linear ODE problem modeling exponential decay,
 Truncation error of the Forward Euler scheme
 --------------------------------------------
 
-We begin with the Forward Euler scheme for solving this ODE:
+We begin with the Forward Euler scheme for discretizing :eq:`trunc:decay:ode`:
 
 
 .. math::
@@ -670,17 +726,17 @@ We begin with the Forward Euler scheme for solving this ODE:
         
 
 The idea behind the truncation error computation is to insert
-the exact solution :math:`u_{\small\mbox{e}}` of the differential equation problem
+the exact solution :math:`{u_{\small\mbox{e}}}` of the differential equation problem
 :eq:`trunc:decay:ode`
 in the discrete equations :eq:`trunc:decay:FE:scheme` and find the residual
-that arises because :math:`u_{\small\mbox{e}}` does not solve the discrete equations.
-Instead, :math:`u_{\small\mbox{e}}` solves the discrete equations with a residual :math:`R^n`:
+that arises because :math:`{u_{\small\mbox{e}}}` does not solve the discrete equations.
+Instead, :math:`{u_{\small\mbox{e}}}` solves the discrete equations with a residual :math:`R^n`:
 
 
 .. math::
    :label: trunc:decay:FE:uex
         
-        [D_t^+ u_{\small\mbox{e}} + au_{\small\mbox{e}} = R]^n
+        [D_t^+ {u_{\small\mbox{e}}} + a{u_{\small\mbox{e}}} = R]^n
         
         \thinspace .
         
@@ -688,26 +744,26 @@ Instead, :math:`u_{\small\mbox{e}}` solves the discrete equations with a residua
 From :eq:`trunc:fd1:fw` it follows that
 
 .. math::
-         [D_t^+ u_{\small\mbox{e}}]^n = u_{\small\mbox{e}}'(t_n) +
-        \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)},
+         [D_t^+ {u_{\small\mbox{e}}}]^n = {u_{\small\mbox{e}}}'(t_n) +
+        \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)},
 
 which inserted in :eq:`trunc:decay:FE:uex` results in
 
 .. math::
         
-        u_{\small\mbox{e}}'(t_n) +
-        \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
-        + au_{\small\mbox{e}}(t_n) = R^n
+        {u_{\small\mbox{e}}}'(t_n) +
+        \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        + a{u_{\small\mbox{e}}}(t_n) = R^n
         \thinspace .
         
 
-Now, :math:`u_{\small\mbox{e}}'(t_n) + au_{\small\mbox{e}}^n = 0` since :math:`u_{\small\mbox{e}}` solves the differential equation.
+Now, :math:`{u_{\small\mbox{e}}}'(t_n) + a{u_{\small\mbox{e}}}^n = 0` since :math:`{u_{\small\mbox{e}}}` solves the differential equation.
 The remaining terms constitute the residual:
 
 .. math::
    :label: trunc:decay:FE:R
         
-        R^n = \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        R^n = \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
         
         \thinspace .
         
@@ -718,9 +774,9 @@ Because :math:`R^n` is proportional to :math:`\Delta t`, we say that
 the Forward Euler scheme is of first order in :math:`\Delta t`.
 However, the truncation error
 is just one error measure, and it is not equal to the true error
-:math:`u_{\small\mbox{e}}^n - u^n`. For this simple model problem we can compute
+:math:`{u_{\small\mbox{e}}}^n - u^n`. For this simple model problem we can compute
 a range of different error measures for the Forward Euler scheme,
-including the true error :math:`u_{\small\mbox{e}}^n - u^n`, and all of them
+including the true error :math:`{u_{\small\mbox{e}}}^n - u^n`, and all of them
 have dominating terms proportional to :math:`\Delta t`.
 
 .. _trunc:decay:CN:
@@ -744,38 +800,38 @@ the ODE and adding a residual :math:`R`,
 .. math::
    :label: trunc:decay:CN:scheme:R
         
-        [D_t u_{\small\mbox{e}} + a\overline{u_{\small\mbox{e}}}^{t} = R]^{n+\frac{1}{2}}
+        [D_t {u_{\small\mbox{e}}} + a\overline{{u_{\small\mbox{e}}}}^{t} = R]^{n+\frac{1}{2}}
         \thinspace .
         
         
 
-The term :math:`[D_tu_{\small\mbox{e}}]^{n+\frac{1}{2}}` is easily computed from :eq:`trunc:fd1:center`
+The term :math:`[D_t{u_{\small\mbox{e}}}]^{n+\frac{1}{2}}` is easily computed from :eq:`trunc:fd1:center`
 by replacing :math:`n` with :math:`n+\frac{1}{2}` in the formula,
 
 
 .. math::
         
-        [D_tu_{\small\mbox{e}}]^{n+\frac{1}{2}} = u'(t_{n+\frac{1}{2}}) +
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}{\thinspace .}
+        [D_t{u_{\small\mbox{e}}}]^{n+\frac{1}{2}} = u'(t_{n+\frac{1}{2}}) +
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}{\thinspace .}
         
         The arithmetic mean is related to $u(t_{n+\frac{1}{2}})$ by
         (ref{trunc:avg:arith}) so
         
         !bt
-         [a\overline{u_{\small\mbox{e}}}^{t}]^{n+\frac{1}{2}}
+         [a\overline{{u_{\small\mbox{e}}}}^{t}]^{n+\frac{1}{2}}
         = u(t_{n+\frac{1}{2}}) + \frac{1}{8}u''(t_{n})\Delta t^2 +
         + {\mathcal{O}(\Delta t^4)}{\thinspace .}
 
 Inserting these expressions in :eq:`trunc:decay:CN:scheme:R` and
-observing that :math:`u_{\small\mbox{e}}'(t_{n+\frac{1}{2}}) +au_{\small\mbox{e}}^{n+\frac{1}{2}} = 0`, because
-:math:`u_{\small\mbox{e}}(t)` solves the ODE :math:`u'(t)=-au(t)` at any point :math:`t`,
+observing that :math:`{u_{\small\mbox{e}}}'(t_{n+\frac{1}{2}}) +a{u_{\small\mbox{e}}}^{n+\frac{1}{2}} = 0`, because
+:math:`{u_{\small\mbox{e}}}(t)` solves the ODE :math:`u'(t)=-au(t)` at any point :math:`t`,
 we find that
 
 
 .. math::
         
         R^{n+\frac{1}{2}} = \left(
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}}) + \frac{1}{8}u''(t_{n})
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}}) + \frac{1}{8}u''(t_{n})
         \right)\Delta t^2 + {\mathcal{O}(\Delta t^4)}
         
 
@@ -804,13 +860,13 @@ Our computational task is to find :math:`R^{n+\theta}` in
 
 .. math::
         
-        [\bar D_t u_{\small\mbox{e}}  + a\overline{u_{\small\mbox{e}}}^{t,\theta} = R]^{n+\theta}
+        [\bar D_t {u_{\small\mbox{e}}}  + a\overline{{u_{\small\mbox{e}}}}^{t,\theta} = R]^{n+\theta}
         \thinspace .
         
 
 From :eq:`trunc:fd1:theta` and :eq:`trunc:avg:theta` we get
-expressions for the terms with :math:`u_{\small\mbox{e}}`.
-Using that :math:`u_{\small\mbox{e}}'(t_{n+\theta}) + au_{\small\mbox{e}}(t_{n+\theta})=0`,
+expressions for the terms with :math:`{u_{\small\mbox{e}}}`.
+Using that :math:`{u_{\small\mbox{e}}}'(t_{n+\theta}) + a{u_{\small\mbox{e}}}(t_{n+\theta})=0`,
 we end up with
 
 
@@ -818,15 +874,15 @@ we end up with
         
         R^{n+\theta}
         =
-        (\frac{1}{2}-\theta)u_{\small\mbox{e}}''(t_{n+\theta})\Delta t +
-        \frac{1}{2}\theta (1-\theta)u_{\small\mbox{e}}''(t_{n+\theta})\Delta t^2 + \nonumber
+        (\frac{1}{2}-\theta){u_{\small\mbox{e}}}''(t_{n+\theta})\Delta t +
+        \frac{1}{2}\theta (1-\theta){u_{\small\mbox{e}}}''(t_{n+\theta})\Delta t^2 + \nonumber
         
 
 
 
 .. math::
           
-         \frac{1}{2}(\theta^2 -\theta + 3)u_{\small\mbox{e}}'''(t_{n+\theta})\Delta t^2
+         \frac{1}{2}(\theta^2 -\theta + 3){u_{\small\mbox{e}}}'''(t_{n+\theta})\Delta t^2
         + {\mathcal{O}(\Delta t^3)}
         
 
@@ -898,12 +954,12 @@ is
 .. math::
    :label: trunc:decay:FE:R:comp
         
-        R^n = [D_t^+u_{\small\mbox{e}} + au_{\small\mbox{e}}]^n
+        R^n = [D_t^+{u_{\small\mbox{e}}} + a{u_{\small\mbox{e}}}]^n
         
         \thinspace .
         
 
-If we happen to know the exact solution :math:`u_{\small\mbox{e}}(t)`, we can easily evaluate
+If we happen to know the exact solution :math:`{u_{\small\mbox{e}}}(t)`, we can easily evaluate
 :math:`R^n` from the above formula.
 
 To estimate how :math:`R` varies with the discretization parameter :math:`\Delta
@@ -1074,7 +1130,7 @@ in parallel, using ``plt.figure(i)`` to create and switch to figure number
 ``i.`` Figure numbers start at 1. A logarithmic scale is used on the
 :math:`y` axis since we expect that :math:`R` as a function of time (or mesh points)
 is exponential. The reason is that the theoretical estimate
-:eq:`trunc:decay:FE:R` contains :math:`u_{\small\mbox{e}}''`, which for the present model
+:eq:`trunc:decay:FE:R` contains :math:`{u_{\small\mbox{e}}}''`, which for the present model
 goes like :math:`e^{-at}`. Taking the logarithm makes a straight line.
 
 The code follows closely the previously
@@ -1193,25 +1249,25 @@ Increasing the accuracy by adding correction terms
 Now we ask the question: can we add terms in the differential equation
 that can help increase the order of the truncation error? To be precise,
 let us revisit the Forward Euler scheme for :math:`u'=-au`, insert the
-exact solution :math:`u_{\small\mbox{e}}`, include a residual :math:`R`, but also include
+exact solution :math:`{u_{\small\mbox{e}}}`, include a residual :math:`R`, but also include
 new terms :math:`C`:
 
 
 .. math::
    :label: trunc:decay:FE:corr
         
-        \lbrack D_t^+ u_{\small\mbox{e}} + au_{\small\mbox{e}} = C + R \rbrack^n{\thinspace .}
+        \lbrack D_t^+ {u_{\small\mbox{e}}} + a{u_{\small\mbox{e}}} = C + R \rbrack^n{\thinspace .}
         
         
 
-Inserting the Taylor expansions for :math:`[D_t^+u_{\small\mbox{e}}]^n` and keeping
+Inserting the Taylor expansions for :math:`[D_t^+{u_{\small\mbox{e}}}]^n` and keeping
 terms up to 3rd order in :math:`\Delta t` gives the equation
 
 
 .. math::
         
-        \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t - \frac{1}{6}u_{\small\mbox{e}}'''(t_n)\Delta t^2
-        + \frac{1}{24}u_{\small\mbox{e}}''''(t_n)\Delta t^3
+        \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t - \frac{1}{6}{u_{\small\mbox{e}}}'''(t_n)\Delta t^2
+        + \frac{1}{24}{u_{\small\mbox{e}}}''''(t_n)\Delta t^3
         + {\mathcal{O}(\Delta t^4)}  = C^n + R^n{\thinspace .}
 
 Can we find :math:`C^n` such that :math:`R^n` is :math:`{\mathcal{O}(\Delta t^2)}`?
@@ -1219,13 +1275,13 @@ Yes, by setting
 
 
 .. math::
-         C^n = \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t,
+         C^n = \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t,
 
 we manage to cancel the first-order term and
 
 
 .. math::
-         R^n = \frac{1}{6}u_{\small\mbox{e}}'''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^3)}{\thinspace .}
+         R^n = \frac{1}{6}{u_{\small\mbox{e}}}'''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^3)}{\thinspace .}
 
 
 The correction term :math:`C^n` introduces :math:`\frac{1}{2}\Delta t u''`
@@ -1330,7 +1386,7 @@ and the truncation error is defined through
 
 
 .. math::
-         [D_t u_{\small\mbox{e}} + a\overline{u_{\small\mbox{e}}}^{t} = C + R]^{n+\frac{1}{2}},
+         [D_t {u_{\small\mbox{e}}} + a\overline{{u_{\small\mbox{e}}}}^{t} = C + R]^{n+\frac{1}{2}},
 
 where we have added a correction term.  We need to Taylor expand both
 the discrete derivative and the arithmetic mean with aid of
@@ -1340,16 +1396,16 @@ The result is
 
 .. math::
         
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}
-        + \frac{a}{8}u_{\small\mbox{e}}''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)} = C^{n+\frac{1}{2}} + R^{n+\frac{1}{2}}{\thinspace .}
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}
+        + \frac{a}{8}{u_{\small\mbox{e}}}''(t_{n+\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)} = C^{n+\frac{1}{2}} + R^{n+\frac{1}{2}}{\thinspace .}
 
 The goal now is to make :math:`C^{n+\frac{1}{2}}` cancel the :math:`\Delta t^2` terms:
 
 
 .. math::
          C^{n+\frac{1}{2}} =
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})\Delta t^2
-        + \frac{a}{8}u_{\small\mbox{e}}''(t_{n})\Delta t^2{\thinspace .}
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2
+        + \frac{a}{8}{u_{\small\mbox{e}}}''(t_{n})\Delta t^2{\thinspace .}
 
 Using :math:`u'=-au`, we have that :math:`u''=a^2u`, and we find that :math:`u'''=-a3u`.
 We can therefore solve the perturbed ODE problem
@@ -1368,11 +1424,11 @@ is indeed obtained in real computations.
 Extension to variable coefficients  (1)
 ---------------------------------------
 
-Let us address a case with variable coefficients,
+Let us address the decay ODE with variable coefficients,
 
 
 .. math::
-         u'(t) = -a(t)u(t) + b(t),\quad u(0)=I,
+         u'(t) = -a(t)u(t) + b(t),
 
 discretized by the Forward Euler scheme,
 
@@ -1384,12 +1440,12 @@ discretized by the Forward Euler scheme,
         
 
 The truncation error :math:`R` is as always found by inserting the exact
-solution :math:`u_{\small\mbox{e}}(t)` in the discrete scheme:
+solution :math:`{u_{\small\mbox{e}}}(t)` in the discrete scheme:
 
 
 .. math::
         
-        [D_t^+ u_{\small\mbox{e}} + au_{\small\mbox{e}} - b = R]^n
+        [D_t^+ {u_{\small\mbox{e}}} + a{u_{\small\mbox{e}}} - b = R]^n
         \thinspace .
         
 
@@ -1397,8 +1453,8 @@ Using :eq:`trunc:fd1:fw`,
 
 
 .. math::
-         u_{\small\mbox{e}}'(t_n) - \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
-        + a(t_n)u_{\small\mbox{e}}(t_n) - b(t_n) = R^n
+         {u_{\small\mbox{e}}}'(t_n) - \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        + a(t_n){u_{\small\mbox{e}}}(t_n) - b(t_n) = R^n
         \thinspace .
         
 
@@ -1406,7 +1462,7 @@ Because of the ODE,
 
 
 .. math::
-         u_{\small\mbox{e}}'(t_n) + a(t_n)u_{\small\mbox{e}}(t_n) - b(t_n) =0,
+         {u_{\small\mbox{e}}}'(t_n) + a(t_n){u_{\small\mbox{e}}}(t_n) - b(t_n) =0,
 
 so we are left with the result
 
@@ -1414,7 +1470,7 @@ so we are left with the result
 .. math::
    :label: trunc:decay:vc:R
         
-        R^n = -\frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        R^n = -\frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
         \
         \thinspace .
         
@@ -1437,38 +1493,38 @@ formulas for the truncation errors in
 :eq:`trunc:fd1:center`-:eq:`trunc:avg:harm`
 in the section :ref:`trunc:table`, we see that all but two of
 the :math:`R` expressions contains a second or higher order derivative
-of :math:`u_{\small\mbox{e}}`. The exceptions are the geometric and harmonic
+of :math:`{u_{\small\mbox{e}}}`. The exceptions are the geometric and harmonic
 means where the truncation
-error involves :math:`u_{\small\mbox{e}}'` and even :math:`u_{\small\mbox{e}}` in case of the harmonic mean.
+error involves :math:`{u_{\small\mbox{e}}}'` and even :math:`{u_{\small\mbox{e}}}` in case of the harmonic mean.
 So, apart from these two means,
-choosing :math:`u_{\small\mbox{e}}` to be a linear function of
-:math:`t`, :math:`u_{\small\mbox{e}} = ct+d` for constants :math:`c` and :math:`d`, will make
-the truncation error vanish since :math:`u_{\small\mbox{e}}''=0`. Consqeuently,
+choosing :math:`{u_{\small\mbox{e}}}` to be a linear function of
+:math:`t`, :math:`{u_{\small\mbox{e}}} = ct+d` for constants :math:`c` and :math:`d`, will make
+the truncation error vanish since :math:`{u_{\small\mbox{e}}}''=0`. Consqeuently,
 the truncation error of a finite difference scheme will be zero
 since the various
 approximations used will all be exact. This means that the linear solution
 is an exact solution of the discrete equations.
 
 In a particular differential equation problem, the reasoning above can
-be used to determine if we expect a linear :math:`u_{\small\mbox{e}}` to fulfill the
+be used to determine if we expect a linear :math:`{u_{\small\mbox{e}}}` to fulfill the
 discrete equations. To actually prove that this is true, we can either
 compute the truncation error and see that it vanishes, or we can
-simply insert :math:`u_{\small\mbox{e}}(t)=ct+d` in the scheme and see that it fulfills
+simply insert :math:`{u_{\small\mbox{e}}}(t)=ct+d` in the scheme and see that it fulfills
 the equations. The latter method is usually the simplest. It will
 often be necessary to add some source term to the ODE in order to
 allow a linear solution.
 
 Many ODEs are discretized by centered differences.
 From the section :ref:`trunc:table` we see that all the centered
-difference formulas have truncation errors involving :math:`u_{\small\mbox{e}}'''` or
+difference formulas have truncation errors involving :math:`{u_{\small\mbox{e}}}'''` or
 higher-order derivatives.
-A quadratic solution, e.g., :math:`u_{\small\mbox{e}}(t) =t^2 + ct + d`,
+A quadratic solution, e.g., :math:`{u_{\small\mbox{e}}}(t) =t^2 + ct + d`,
 will then make the truncation errors vanish. This observation
 can be used to test if a quadratic solution will fulfill the
 discrete equations. Note that a quadratic solution will not
 obey the equations for a Crank-Nicolson scheme for :math:`u'=-au+b`
 because the approximation applies an arithmetic mean, which
-involves a truncation error with :math:`u_{\small\mbox{e}}''`.
+involves a truncation error with :math:`{u_{\small\mbox{e}}}''`.
 
 
 .. _trunc:decay:gen:
@@ -1498,13 +1554,13 @@ can be solved by a Crank-Nicolson scheme
 
 The truncation error is as always defined as the residual arising
 when inserting the
-exact solution :math:`u_{\small\mbox{e}}` in the scheme:
+exact solution :math:`{u_{\small\mbox{e}}}` in the scheme:
 
 
 .. math::
    :label: trunc:decay:gen:ode:CN
         
-        [D_t u_{\small\mbox{e}}' - \overline{f}^{t}= R]^{n+\frac{1}{2}}{\thinspace .}
+        [D_t {u_{\small\mbox{e}}}' - \overline{f}^{t}= R]^{n+\frac{1}{2}}{\thinspace .}
         
         
 
@@ -1514,9 +1570,9 @@ Using :eq:`trunc:avg:arith` for :math:`\overline{f}^{t}` results in
 .. math::
         
         [\overline{f}^{t}]^{n+\frac{1}{2}} &=
-        \frac{1}{2}(f(u_{\small\mbox{e}}^n,t_n) + f(u_{\small\mbox{e}}^{n+1},t_{n+1})),\\ 
-        & f(u_{\small\mbox{e}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}}) +
-        \frac{1}{8}u_{\small\mbox{e}}''(t_{n+\frac{1}{2}})\Delta t^2
+        \frac{1}{2}(f({u_{\small\mbox{e}}}^n,t_n) + f({u_{\small\mbox{e}}}^{n+1},t_{n+1}))\\ 
+        &= f({u_{\small\mbox{e}}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}}) +
+        \frac{1}{8}{u_{\small\mbox{e}}}''(t_{n+\frac{1}{2}})\Delta t^2
         + {\mathcal{O}(\Delta t^4)}{\thinspace .}
         
 
@@ -1526,19 +1582,19 @@ equations :eq:`trunc:decay:gen:ode:CN` lead to
 
 .. math::
         
-        u_{\small\mbox{e}}'(t_{n+\frac{1}{2}}) +
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})\Delta t^2
-        - f(u_{\small\mbox{e}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}}) -
+        {u_{\small\mbox{e}}}'(t_{n+\frac{1}{2}}) +
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2
+        - f({u_{\small\mbox{e}}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}}) -
         \frac{1}{8}u''(t_{n+\frac{1}{2}})\Delta t^2
         + {\mathcal{O}(\Delta t^4)} = R^{n+\frac{1}{2}}{\thinspace .}
         
 
-Since :math:`u_{\small\mbox{e}}'(t_{n+\frac{1}{2}}) - f(u_{\small\mbox{e}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}})=0`,
+Since :math:`{u_{\small\mbox{e}}}'(t_{n+\frac{1}{2}}) - f({u_{\small\mbox{e}}}^{n+\frac{1}{2}},t_{n+\frac{1}{2}})=0`,
 the truncation error becomes
 
 
 .. math::
-         R^{n+\frac{1}{2}} = (\frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})
+         R^{n+\frac{1}{2}} = (\frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})
         - \frac{1}{8}u''(t_{n+\frac{1}{2}})) \Delta t^2{\thinspace .}
         
 
@@ -1546,10 +1602,14 @@ The computational techniques worked well
 even for this nonlinear ODE.
 
 
+.. !split
+
 .. _trunc:vib:
 
 Truncation errors in vibration ODEs
 ===================================
+
+.. _trunc:vib:undamped:
 
 Linear model without damping
 ----------------------------
@@ -1561,11 +1621,15 @@ following ODE for vibration problems:
 .. math::
    :label: trunc:vib:undamped:ode
         
-        u''(t) + \omega^2 u(t) = 0,\quad u(0)=I,\ u'(0)=0{\thinspace .}
+        u''(t) + \omega^2 u(t) = 0{\thinspace .}
         
         
 
 Here, :math:`\omega` is a given constant.
+
+The truncation error of a centered finite difference scheme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Using a standard, second-ordered, central difference for the
 second-order derivative time, we have the scheme
 
@@ -1578,13 +1642,14 @@ second-order derivative time, we have the scheme
         \thinspace .
         
 
-Inserting the exact solution :math:`u_{\small\mbox{e}}` in this equation and adding
-a residual :math:`R` so that :math:`u_{\small\mbox{e}}` can fulfill the equation results in
+
+Inserting the exact solution :math:`{u_{\small\mbox{e}}}` in this equation and adding
+a residual :math:`R` so that :math:`{u_{\small\mbox{e}}}` can fulfill the equation results in
 
 
 .. math::
         
-        [D_tD_t u_{\small\mbox{e}} + \omega^2u_{\small\mbox{e}} =R]^n
+        [D_tD_t {u_{\small\mbox{e}}} + \omega^2{u_{\small\mbox{e}}} =R]^n
         \thinspace .
         
 
@@ -1592,31 +1657,60 @@ To calculate the truncation error :math:`R^n`, we use :eq:`trunc:fd2:center`, i.
 
 
 .. math::
-         [D_tD_t u_{\small\mbox{e}}]^n = u_{\small\mbox{e}}''(t_n) + \frac{1}{12}u_{\small\mbox{e}}''''(t_n)\Delta t^2,
+         [D_tD_t {u_{\small\mbox{e}}}]^n = {u_{\small\mbox{e}}}''(t_n) + \frac{1}{12}{u_{\small\mbox{e}}}''''(t_n)\Delta t^2,
 
-and the fact that :math:`u_{\small\mbox{e}}''(t) + \omega^2u_{\small\mbox{e}}(t)=0`. The result is
+and the fact that :math:`{u_{\small\mbox{e}}}''(t) + \omega^2{u_{\small\mbox{e}}}(t)=0`. The result is
 
 
 .. math::
         
-        R^n =  \frac{1}{12}u_{\small\mbox{e}}''''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)}
+        R^n =  \frac{1}{12}{u_{\small\mbox{e}}}''''(t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)}
         \thinspace .
         
 
+
+The truncation error of approximating :math:`u'(0)`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The initial conditions for :eq:`trunc:vib:undamped:ode` are
+:math:`u(0)=I` and :math:`u'(0)=V`. The latter involves a finite difference
+approximation. The standard choice
+
+
+.. math::
+         [D_{2t}u=V]^0,
+
+where :math:`u^{-1}` is eliminated with the aid of the discretized ODE
+for :math:`n=0`, involves a centered difference with an
+:math:`{\mathcal{O}(\Delta t^2)}` truncation error
+given by :eq:`trunc:fd1:center2`. The simpler choice
+
+
+.. math::
+         [D_t^+u = V]^0,
+
+is based on a forward difference with a truncation error :math:`{\mathcal{O}(\Delta t)}`.
+A central question is if this initial error will impact the
+order of the scheme throughout the simulation.
+:ref:`trunc:exer:vib:ic:fw` asks you to quickly perform an
+experiment to investigate this question.
+
+Computing correction terms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The idea of using correction terms to increase the order of :math:`R^n` can
 be applied as described in the section :ref:`trunc:decay:corr`. We look at
 
 
 .. math::
-         [D_tD_t u_{\small\mbox{e}} + \omega^2u_{\small\mbox{e}} =C + R]^n,
+         [D_tD_t {u_{\small\mbox{e}}} + \omega^2{u_{\small\mbox{e}}} =C + R]^n,
 
 and observe that :math:`C^n` must be chosen to cancel
 the :math:`\Delta t^2` term in :math:`R^n`. That is,
 
 
 .. math::
-         C^n = \frac{1}{12}u_{\small\mbox{e}}''''(t_n)\Delta t^2{\thinspace .}
+         C^n = \frac{1}{12}{u_{\small\mbox{e}}}''''(t_n)\Delta t^2{\thinspace .}
 
 To get rid of the 4th-order derivative we can use the differential
 equation: :math:`u''=-\omega^u`, which implies :math:`u'''' = \omega^4 u`.
@@ -1689,12 +1783,12 @@ This governing equation can by discretized by centered differences:
         \thinspace .
         
 
-The exact solution :math:`u_{\small\mbox{e}}` fulfills the discrete equations with a residual term:
+The exact solution :math:`{u_{\small\mbox{e}}}` fulfills the discrete equations with a residual term:
 
 
 .. math::
         
-        [mD_tD_t u_{\small\mbox{e}} + \beta D_{2t} u_{\small\mbox{e}} + s(u_{\small\mbox{e}})=F + R]^n
+        [mD_tD_t {u_{\small\mbox{e}}} + \beta D_{2t} {u_{\small\mbox{e}}} + s({u_{\small\mbox{e}}})=F + R]^n
         \thinspace .
         
 
@@ -1704,18 +1798,18 @@ get
 
 .. math::
         
-        [mD_tD_t u_{\small\mbox{e}} + \beta D_{2t} u_{\small\mbox{e}}]^n &=
-        mu_{\small\mbox{e}}''(t_n) + \betau_{\small\mbox{e}}'(t_n) + \\ 
-        &\quad \left(\frac{m}{12}u_{\small\mbox{e}}''''(t_n) +
-          \frac{\beta}{6}u_{\small\mbox{e}}'''(t_n)\right)\Delta t^2 + {\mathcal{O}(\Delta t^4)}
+        [mD_tD_t {u_{\small\mbox{e}}} + \beta D_{2t} {u_{\small\mbox{e}}}]^n &=
+        m{u_{\small\mbox{e}}}''(t_n) + \beta{u_{\small\mbox{e}}}'(t_n) + \\ 
+        &\quad \left(\frac{m}{12}{u_{\small\mbox{e}}}''''(t_n) +
+          \frac{\beta}{6}{u_{\small\mbox{e}}}'''(t_n)\right)\Delta t^2 + {\mathcal{O}(\Delta t^4)}
         
 
-Combing this with the previous equation, we can collect the terms
+Combining this with the previous equation, we can collect the terms
 
 .. math::
-         mu_{\small\mbox{e}}''(t_n) + \betau_{\small\mbox{e}}'(t_n) + \omega^2u_{\small\mbox{e}}(t_n) + s(u_{\small\mbox{e}}(t_n)) - F^n,
+         m{u_{\small\mbox{e}}}''(t_n) + \beta{u_{\small\mbox{e}}}'(t_n) + \omega^2{u_{\small\mbox{e}}}(t_n) + s({u_{\small\mbox{e}}}(t_n)) - F^n,
 
-and set this sum to zero because :math:`u_{\small\mbox{e}}` solves
+and set this sum to zero because :math:`{u_{\small\mbox{e}}}` solves
 the differential equation. We are left with
 the truncation error
 
@@ -1723,8 +1817,8 @@ the truncation error
 .. math::
    :label: trunc:vib:gen:R
         
-        R^n = \left(\frac{m}{12}u_{\small\mbox{e}}''''(t_n) +
-          \frac{\beta}{6}u_{\small\mbox{e}}'''(t_n)\right)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
+        R^n = \left(\frac{m}{12}{u_{\small\mbox{e}}}''''(t_n) +
+          \frac{\beta}{6}{u_{\small\mbox{e}}}'''(t_n)\right)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
         
         
 
@@ -1734,8 +1828,8 @@ According to :eq:`trunc:vib:gen:R`, we can add correction terms
 
 
 .. math::
-         C^n = \left(\frac{m}{12}u_{\small\mbox{e}}''''(t_n) +
-          \frac{\beta}{6}u_{\small\mbox{e}}'''(t_n)\right)\Delta t^2,
+         C^n = \left(\frac{m}{12}{u_{\small\mbox{e}}}''''(t_n) +
+          \frac{\beta}{6}{u_{\small\mbox{e}}}'''(t_n)\right)\Delta t^2,
 
 to the right-hand side of the ODE to obtain a fourth-order scheme.
 However, expressing :math:`u''''` and :math:`u'''` in terms
@@ -1787,9 +1881,9 @@ The truncation error is defined through
 
 .. math::
         
-        [mD_t D_t u_{\small\mbox{e}}]^n +
-        \beta |[D_{t} u_{\small\mbox{e}}]^{n-\frac{1}{2}}|[D_t u_{\small\mbox{e}}]^{n+\frac{1}{2}}
-        + s(u_{\small\mbox{e}}^n)-F^n = R^n{\thinspace .}
+        [mD_t D_t {u_{\small\mbox{e}}}]^n +
+        \beta |[D_{t} {u_{\small\mbox{e}}}]^{n-\frac{1}{2}}|[D_t {u_{\small\mbox{e}}}]^{n+\frac{1}{2}}
+        + s({u_{\small\mbox{e}}}^n)-F^n = R^n{\thinspace .}
         
 
 
@@ -1799,19 +1893,19 @@ According to :eq:`trunc:avg:geom`,
 
 .. math::
         
-        |[D_{t} u_{\small\mbox{e}}]^{n-\frac{1}{2}}|[D_t u_{\small\mbox{e}}]^{n+\frac{1}{2}}
-        = [|D_tu_{\small\mbox{e}}|D_tu_{\small\mbox{e}}]^n
+        |[D_{t} {u_{\small\mbox{e}}}]^{n-\frac{1}{2}}|[D_t {u_{\small\mbox{e}}}]^{n+\frac{1}{2}}
+        = [|D_t{u_{\small\mbox{e}}}|D_t{u_{\small\mbox{e}}}]^n
         - \frac{1}{4}u'(t_n)^2\Delta t^2  + \frac{1}{4}u(t_n)u''(t_n)\Delta t^2
         + {\mathcal{O}(\Delta t^4)}{\thinspace .}
         
 
-Using :eq:`trunc:fd1:center` for the :math:`D_tu_{\small\mbox{e}}` factors results in
+Using :eq:`trunc:fd1:center` for the :math:`D_t{u_{\small\mbox{e}}}` factors results in
 
 
 .. math::
         
-        [|D_tu_{\small\mbox{e}}|D_tu_{\small\mbox{e}}]^n = |u_{\small\mbox{e}}' + \frac{1}{24}u_{\small\mbox{e}}'''(t_n)\Delta t^2 +
-        {\mathcal{O}(\Delta t^4)}|(u_{\small\mbox{e}}' + \frac{1}{24}u_{\small\mbox{e}}'''(t_n)\Delta t^2 +
+        [|D_t{u_{\small\mbox{e}}}|D_t{u_{\small\mbox{e}}}]^n = |{u_{\small\mbox{e}}}' + \frac{1}{24}{u_{\small\mbox{e}}}'''(t_n)\Delta t^2 +
+        {\mathcal{O}(\Delta t^4)}|({u_{\small\mbox{e}}}' + \frac{1}{24}{u_{\small\mbox{e}}}'''(t_n)\Delta t^2 +
         {\mathcal{O}(\Delta t^4)})
 
 We can remove the absolute value since it essentially gives a factor 1 or -1
@@ -1820,8 +1914,8 @@ only. Calculating the product, we have the leading-order terms
 
 .. math::
         
-        [D_tu_{\small\mbox{e}} D_tu_{\small\mbox{e}}]^n = (u_{\small\mbox{e}}'(t_n))^2 +
-        \frac{1}{12}u_{\small\mbox{e}}(t_n)u_{\small\mbox{e}}'''(t_n)\Delta t^2 +
+        [D_t{u_{\small\mbox{e}}} D_t{u_{\small\mbox{e}}}]^n = ({u_{\small\mbox{e}}}'(t_n))^2 +
+        \frac{1}{12}{u_{\small\mbox{e}}}(t_n){u_{\small\mbox{e}}}'''(t_n)\Delta t^2 +
         {\mathcal{O}(\Delta t^4)}{\thinspace .}
 
 
@@ -1829,7 +1923,7 @@ With
 
 
 .. math::
-         m[D_t D_tu_{\small\mbox{e}}]^n = mu_{\small\mbox{e}}''(t_n) + \frac{m}{12}u_{\small\mbox{e}}''''(t_n)\Delta t^2
+         m[D_t D_t{u_{\small\mbox{e}}}]^n = m{u_{\small\mbox{e}}}''(t_n) + \frac{m}{12}{u_{\small\mbox{e}}}''''(t_n)\Delta t^2
         +{\mathcal{O}(\Delta t^4)},
 
 and using the differential equation on the
@@ -1837,8 +1931,8 @@ form :math:`mu'' + \beta (u')^2 + s(u)=F`, we end up with
 
 
 .. math::
-         R^n = (\frac{m}{12}u_{\small\mbox{e}}''''(t_n) +
-        \frac{\beta}{12}u_{\small\mbox{e}}(t_n)u_{\small\mbox{e}}'''(t_n))
+         R^n = (\frac{m}{12}{u_{\small\mbox{e}}}''''(t_n) +
+        \frac{\beta}{12}{u_{\small\mbox{e}}}(t_n){u_{\small\mbox{e}}}'''(t_n))
         \Delta t^2 + {\mathcal{O}(\Delta t^4)}{\thinspace .}
 
 This result demonstrates that we have
@@ -1923,14 +2017,14 @@ which can be linearized as :math:`|v^{n}|v^{n+1}`:
 
 
 Each ODE will have a truncation error when inserting the exact
-solutions :math:`u_{\small\mbox{e}}` and :math:`v_{\small\mbox{e}}` in
-:eq:`trunc:vib:gen:2x2model:ode:u:fw`-(:ref:`trunc:vib:gen:2x2model:ode:u:bw`):
+solutions :math:`{u_{\small\mbox{e}}}` and :math:`{v_{\small\mbox{e}}}` in
+:eq:`trunc:vib:gen:2x2model:ode:u:fw`-:eq:`trunc:vib:gen:2x2model:ode:v:bw`:
 
 
 .. math::
    :label: trunc:vib:gen:2x2model:ode:u:fw:R
         
-        [D_t^+ u_{\small\mbox{e}} = v_{\small\mbox{e}} + R_u]^n,
+        [D_t^+ {u_{\small\mbox{e}}} = {v_{\small\mbox{e}}} + R_u]^n,
          
         
 
@@ -1939,7 +2033,7 @@ solutions :math:`u_{\small\mbox{e}}` and :math:`v_{\small\mbox{e}}` in
 .. math::
    :label: trunc:vib:gen:2x2model:ode:v:bw:R
           
-        [D_t^-v_{\small\mbox{e}}]^{n+1} = \frac{1}{m}( F(t_{n+1}) - \beta |v_{\small\mbox{e}}(t_n)|v_{\small\mbox{e}}(t_{n+1}) - s(u_{\small\mbox{e}}(t_{n+1}))) + R_v^{n+1}{\thinspace .}
+        [D_t^-{v_{\small\mbox{e}}}]^{n+1} = \frac{1}{m}( F(t_{n+1}) - \beta |{v_{\small\mbox{e}}}(t_n)|{v_{\small\mbox{e}}}(t_{n+1}) - s({u_{\small\mbox{e}}}(t_{n+1}))) + R_v^{n+1}{\thinspace .}
         
         
 
@@ -1951,8 +2045,8 @@ in :eq:`trunc:vib:gen:2x2model:ode:u:fw:R` and
 .. math::
    :label: trunc:vib:gen:2x2model:ode:u:fw:R2
         
-        u_{\small\mbox{e}}'(t_n) + \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
-        = v_{\small\mbox{e}}(t_n) + R_u^n,
+        {u_{\small\mbox{e}}}'(t_n) + \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        = {v_{\small\mbox{e}}}(t_n) + R_u^n,
         
         
 
@@ -1960,27 +2054,27 @@ in :eq:`trunc:vib:gen:2x2model:ode:u:fw:R` and
 
 .. math::
           
-        v_{\small\mbox{e}}'(t_{n+1}) - \frac{1}{2}v_{\small\mbox{e}}''(t_{n+1})\Delta t + {\mathcal{O}(\Delta t^2)}
-        = \frac{1}{m}(F(t_{n+1}) - \beta|v_{\small\mbox{e}}(t_n)|v_{\small\mbox{e}}(t_{n+1}) +\nonumber
+        {v_{\small\mbox{e}}}'(t_{n+1}) - \frac{1}{2}{v_{\small\mbox{e}}}''(t_{n+1})\Delta t + {\mathcal{O}(\Delta t^2)}
+        = \frac{1}{m}(F(t_{n+1}) - \beta|{v_{\small\mbox{e}}}(t_n)|{v_{\small\mbox{e}}}(t_{n+1}) +\nonumber
         
 
 
 
 .. math::
-   :label: trunc:vib:gen:2x2model:ode:u:bw:R2
+   :label: trunc:vib:gen:2x2model:ode:v:bw:R2
           
-        \quad s(u_{\small\mbox{e}}(t_{n+1}))+ R_v^n{\thinspace .}
+        \quad s({u_{\small\mbox{e}}}(t_{n+1}))+ R_v^n{\thinspace .}
         
         
 
-Since :math:`u_{\small\mbox{e}} ' = v_{\small\mbox{e}}`, :eq:`trunc:vib:gen:2x2model:ode:u:fw:R2`
+Since :math:`{u_{\small\mbox{e}}} ' = {v_{\small\mbox{e}}}`, :eq:`trunc:vib:gen:2x2model:ode:u:fw:R2`
 gives
 
 
 .. math::
-         R_u^n = \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}{\thinspace .}
+         R_u^n = \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}{\thinspace .}
 
-In :eq:`trunc:vib:gen:2x2model:ode:u:bw:R2` we can collect the
+In :eq:`trunc:vib:gen:2x2model:ode:v:bw:R2` we can collect the
 terms that constitute the ODE, but the damping term has the wrong
 form.
 Let us drop the absolute value in the damping term for simplicity.
@@ -1989,10 +2083,10 @@ Adding a substracting the right form :math:`v^{n+1}v^{n+1}` helps:
 
 .. math::
         
-        v_{\small\mbox{e}}'(t_{n+1}) &-
-        \frac{1}{m}(F(t_{n+1}) - \beta v_{\small\mbox{e}}(t_{n+1})v_{\small\mbox{e}}(t_{n+1}) +
-        s(u_{\small\mbox{e}}(t_{n+1})) + \\ 
-        & (\beta v_{\small\mbox{e}}(t_n)v_{\small\mbox{e}}(t_{n+1}) - \beta v_{\small\mbox{e}}(t_{n+1})v_{\small\mbox{e}}(t_{n+1}))),
+        {v_{\small\mbox{e}}}'(t_{n+1}) &-
+        \frac{1}{m}(F(t_{n+1}) - \beta {v_{\small\mbox{e}}}(t_{n+1}){v_{\small\mbox{e}}}(t_{n+1}) +
+        s({u_{\small\mbox{e}}}(t_{n+1})) + \\ 
+        & (\beta {v_{\small\mbox{e}}}(t_n){v_{\small\mbox{e}}}(t_{n+1}) - \beta {v_{\small\mbox{e}}}(t_{n+1}){v_{\small\mbox{e}}}(t_{n+1}))),
         
 
 which reduces to
@@ -2000,10 +2094,10 @@ which reduces to
 
 .. math::
         
-        \frac{\beta}{m}v_{\small\mbox{e}}(t_{n+1}(v_{\small\mbox{e}}(t_n) - v_{\small\mbox{e}}(t_{n+1}))
-        &= \frac{\beta}{m}v_{\small\mbox{e}}(t_{n+1}[D_t^-v_{\small\mbox{e}}]^{n+1}\Delta t\\ 
-        &= \frac{\beta}{m}v_{\small\mbox{e}}(t_{n+1}(v_{\small\mbox{e}}'(t_{n+1})\Delta t +
-        -\frac{1}{2}v_{\small\mbox{e}}'''(t_{n+1})\Delta t^ + {\mathcal{O}(\Delta t^3)}){\thinspace .}
+        \frac{\beta}{m}{v_{\small\mbox{e}}}(t_{n+1}({v_{\small\mbox{e}}}(t_n) - {v_{\small\mbox{e}}}(t_{n+1}))
+        &= \frac{\beta}{m}{v_{\small\mbox{e}}}(t_{n+1}[D_t^-{v_{\small\mbox{e}}}]^{n+1}\Delta t\\ 
+        &= \frac{\beta}{m}{v_{\small\mbox{e}}}(t_{n+1}({v_{\small\mbox{e}}}'(t_{n+1})\Delta t +
+        -\frac{1}{2}{v_{\small\mbox{e}}}'''(t_{n+1})\Delta t^ + {\mathcal{O}(\Delta t^3)}){\thinspace .}
         
 
 We end with :math:`R_u^n` and :math:`R_v^{n+1}` as :math:`{\mathcal{O}(\Delta t)}`, simply because
@@ -2069,9 +2163,9 @@ The truncation error in each equation fulfills
 
 .. math::
         
-        [D_t u_{\small\mbox{e}}]^{n-\frac{1}{2}} &= v_{\small\mbox{e}}(t_{n-\frac{1}{2}}) + R_u^{n-\frac{1}{2}},\\ 
-        [D_t v_{\small\mbox{e}}]^n &= \frac{1}{m}( F(t_n) -
-        \beta |v_{\small\mbox{e}}(t_{n-\frac{1}{2}})|v_{\small\mbox{e}}(t_{n+\frac{1}{2}}) - s(u^n)) + R_v^n{\thinspace .}
+        [D_t {u_{\small\mbox{e}}}]^{n-\frac{1}{2}} &= {v_{\small\mbox{e}}}(t_{n-\frac{1}{2}}) + R_u^{n-\frac{1}{2}},\\ 
+        [D_t {v_{\small\mbox{e}}}]^n &= \frac{1}{m}( F(t_n) -
+        \beta |{v_{\small\mbox{e}}}(t_{n-\frac{1}{2}})|{v_{\small\mbox{e}}}(t_{n+\frac{1}{2}}) - s(u^n)) + R_v^n{\thinspace .}
         
 
 The truncation error of the centered differences is given
@@ -2082,20 +2176,20 @@ These results lead to
 
 .. math::
         
-        u_{\small\mbox{e}}'(t_{n-\frac{1}{2}}) +
-        \frac{1}{24}u_{\small\mbox{e}}'''(t_{n-\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}
-        = v_{\small\mbox{e}}(t_{n-\frac{1}{2}}) + R_u^{n-\frac{1}{2}},
+        {u_{\small\mbox{e}}}'(t_{n-\frac{1}{2}}) +
+        \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n-\frac{1}{2}})\Delta t^2 + {\mathcal{O}(\Delta t^4)}
+        = {v_{\small\mbox{e}}}(t_{n-\frac{1}{2}}) + R_u^{n-\frac{1}{2}},
 
 and
 
 .. math::
         
-        v_{\small\mbox{e}}'(t_n) =
+        {v_{\small\mbox{e}}}'(t_n) =
         \frac{1}{m}( F(t_n) -
-        \beta |v_{\small\mbox{e}}(t_n)|v_{\small\mbox{e}}(t_n) + {\mathcal{O}(\Delta t^2)} - s(u^n)) + R_v^n{\thinspace .}
+        \beta |{v_{\small\mbox{e}}}(t_n)|{v_{\small\mbox{e}}}(t_n) + {\mathcal{O}(\Delta t^2)} - s(u^n)) + R_v^n{\thinspace .}
         
 
-The ODEs fulfilled by :math:`u_{\small\mbox{e}}` and :math:`v_{\small\mbox{e}}` are evident in these equations,
+The ODEs fulfilled by :math:`{u_{\small\mbox{e}}}` and :math:`{v_{\small\mbox{e}}}` are evident in these equations,
 and we achieve second-order accuracy for the truncation error
 in both equations:
 
@@ -2114,6 +2208,8 @@ staggered mesh approach is that we can all the way use second-order
 accurate building blocks and in this way concince ourselves that the
 resulting scheme has an error of :math:`{\mathcal{O}(\Delta t^2)}`.
 
+
+.. !split
 
 Truncation errors in wave equations
 ===================================
@@ -2157,7 +2253,7 @@ discretizing the derivatives, leading to
         
 
 
-Inserting the exact solution :math:`u_{\small\mbox{e}}(x,t)` in :eq:`trunc:wave:pde1D:fd`
+Inserting the exact solution :math:`{u_{\small\mbox{e}}}(x,t)` in :eq:`trunc:wave:pde1D:fd`
 makes this function fulfill the equation if we add the
 term :math:`R`:
 
@@ -2165,7 +2261,7 @@ term :math:`R`:
 .. math::
    :label: trunc:wave:pde1D:fd:R
         
-        [D_t D_t u_{\small\mbox{e}} = c^2 D_xD_x u_{\small\mbox{e}} + f + R]^n_i
+        [D_t D_t {u_{\small\mbox{e}}} = c^2 D_xD_x {u_{\small\mbox{e}}} + f + R]^n_i
         
         
 
@@ -2175,19 +2271,19 @@ From :eq:`trunc:fd2:center` we have that
 
 
 .. math::
-         [D_t D_tu_{\small\mbox{e}}]_i^n = \uexd{tt}(x_i,t_n) +
-        \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
+         [D_t D_t{u_{\small\mbox{e}}}]_i^n = {u_{\small\mbox{e}, tt}}(x_i,t_n) +
+        \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2 + {\mathcal{O}(\Delta t^4)},
         
 
-when we use a notation taking into account that :math:`u_{\small\mbox{e}}` is a function
+when we use a notation taking into account that :math:`{u_{\small\mbox{e}}}` is a function
 of two variables and that derivatives must be partial derivatives.
-The notation :math:`\uexd{tt}` means :math:`\partial^2u_{\small\mbox{e}} /\partial t^2`.
+The notation :math:`{u_{\small\mbox{e}, tt}}` means :math:`\partial^2{u_{\small\mbox{e}}} /\partial t^2`.
 
 The same formula may also be applied to the :math:`x`-derivative term:
 
 .. math::
-         [D_xD_xu_{\small\mbox{e}}]_i^n = \uexd{xx}(x_i,t_n) +
-        \frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)},
+         [D_xD_x{u_{\small\mbox{e}}}]_i^n = {u_{\small\mbox{e}, xx}}(x_i,t_n) +
+        \frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)},
         
 
 Equation :eq:`trunc:wave:pde1D:fd:R` now becomes
@@ -2195,15 +2291,15 @@ Equation :eq:`trunc:wave:pde1D:fd:R` now becomes
 
 .. math::
         
-        \uexd{tt}
-        + \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2  &=
-        c^2\uexd{xx} +
-        c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + f(x_i,t_n) + \\ 
+        {u_{\small\mbox{e}, tt}}
+        + \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2  &=
+        c^2{u_{\small\mbox{e}, xx}} +
+        c^2\frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 + f(x_i,t_n) + \\ 
         & \quad  {\mathcal{O}(\Delta t^4,\Delta x^4)} + R^n_i
         \thinspace .
         
 
-Because :math:`u_{\small\mbox{e}}` fulfills the partial differential equation (PDE)
+Because :math:`{u_{\small\mbox{e}}}` fulfills the partial differential equation (PDE)
 :eq:`trunc:wave:pde1D:v2`, the first, third, and fifth terms cancel out,
 and we are left with
 
@@ -2211,8 +2307,8 @@ and we are left with
 .. math::
    :label: trunc:wave:1D:R
         
-        R^n_i = \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-        c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 +
+        R^n_i = \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2 -
+        c^2\frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 +
         {\mathcal{O}(\Delta t^4,\Delta x^4)},
         
         
@@ -2232,7 +2328,7 @@ Can we add correction terms to the PDE and increase the order of
 .. math::
    :label: trunc:wave:pde1D:fd:R
         
-        [D_t D_t u_{\small\mbox{e}} = c^2 D_xD_x u_{\small\mbox{e}} + f + C + R]^n_i
+        [D_t D_t {u_{\small\mbox{e}}} = c^2 D_xD_x {u_{\small\mbox{e}}} + f + C + R]^n_i
         
         
 
@@ -2243,8 +2339,8 @@ again, but now with :math:`C`:
 .. math::
    :label: trunc:wave:1D:R:C
         
-        R^n_i + C_i^n = \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-        c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 +
+        R^n_i + C_i^n = \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2 -
+        c^2\frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 +
         {\mathcal{O}(\Delta t^4,\Delta x^4)}{\thinspace .}
         
         
@@ -2255,8 +2351,8 @@ terms to make :math:`R^n_i = {\mathcal{O}(\Delta t^4,\Delta x^4)}`:
 
 .. math::
          C_i^n =
-        \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-        c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2{\thinspace .}
+        \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2 -
+        c^2\frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2{\thinspace .}
         
 
 Essentially, it means that we add a new term
@@ -2357,12 +2453,12 @@ The truncation error is the residual :math:`R` in the equation
 .. math::
    :label: trunc:wave:1D:varcoef:fd:R
         
-        [D_t D_t u_{\small\mbox{e}} = D_x \overline{\lambda}^{x}D_x u_{\small\mbox{e}} + R]^n_i{\thinspace .}
+        [D_t D_t {u_{\small\mbox{e}}} = D_x \overline{\lambda}^{x}D_x {u_{\small\mbox{e}}} + R]^n_i{\thinspace .}
         
         
 
 The difficulty in the present is how to compute the truncation error of
-the term :math:`[D_x \overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_i`.
+the term :math:`[D_x \overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_i`.
 
 We start by writing out the outer operator:
 
@@ -2370,10 +2466,10 @@ We start by writing out the outer operator:
 .. math::
    :label: trunc:wave:1D:varcoeff:outer
         
-        [D_x \overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_i =
+        [D_x \overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_i =
         \frac{1}{\Delta x}\left(
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i+\frac{1}{2}} -
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i-\frac{1}{2}}
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i+\frac{1}{2}} -
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i-\frac{1}{2}}
         \right).
         
         
@@ -2384,27 +2480,27 @@ With the aid of :eq:`trunc:fd1:center` and
 
 .. math::
         
-        [D_x u_{\small\mbox{e}}]^n_{i+\frac{1}{2}} & = \uexd{x}(x_{i+\frac{1}{2}},t_n) +
-        \frac{1}{24}\uexd{xxx}(x_{i+\frac{1}{2}},t_n)\Delta x^2 +
+        [D_x {u_{\small\mbox{e}}}]^n_{i+\frac{1}{2}} & = {u_{\small\mbox{e}, x}}(x_{i+\frac{1}{2}},t_n) +
+        \frac{1}{24}{u_{\small\mbox{e}, xxx}}(x_{i+\frac{1}{2}},t_n)\Delta x^2 +
         {\mathcal{O}(\Delta x^4)},\\ 
         [\overline{\lambda}^{x}]_{i+\frac{1}{2}}
         &= \lambda(x_{i+\frac{1}{2}}) +
         \frac{1}{8}\lambda''(x_{i+\frac{1}{2}})\Delta x^2
         + {\mathcal{O}(\Delta x^4)},\\ 
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i+\frac{1}{2}} &=
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i+\frac{1}{2}} &=
         (\lambda(x_{i+\frac{1}{2}}) +
         \frac{1}{8}\lambda''(x_{i+\frac{1}{2}})\Delta x^2
         + {\mathcal{O}(\Delta x^4)})\times\\ 
-        &\quad (\uexd{x}(x_{i+\frac{1}{2}},t_n) +
-        \frac{1}{24}\uexd{xxx}(x_{i+\frac{1}{2}},t_n)\Delta x^2 +
+        &\quad ({u_{\small\mbox{e}, x}}(x_{i+\frac{1}{2}},t_n) +
+        \frac{1}{24}{u_{\small\mbox{e}, xxx}}(x_{i+\frac{1}{2}},t_n)\Delta x^2 +
         {\mathcal{O}(\Delta x^4)})\\ 
-        &= \lambda(x_{i+\frac{1}{2}})\uexd{x}(x_{i+\frac{1}{2}},t_n)
+        &= \lambda(x_{i+\frac{1}{2}}){u_{\small\mbox{e}, x}}(x_{i+\frac{1}{2}},t_n)
         + \lambda(x_{i+\frac{1}{2}})
-        \frac{1}{24}\uexd{xxx}(x_{i+\frac{1}{2}},t_n)\Delta x^2 + \\ 
-        &\quad \uexd{x}(x_{i+\frac{1}{2}})
+        \frac{1}{24}{u_{\small\mbox{e}, xxx}}(x_{i+\frac{1}{2}},t_n)\Delta x^2 + \\ 
+        &\quad {u_{\small\mbox{e}, x}}(x_{i+\frac{1}{2}})
         \frac{1}{8}\lambda''(x_{i+\frac{1}{2}})\Delta x^2
         +{\mathcal{O}(\Delta x^4)}\\ 
-        &= [\lambda \uexd{x}]^n_{i+\frac{1}{2}} + G^n_{i+\frac{1}{2}}\Delta x^2
+        &= [\lambda {u_{\small\mbox{e}, x}}]^n_{i+\frac{1}{2}} + G^n_{i+\frac{1}{2}}\Delta x^2
         +{\mathcal{O}(\Delta x^4)},
         
 
@@ -2413,8 +2509,8 @@ where we have introduced the short form
 
 .. math::
          G^n_{i+\frac{1}{2}} =
-        (\frac{1}{24}\uexd{xxx}(x_{i+\frac{1}{2}},t_n)\lambda((x_{i+\frac{1}{2}})
-        + \uexd{x}(x_{i+\frac{1}{2}},t_n)
+        (\frac{1}{24}{u_{\small\mbox{e}, xxx}}(x_{i+\frac{1}{2}},t_n)\lambda((x_{i+\frac{1}{2}})
+        + {u_{\small\mbox{e}, x}}(x_{i+\frac{1}{2}},t_n)
         \frac{1}{8}\lambda''(x_{i+\frac{1}{2}}))\Delta x^2{\thinspace .}
 
 Similarly, we find that
@@ -2422,8 +2518,8 @@ Similarly, we find that
 
 .. math::
         
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i-\frac{1}{2}} =
-        [\lambda \uexd{x}]^n_{i-\frac{1}{2}} + G^n_{i-\frac{1}{2}}\Delta x^2
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i-\frac{1}{2}} =
+        [\lambda {u_{\small\mbox{e}, x}}]^n_{i-\frac{1}{2}} + G^n_{i-\frac{1}{2}}\Delta x^2
         +{\mathcal{O}(\Delta x^4)}{\thinspace .}
 
 Inserting these expressions in the outer operator :eq:`trunc:wave:1D:varcoeff:outer`
@@ -2432,19 +2528,19 @@ results in
 
 .. math::
         
-        [D_x \overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_i &=
+        [D_x \overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_i &=
         \frac{1}{\Delta x}(
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i+\frac{1}{2}} -
-        [\overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_{i-\frac{1}{2}}
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i+\frac{1}{2}} -
+        [\overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_{i-\frac{1}{2}}
         )\\ 
         &= \frac{1}{\Delta x}(
-        [\lambda \uexd{x}]^n_{i+\frac{1}{2}} +
+        [\lambda {u_{\small\mbox{e}, x}}]^n_{i+\frac{1}{2}} +
         G^n_{i+\frac{1}{2}}\Delta x^2 -
-        [\lambda \uexd{x}]^n_{i-\frac{1}{2}} -
+        [\lambda {u_{\small\mbox{e}, x}}]^n_{i-\frac{1}{2}} -
         G^n_{i-\frac{1}{2}}\Delta x^2 +
         {\mathcal{O}(\Delta x^4)}
         )\\ 
-        &= [D_x \lambda \uexd{x}]^n_i + [D_x G]^n_i\Delta x^2 + {\mathcal{O}(\Delta x^4)}{\thinspace .}
+        &= [D_x \lambda {u_{\small\mbox{e}, x}}]^n_i + [D_x G]^n_i\Delta x^2 + {\mathcal{O}(\Delta x^4)}{\thinspace .}
         
 
 The reason for :math:`{\mathcal{O}(\Delta x^4)}` in the remainder is that there
@@ -2452,15 +2548,15 @@ are coefficients in front of this term, say :math:`H\Delta x^4`, and the
 subtraction and division by :math:`\Delta x` results in :math:`[D_x H]^n_i\Delta x^4`.
 
 We can now use :eq:`trunc:fd1:center` to express the :math:`D_x` operator
-in :math:`[D_x \lambda \uexd{x}]^n_i`
+in :math:`[D_x \lambda {u_{\small\mbox{e}, x}}]^n_i`
 as a derivative and a truncation error:
 
 
 .. math::
         
-        [D_x \lambda \uexd{x}]^n_i =
-        \frac{\partial}{\partial x}\lambda(x_i)\uexd{x}(x_i,t_n)
-        + \frac{1}{24}(\lambda\uexd{x})_{xxx}(x_i,t_n)\Delta x^2
+        [D_x \lambda {u_{\small\mbox{e}, x}}]^n_i =
+        \frac{\partial}{\partial x}\lambda(x_i){u_{\small\mbox{e}, x}}(x_i,t_n)
+        + \frac{1}{24}(\lambda{u_{\small\mbox{e}, x}})_{xxx}(x_i,t_n)\Delta x^2
         + {\mathcal{O}(\Delta x^4)}{\thinspace .}
         
 
@@ -2481,18 +2577,18 @@ is therefore summarized as
 
 
 .. math::
-         [D_x \overline{\lambda}^{x}D_x u_{\small\mbox{e}}]^n_i =
+         [D_x \overline{\lambda}^{x}D_x {u_{\small\mbox{e}}}]^n_i =
         \frac{\partial}{\partial x}
-        \lambda(x_i)\uexd{x}(x_i,t_n) +
+        \lambda(x_i){u_{\small\mbox{e}, x}}(x_i,t_n) +
         {\mathcal{O}(\Delta x^2)}{\thinspace .}
         
 
-After having treated the :math:`[D_tD_tu_{\small\mbox{e}}]^n_i` term as well, we achieve
+After having treated the :math:`[D_tD_t{u_{\small\mbox{e}}}]^n_i` term as well, we achieve
 
 
 .. math::
          R^n_i = {\mathcal{O}(\Delta x^2)} +
-        \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2
+        \frac{1}{12}{u_{\small\mbox{e}, tttt}}(x_i,t_n)\Delta t^2
         {\thinspace .}
 
 The main conclusion is that the scheme is of second-order in time
@@ -2560,7 +2656,7 @@ The truncation error is found from
 
 .. math::
         
-        [D_t D_t u_{\small\mbox{e}} = c^2(D_xD_x u_{\small\mbox{e}} + D_yD_y u_{\small\mbox{e}}) + f + R]^n
+        [D_t D_t {u_{\small\mbox{e}}} = c^2(D_xD_x {u_{\small\mbox{e}}} + D_yD_y {u_{\small\mbox{e}}}) + f + R]^n
         \thinspace .
         
 
@@ -2571,10 +2667,10 @@ fulfill the PDE, we end up with
 
 .. math::
         
-        R^n_{i,j,k}  = [\frac{1}{12}\uexd{tttt}\Delta t^2 -
-        c^2\frac{1}{12}\left( \uexd{xxxx}\Delta x^2
-        + \uexd{yyyy}\Delta x^2
-        + \uexd{zzzz}\Delta z^2\right)]^n_{i,j,k} +
+        R^n_{i,j,k}  = [\frac{1}{12}{u_{\small\mbox{e}, tttt}}\Delta t^2 -
+        c^2\frac{1}{12}\left( {u_{\small\mbox{e}, xxxx}}\Delta x^2
+        + {u_{\small\mbox{e}, yyyy}}\Delta x^2
+        + {u_{\small\mbox{e}, zzzz}}\Delta z^2\right)]^n_{i,j,k} +
         
 
 
@@ -2585,6 +2681,8 @@ fulfill the PDE, we end up with
         \thinspace .
         
 
+
+.. !split
 
 .. _trunc:diffu:
 
@@ -2625,11 +2723,11 @@ with the simple Forward Euler scheme:
 
 The truncation error arises as the residual :math:`R` when
 inserting the exact solution
-:math:`u_{\small\mbox{e}}` in the discrete equations:
+:math:`{u_{\small\mbox{e}}}` in the discrete equations:
 
 
 .. math::
-         [D_t^+ u_{\small\mbox{e}} = \alpha D_xD_x u_{\small\mbox{e}} + f + R]^n_i{\thinspace .}
+         [D_t^+ {u_{\small\mbox{e}}} = \alpha D_xD_x {u_{\small\mbox{e}}} + f + R]^n_i{\thinspace .}
 
 Now, using :eq:`trunc:fd1:fw`
 and :eq:`trunc:fd2:center`, we can transform the difference operators to
@@ -2638,20 +2736,20 @@ derivatives:
 
 .. math::
         
-        \uexd{t}(x_i,t_n) + \frac{1}{2}\uexd{tt}(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
-        &= \alpha\uexd{xx}(x_i,t_n) + \\ 
-        &\quad\frac{\alpha}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)}
+        {u_{\small\mbox{e}, t}}(x_i,t_n) &+ \frac{1}{2}{u_{\small\mbox{e}, tt}}(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        = \alpha{u_{\small\mbox{e}, xx}}(x_i,t_n) + \\ 
+        &\frac{\alpha}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)}
         + f(x_i,t_n) + R^n_i{\thinspace .}
         
 
-The terms :math:`\uexd{t}(x_i,t_n) - \alpha\uexd{xx}(x_i,t_n) - f(x_i,t_n)`
-vansih because :math:`u_{\small\mbox{e}}` solves the PDE. The truncation error then becomes
+The terms :math:`{u_{\small\mbox{e}, t}}(x_i,t_n) - \alpha{u_{\small\mbox{e}, xx}}(x_i,t_n) - f(x_i,t_n)`
+vansih because :math:`{u_{\small\mbox{e}}}` solves the PDE. The truncation error then becomes
 
 
 .. math::
          R^n_i =
-        \frac{1}{2}\uexd{tt}(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
-        - \frac{\alpha}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)}{\thinspace .}
+        \frac{1}{2}{u_{\small\mbox{e}, tt}}(t_n)\Delta t + {\mathcal{O}(\Delta t^2)}
+        - \frac{\alpha}{12}{u_{\small\mbox{e}, xxxx}}(x_i,t_n)\Delta x^2 + {\mathcal{O}(\Delta x^4)}{\thinspace .}
         
 
 
@@ -2674,8 +2772,8 @@ The equation for the truncation error is
 
 
 .. math::
-         [D_t u_{\small\mbox{e}}]^{n+\frac{1}{2}}_i = \alpha\frac{1}{2}([D_xD_x u_{\small\mbox{e}}]^n_i +
-        [D_xD_x u_{\small\mbox{e}}]^{n+1}_i) + f^{n+\frac{1}{2}}_i + R^{n+\frac{1}{2}}_i{\thinspace .}
+         [D_t {u_{\small\mbox{e}}}]^{n+\frac{1}{2}}_i = \alpha\frac{1}{2}([D_xD_x {u_{\small\mbox{e}}}]^n_i +
+        [D_xD_x {u_{\small\mbox{e}}}]^{n+1}_i) + f^{n+\frac{1}{2}}_i + R^{n+\frac{1}{2}}_i{\thinspace .}
 
 To find the truncation error, we start by expressing the arithmetic
 average in terms of values at time :math:`t_{n+\frac{1}{2}}`. According to
@@ -2684,10 +2782,10 @@ average in terms of values at time :math:`t_{n+\frac{1}{2}}`. According to
 
 .. math::
         
-        \frac{1}{2}([D_xD_x u_{\small\mbox{e}}]^n_i + [D_xD_x u_{\small\mbox{e}}]^{n+1}_i)
+        \frac{1}{2}([D_xD_x {u_{\small\mbox{e}}}]^n_i + [D_xD_x {u_{\small\mbox{e}}}]^{n+1}_i)
         =
-        [D_xD_xu_{\small\mbox{e}}]^{n+\frac{1}{2}}_i +
-        \frac{1}{8}[D_xD_x\uexd{tt}]_i^{n+\frac{1}{2}}\Delta t^2
+        [D_xD_x{u_{\small\mbox{e}}}]^{n+\frac{1}{2}}_i +
+        \frac{1}{8}[D_xD_x{u_{\small\mbox{e}, tt}}]_i^{n+\frac{1}{2}}\Delta t^2
         + {\mathcal{O}(\Delta t^4)}{\thinspace .}
         
 
@@ -2697,9 +2795,9 @@ With :eq:`trunc:fd2:center` we can express the difference operator
 
 .. math::
         
-        [D_xD_xu_{\small\mbox{e}}]^{n+\frac{1}{2}}_i =
-        \uexd{xx}(x_i, t_{n+\frac{1}{2}})
-        + \frac{1}{12}\uexd{xxxx}(x_i, t_{n+\frac{1}{2}})\Delta x^2 +
+        [D_xD_x{u_{\small\mbox{e}}}]^{n+\frac{1}{2}}_i =
+        {u_{\small\mbox{e}, xx}}(x_i, t_{n+\frac{1}{2}})
+        + \frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i, t_{n+\frac{1}{2}})\Delta x^2 +
         {\mathcal{O}(\Delta x^4)}{\thinspace .}
         
 
@@ -2707,8 +2805,8 @@ The error term from the arithmetic mean is similarly expanded,
 
 
 .. math::
-         \frac{1}{8}[D_xD_x\uexd{tt}]_i^{n+\frac{1}{2}}\Delta t^2
-        = \frac{1}{8}\uexd{ttxx}(x_i, t_{n+\frac{1}{2}})\Delta t^2
+         \frac{1}{8}[D_xD_x{u_{\small\mbox{e}, tt}}]_i^{n+\frac{1}{2}}\Delta t^2
+        = \frac{1}{8}{u_{\small\mbox{e}, ttxx}}(x_i, t_{n+\frac{1}{2}})\Delta t^2
         + {\mathcal{O}(\Delta t^2\Delta x^2)}
         
 
@@ -2718,8 +2816,8 @@ The time derivative is analyzed using :eq:`trunc:fd1:center`:
 
 .. math::
          [D_t u]^{n+\frac{1}{2}}_i
-        = \uexd{t}(x_i,t_{n+\frac{1}{2}}) +
-        \frac{1}{24}\uexd{ttt}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
+        = {u_{\small\mbox{e}, t}}(x_i,t_{n+\frac{1}{2}}) +
+        \frac{1}{24}{u_{\small\mbox{e}, ttt}}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
         {\mathcal{O}(\Delta t^4)}{\thinspace .}
         
 
@@ -2727,8 +2825,8 @@ The time derivative is analyzed using :eq:`trunc:fd1:center`:
 Summing up all the contributions and notifying that
 
 .. math::
-         \uexd{t}(x_i,t_{n+\frac{1}{2}}) =
-        \alpha\uexd{xx}(x_i, t_{n+\frac{1}{2}})
+         {u_{\small\mbox{e}, t}}(x_i,t_{n+\frac{1}{2}}) =
+        \alpha{u_{\small\mbox{e}, xx}}(x_i, t_{n+\frac{1}{2}})
         + f(x_i,t_{n+\frac{1}{2}}),
 
 the truncation error is given by
@@ -2738,9 +2836,9 @@ the truncation error is given by
         
         R^{n+\frac{1}{2}}_i
         & =
-        \frac{1}{8}\uexd{xx}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
-        \frac{1}{12}\uexd{xxxx}(x_i, t_{n+\frac{1}{2}})\Delta x^2 +\\ 
-        &\quad \frac{1}{24}\uexd{ttt}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
+        \frac{1}{8}{u_{\small\mbox{e}, xx}}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
+        \frac{1}{12}{u_{\small\mbox{e}, xxxx}}(x_i, t_{n+\frac{1}{2}})\Delta x^2 +\\ 
+        &\quad \frac{1}{24}{u_{\small\mbox{e}, ttt}}(x_i,t_{n+\frac{1}{2}})\Delta t^2 +
         + {\mathcal{O}(\Delta x^4)} + {\mathcal{O}(\Delta t^4)} + {\mathcal{O}(\Delta t^2\Delta x^2)}
         
 
@@ -2771,7 +2869,7 @@ Derive the truncation error of the weighted mean in
 .. --- begin hint in exercise ---
 
 
-*Hint.* Expand :math:`u_{\small\mbox{e}}^{n+1}` and :math:`u_{\small\mbox{e}}^n` around :math:`t_{n+\theta}`.
+*Hint.* Expand :math:`{u_{\small\mbox{e}}}^{n+1}` and :math:`{u_{\small\mbox{e}}}^n` around :math:`t_{n+\theta}`.
 
 .. --- end hint in exercise ---
 
@@ -2794,9 +2892,9 @@ Exercise 2: Simulate the error of a weighted mean
 We consider the weighted mean
 
 .. math::
-         u_{\small\mbox{e}}(t_n) \approx \theta u_{\small\mbox{e}}^{n+1} + (1-\theta)u_{\small\mbox{e}}^n\thinspace . 
+         {u_{\small\mbox{e}}}(t_n) \approx \theta {u_{\small\mbox{e}}}^{n+1} + (1-\theta){u_{\small\mbox{e}}}^n\thinspace . 
 
-Choose some specific function for :math:`u_{\small\mbox{e}}(t)` and compute the error in
+Choose some specific function for :math:`{u_{\small\mbox{e}}}(t)` and compute the error in
 this approximation for a sequence of decreasing :math:`\Delta t =
 t_{n+1}-t_n` and for :math:`\theta = 0, 0.25, 0.5, 0.75, 1`.  Assuming that
 the error equals :math:`C\Delta t^r`, for some constants :math:`C` and :math:`r`,
@@ -3002,8 +3100,8 @@ Showing the order of the truncation error in the Crank-Nicolson scheme,
 .. math::
          [D_t u = f(u,t)]^{n+\frac{1}{2}}, 
 
-is somewhat more involved: Taylor expand :math:`u_{\small\mbox{e}}^n`, :math:`u_{\small\mbox{e}}^{n+1}`,
-:math:`f(u_{\small\mbox{e}}^n, t_n)`, and :math:`f(u_{\small\mbox{e}}^{n+1}, t_{n+1})` around :math:`t_{n+\frac{1}{2}}`,
+is somewhat more involved: Taylor expand :math:`{u_{\small\mbox{e}}}^n`, :math:`{u_{\small\mbox{e}}}^{n+1}`,
+:math:`f({u_{\small\mbox{e}}}^n, t_n)`, and :math:`f({u_{\small\mbox{e}}}^{n+1}, t_{n+1})` around :math:`t_{n+\frac{1}{2}}`,
 and use that
 
 .. math::
@@ -3041,9 +3139,36 @@ Filename: ``trunc_d2u.pdf``.
 .. --- begin exercise ---
 
 
+.. _trunc:exer:vib:ic:fw:
+
+Exercise 11: Investigate the impact of approximating :math:`u'(0)`
+------------------------------------------------------------------
+
+the section :ref:`trunc:vib:undamped` describes two ways of discretizing
+the initial conditon :math:`u'(0)=V` for a vibration model
+:math:`u''+\omega^2u=0`: a centered difference :math:`[D_{2t}u=V]^0` or
+a forward difference :math:`[D_t^+u=V]^0`.
+The program `vib_undamped.py <http://tinyurl.com/jvzzcfn/vib/vib_undamped.py>`_
+solves :math:`u''+\omega^2u=0` with :math:`[D_{2t}u=0]^0` and features
+a function ``convergence_rates`` for computing the order of the
+error in the numerical solution. Modify this program such
+that it applies the forward difference :math:`[D_t^+u=0]^0` and
+report how this simpler and more convenient approximation impacts
+the overall convergence rate of the scheme.
+Filename: ``trunc_vib_ic_fw.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
 .. _trunc:exer:vib:fbw:
 
-Exercise 11: Investigate the accuracy of a simplified scheme
+Exercise 12: Investigate the accuracy of a simplified scheme
 ------------------------------------------------------------
 
 Consider the ODE
@@ -3062,6 +3187,10 @@ such that it only involves known values? That is, we propose to solve
 
 Drop the absolute value for simplicity and find the truncation error
 of the scheme.
+Perform numerical experiments with the scheme and compared with the one
+based on centered differences. Can you illustrate the accuracy loss
+visually in real computations, or is the asymptotic analysis here
+mainly of theoretical interest?
 Filename: ``trunc_vib_bw_damping.pdf``.
 
 .. --- end exercise ---
