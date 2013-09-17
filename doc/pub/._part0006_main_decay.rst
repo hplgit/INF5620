@@ -25,7 +25,7 @@ the recursive equations
         
 
 for the numerical solution :math:`u^{n+1}`, which approximates the exact
-solution :math:`u_{\small\mbox{e}}` at time point :math:`t_{n+1}`. For constant mesh spacing,
+solution :math:`{u_{\small\mbox{e}}}` at time point :math:`t_{n+1}`. For constant mesh spacing,
 which we assume here, :math:`t_{n+1}=(n+1)\Delta t`.
 
 
@@ -225,20 +225,23 @@ can be applied repeatedly :math:`n` times, with the result that
         
 
 
-<function admon at 0x27fc578>('notice', 'Solving difference equations', r"""
-Difference equations where all terms are linear in
-:math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
-called *homogeneous, linear* difference equations, and their solutions
-are generally of the form :math:`u^n=A^n`. Inserting this expression
-and dividing by :math:`A^{n+1}` gives
-a polynomial equation in :math:`A`. In the present case we get
 
-.. math::
-         A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .
 
-This is a solution technique of wider applicability than repeated use of
-the recursion :eq:`decay:analysis:scheme`.
-""")
+.. admonition:: Solving difference equations
+
+   Difference equations where all terms are linear in
+   :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
+   called *homogeneous, linear* difference equations, and their solutions
+   are generally of the form :math:`u^n=A^n`. Inserting this expression
+   and dividing by :math:`A^{n+1}` gives
+   a polynomial equation in :math:`A`. In the present case we get
+   
+   .. math::
+            A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}\thinspace .
+   
+   This is a solution technique of wider applicability than repeated use of
+   the recursion :eq:`decay:analysis:scheme`.
+
 
 Regardless of the solution approach, we have obtained a formula for
 :math:`u^n`.  This formula can explain everything what we see in the figures
@@ -354,21 +357,21 @@ factor approximates the exact one. The exact solution reads
 
 .. math::
         
-        {u_{\small\mbox{e}}}(t_n) = Ie^{-a n\Delta t} = I(e^{-a\Delta t})^n \thinspace .
+        {{u_{\small\mbox{e}}}}(t_n) = Ie^{-a n\Delta t} = I(e^{-a\Delta t})^n \thinspace .
         
 
 From this formula we see that the exact amplification factor is
 
 .. math::
         
-        A_{\small\mbox{e}} = e^{-a\Delta t} \thinspace .
+        {A_{\small\mbox{e}}} = e^{-a\Delta t} \thinspace .
         
 
 
 We realize that the exact and numerical amplification factors depend
 on :math:`a` and :math:`\Delta t` through the product :math:`a\Delta t`. Therefore, it
 is convenient to introduce a symbol for this product, :math:`p=a\Delta t`,
-and view :math:`A` and :math:`A_{\small\mbox{e}}` as functions of :math:`p`. Figure
+and view :math:`A` and :math:`{A_{\small\mbox{e}}}` as functions of :math:`p`. Figure
 :ref:`decay:analysis:fig:A` shows these functions. Crank-Nicolson is
 clearly closest to the exact amplification factor, but that method has
 the unfortunate oscillatory behavior when :math:`p>2`.
@@ -391,12 +394,12 @@ As an alternative to the visual understanding inherent in Figure
 analysis to establish formulas for the approximation errors when the
 discretization parameter, here :math:`\Delta t`, becomes small. In the
 present case we let :math:`p` be our small discretization parameter, and it
-makes sense to simplify the expressions for :math:`A` and :math:`A_{\small\mbox{e}}` by using
+makes sense to simplify the expressions for :math:`A` and :math:`{A_{\small\mbox{e}}}` by using
 Taylor polynomials around :math:`p=0`.  The Taylor polynomials are accurate
 for small :math:`p` and greatly simplifies the comparison of the analytical
 expressions since we then can compare polynomials, term by term.
 
-Calculating the Taylor series for :math:`A_{\small\mbox{e}}` is easily done by hand, but
+Calculating the Taylor series for :math:`{A_{\small\mbox{e}}}` is easily done by hand, but
 the three versions of :math:`A` for :math:`\theta=0,1,\frac{1}{2}` lead to more
 cumbersome calculations.
 Nowadays, analytical computations can benefit greatly by
@@ -421,7 +424,7 @@ Let us illustrate ``sympy`` with a standard Python shell syntax
         >>> A_e = exp(-p)
         >>>
         >>> # Find the first 6 terms of the Taylor series of A_e
-        >>> A_e.series(p, 6)
+        >>> A_e.series(p, 0, 6)
         1 + (1/2)*p**2 - p - 1/6*p**3 - 1/120*p**5 + (1/24)*p**4 + O(p**6)
 
 Lines with ``>>>`` represent input lines and lines without
@@ -454,14 +457,14 @@ preferably using an exact rational representation of 1/2 in ``sympy``:
 The Taylor series of the amplification factor for the Crank-Nicolson
 scheme can be computed as
 
-        >>> A.subs(theta, half).series(p, 4)
+        >>> A.subs(theta, half).series(p, 0, 4)
         1 + (1/2)*p**2 - p - 1/4*p**3 + O(p**4)
 
 We are now in a position to compare Taylor series:
 
-        >>> FE = A_e.series(p, 4) - A.subs(theta, 0).series(p, 4)
-        >>> BE = A_e.series(p, 4) - A.subs(theta, 1).series(p, 4)
-        >>> CN = A_e.series(p, 4) - A.subs(theta, half).series(p, 4)
+        >>> FE = A_e.series(p, 0, 4) - A.subs(theta, 0).series(p, 0, 4)
+        >>> BE = A_e.series(p, 0, 4) - A.subs(theta, 1).series(p, 0, 4)
+        >>> CN = A_e.series(p, 0, 4) - A.subs(theta, half).series(p, 0, 4 )
         >>> FE
         (1/2)*p**2 - 1/6*p**3 + O(p**4)
         >>> BE
@@ -469,9 +472,9 @@ We are now in a position to compare Taylor series:
         >>> CN
         (1/12)*p**3 + O(p**4)
 
-From these expressions we see that the error :math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^2)}`
+From these expressions we see that the error :math:`A-{A_{\small\mbox{e}}}\sim {\mathcal{O}(p^2)}`
 for the Forward and Backward Euler schemes, while
-:math:`A-A_{\small\mbox{e}}\sim {\mathcal{O}(p^3)}` for the Crank-Nicolson scheme.
+:math:`A-{A_{\small\mbox{e}}}\sim {\mathcal{O}(p^3)}` for the Crank-Nicolson scheme.
 It is the *leading order term*,
 i.e., the term of the lowest order (polynomial degree),
 that is of interest, because as :math:`p\rightarrow 0`, this term is
@@ -484,7 +487,7 @@ terms :math:`\Delta t`. When then have
 
 .. math::
         
-        A-A_{\small\mbox{e}} = \left\lbrace\begin{array}{ll}
+        A-{A_{\small\mbox{e}}} = \left\lbrace\begin{array}{ll}
         {\mathcal{O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
         {\mathcal{O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
         \end{array}\right.
@@ -511,11 +514,11 @@ The fraction of numerical and exact amplification factors
 
 
 An alternative comparison of the schemes is to look at the
-ratio :math:`A/A_{\small\mbox{e}}`, or the error :math:`1-A/A_{\small\mbox{e}}` in this ratio:
+ratio :math:`A/{A_{\small\mbox{e}}}`, or the error :math:`1-A/{A_{\small\mbox{e}}}` in this ratio:
 
-        >>> FE = 1 - (A.subs(theta, 0)/A_e).series(p, 4)
-        >>> BE = 1 - (A.subs(theta, 1)/A_e).series(p, 4)
-        >>> CN = 1 - (A.subs(theta, half)/A_e).series(p, 4)
+        >>> FE = 1 - (A.subs(theta, 0)/A_e).series(p, 0, 4)
+        >>> BE = 1 - (A.subs(theta, 1)/A_e).series(p, 0, 4)
+        >>> CN = 1 - (A.subs(theta, half)/A_e).series(p, 0, 4)
         >>> FE
         (1/2)*p**2 + (1/3)*p**3 + O(p**4)
         >>> BE
@@ -524,7 +527,7 @@ ratio :math:`A/A_{\small\mbox{e}}`, or the error :math:`1-A/A_{\small\mbox{e}}` 
         (1/12)*p**3 + O(p**4)
 
 The leading-order terms have the same powers as
-in the analysis of :math:`A-A_{\small\mbox{e}}`.
+in the analysis of :math:`A-{A_{\small\mbox{e}}}`.
 
 .. _decay:analysis:gobal:error:
 
@@ -539,15 +542,15 @@ The global error at a point
 The error in the amplification factor reflects the error when
 progressing from time level :math:`t_n` to :math:`t_{n-1}`.
 To investigate the real error at a point, known as the *global error*,
-we look at :math:`e^n = u^n-u_{\small\mbox{e}}(t_n)` for some :math:`n` and Taylor expand the
+we look at :math:`e^n = u^n-{u_{\small\mbox{e}}}(t_n)` for some :math:`n` and Taylor expand the
 mathematical expressions as functions of :math:`p=a\Delta t`:
 
         >>> n = Symbol('n')
         >>> u_e = exp(-p*n)
         >>> u_n = A**n
-        >>> FE = u_e.series(p, 4) - u_n.subs(theta, 0).series(p, 4)
-        >>> BE = u_e.series(p, 4) - u_n.subs(theta, 1).series(p, 4)
-        >>> CN = u_e.series(p, 4) - u_n.subs(theta, half).series(p, 4)
+        >>> FE = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+        >>> BE = u_e.series(p, 0, 4) - u_n.subs(theta, 1).series(p, 0, 4)
+        >>> CN = u_e.series(p, 0, 4) - u_n.subs(theta, half).series(p, 0, 4)
         >>> FE
         (1/2)*n*p**2 - 1/2*n**2*p**3 + (1/3)*n*p**3 + O(p**4)
         >>> BE
@@ -611,7 +614,7 @@ mesh points so it makes most sense to compute the
 
 
 .. math::
-         ||e^n||_{\ell^2} = \sqrt{\Delta t\sum_{n=0}^{N_t} ({u_{\small\mbox{e}}}(t_n) - u^n)^2}
+         ||e^n||_{\ell^2} = \sqrt{\Delta t\sum_{n=0}^{N_t} ({{u_{\small\mbox{e}}}}(t_n) - u^n)^2}
         {\thinspace .} 
 
 We have obtained an exact analytical expressions for the error at :math:`t=t_n`,
@@ -619,7 +622,7 @@ but here we use the leading-order error term only since we are mostly
 interested in how the error behaves as a polynomial in :math:`\Delta t`, and then
 the leading order term will dominate.
 For the Forward Euler scheme,
-:math:`u_{\small\mbox{e}}(t_n) - u^n \approx \frac{1}{2}np^2`, and we have
+:math:`{u_{\small\mbox{e}}}(t_n) - u^n \approx \frac{1}{2}np^2`, and we have
 
 
 .. math::
@@ -645,7 +648,7 @@ the same result, while the Crank-Nicolson scheme leads to
 
 .. admonition:: Summary of errors
 
-   Both the pointwise and the time-integrated true errors are of
+   Both the point-wise and the time-integrated true errors are of
    second order in :math:`\Delta t` for the Crank-Nicolson scheme and of
    first order in :math:`\Delta t` for the Forward Euler and Backward Euler schemes.
 
@@ -657,7 +660,7 @@ The truncation error is a very frequently used error measure for
 finite difference methods. It is defined as *the error
 in the difference equation that arises when inserting the exact
 solution*. Contrary to many other error measures, e.g., the
-true error :math:`e^n=u_{\small\mbox{e}}(t_n)-u^n`, the truncation error is a quantity that
+true error :math:`e^n={u_{\small\mbox{e}}}(t_n)-u^n`, the truncation error is a quantity that
 is easily computable.
 
 Let us illustrate the calculation of the truncation error
@@ -674,8 +677,8 @@ i.e.,
 .. math::
          \frac{u^{n+1}-u^n}{\Delta t} = -au^n{\thinspace .}
 
-The idea is to see how well the exact solution :math:`u_{\small\mbox{e}}(t)` fulfills
-this equation. Since :math:`u_{\small\mbox{e}}(t)` in general will not fullfill the
+The idea is to see how well the exact solution :math:`{u_{\small\mbox{e}}}(t)` fulfills
+this equation. Since :math:`{u_{\small\mbox{e}}}(t)` in general will not obey the
 discrete equation, error in the discrete equation, called
 a *residual*, denoted here by :math:`R^n`:
 
@@ -683,7 +686,7 @@ a *residual*, denoted here by :math:`R^n`:
 .. math::
    :label: decay:analysis:trunc:Req
         
-        R^n = \frac{u_{\small\mbox{e}}(t_{n+1})-u_{\small\mbox{e}}(t_n)}{\Delta t} + au_{\small\mbox{e}}(t_n)
+        R^n = \frac{{u_{\small\mbox{e}}}(t_{n+1})-{u_{\small\mbox{e}}}(t_n)}{\Delta t} + a{u_{\small\mbox{e}}}(t_n)
         {\thinspace .}
         
         
@@ -694,56 +697,56 @@ function with a superscript :math:`n`.
 The interesting feature of :math:`R^n` is to see how it
 depends on the discretization parameter :math:`\Delta t`.
 The tool for reaching
-this goal is to Taylor expand :math:`u_{\small\mbox{e}}` around the point where the
+this goal is to Taylor expand :math:`{u_{\small\mbox{e}}}` around the point where the
 difference equation is supposed to hold, here :math:`t=t_n`.
 We have that
 
 
 .. math::
-         u_{\small\mbox{e}}(t_{n+1}) = u_{\small\mbox{e}}(t_n) + u_{\small\mbox{e}}'(t_n)\Delta t + \frac{1}{2}u_{\small\mbox{e}}''(t_n)
+         {u_{\small\mbox{e}}}(t_{n+1}) = {u_{\small\mbox{e}}}(t_n) + {u_{\small\mbox{e}}}'(t_n)\Delta t + \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)
         \Delta t^2 + \cdots 
 
 Inserting this Taylor series in :eq:`decay:analysis:trunc:Req` gives
 
 
 .. math::
-         R^n = u_{\small\mbox{e}}'(t_n) + \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t + \ldots + au_{\small\mbox{e}}(t_n){\thinspace .}
+         R^n = {u_{\small\mbox{e}}}'(t_n) + \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + \ldots + a{u_{\small\mbox{e}}}(t_n){\thinspace .}
 
-Now, :math:`u_{\small\mbox{e}}` fulfills the ODE :math:`u_{\small\mbox{e}}'=-au_{\small\mbox{e}}` such that the first and last
+Now, :math:`{u_{\small\mbox{e}}}` fulfills the ODE :math:`{u_{\small\mbox{e}}}'=-a{u_{\small\mbox{e}}}` such that the first and last
 term cancels and we have
 
 
 .. math::
-         R^n \approx \frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t {\thinspace .} 
+         R^n \approx \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t {\thinspace .} 
 
 This :math:`R^n` is the *truncation error*, which for the Forward Euler is seen
 to be of first order in :math:`\Delta t`.
 
 The above procedure can be repeated for the Backward Euler and the
 Crank-Nicolson schemes. We start with the scheme in operator notation,
-write it out in detail, Taylor expand :math:`u_{\small\mbox{e}}` around the point :math:`\tilde t`
+write it out in detail, Taylor expand :math:`{u_{\small\mbox{e}}}` around the point :math:`\tilde t`
 at which the difference equation is defined, collect terms that
-correspond to the ODE (here :math:`u_{\small\mbox{e}}' + au_{\small\mbox{e}}`), and identify the remaining
+correspond to the ODE (here :math:`{u_{\small\mbox{e}}}' + a{u_{\small\mbox{e}}}`), and identify the remaining
 terms as the residual :math:`R`, which is the truncation error.
 The Backward Euler scheme leads to
 
 
 .. math::
-         R^n \approx -\frac{1}{2}u_{\small\mbox{e}}''(t_n)\Delta t, 
+         R^n \approx -\frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t, 
 
 while the Crank-Nicolson scheme gives
 
 
 .. math::
-         R^{n+1/2} \approx \frac{1}{24}u_{\small\mbox{e}}'''(t_{n+\frac{1}{2}})\Delta t^2{\thinspace .}
+         R^{n+1/2} \approx \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2{\thinspace .}
 
 
 The *order* :math:`r` of a finite difference scheme is often defined through
-the leading term :math:`\Delta t^r` in the trunction error. The above
+the leading term :math:`\Delta t^r` in the truncation error. The above
 expressions point out that the Forward and Backward Euler schemes are
 of first order, while Crank-Nicolson is of second order.  We have
 looked at other error measures in other sections, like the error in
-amplification factor and the error :math:`e^n=u_{\small\mbox{e}}(t_n)-u^n`, and expressed
+amplification factor and the error :math:`e^n={u_{\small\mbox{e}}}(t_n)-u^n`, and expressed
 these error measures in terms of :math:`\Delta t` to see the order of the
 method. Normally, calculating the truncation error is more
 straightforward than deriving the expressions for other error measures
@@ -795,7 +798,7 @@ property, but it can produce oscillating solutions and is unstable in
 that sense, unless :math:`\Delta t` is sufficiently small.
 
 Convergence implies that the global (true) error mesh function :math:`e^n =
-u_{\small\mbox{e}}(t_n)-u^n\rightarrow 0` as :math:`\Delta t\rightarrow 0`. This is really
+{u_{\small\mbox{e}}}(t_n)-u^n\rightarrow 0` as :math:`\Delta t\rightarrow 0`. This is really
 what we want: the numerical solution gets as close to the exact
 solution as we request by having a sufficiently fine mesh.
 
@@ -804,7 +807,7 @@ problems like the present one. Stability and consistency are much
 easier to calculate. A major breakthrough in the understanding of
 numerical methods for differential equations came in 1956 when Lax and
 Richtmeyer established equivalence between convergence on one hand and
-consistency and stability on the other (the `Lax equivalance theorem <http://en.wikipedia.org/wiki/Lax_equivalence_theorem>`_).  In practice
+consistency and stability on the other (the `Lax equivalence theorem <http://en.wikipedia.org/wiki/Lax_equivalence_theorem>`_).  In practice
 it meant that one can first establish that a method is stable and
 consistent, and then it is automatically convergent (which is much
 harder to establish).  The result holds for linear problems only, and
@@ -831,7 +834,7 @@ Exercises  (1)
 
 .. _decay:analysis:exer:fd:exp:plot:
 
-Exercise 12: Visualize the accuracy of finite differences :math:`u=e^{-at}`
+Exercise 15: Visualize the accuracy of finite differences :math:`u=e^{-at}`
 ---------------------------------------------------------------------------
 
 The purpose of this exercise is to visualize the accuracy of finite difference
@@ -882,7 +885,7 @@ Filename: ``decay_plot_fd_exp_error.py``.
 
 .. _decay:analysis:exer:growth:
 
-Exercise 13: Explore the :math:`\theta`-rule for exponential growth
+Exercise 16: Explore the :math:`\theta`-rule for exponential growth
 -------------------------------------------------------------------
 
 This exercise asks you to solve the ODE :math:`u'=-au` with :math:`a<0`

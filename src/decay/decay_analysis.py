@@ -78,8 +78,8 @@ print 'L2 error:', simplify(error_error_L2)
 
 
 sys.exit(0)
-#BE = u_e.series(p, 4) - u_n.subs(theta, 1).series(p, 4)
-#CN = u_e.series(p, 4) - u_n.subs(theta, half).series(p, 4)
+#BE = u_e.series(p, 0, 4) - u_n.subs(theta, 1).series(p, 0, 4)
+#CN = u_e.series(p, 0, 4) - u_n.subs(theta, half).series(p, 0, 4)
 FE
 BE
 CN
