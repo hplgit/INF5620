@@ -12,22 +12,22 @@ from numpy import *
 def solver(I, V, f, c, L, Nx, C, T, user_action=None,
            version='vectorized'):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    x = linspace(0, L, Nx+1)    # mesh points in space
+    x = linspace(0, L, Nx+1)     # Mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
     Nt = int(round(T/dt))
-    t = linspace(0, N*dt, Nt+1) # mesh points in time
-    C2 = C**2                   # help variable in the scheme
+    t = linspace(0, Nt*dt, Nt+1) # Mesh points in time
+    C2 = C**2                    # Help variable in the scheme
     if f is None or f == 0:
-        f = lambda x, t: 0 if version == 'scalar' else \
+        f = (lambda x, t: 0) if version == 'scalar' else \
             lambda x, t: zeros(x.shape)
     if V is None or V == 0:
-        V = lambda x: 0 if version == 'scalar' else \
+        V = (lambda x: 0) if version == 'scalar' else \
             lambda x: zeros(x.shape)
 
-    u   = zeros(Nx+1)   # solution array at new time level
-    u_1 = zeros(Nx+1)   # solution at 1 time level back
-    u_2 = zeros(Nx+1)   # solution at 2 time levels back
+    u   = zeros(Nx+1)   # Solution array at new time level
+    u_1 = zeros(Nx+1)   # Solution at 1 time level back
+    u_2 = zeros(Nx+1)   # Solution at 2 time levels back
 
     import time;  t0 = time.clock()  # for measuring CPU time
 
@@ -49,6 +49,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None,
     if user_action is not None:
         user_action(u, x, t, 1)
 
+    # Switch variables before next step
     u_2[:], u_1[:] = u_1, u
 
     for n in range(1, Nt):
@@ -60,12 +61,12 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None,
                        C2*(u_1[i-1] - 2*u_1[i] + u_1[i+1]) + \
                        dt**2*f(x[i], t[n])
         elif version == 'vectorized':   # (1:-1 slice style)
-            f_a = f(x, t[n])  # precompute in array
+            f_a = f(x, t[n])  # Precompute in array
             u[1:-1] = - u_2[1:-1] + 2*u_1[1:-1] + \
                 C2*(u_1[0:-2] - 2*u_1[1:-1] + u_1[2:]) + \
                 dt**2*f_a[1:-1]
         elif version == 'vectorized2':  # (1:Nx slice style)
-            f_a = f(x, t[n])  # precompute in array
+            f_a = f(x, t[n])  # Precompute in array
             u[1:Nx] =  - u_2[1:Nx] + 2*u_1[1:Nx] + \
                 C2*(u_1[0:Nx-1] - 2*u_1[1:Nx] + u_1[2:Nx+1]) + \
                 dt**2*f_a[1:Nx]
@@ -85,7 +86,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None,
 def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True,
         version='vectorized'):
     """Run solver and visualize u at each time level."""
-    import scitools.std as st, time, glob, os
+    import scitools.std as plt, time, glob, os
     #num_frames = 100 # max no of frames in movie
 
     def plot_u(u, x, t, n):
@@ -95,14 +96,14 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True,
         except NameError:
             every = 1  # plot every frame
         if n % every == 0:
-            st.plot(x, u, 'r-',
-                    xlabel='x', ylabel='u',
-                    axis=[0, L, umin, umax],
-                    title='t=%f' % t[n])
+            plt.plot(x, u, 'r-',
+                     xlabel='x', ylabel='u',
+                     axis=[0, L, umin, umax],
+                     title='t=%f' % t[n])
             # Let the initial condition stay on the screen for 2
             # seconds, else insert a pause of 0.2 s between each plot
             time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-            st.savefig('frame_%04d.png' % n)  # for movie making
+            plt.savefig('frame_%04d.png' % n)  # for movie making
 
     # Clean up old movie frames
     for filename in glob.glob('frame_*.png'):
@@ -111,11 +112,23 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True,
     user_action = plot_u if animate else None
     u, x, t, cpu = solver(I, V, f, c, L, Nx, C, T,
                           user_action, version)
+    if not animate:
+        return cpu
+
     # Make movie files
-    st.movie('frame_*.png', encoder='mencoder', fps=4,
-             output_file='movie.avi')
-    st.movie('frame_*.png', encoder='html', fps=4,
-             output_file='movie.html')
+    fps = 4  # Frames per second
+    plt.movie('frame_*.png', encoder='html', fps=fps,
+              output_file='movie.html')
+    # Ex: avconv -r 4 -i frame_%04d.png -vcodec libtheora movie.ogg
+    codec2ext = dict(flv='.flv', libx64='.mp4', libvpx='.webm',
+                     libtheora='.ogg')
+    filespec = 'frame_%04d.png'
+    movie_prog = 'avconv'  # or 'ffmpeg'
+    for codec in codec2ext:
+        ext = codec2ext[codec]
+        cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
+              '-vcodec %(codec)s movie.%(ext)s' % vars()
+        os.system(cmd)
     return cpu
 
 import nose.tools as nt
@@ -123,22 +136,24 @@ import nose.tools as nt
 def test_quadratic():
     """
     Check the scalar and vectorized versions work for
-    a quadratic u(x,t)=x(L-x)(1+t) that is exactly reproduced.
+    a quadratic u(x,t)=x(L-x)(1+t/2) that is exactly reproduced.
     """
+    # The following function must work for x as array or scalar
     exact_solution = lambda x, t: x*(L - x)*(1 + 0.5*t)
     I = lambda x: exact_solution(x, 0)
     V = lambda x: 0.5*exact_solution(x, 0)
-    f = lambda x, t: 2*c**2*(1 + 0.5*t)
+    # f is a scalar (zeros_like(x) works for scalar x too)
+    f = lambda x, t: zeros_like(x) + 2*c**2*(1 + 0.5*t)
+
     L = 2.5
     c = 1.5
-    Nx = 3  # very coarse mesh
+    Nx = 3  # Very coarse mesh
     C = 1
-    T = 18  # long time integration
+    T = 18  # Long time integration
 
     def assert_no_error(u, x, t, n):
         u_e = exact_solution(x, t[n])
         diff = abs(u - u_e).max()
-        print diff
         nt.assert_almost_equal(diff, 0, places=13)
 
     solver(I, V, f, c, L, Nx, C, T,
@@ -178,6 +193,8 @@ def run_efficiency_experiments():
     def I(x):
         return a*x/x0 if x < x0 else a/(L-x0)*(L-x)
 
+    intervals = []
+    speedup = []
     for Nx in [50, 100, 200, 400, 800]:
         print 'solving scalar Nx=%d' % Nx,
         cpu_s = viz(I, 0, 0, c, L, Nx, C, T, umin, umax,
@@ -187,7 +204,11 @@ def run_efficiency_experiments():
         cpu_v = viz(I, 0, 0, c, L, Nx, C, T, umin, umax,
                     animate=False, version='vectorized')
         print cpu_v
-        print 'Nx=%3d: cpu_v/cpu_s: %.3f' % (Nx, cpu_v/float(cpu_s))
+        intervals.append(Nx)
+        speedup.append(cpu_s/float(cpu_v))
+        print 'Nx=%3d: cpu_v/cpu_s: %.3f' % (Nx, 1./speedup[-1])
+    print 'Nx:', intervals
+    print 'Speed-up:', speedup
 
 if __name__ == '__main__':
     test_quadratic()  # verify

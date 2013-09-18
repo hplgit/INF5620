@@ -46,12 +46,12 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    x = linspace(0, L, Nx+1)       # mesh points in space
+    x = linspace(0, L, Nx+1)       # Mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
     Nt = int(round(T/dt))
-    t = linspace(0, Nt*dt, Nt+1)   # mesh points in time
-    C2 = C**2; dt2 = dt*dt         # help variables in the scheme
+    t = linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    C2 = C**2; dt2 = dt*dt         # Help variables in the scheme
 
     # Wrap user-given f, V, U_0, U_L
     if f is None or f == 0:
@@ -67,14 +67,14 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
         if isinstance(U_L, (float,int)) and U_L == 0:
             U_L = lambda t: 0
 
-    u   = zeros(Nx+1)   # solution array at new time level
-    u_1 = zeros(Nx+1)   # solution at 1 time level back
-    u_2 = zeros(Nx+1)   # solution at 2 time levels back
+    u   = zeros(Nx+1)   # Solution array at new time level
+    u_1 = zeros(Nx+1)   # Solution at 1 time level back
+    u_2 = zeros(Nx+1)   # Solution at 2 time levels back
 
     Ix = range(0, Nx+1)
     It = range(0, Nt+1)
 
-    import time;  t0 = time.clock()  # for measuring CPU time
+    import time;  t0 = time.clock()  # CPU time measurement
 
     # Load initial condition into u_1
     for i in Ix:
@@ -115,6 +115,7 @@ def solver(I, V, f, c, U_0, U_L, L, Nx, C, T,
     if user_action is not None:
         user_action(u, x, t, 1)
 
+    # Update data structures for next step
     u_2[:], u_1[:] = u_1, u
 
     for n in It[1:-1]:
@@ -202,7 +203,7 @@ import nose.tools as nt
 def test_quadratic():
     """
     Check the scalar and vectorized versions work for
-    a quadratic u(x,t)=x(L-x)(1+t) that is exactly reproduced.
+    a quadratic u(x,t)=x(L-x)(1+t/2) that is exactly reproduced.
     We simulate in [0, L/2] and apply a symmetry condition
     at the end x=L/2.
     """

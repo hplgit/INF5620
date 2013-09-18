@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
+<meta name="description" content="Study Guide: Finite difference methods for wave motion">
+<meta name="keywords" content="waves on a string,wave equation 1D,mesh finite differences,stencil 1D wave equation,mesh function,wave equation 1D, implementation,unit testing,software testing nose,vectorization,scalar code,array slices,slice,lambda function (Python),Neumann conditions,Dirichlet conditions,homogeneous Neumann conditions,homogeneous Dirichlet conditions,stencil Neumann boundary,index set notation">
+
+
+
+
+
+
+
+<!-- reveal.js: http://lab.hakim.se/reveal-js/ -->
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<link rel="stylesheet" href="reveal.js/css/reveal.css">
+<link rel="stylesheet" href="reveal.js/css/theme/darkgray.css" id="theme">
+<!--
+<link rel="stylesheet" href="reveal.js/css/reveal.css">
+<link rel="stylesheet" href="reveal.js/css/reveal.min.css">
+<link rel="stylesheet" href="reveal.js/css/theme/beige.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/beigesmall.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/night.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/simple.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/sky.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/darkgray.css" id="theme">
+-->
+
+<script>
+document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+</script>
+
+<style type="text/css">
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-size: 60%; font-style: italic; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .reveal .alert-text-small   { font-size: 80%;  }
+    .reveal .alert-text-large   { font-size: 130%; }
+    .reveal .alert-text-normal  { font-size: 90%;  }
+    .reveal .alert {
+             padding:8px 35px 8px 14px; margin-bottom:18px;
+             text-shadow:0 1px 0 rgba(255,255,255,0.5);
+             border:5px solid #bababa;
+             -webkit-border-radius: 14px; -moz-border-radius: 14px;
+             border-radius:14px
+             background-position: 10px 10px;
+             background-repeat: no-repeat;
+             background-size: 38px;
+             padding-left: 30px; /* 55px; if icon */
+     }
+     .reveal .alert-block {padding-top:14px; padding-bottom:14px}
+     .reveal .alert-block > p, .alert-block > ul {margin-bottom:1em}
+     /*.reveal .alert li {margin-top: 1em}*/
+     .reveal .alert-block p+p {margin-top:5px}
+     /*.reveal .alert-notice { background-image: url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_notice.png); }
+     .reveal .alert-summary  { background-image:url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_summary.png); }
+     .reveal .alert-warning { background-image: url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_warning.png); }
+     .reveal .alert-question {background-image:url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_question.png); } */
+
+</style>
+
+
+
+<!-- Styles for table layout of slides -->
+<style type="text/css">
+td.padding {
+  padding-top:20px;
+  padding-bottom:20px;
+  padding-right:50px;
+  padding-left:50px;
+}
+</style>
+
+</head>
+
+<body>
+<div class="reveal">
+
+<!-- Any section element inside the <div class="slides"> container
+     is displayed as a slide -->
+
+<div class="slides">
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "none"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{\mathcal{I}_x}
+\newcommand{\Iy}{\mathcal{I}_y}
+\newcommand{\Iz}{\mathcal{I}_z}
+\newcommand{\It}{\mathcal{I}_t}
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+
+
+
+<section>
+<!-- ------------------- main content ---------------------- -->
+
+
+<title>Study Guide: Finite difference methods for wave motion</title>
+
+<center><h1>Study Guide: Finite difference methods for wave motion</h1></center>  <!-- document title -->
+
+<p>
+<!-- author(s): Hans Petter Langtangen -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2]
+</center>
+
+
+<p>&nbsp;<br>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Department of Informatics, University of Oslo</b></center>
+<p>&nbsp;<br>
+<center><h4>Sep 18, 2013</h4></center> <!-- date -->
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Finite difference methods for waves on a string <a name="wave:string"></a></h2>
+
+<p>
+Waves on a string can be modeled by the <em>wave equation</em>
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2} $$
+<p>&nbsp;<br>
+
+
+<p>
+\( u(x,t) \) is the displacement of the string
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Initial-boundary value problem  <a name="___sec1"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u_{tt}&=c^2u_{xx}, \quad x\in (0,L),\ t\in (0,T]
+\tag{1}\\ 
+u(x,0) &= I(x), \quad x\in [0,L]
+\tag{2}\\ 
+u_t(x,0) &= 0, \quad x\in [0,L]
+\tag{3}\\ 
+u(0,t) & = 0, \quad  t\in (0,T],
+\tag{4}\\ 
+u(L,t) & = 0, \quad  t\in (0,T]\ts
+\tag{5}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Input data in the problem  <a name="___sec2"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Initial condition \( u(x,0)=I(x) \): initial string shape</li>
+ <p><li> Initial condition \( u_t(x,0)=0 \): string starts from rest</li>
+ <p><li> \( c=\sqrt{T/\varrho} \): velocity of waves on the string</li>
+ <p><li> (\( T \) is the tension in the string, \( \varrho \) is density of the string)</li>
+ <p><li> Two boundary conditions on \( u \): \( u=0 \) means fixed ends (no displacement)</li>
+</ul>
+<p>
+
+Rule for no of initial and boundary conditions:
+
+<p>
+
+<ul>
+ <p><li> \( u_{tt} \) in the PDE: two initial conditions, on \( u \) and \( u_t \)</li>
+ <p><li> \( u_{t} \), not \( u_{tt} \), in the PDE: one initial conditions, on \( u \)</li>
+ <p><li> \( u_{xx} \) in the PDE: one boundary condition on \( u \) at each boundary point</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Demo of a vibrating string (\( C=0.8 \))  <a name="___sec3"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+<source src='mov-wave/guitar_C0.8/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/guitar_C0.8/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+<ul>
+ <p><li> Our numerical method is sometimes exact (!)</li>
+ <p><li> Our numerical method is sometimes subject to serious
+   non-physical effects</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Demo of a vibrating string (\( C=1.0012 \))  <a name="___sec4"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+<source src='mov-wave/guitar_C1.0012/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/guitar_C1.0012/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+Ooops!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 1: Discretizing the domain <a name="wave:string:mesh"></a></h3>
+
+<p>
+Mesh in time:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+0 = t_0 < t_1 < t_2 < \cdots < t_{N_t-1} < t_{N_t} = T \thinspace . \end{equation}
+$$
+<p>&nbsp;<br>
+
+Mesh in space:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+0 = x_0 < x_1 < x_2 < \cdots < x_{N_x-1} < x_{N_x} = L \thinspace . \end{equation}
+$$
+<p>&nbsp;<br>
+
+Uniform mesh with constant mesh spacings \( \Delta t \) and \( \Delta x \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+x_i = i\Delta x,\ i=0,\ldots,N_x,\quad
+t_i = n\Delta t,\ n=0,\ldots,N_t\ts
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The discrete solution <a name="wave:string:numerical:sol"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> The numerical solution is a mesh function: \( u_i^n \approx \uex(x_i,t_n) \)</li>
+ <p><li> Finite difference stencil (or scheme): equation for \( u^n_i \) involving
+   neighboring space-time points</li>
+</ul>
+<p>
+
+<center><p><img src="mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/wave_PDE_Dirichlet_n_interior.png" align="bottom" width=500></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 2: Fulfilling the equation at the mesh points <a name="wave:string:samplingPDE"></a></h3>
+
+<p>
+Let the PDE be satisfied at all <em>interior</em> mesh points:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{\partial^2}{\partial t^2} u(x_i, t_n) =
+c^2\frac{\partial^2}{\partial x^2} u(x_i, t_n),
+\tag{6}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+for \( i=1,\ldots,N_x-1 \) and \( n=1,\ldots,N_t-1 \).
+
+<p>
+For \( n=0 \) we have the initial conditions \( u=I(x) \) and \( u_t=0 \),
+and at the boundaries \( i=0,N_x \) we have the boundary condition \( u=0 \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 3: Replacing derivatives by finite differences <a name="wave:string:fd"></a></h3>
+
+<p>
+Widely used finite difference formula for
+the second-order derivative:
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
+\frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}= [D_tD_t u]^n_i$$
+<p>&nbsp;<br>
+
+and
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{\partial^2}{\partial x^2}u(x_i,t_n)\approx
+\frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2} = [D_xD_x u]^n_i
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 3: Algebraic version of the PDE  <a name="___sec9"></a></h3>
+
+<p>
+Replace derivatives by differences:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2} =
+c^2\frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2},
+\tag{7}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+In operator notation:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_tD_t u = c^2 D_xD_x]^{n}_i
+\thinspace .
+\tag{8}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 3: Algebraic version of the initial conditions  <a name="___sec10"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Need to replace the derivative in the initial condition
+   \( u_t(x,0)=0 \) by a finite difference approximation</li>
+ <p><li> The differences for \( u_{tt} \) and \( u_{xx} \) have second-order accuracy</li>
+ <p><li> Use a centered difference for \( u_t(x,0) \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$ [D_{2t} u]^n_i = 0,\quad n=0\quad\Rightarrow\quad
+u^{n-1}_i=u^{n+1}_i,\quad i=0,\ldots,N_x$$
+<p>&nbsp;<br>
+
+The other initial condition \( u(x,0)=I(x) \) can be computed by
+
+<p>
+<p>&nbsp;<br>
+$$ u_i^0 = I(x_i),\quad i=0,\ldots,N_x$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Step 4: Formulating a recursive algorithm <a name="wave:string:alg"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Nature of the algorithm: compute \( u \) in space at \( t=\Delta t, 2\Delta t, 3\Delta t,... \)</li>
+ <p><li> Three time levels are involved in the general discrete equation:
+   \( n+1 \), \( n \), \( n-1 \)</li>
+ <p><li> \( u^n_i \) and \( u^{n-1}_i \) are then already computed for \( i=0,\ldots,N_x \),
+   and \( u^{n+1}_i \) is the unknown quantity</li>
+</ul>
+<p>
+
+Write out \( [D_tD_t u = c^2 D_xD_x]^{n}_i \)
+and solve for \( u^{n+1}_i \),
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
+\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right)
+\tag{9}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The Courant number  <a name="___sec12"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+C = c\frac{\Delta t}{\Delta x},
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+is known as the (dimensionless) <em>Courant number</em>
+
+<p>
+<div class="alert alert-block alert-notice alert-text-normal"><b>Notice.</b>
+There is only one parameter, \( C \), in the discrete model:
+\( C \) lumps mesh parameters with the wave velocity \( c \).
+The value \( C \) and the smoothness of \( I(x) \)
+govern the quality of the numerical solution.
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The finite difference stencil  <a name="___sec13"></a></h3>
+
+<p>
+<center><p><img src="mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/wave_PDE_Dirichlet_n_interior.png" align="bottom" width=500></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The stencil for the first time level  <a name="___sec14"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Problem: the stencil for \( n=1 \) involves \( u^{-1}_i \), but time
+   \( t=-\Delta t \) is outside the mesh</li>
+ <p><li> Remedy: use the initial condition \( u_t=0 \) together with the
+   stencil to eliminate \( u^{-1}_i \)</li>
+</ul>
+<p>
+
+Initial condition:
+<p>&nbsp;<br>
+$$ [D_{2t}u=0]^0_i\quad\Rightarrow\quad u^{-1}_i=u^1_i$$
+<p>&nbsp;<br>
+
+Insert in stencil \( [D_tD_tu = c^2D_xD_x]^0_i \) to get
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u_i^1 = u^0_i - \half
+C^2\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right)
+\thinspace .
+\tag{10}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The algorithm  <a name="___sec15"></a></h3>
+
+<p>
+
+<ol>
+<p><li> Compute \( u^0_i=I(x_i) \) for \( i=0,\ldots,N_x \)</li>
+<p><li> Compute \( u^1_i \) by \eqref{wave:pde1:step4:1} and set \( u_i^1=0 \)
+   for the boundary points \( i=0 \) and \( i=N_x \), for \( n=1,2,\ldots,N-1 \),</li>
+<p><li> For each time level \( n=1,2,\ldots,N_t-1 \)</li>
+
+<ol>
+  <p><li> apply \eqref{wave:pde1:step4} to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
+  <p><li> set \( u^{n+1}_i=0 \) for the boundary points \( i=0 \), \( i=N_x \).</li>
+</ol>
+<p>
+
+</ol>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Moving finite difference stencil  <a name="___sec16"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+<source src='mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+<a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/index.html">web page</a>
+or a <a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Dirichlet_stencil_gpl/movie.flv">movie file</a>.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Sketch of an implementation (1) <a name="wave:string:impl"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Arrays:</li>
+
+<ul>
+   <p><li> <code>u[i]</code> stores \( u^{n+1}_i \)</li>
+   <p><li> <code>u_1[i]</code> stores \( u^n_i \)</li>
+   <p><li> <code>u_2[i]</code> stores \( u^{n-1}_i \)</li>
+</ul>
+<p>
+
+</ul>
+<p>
+
+<div class="alert alert-block alert-notice alert-text-normal"><b>Naming convention.</b>
+<code>u</code> is the unknown to be computed (a spatial mesh
+function), <code>u_k</code> is the computed spatial mesh function <code>k</code>
+time steps back in time.
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>PDE solvers should save memory  <a name="___sec18"></a></h3>
+
+<p>
+<div class="alert alert-block alert-warning alert-text-normal"><b>Important to minimize the memory usage.</b>
+The algorithm only needs to access the
+<em>three most recent time levels</em>, so we need only three arrays for
+\( u_i^{n+1} \), \( u_i^n \), and \( u_i^{n-1} \), \( i=0,\ldots,N_x \).
+Storing all the solutions in a two-dimensional array of
+size \( (N_x+1)\times (N_t+1) \)
+would be possible in this simple one-dimensional PDE problem, but not
+in large 2D problems and not even in small 3D problems.
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Sketch of an implementation (2)  <a name="___sec19"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #999999; font-style: italic"># Given mesh points as arrays x and t (x[i], t[n])</span>
+<span style="color: #d0d0d0">dx</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">x[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">dt</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">t[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">t[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">C</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">c*dt/dx</span>            <span style="color: #999999; font-style: italic"># Courant number</span>
+<span style="color: #d0d0d0">Nt</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(t)-</span><span style="color: #3677a9">1</span>
+<span style="color: #d0d0d0">C2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">C**</span><span style="color: #3677a9">2</span>              <span style="color: #999999; font-style: italic"># Help variable in the scheme</span>
+
+<span style="color: #999999; font-style: italic"># Set initial condition u(x,0) = I(x)</span>
+<span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">u_1[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">I(x[i])</span>
+
+<span style="color: #999999; font-style: italic"># Apply special formula for first step, incorporating du/dt=0</span>
+<span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx):</span>
+    <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1[i]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*C**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">(u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+<span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">;</span>  <span style="color: #d0d0d0">u[Nx]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>   <span style="color: #999999; font-style: italic"># Enforce boundary conditions</span>
+
+<span style="color: #999999; font-style: italic"># Switch variables before next step</span>
+<span style="color: #d0d0d0">u_2[:],</span> <span style="color: #d0d0d0">u_1[:]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1,</span> <span style="color: #d0d0d0">u</span>
+
+<span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">n</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt):</span>
+    <span style="color: #999999; font-style: italic"># Update all inner mesh points at time t[n+1]</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx):</span>
+        <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">u_1[i]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_2[i]</span> <span style="color: #d0d0d0">-</span> \ 
+               <span style="color: #d0d0d0">C**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">(u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+
+    <span style="color: #999999; font-style: italic"># Insert boundary conditions</span>
+    <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">;</span>  <span style="color: #d0d0d0">u[Nx]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+
+    <span style="color: #999999; font-style: italic"># Switch variables before next step</span>
+    <span style="color: #d0d0d0">u_2[:],</span> <span style="color: #d0d0d0">u_1[:]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1,</span> <span style="color: #d0d0d0">u</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Verification  <a name="___sec20"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Think about testing and verification before you start implementing
+   the algorithm!</li>
+ <p><li> Powerful testing tool: method of manufactured solutions and
+   computation of convergence rates</li>
+ <p><li> Will need a source term in the PDE and \( u_t(x,0)\neq 0 \)</li>
+ <p><li> Even more powerful method: exact solution of the scheme</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>A slightly generalized model problem <a name="wave:pde2:fd"></a></h3>
+
+<p>
+Add source term \( f \) and nonzero initial condition \( u_t(x,0) \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u_{tt} &= c^2 u_{xx} + f(x,t),
+\tag{11}\\ 
+u(x,0) &= I(x), \quad x\in [0,L]
+\tag{12}\\ 
+u_t(x,0) &= V(x), \quad x\in [0,L]
+\tag{13}\\ 
+u(0,t) & = 0, \quad  t>0,
+\tag{14}\\ 
+u(L,t) & = 0, \quad  t>0\ts
+\tag{15}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discrete model for the generalized model problem  <a name="___sec22"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_tD_t u = c^2 D_xD_x + f]^{n}_i
+\thinspace .
+\tag{16}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+Writing out and solving for the unknown \( u^{n+1}_i \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
+(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}) + \Delta t^2 f^n_i
+\tag{17}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Modified equation for the first time level  <a name="___sec23"></a></h3>
+
+<p>
+Centered difference for \( u_t(x,0) = V(x) \):
+
+<p>
+<p>&nbsp;<br>
+$$ [D_{2t}u = V]^0_i\quad\Rightarrow\quad u^{-1}_i = u^{1}_i - 2\Delta t V_i,$$
+<p>&nbsp;<br>
+
+which, when inserted in the stencil \eqref{wave:pde2:step3b} for \( n=0 \), gives
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^{1}_i = u^0_i - \Delta t V_i + \frac{1}{2}
+C^2
+\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right) + \frac{1}{2}\Delta t^2 f^n_i
+\tag{18}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Using an analytical solution of physical significance  <a name="___sec24"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Standing waves occur in real life on a string</li>
+ <p><li> Can be analyzed mathematically (known exact solution)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\uex(x,y,t)) = A\sin\left(\frac{\pi}{L}x\right)
+\cos\left(\frac{\pi}{L}ct\right)\ts
+\tag{19}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> PDE data: \( f=0 \), boundary conditions
+   \( \uex(0,t)=\uex(L,0)=0 \), initial
+   conditions \( I(x)=A\sin\left(\frac{\pi}{L}x\right) \) and \( V=0 \)</li>
+ <p><li> Note: \( u_i^{n+1}\neq\uex(x_i,t_{n+1} \), and we do not know
+   the error, so testing must aim at reproducing the expected
+   convergence rates</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Manufactured solution: principles  <a name="___sec25"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Disadvantage with the previous physical solution:
+   it does not test \( V\neq 0 \) and \( f\neq 0 \)</li>
+ <p><li> Method of manufactured solution:</li>
+
+<ul>
+   <p><li> Choose some \( \uex(x,t) \)</li>
+   <p><li> Insert in PDE and fit \( f \)</li>
+   <p><li> Set boundary and initial conditions compatible with the chosen \( \uex(x,t) \)</li>
+</ul>
+<p>
+
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Manufactured solution: example  <a name="___sec26"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ \uex(x,t) = x(L-x)\sin t\ts$$
+<p>&nbsp;<br>
+
+PDE \( u_{tt}=c^2u_{xx}+f \):
+
+<p>
+<p>&nbsp;<br>
+$$ -x(L-x)\sin t = -2\sin t + f\quad\Rightarrow f = (2 - x(L-x))\sin t\ts$$
+<p>&nbsp;<br>
+
+Initial conditions become
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+u(x,0) &= I(x) = 0,\\ 
+u_t(x,0) &= V(x) = (2 - x(L-x))\cos t\ts
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+Boundary conditions:
+
+<p>
+<p>&nbsp;<br>
+$$ u(x,0) = u(x,L) = 0\ts $$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Testing a manufactured solution  <a name="___sec27"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Introduce common mesh parameter: \( h=\Delta t \), \( \Delta x =ch/C \)</li>
+ <p><li> This \( h \) keeps \( C \) and \( \Delta t/\Delta x \) constant</li>
+ <p><li> Select coarse mesh \( h \): \( h_0 \)</li>
+ <p><li> Run experiments with \( h_i=2^{-i}h_0 \) (halving the cell size), \( i=0,\ldots,m \)</li>
+ <p><li> Record the error \( E_i \) and \( h_i \) in each experiment</li>
+ <p><li> Compute pariwise convergence rates \( r_i=
+   \ln E_{i+1}/E_{i}/\ln h_{i+1}/h_{i} \)</li>
+ <p><li> Verification: \( r_i\rightarrow 2 \) as \( i \) increases</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Constructing an exact solution of the discrete equations  <a name="___sec28"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Manufactured solution with computation of
+   convergence rates: significant manual work</li>
+ <p><li> Simpler and more powerful: use an exact solution for \( u^{n}_i \)</li>
+ <p><li> A linear or quadratic \( \uex \) in \( x \) and \( t \) is often a good candidate</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Analytical work with the PDE problem  <a name="___sec29"></a></h3>
+
+<p>
+Here, choose \( \uex \) such that \( \uex(x,0)=\uex(L,0)=0 \):
+
+<p>
+<p>&nbsp;<br>
+$$ \uex (x,t) = x(L-x)(1+\frac{1}{2}t), $$
+<p>&nbsp;<br>
+
+Insert in the PDE and find \( f \):
+
+<p>
+<p>&nbsp;<br>
+$$ f(x,t)=2(1+t)c^2\ts
+$$
+<p>&nbsp;<br>
+
+Initial conditions:
+
+<p>
+<p>&nbsp;<br>
+$$ I(x) = x(L-x),\quad V(x)=\frac{1}{2}x(L-x)\ts $$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Analytical work with the discrete equations (1)  <a name="___sec30"></a></h3>
+
+<p>
+We want to show that \( \uex \) also solves the discrete equations!
+
+<p>
+Useful preliminary result:
+<p>&nbsp;<br>
+$$
+\begin{align}
+\lbrack D_tD_t t^2\rbrack^n &= \frac{t_{n+1}^2 - 2t_n^2 + t_{n-1}^2}{\Delta t^2}
+= (n+1)^2 -n^2 + (n-1)^2 = 2,\\ 
+\lbrack D_tD_t t\rbrack^n &= \frac{t_{n+1} - 2t_n + t_{n-1}}{\Delta t^2}
+= \frac{((n+1) -n + (n-1))\Delta t}{\Delta t^2} = 0
+\thinspace .
+\end{align}
+$$
+<p>&nbsp;<br>
+
+Hence,
+<p>&nbsp;<br>
+$$ [D_tD_t \uex]^n_i = x_i(L-x_i)[D_tD_t (1+\frac{1}{2}t)]^n =
+x_i(L-x_i)\frac{1}{2}[D_tD_t t]^n = 0\ts$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Analytical work with the discrete equations (1)  <a name="___sec31"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+\lbrack D_xD_x \uex\rbrack^n_i &=
+(1+\frac{1}{2}t_n)\lbrack D_xD_x (xL-x^2)\rbrack_i =
+(1+\frac{1}{2}t_n)\lbrack LD_xD_x x - D_xD_x x^2\rbrack_i \\ 
+&= -2(1+\frac{1}{2}t_n)
+\thinspace .
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+Now, \( f^n_i = 2(1+\frac{1}{2}t_n)c^2 \) and we get
+
+<p>
+<p>&nbsp;<br>
+$$ [D_tD_t \uex - c^2D_xD_x\uex - f]^n_i = 0 - c^2(-1)2(1 + \frac{1}{2}t_n
++ 2(1+\frac{1}{2}t_n)c^2 = 0\ts$$
+<p>&nbsp;<br>
+
+
+<p>
+Moreover, \( \uex(x_i,0)=I(x_i) \),
+\( \partial \uex/\partial t = V(x_i) \) at \( t=0 \), and
+\( \uex(x_0,t)=\uex(x_{N_x},0)=0 \). Also the modified scheme for the
+first time step is fulfilled by \( \uex(x_i,t_n) \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Testing with the exact discrete solution  <a name="___sec32"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> We have established that \( u^{n+1}_i = \uex(x_i,t_{n+1})=x_i(L-x_i)(1+t_{n+1}/2) \)</li>
+ <p><li> Run <em>one</em> simulation with one choice of \( c \), \( \Delta t \), and \( \Delta x \)</li>
+ <p><li> Check that \( \max_i |u^{n+1}_i - \uex(x_i,t_{n+1})|<\epsilon \),
+   \( \epsilon\sim 10^{-14} \) (machine precision + some round-off errors)</li>
+ <p><li> This is the simplest and best verification test</li>
+</ul>
+<p>
+
+
+<p class="fragment">
+
+Later we show that the exact solution of the discrete equations
+can be obtained by \( C=1 \) (!)
+
+</p>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Implementation <a name="wave:pde1:impl"></a></h2>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The algorithm  <a name="___sec34"></a></h3>
+
+<p>
+
+<ol>
+<p><li> Compute \( u^0_i=I(x_i) \) for \( i=0,\ldots,N_x \)</li>
+<p><li> Compute \( u^1_i \) by \eqref{wave:pde1:step4:1} and set \( u_i^1=0 \)
+   for the boundary points \( i=0 \) and \( i=N_x \), for \( n=1,2,\ldots,N-1 \),</li>
+<p><li> For each time level \( n=1,2,\ldots,N_t-1 \)</li>
+
+<ol>
+  <p><li> apply \eqref{wave:pde1:step4} to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
+  <p><li> set \( u^{n+1}_i=0 \) for the boundary points \( i=0 \), \( i=N_x \).</li>
+</ol>
+<p>
+
+</ol>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>What do to with the solution?  <a name="___sec35"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Different problem settings demand different actions with the
+   computed \( u^{n+1}_i \) at each time step</li>
+ <p><li> Solution: let the solver function make a callback to a
+   user function where the user can do whatever is desired with
+   the solution</li>
+ <p><li> Advantage: solver just solves and user uses the solution</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">user_action</span><span style="color: #d0d0d0">(u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">n):</span>
+    <span style="color: #999999; font-style: italic"># u[i] at spatial mesh points x[i] at time t[n]</span>
+    <span style="color: #999999; font-style: italic"># plot u</span>
+    <span style="color: #999999; font-style: italic"># or store u</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Making a solver function  <a name="___sec36"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">numpy</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">solver</span><span style="color: #d0d0d0">(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span> <span style="color: #d0d0d0">user_action=</span><span style="color: #24909d">None</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].&quot;&quot;&quot;</span>
+    <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">linspace(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>     <span style="color: #999999; font-style: italic"># Mesh points in space</span>
+    <span style="color: #d0d0d0">dx</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">x[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+    <span style="color: #d0d0d0">dt</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">C*dx/c</span>
+    <span style="color: #d0d0d0">Nt</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">int</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">round</span><span style="color: #d0d0d0">(T/dt))</span>
+    <span style="color: #d0d0d0">t</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">linspace(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt*dt,</span> <span style="color: #d0d0d0">Nt+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span> <span style="color: #999999; font-style: italic"># Mesh points in time</span>
+    <span style="color: #d0d0d0">C2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">C**</span><span style="color: #3677a9">2</span>                    <span style="color: #999999; font-style: italic"># Help variable in the scheme</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">f</span> <span style="color: #6ab825; font-weight: bold">is</span> <span style="color: #24909d">None</span> <span style="color: #6ab825; font-weight: bold">or</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">==</span> <span style="color: #3677a9">0</span> <span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t:</span> <span style="color: #3677a9">0</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">V</span> <span style="color: #6ab825; font-weight: bold">is</span> <span style="color: #24909d">None</span> <span style="color: #6ab825; font-weight: bold">or</span> <span style="color: #d0d0d0">V</span> <span style="color: #d0d0d0">==</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">V</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x:</span> <span style="color: #3677a9">0</span>
+
+    <span style="color: #d0d0d0">u</span>   <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>   <span style="color: #999999; font-style: italic"># Solution array at new time level</span>
+    <span style="color: #d0d0d0">u_1</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>   <span style="color: #999999; font-style: italic"># Solution at 1 time level back</span>
+    <span style="color: #d0d0d0">u_2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>   <span style="color: #999999; font-style: italic"># Solution at 2 time levels back</span>
+
+    <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">time</span><span style="color: #d0d0d0">;</span>  <span style="color: #d0d0d0">t0</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">time.clock()</span>  <span style="color: #999999; font-style: italic"># for measuring CPU time</span>
+
+    <span style="color: #999999; font-style: italic"># Load initial condition into u_1</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+        <span style="color: #d0d0d0">u_1[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">I(x[i])</span>
+
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">user_action</span> <span style="color: #6ab825; font-weight: bold">is</span> <span style="color: #6ab825; font-weight: bold">not</span> <span style="color: #24909d">None</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">user_action(u_1,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #999999; font-style: italic"># Special formula for first time step</span>
+    <span style="color: #d0d0d0">n</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx):</span>
+        <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">dt*V(x[i])</span> <span style="color: #d0d0d0">+</span> \ 
+               <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*C2*(u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span> <span style="color: #d0d0d0">+</span> \ 
+               <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*f(x[i],</span> <span style="color: #d0d0d0">t[n])</span>
+    <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">;</span>  <span style="color: #d0d0d0">u[Nx]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">user_action</span> <span style="color: #6ab825; font-weight: bold">is</span> <span style="color: #6ab825; font-weight: bold">not</span> <span style="color: #24909d">None</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">user_action(u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #999999; font-style: italic"># Switch variables before next step</span>
+    <span style="color: #d0d0d0">u_2[:],</span> <span style="color: #d0d0d0">u_1[:]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1,</span> <span style="color: #d0d0d0">u</span>
+
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">n</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt):</span>
+        <span style="color: #999999; font-style: italic"># Update all inner points at time t[n+1]</span>
+        <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx):</span>
+            <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_2[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> \ 
+                     <span style="color: #d0d0d0">C2*(u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span> <span style="color: #d0d0d0">+</span> \ 
+                     <span style="color: #d0d0d0">dt**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*f(x[i],</span> <span style="color: #d0d0d0">t[n])</span>
+
+        <span style="color: #999999; font-style: italic"># Insert boundary conditions</span>
+        <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">;</span>  <span style="color: #d0d0d0">u[Nx]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+        <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">user_action</span> <span style="color: #6ab825; font-weight: bold">is</span> <span style="color: #6ab825; font-weight: bold">not</span> <span style="color: #24909d">None</span><span style="color: #d0d0d0">:</span>
+            <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">user_action(u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">n+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+                <span style="color: #6ab825; font-weight: bold">break</span>
+
+        <span style="color: #999999; font-style: italic"># Switch variables before next step</span>
+        <span style="color: #d0d0d0">u_2[:],</span> <span style="color: #d0d0d0">u_1[:]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u_1,</span> <span style="color: #d0d0d0">u</span>
+
+    <span style="color: #d0d0d0">cpu_time</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">t0</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">time.clock()</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">cpu_time</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Verification: exact quadratic solution  <a name="___sec37"></a></h3>
+
+<p>
+Exact solution of the PDE problem <em>and</em> the discrete equations:
+\( \uex (x,t) = x(L-x)(1+\frac{1}{2}t) \)
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">nose.tools</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">nt</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">test_quadratic</span><span style="color: #d0d0d0">():</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced.&quot;&quot;&quot;</span>
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">exact_solution</span><span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">t):</span>
+        <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">x*(L-x)*(</span><span style="color: #3677a9">1</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*t)</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">I</span><span style="color: #d0d0d0">(x):</span>
+        <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">exact_solution(x,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">V</span><span style="color: #d0d0d0">(x):</span>
+        <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*exact_solution(x,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">f</span><span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">t):</span>
+        <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">1</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*t)*c**</span><span style="color: #3677a9">2</span>
+
+    <span style="color: #d0d0d0">L</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2.5</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1.5</span>
+    <span style="color: #d0d0d0">Nx</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">3</span>  <span style="color: #999999; font-style: italic"># Very coarse mesh</span>
+    <span style="color: #d0d0d0">C</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0.75</span>
+    <span style="color: #d0d0d0">T</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">18</span>
+
+    <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">cpu</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">solver(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T)</span>
+    <span style="color: #d0d0d0">u_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">exact_solution(x,</span> <span style="color: #d0d0d0">t[-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+    <span style="color: #d0d0d0">diff</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">abs</span><span style="color: #d0d0d0">(u</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_e).max()</span>
+    <span style="color: #d0d0d0">nt.assert_almost_equal(diff,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">places=</span><span style="color: #3677a9">14</span><span style="color: #d0d0d0">)</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Visualization: animating \( u(x,t) \)  <a name="___sec38"></a></h3>
+
+<p>
+Make a <code>viz</code> function for animating the curve, with plotting
+in a <code>user_action</code> function <code>plot_u</code>:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">viz</span><span style="color: #d0d0d0">(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span> <span style="color: #d0d0d0">umin,</span> <span style="color: #d0d0d0">umax,</span> <span style="color: #d0d0d0">animate=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;Run solver and visualize u at each time level.&quot;&quot;&quot;</span>
+    <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">scitools.std</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">plt</span>
+    <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">time</span><span style="color: #d0d0d0">,</span> <span style="color: #447fcf; text-decoration: underline">glob</span><span style="color: #d0d0d0">,</span> <span style="color: #447fcf; text-decoration: underline">os</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">plot_u</span><span style="color: #d0d0d0">(u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">n):</span>
+        <span style="color: #ed9d13">&quot;&quot;&quot;user_action function for solver.&quot;&quot;&quot;</span>
+        <span style="color: #d0d0d0">plt.plot(x,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #ed9d13">&#39;r-&#39;</span><span style="color: #d0d0d0">,</span>
+                 <span style="color: #d0d0d0">xlabel=</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">ylabel=</span><span style="color: #ed9d13">&#39;u&#39;</span><span style="color: #d0d0d0">,</span>
+                 <span style="color: #d0d0d0">axis=[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">umin,</span> <span style="color: #d0d0d0">umax],</span>
+                 <span style="color: #d0d0d0">title=</span><span style="color: #ed9d13">&#39;t=%f&#39;</span> <span style="color: #d0d0d0">%</span> <span style="color: #d0d0d0">t[n],</span> <span style="color: #d0d0d0">show=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">)</span>
+        <span style="color: #999999; font-style: italic"># Let the initial condition stay on the screen for 2</span>
+        <span style="color: #999999; font-style: italic"># seconds, else insert a pause of 0.2 s between each plot</span>
+        <span style="color: #d0d0d0">time.sleep(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">)</span> <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">t[n]</span> <span style="color: #d0d0d0">==</span> <span style="color: #3677a9">0</span> <span style="color: #6ab825; font-weight: bold">else</span> <span style="color: #d0d0d0">time.sleep(</span><span style="color: #3677a9">0.2</span><span style="color: #d0d0d0">)</span>
+        <span style="color: #d0d0d0">plt.savefig(</span><span style="color: #ed9d13">&#39;frame_%04d.png&#39;</span> <span style="color: #d0d0d0">%</span> <span style="color: #d0d0d0">n)</span>  <span style="color: #999999; font-style: italic"># for movie making</span>
+
+    <span style="color: #999999; font-style: italic"># Clean up old movie frames</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">filename</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #d0d0d0">glob.glob(</span><span style="color: #ed9d13">&#39;frame_*.png&#39;</span><span style="color: #d0d0d0">):</span>
+        <span style="color: #d0d0d0">os.remove(filename)</span>
+
+    <span style="color: #d0d0d0">user_action</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">plot_u</span> <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">animate</span> <span style="color: #6ab825; font-weight: bold">else</span> <span style="color: #24909d">None</span>
+    <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">cpu</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">solver(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span> <span style="color: #d0d0d0">user_action)</span>
+
+    <span style="color: #999999; font-style: italic"># Make movie files</span>
+    <span style="color: #d0d0d0">fps</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">4</span>  <span style="color: #999999; font-style: italic"># Frames per second</span>
+    <span style="color: #d0d0d0">plt.movie(</span><span style="color: #ed9d13">&#39;frame_*.png&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">encoder=</span><span style="color: #ed9d13">&#39;html&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">fps=fps,</span>
+              <span style="color: #d0d0d0">output_file=</span><span style="color: #ed9d13">&#39;movie.html&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">codec2ext</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">dict</span><span style="color: #d0d0d0">(flv=</span><span style="color: #ed9d13">&#39;flv&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">libx64=</span><span style="color: #ed9d13">&#39;mp4&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">libvpx=</span><span style="color: #ed9d13">&#39;webm&#39;</span><span style="color: #d0d0d0">,</span>
+                     <span style="color: #d0d0d0">libtheora=</span><span style="color: #ed9d13">&#39;ogg&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">filespec</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;frame_%04d.png&#39;</span>
+    <span style="color: #d0d0d0">movie_program</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;avconv&#39;</span>  <span style="color: #999999; font-style: italic"># or &#39;ffmpeg&#39;</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">codec</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #d0d0d0">codec2ext:</span>
+        <span style="color: #d0d0d0">ext</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">codec2ext[codec]</span>
+        <span style="color: #d0d0d0">cmd</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;%(movie_program)s -r %(fps)d -i %(filespec)s &#39;</span>\ 
+              <span style="color: #ed9d13">&#39;-vcodec %(codec)s movie.%(ext)s&#39;</span> <span style="color: #d0d0d0">%</span> <span style="color: #24909d">vars</span><span style="color: #d0d0d0">()</span>
+        <span style="color: #d0d0d0">os.system(cmd)</span>
+</pre></div>
+<p>
+Note: <code>plot_u</code> is function inside function and remembers the
+local variables in <code>viz</code> (known as a closure).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Making movie files  <a name="___sec39"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Store spatial curve in a file, for each time level</li>
+ <p><li> Name files like <code>'something_%04d.png' % frame_counter</code></li>
+ <p><li> Combine files to a movie</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">Terminal&gt; scitools movie <span style="color: #40ffff">encoder</span><span style="color: #d0d0d0">=</span>html <span style="color: #40ffff">output_file</span><span style="color: #d0d0d0">=</span>movie.html <span style="color: #ed9d13">\ </span>
+          <span style="color: #40ffff">fps</span><span style="color: #d0d0d0">=</span>4 frame_*.png  <span style="color: #999999; font-style: italic"># web page with a player</span>
+Terminal&gt; avconv -r 4 -i frame_%04d.png -vcodec flv       movie.flv
+Terminal&gt; avconv -r 4 -i frame_%04d.png -vcodec libtheora movie.ogg
+Terminal&gt; avconv -r 4 -i frame_%04d.png -vcodec libx264   movie.mp4
+Terminal&gt; avconv -r 4 -i frame_%04d.png -vcodec libtheora movie.ogg
+Terminal&gt; avconv -r 4 -i frame_%04d.png -vcodec libpvx    movie.webm
+</pre></div>
+<p>
+<div class="alert alert-block alert-warning alert-text-normal"><b>Important.</b>
+
+<ul>
+ <p><li> Zero padding (<code>%04d</code>) is essential for correct sequence of
+   frames in <code>something_*.png</code> (Unix alphanumeric sort)</li>
+ <p><li> Remove old <code>frame_*.png</code> files before making a new movie</li>
+</ul>
+<p>
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Running a case <a name="wave:pde1:guitar:data"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Vibrations of a guitar string</li>
+ <p><li> Triangular initial shape (at rest)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+I(x) = \left\lbrace
+\begin{array}{ll}
+ax/x_0, & x < x_0,\\ 
+a(L-x)/(L-x_0), & \hbox{otherwise}
+\end{array}\right.
+\tag{20}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Appropriate data:
+
+<p>
+
+<ul>
+  <p><li> \( L=75 \) cm, \( x_0=0.8L \), \( a=5 \) mm, \( N_x=50 \), time frequency
+    \( \nu = 440 \) Hz</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Implementation of the case  <a name="___sec41"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">guitar</span><span style="color: #d0d0d0">(C):</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;Triangular wave (pulled guitar string).&quot;&quot;&quot;</span>
+    <span style="color: #d0d0d0">L</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0.75</span>
+    <span style="color: #d0d0d0">x0</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0.8</span><span style="color: #d0d0d0">*L</span>
+    <span style="color: #d0d0d0">a</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0.005</span>
+    <span style="color: #d0d0d0">freq</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">440</span>
+    <span style="color: #d0d0d0">wavelength</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*L</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">freq*wavelength</span>
+    <span style="color: #d0d0d0">omega</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*pi*freq</span>
+    <span style="color: #d0d0d0">num_periods</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1</span>
+    <span style="color: #d0d0d0">T</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*pi/omega*num_periods</span>
+    <span style="color: #d0d0d0">Nx</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">50</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">I</span><span style="color: #d0d0d0">(x):</span>
+        <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">a*x/x0</span> <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">&lt;</span> <span style="color: #d0d0d0">x0</span> <span style="color: #6ab825; font-weight: bold">else</span> <span style="color: #d0d0d0">a/(L-x0)*(L-x)</span>
+
+    <span style="color: #d0d0d0">umin</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1.2</span><span style="color: #d0d0d0">*a;</span>  <span style="color: #d0d0d0">umax</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">-umin</span>
+    <span style="color: #d0d0d0">cpu</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">viz(I,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span> <span style="color: #d0d0d0">umin,</span> <span style="color: #d0d0d0">umax,</span> <span style="color: #d0d0d0">animate=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">)</span>
+</pre></div>
+<p>
+Program: <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_u0_s.py"><tt>wave1D_u0_s.py</tt></a>.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Resulting movie for \( C=0.8 \)  <a name="___sec42"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='800' height='365' preload='none'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+<a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/guitar_C0.8/index.html">Movie of the vibrating string</a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The benefits of scaling  <a name="___sec43"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> It is difficult to figure out all the physical parameters of a case</li>
+ <p><li> And it is not necessary because of a powerful: <em>scaling</em></li>
+</ul>
+<p>
+
+Introduce new \( x \), \( t \), and \( u \) without dimension:
+
+<p>
+<p>&nbsp;<br>
+$$ \bar x = \frac{x}{L},\quad \bar t = \frac{c}{L}t,\quad
+\bar u = \frac{u}{a}
+\thinspace .
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Insert this in the PDE (\( with f=0 \)) and dropping bars
+
+<p>
+<p>&nbsp;<br>
+$$ u_{tt} = u_{tt}
+$$
+<p>&nbsp;<br>
+
+Initial condition: set \( a=1 \), \( L=1 \), and
+\( x_0\in [0,1] \) in \eqref{wave:pde1:guitar:I}.
+
+<p>
+In the code: set <code>a=c=L=1</code>, <code>x0=0.8</code>, and there is no need to calculate with
+wavelengths and frequencies to estimate \( c \)!
+
+<p>
+Just one challenge: determine the period of the waves and an
+appropriate end time (see the text for details).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Vectorization  <a name="___sec44"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Problem: Python loops over long arrays are slow</li>
+ <p><li> One remedy: use vectorized (<code>numpy</code>) code instead of explicit loops</li>
+ <p><li> Other remedies: use Cython, port spatial loops to Fortran or C</li>
+ <p><li> Speedup: 100-1000 (varies with \( N_x \))</li>
+</ul>
+<p>
+
+Next: vectorized loops
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Operations on slices of arrays  <a name="___sec45"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Introductory example: compute \( d_i = u_{i+1}-u_i \)</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">n</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u.size</span>
+<span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">d[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u[i]</span>
+</pre></div>
+<p>
+
+<ul>
+ <p><li> Note: all the differences here are independent of each other.</li>
+ <p><li> Therefore \( d = (u_1,u_2,\ldots,u_n) - (u_0,u_1,\ldots,u_{n-1}) \)</li>
+ <p><li> In <code>numpy</code> code: <code>u[1:n] - u[0:n-1]</code> or just <code>u[1:] - u[:-1]</code></li>
+</ul>
+<p>
+
+<center><p><img src="fig-wave/vectorized_diff.png" align="bottom" width=400,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Test the understanding  <a name="___sec46"></a></h3>
+
+<p>
+Newcomers to vectorization are encouraged to choose
+a small array <code>u</code>, say with five elements,
+and simulate with pen and paper
+both the loop version and the vectorized version.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Vectorization of finite difference schemes (1)  <a name="___sec47"></a></h3>
+
+<p>
+Finite difference schemes basically contains differences between array
+elements with shifted indices. Consider the updating formula
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">u2[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>
+</pre></div>
+<p>
+The vectorization consists of replacing the loop by arithmetics on
+slices of arrays of length <code>n-2</code>:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">u2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[:-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:]</span>
+<span style="color: #d0d0d0">u2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">:n-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:n]</span>   <span style="color: #999999; font-style: italic"># alternative</span>
+</pre></div>
+<p>
+Note: <code>u2</code> gets length <code>n-2</code>.
+
+<p>
+If <code>u2</code> is already an array of length <code>n</code>, do update on "inner" elements
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">u2[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>  <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[:-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:]</span>
+<span style="color: #d0d0d0">u2[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">:n-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:n]</span>   <span style="color: #999999; font-style: italic"># alternative</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Vectorization of finite difference schemes (2)  <a name="___sec48"></a></h3>
+
+<p>
+Include a function evaluation too:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">f</span><span style="color: #d0d0d0">(x):</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">x**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">1</span>
+
+<span style="color: #999999; font-style: italic"># Scalar version</span>
+<span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">n-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">u2[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">f(x[i])</span>
+
+<span style="color: #999999; font-style: italic"># Vectorized version</span>
+<span style="color: #d0d0d0">u2[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u[:-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">f(x[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Vectorized implementation in the solver function  <a name="___sec49"></a></h3>
+
+<p>
+Scalar loop:
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx):</span>
+    <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_2[i]</span> <span style="color: #d0d0d0">+</span> \ 
+           <span style="color: #d0d0d0">C2*(u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+</pre></div>
+<p>
+Vectorized loop:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_2[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> \ 
+          <span style="color: #d0d0d0">C2*(u_1[:-</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:])</span>
+</pre></div>
+<p>
+or
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">u[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:Nx]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:Nx]-</span> <span style="color: #d0d0d0">u_2[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:Nx]</span> <span style="color: #d0d0d0">+</span> \ 
+          <span style="color: #d0d0d0">C2*(u_1[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">:Nx-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:Nx]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">:Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+</pre></div>
+<p>
+Program: <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_u0_sv.py"><tt>wave1D_u0_sv.py</tt></a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Verification of the vectorized version  <a name="___sec50"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">test_quadratic</span><span style="color: #d0d0d0">():</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;</span>
+<span style="color: #ed9d13">    Check the scalar and vectorized versions work for</span>
+<span style="color: #ed9d13">    a quadratic u(x,t)=x(L-x)(1+t/2) that is exactly reproduced.</span>
+<span style="color: #ed9d13">    &quot;&quot;&quot;</span>
+    <span style="color: #999999; font-style: italic"># The following function must work for x as array or scalar</span>
+    <span style="color: #d0d0d0">exact_solution</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t:</span> <span style="color: #d0d0d0">x*(L</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">x)*(</span><span style="color: #3677a9">1</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*t)</span>
+    <span style="color: #d0d0d0">I</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x:</span> <span style="color: #d0d0d0">exact_solution(x,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">V</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x:</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*exact_solution(x,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #999999; font-style: italic"># f is a scalar (zeros_like(x) works for scalar x too)</span>
+    <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #6ab825; font-weight: bold">lambda</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t:</span> <span style="color: #d0d0d0">zeros_like(x)</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*c**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">1</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">*t)</span>
+
+    <span style="color: #d0d0d0">L</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">2.5</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1.5</span>
+    <span style="color: #d0d0d0">Nx</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">3</span>  <span style="color: #999999; font-style: italic"># Very coarse mesh</span>
+    <span style="color: #d0d0d0">C</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1</span>
+    <span style="color: #d0d0d0">T</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">18</span>  <span style="color: #999999; font-style: italic"># Long time integration</span>
+
+    <span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">assert_no_error</span><span style="color: #d0d0d0">(u,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">t,</span> <span style="color: #d0d0d0">n):</span>
+        <span style="color: #d0d0d0">u_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">exact_solution(x,</span> <span style="color: #d0d0d0">t[n])</span>
+        <span style="color: #d0d0d0">diff</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">abs</span><span style="color: #d0d0d0">(u</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_e).max()</span>
+        <span style="color: #d0d0d0">nt.assert_almost_equal(diff,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">places=</span><span style="color: #3677a9">13</span><span style="color: #d0d0d0">)</span>
+
+    <span style="color: #d0d0d0">solver(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span>
+           <span style="color: #d0d0d0">user_action=assert_no_error,</span> <span style="color: #d0d0d0">version=</span><span style="color: #ed9d13">&#39;scalar&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">solver(I,</span> <span style="color: #d0d0d0">V,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">c,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx,</span> <span style="color: #d0d0d0">C,</span> <span style="color: #d0d0d0">T,</span>
+           <span style="color: #d0d0d0">user_action=assert_no_error,</span> <span style="color: #d0d0d0">version=</span><span style="color: #ed9d13">&#39;vectorized&#39;</span><span style="color: #d0d0d0">)</span>
+</pre></div>
+<p>
+Note:
+
+<p>
+
+<ul>
+ <p><li> Compact code with lambda functions</li>
+ <p><li> The scalar \( f \) value needs careful coding: return constant array
+   if vectorized code, else number</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Efficiency measurements  <a name="___sec51"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Run <code>wave1D_u0_sv.py</code> for \( N_x=50,100,200,400,800 \)
+   and measuring the CPU time
+   (cf. <code>run_efficiency_experiments</code> function)</li>
+ <p><li> Observe substantial speed-up: vectorized version is
+   about \( N_x/5 \) times faster</li>
+</ul>
+<p>
+
+Much bigger improvements for 2D and 3D codes!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Generalization: reflecting boundaries  <a name="___sec52"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Boundary condition \( u=0 \): \( u \) changes sign</li>
+ <p><li> Boundary condition \( u_x=0 \): wave is perfectly reflected</li>
+ <p><li> How can we implement \( u_x \)?</li>
+ <p><li> It is more complicated than \( u=0 \)</li>
+</ul>
+<p>
+
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/demo_BC_gaussian/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/demo_BC_gaussian/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Neumann boundary condition <a name="wave:pde2:Neumann"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+ \frac{\partial u}{\partial n} \equiv \normalvec\cdot\nabla u = 0
+\tag{21}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+For a 1D domain \( [0,L] \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\left.\frac{\partial}{\partial n}\right\vert_{x=L} =
+\frac{\partial}{\partial x},\quad
+\left.\frac{\partial}{\partial n}\right\vert_{x=0} = -
+\frac{\partial}{\partial x}\ts
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Boundary condition terminology:
+
+<p>
+
+<ul>
+  <p><li> \( u_x \) specified: <a href="http://en.wikipedia.org/wiki/Neumann_boundary_condition">Neumann</a> condition</li>
+  <p><li> \( u \) specified: <a href="http://en.wikipedia.org/wiki/Dirichlet_conditions">Dirichlet</a> condition</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Discretization of derivatives at the boundary (1) <a name="wave:pde2:Neumann:discr"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> How can we incorporate the condition \( u_x=0 \)
+   in the finite difference scheme?</li>
+ <p><li> We used centeral differences for \( u_{tt} \) and \( u_{xx} \): \( \Oof{\Delta t^2, \Delta x^2} \) accuracy</li>
+ <p><li> Also for \( u_t(x,0) \)</li>
+ <p><li> Should use central difference for \( u_x \) to preserve second order accuracy</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{u_{-1}^n - u_1^n}{2\Delta x} = 0
+\thinspace .
+\tag{22}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretization of derivatives at the boundary (2)  <a name="___sec55"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\frac{u_{-1}^n - u_1^n}{2\Delta x} = 0
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Problem: \( u_{-1}^n \) is outside the mesh (fictitious value)</li>
+ <p><li> Remedy: use the stencil at the boundary to eliminate \( u_{-1}^n \);
+   just replace \( u_{-1}^n \) by \( u_{1}^n \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^{n+1}_i = -u^{n-1}_i  + 2u^n_i + 2C^2
+\left(u^{n}_{i+1}-u^{n}_{i}\right),\quad i=0 \thinspace . \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Visualization of modified boundary stencil  <a name="___sec56"></a></h3>
+
+<p>
+Discrete equation
+for computing \( u^3_0 \) in terms of \( u^2_0 \), \( u^1_0 \), and
+\( u^2_1 \):
+
+<p>
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+Animation
+in a <a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Neumann_stencil_gpl/index.html">web page</a>
+or a <a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.flv">movie file</a>.
+
+<p>
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of Neumann conditions <a name="wave:pde2:Neumann:impl"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Use the general stencil for interior points also on the boundary</li>
+ <p><li> Replace \( u_{i-1}^n \) by \( u_{i+1}^n \) for \( i=0 \)</li>
+ <p><li> Replace \( u_{i+1}^n \) by \( u_{i-1}^n \) for \( i=N_x \)</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=text (from !bc cod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">i = 0
+ip1 = i+1
+im1 = ip1  # i-1 -&gt; i+1
+u[i] = u_1[i] + C2*(u_1[im1] - 2*u_1[i] + u_1[ip1])
+
+i = Nx
+im1 = i-1
+ip1 = im1  # i+1 -&gt; i-1
+u[i] = u_1[i] + C2*(u_1[im1] - 2*u_1[i] + u_1[ip1])
+
+# Or just one loop over all points
+
+for i in range(0, Nx+1):
+    ip1 = i+1 if i &lt; Nx else i-1
+    im1 = i-1 if i &gt; 0  else i+1
+    u[i] = u_1[i] + C2*(u_1[im1] - 2*u_1[i] + u_1[ip1])
+</pre></div>
+<p>
+Program <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn0.py"><tt>wave1D_dn0.py</tt></a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Index set notation <a name="wave:indexset"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Tedious to write index sets like \( i=0,\ldots,N_x \) and
+   \( n=0,\ldots,N_t \)</li>
+ <p><li> Notation not valid if \( i \) or \( n \) starts at 1 instead...</li>
+ <p><li> Both in math and code it is advantageous to use <em>index sets</em></li>
+ <p><li> \( i\in\Ix \) instead of \( i=0,\ldots,N_x \)</li>
+ <p><li> Definition: \( \Ix =\{0,\ldots,N_x\} \)</li>
+ <p><li> The first index: \( i=\setb{\Ix} \)</li>
+ <p><li> The last index: \( i=\sete{\Ix} \)</li>
+ <p><li> All interior points: \( i\in\setr{\Ix} \), \( \seti{\Ix}=\{1,\ldots,N_x-1\} \)</li>
+ <p><li> \( \setl{\Ix} \) means \( \{0,\ldots,N_x-1\} \)</li>
+ <p><li> \( \setr{\Ix} \) means \( \{1,\ldots,N_x\} \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Index set notation in code  <a name="___sec59"></a></h3>
+
+<p>
+<table border="1">
+<tr><td align="center"><b>        Notation       </b></td> <td align="center"><b>         Python        </b></td> </tr>
+<tr><td align="left">   \( \Ix \)                </td> <td align="left">   <code>Ix</code>          </td> </tr>
+<tr><td align="left">   \( \setb{\Ix} \)         </td> <td align="left">   <code>Ix[0]</code>       </td> </tr>
+<tr><td align="left">   \( \sete{\Ix} \)         </td> <td align="left">   <code>Ix[-1]</code>      </td> </tr>
+<tr><td align="left">   \( \setl{\Ix} \)         </td> <td align="left">   <code>Ix[1:]</code>      </td> </tr>
+<tr><td align="left">   \( \setr{\Ix} \)         </td> <td align="left">   <code>Ix[:-1]</code>     </td> </tr>
+<tr><td align="left">   \( \seti{\Ix} \)         </td> <td align="left">   <code>Ix[1:-1]</code>    </td> </tr>
+</table>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Index sets in action (1)  <a name="___sec60"></a></h3>
+
+<p>
+Index sets for a problem in the \( x,t \) plane:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\Ix = \{0,\ldots,N_x\},\quad \It = \{0,\ldots,N_t\},
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+defined in Python as
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">Ix</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">It</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">Nt+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Index sets in action (2)  <a name="___sec61"></a></h3>
+
+<p>
+A finite difference scheme can with the index set notation be specified as
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+u^{n+1}_i &= -u^{n-1}_i  + 2u^n_i + C^2
+\left(u^{n}_{i+1}-2u^{n}_{i}+u^{n}_{i-1}\right),
+\quad i\in\seti{\Ix},\ n\in\seti{\It},\\ 
+u_i &= 0,
+\quad i=\setb{\Ix},\ n\in\seti{\It},\\ 
+u_i &= 0,
+\quad i=\sete{\Ix},\ n\in\seti{\It},
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+and implemented by code like
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">n</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #d0d0d0">It[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]:</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #d0d0d0">Ix[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">:-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]:</span>
+        <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">u_2[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> \ 
+               <span style="color: #d0d0d0">C2*(u_1[i-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*u_1[i]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">u_1[i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+    <span style="color: #d0d0d0">i</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">Ix[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">];</span>  <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+    <span style="color: #d0d0d0">i</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">Ix[-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">];</span> <span style="color: #d0d0d0">u[i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+</pre></div>
+<p>
+Program <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn.py"><tt>wave1D_dn.py</tt></a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Alternative implementation via ghost cells <a name="wave:pde1:Neumann:ghost"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Instead of modifying the stencil at the boundary,
+   we extend the mesh to cover \( u_{-1}^n \) and \( u_{N_x+1}^n \)</li>
+ <p><li> The extra left and right cell are called <em>ghost cells</em></li>
+ <p><li> The extra points are called <em>ghost points</em></li>
+ <p><li> The \( u_{-1}^n \) and \( u_{N_x+1}^n \) values are called <em>ghost values</em></li>
+</ul>
+<p>
+
+The important idea is to ensure that
+<p>&nbsp;<br>
+$$ u_{-1}^n = u_{1}^n\hbox{ and } u_{N_x-1}^n = u_{N_x+1}^n,$$
+<p>&nbsp;<br>
+
+because then the stencil becomes right at the boundary.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of ghost cells (1)  <a name="___sec63"></a></h3>
+
+<p>
+Add ghost points:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">u</span>   <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">u_1</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">u_2</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros(Nx+</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">)</span>
+
+<span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">linspace(</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">L,</span> <span style="color: #d0d0d0">Nx+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>  <span style="color: #999999; font-style: italic"># Mesh points without ghost points</span>
+</pre></div>
+<p>
+
+<ul>
+ <p><li> A major indexing problem arises with ghost cells since
+   Python indices <em>must</em> start at 0.</li>
+ <p><li> <code>u[-1]</code> will always mean the last element in <code>u</code></li>
+ <p><li> Math indexing: \( -1,0,1,2,\ldots,N_x+1 \)</li>
+ <p><li> Python indexing: <code>0,..,Nx+2</code></li>
+ <p><li> Remedy: use index sets</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Implementation of ghost cells (2)  <a name="___sec64"></a></h3>
+
+<p>
+
+<!-- code=text (from !bc cod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">u = zeros(Nx+3)
+Ix = range(1, u.shape[0]-1)
+
+# Boundary values: u[Ix[0]], u[Ix[-1]]
+
+# Set initial conditions
+for i in Ix:
+    u_1[i] = I(x[i-Ix[0]])  # Note i-Ix[0]
+
+# Loop over all physical mesh points
+for i in Ix:
+    u[i] = - u_2[i] + 2*u_1[i] + \ 
+           C2*(u_1[i-1] - 2*u_1[i] + u_1[i+1])
+
+# Update ghost values
+i = Ix[0]          # x=0 boundary
+u[i-1] = u[i+1]
+i = Ix[-1]         # x=L boundary
+u[i-1] = u[i+1]
+</pre></div>
+<p>
+Program: <a href="http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn0_ghost.py"><tt>wave1D_dn0_ghost.py</tt></a>.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Generalization: variable wave velocity <a name="wave:pde2:var:c"></a></h2>
+
+<p>
+Heterogeneous media: varying \( c=c(x) \)
+
+<p>
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/pulse1_in_two_media/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/pulse1_in_two_media/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The model PDE with a variable coefficient  <a name="___sec66"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial t^2} =
+\frac{\partial}{\partial x}\left( q(x)
+\frac{\partial u}{\partial x}\right) + f(x,t)
+\tag{23}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+This equation sampled at a mesh point \( (x_i,t_n) \):
+<p>&nbsp;<br>
+$$
+\frac{\partial^2 }{\partial t^2} u(x_i,t_n) =
+\frac{\partial}{\partial x}\left( q(x_i)
+\frac{\partial}{\partial x} u(x_i,t_n)\right) + f(x_i,t_n),
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretizing the variable coefficient (1) <a name="wave:pde2:var:c:ideas"></a></h3>
+
+<p>
+The principal idea is to <em>first discretize the outer derivative</em>.
+
+<p>
+Define
+<p>&nbsp;<br>
+$$ \phi = q(x)
+\frac{\partial u}{\partial x},
+$$
+<p>&nbsp;<br>
+
+and use a centered derivative around \( x=x_i \) for the derivative of \( \phi \):
+<p>&nbsp;<br>
+$$
+\left[\frac{\partial\phi}{\partial x}\right]^n_i
+\approx \frac{\phi_{i+\frac{1}{2}} - \phi_{i-\frac{1}{2}}}{\Delta x}
+= [D_x\phi]^n_i
+\thinspace .
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretizing the variable coefficient (2)  <a name="___sec68"></a></h3>
+
+<p>
+Then discretize the inner operators:
+<p>&nbsp;<br>
+$$
+\phi_{i+\frac{1}{2}}  = q_{i+\frac{1}{2}}
+\left[\frac{\partial u}{\partial x}\right]^n_{i+\frac{1}{2}}
+\approx q_{i+\frac{1}{2}} \frac{u^n_{i+1} - u^n_{i}}{\Delta x}
+= [q D_x u]_{i+\frac{1}{2}}^n
+\thinspace .
+$$
+<p>&nbsp;<br>
+
+Similarly,
+<p>&nbsp;<br>
+$$
+\phi_{i-\frac{1}{2}}  = q_{i-\frac{1}{2}}
+\left[\frac{\partial u}{\partial x}\right]^n_{i-\frac{1}{2}}
+\approx q_{i-\frac{1}{2}} \frac{u^n_{i} - u^n_{i-1}}{\Delta x}
+= [q D_x u]_{i-\frac{1}{2}}^n
+\thinspace .
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretizing the variable coefficient (3)  <a name="___sec69"></a></h3>
+
+<p>
+These intermediate results are now combined to
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\left[
+\frac{\partial}{\partial x}\left( q(x)
+\frac{\partial u}{\partial x}\right)\right]^n_i
+\approx \frac{1}{\Delta x^2}
+\left( q_{i+\frac{1}{2}} \left({u^n_{i+1} - u^n_{i}}\right)
+- q_{i-\frac{1}{2}} \left({u^n_{i} - u^n_{i-1}}\right)\right)
+\tag{24}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+In operator notation:
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\left[
+\frac{\partial}{\partial x}\left( q(x)
+\frac{\partial u}{\partial x}\right)\right]^n_i
+\approx [D_xq D_x u]^n_i
+\tag{25}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<div class="alert alert-block alert-warning alert-text-normal"><b>Remark.</b>
+<b>Remark.</b>
+Many are tempted to use the chain rule on the
+term \( \frac{\partial}{\partial x}\left( q(x)
+\frac{\partial u}{\partial x}\right) \), but this is not a good idea
+in this context.
+</div>
+<p>
+<!-- Needs some better explanation here - maybe the exact solution of a -->
+<!-- poisson type problem (piecewise linear solution) failes if we use -->
+<!-- the chain rule? -->
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Computing the coefficient between mesh points <a name="wave:pde2:var:c:means"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Given \( q(x) \): compute \( q_{i+\frac{1}{2}} \) as \( q(x_{i+\frac{1}{2}}) \)</li>
+ <p><li> Given \( q \) at the mesh points: \( q_i \), use an average</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{align}
+q_{i+\frac{1}{2}} &\approx
+\frac{1}{2}\left( q_{i} + q_{i+1}\right) =
+[\overline{q}^{x}]_i,
+\quad &\hbox{(arithmetic mean)}
+\tag{26}\\ 
+q_{i+\frac{1}{2}} &\approx
+2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1},
+\quad &\hbox{(harmonic mean)}
+\tag{27}\\ 
+q_{i+\frac{1}{2}} &\approx
+\left(q_{i}q_{i+1}\right)^{1/2},
+\quad &\hbox{(geometric mean)}
+\tag{28}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+The arithmetic mean in <a href="#mjx-eqn-26">(26)</a> is by
+far the most used averaging technique.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretization of variable-coefficient wave equation in operator notation  <a name="___sec71"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\lbrack D_tD_t u = D_x\overline{q}^{x}D_x u + f\rbrack^{n}_i
+\thinspace .
+\tag{29}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+We clearly see the type of finite differences and averaging!
+
+<p>
+Write out and solve wrt \( u_i^{n+1} \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2\times \nonumber\\ 
+&\quad  \left(
+\frac{1}{2}(q_{i} + q_{i+1})(u_{i+1}^n - u_{i}^n) -
+\frac{1}{2}(q_{i} + q_{i-1})(u_{i}^n - u_{i-1}^n)\right)
++ \nonumber\\ 
+& \quad \Delta t^2 f^n_i
+\thinspace .
+\tag{30}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+
+</section>
+
+
+
+</div> <!-- class="slides" -->
+</div> <!-- class="reveal" -->
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.min.js"></script>
+
+<script>
+
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+controls: true,
+progress: true,
+history: true,
+center: true,
+heme: Reveal.getQueryHash().theme, // available themes are in reveal.js/css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/none
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+{ src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+{ src: 'reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+{ src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+{ src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+{ src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+{ src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+// { src: 'reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+]
+});
+</script>
+
+
+</body>
+</html>

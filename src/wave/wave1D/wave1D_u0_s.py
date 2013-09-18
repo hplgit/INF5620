@@ -25,20 +25,20 @@ from numpy import *
 
 def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    x = linspace(0, L, Nx+1)    # mesh points in space
+    x = linspace(0, L, Nx+1)     # Mesh points in space
     dx = x[1] - x[0]
     dt = C*dx/c
     Nt = int(round(T/dt))
-    t = linspace(0, N*dt, Nt+1) # mesh points in time
-    C2 = C**2                   # help variable in the scheme
+    t = linspace(0, Nt*dt, Nt+1) # Mesh points in time
+    C2 = C**2                    # Help variable in the scheme
     if f is None or f == 0 :
         f = lambda x, t: 0
     if V is None or V == 0:
         V = lambda x: 0
 
-    u   = zeros(Nx+1)   # solution array at new time level
-    u_1 = zeros(Nx+1)   # solution at 1 time level back
-    u_2 = zeros(Nx+1)   # solution at 2 time levels back
+    u   = zeros(Nx+1)   # Solution array at new time level
+    u_1 = zeros(Nx+1)   # Solution at 1 time level back
+    u_2 = zeros(Nx+1)   # Solution at 2 time levels back
 
     import time;  t0 = time.clock()  # for measuring CPU time
 
@@ -60,6 +60,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     if user_action is not None:
         user_action(u, x, t, 1)
 
+    # Switch variables before next step
     u_2[:], u_1[:] = u_1, u
 
     for n in range(1, Nt):
@@ -84,7 +85,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
 import nose.tools as nt
 
 def test_quadratic():
-    """Check that u(x,t)=x(L-x)(1+t) is exactly reproduced."""
+    """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
     def exact_solution(x, t):
         return x*(L-x)*(1 + 0.5*t)
 
@@ -99,7 +100,7 @@ def test_quadratic():
 
     L = 2.5
     c = 1.5
-    Nx = 3  # very coarse mesh
+    Nx = 3  # Very coarse mesh
     C = 0.75
     T = 18
 
@@ -108,20 +109,31 @@ def test_quadratic():
     diff = abs(u - u_e).max()
     nt.assert_almost_equal(diff, 0, places=14)
 
+def test_constant():
+    """Check that u(x,t)=Q=0 is exactly reproduced."""
+    Q = 0  # Require 0 because of the boundary conditions
+    u, x, t, cpu = solver(I=lambda x:
+                          0, V=0, f=0, c=1.5, L=2.5,
+                          Nx=3,  # Very coarse mesh
+                          C=0.75, T=18)
+    nt.assert_almost_equal(abs(u).max(), Q, places=14)
+
+
 def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
     """Run solver and visualize u at each time level."""
-    import scitools.std as st, time, glob, os
+    import scitools.std as plt
+    import time, glob, os
 
     def plot_u(u, x, t, n):
         """user_action function for solver."""
-        st.plot(x, u, 'r-',
-                xlabel='x', ylabel='u',
-                axis=[0, L, umin, umax],
-                title='t=%f' % t[n], show=True)
+        plt.plot(x, u, 'r-',
+                 xlabel='x', ylabel='u',
+                 axis=[0, L, umin, umax],
+                 title='t=%f' % t[n], show=True)
         # Let the initial condition stay on the screen for 2
         # seconds, else insert a pause of 0.2 s between each plot
         time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-        st.savefig('frame_%04d.png' % n)  # for movie making
+        plt.savefig('frame_%04d.png' % n)  # for movie making
 
     # Clean up old movie frames
     for filename in glob.glob('frame_*.png'):
@@ -131,14 +143,23 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
     u, x, t, cpu = solver(I, V, f, c, L, Nx, C, T, user_action)
 
     # Make movie files
-    st.movie('frame_*.png', encoder='mencoder', fps=4,
-             output_file='movie.avi')
-    st.movie('frame_*.png', encoder='html', fps=4,
-             output_file='movie.html')
+    fps = 4  # Frames per second
+    plt.movie('frame_*.png', encoder='html', fps=fps,
+              output_file='movie.html')
+    codec2ext = dict(flv='flv', libx64='mp4', libvpx='webm',
+                     libtheora='ogg')
+    filespec = 'frame_%04d.png'
+    movie_program = 'avconv'  # or 'ffmpeg'
+    for codec in codec2ext:
+        ext = codec2ext[codec]
+        cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
+              '-vcodec %(codec)s movie.%(ext)s' % vars()
+        os.system(cmd)
+
 
 def guitar(C):
     """Triangular wave (pulled guitar string)."""
-    L = 0.4
+    L = 0.75
     x0 = 0.8*L
     a = 0.005
     freq = 440

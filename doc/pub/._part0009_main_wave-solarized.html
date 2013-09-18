@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<!--
+Automatically generated HTML file from Doconce source
+(https://github.com/hplgit/doconce/)
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
+<meta name="description" content="Finite difference methods for wave motion">
+<meta name="keywords" content="waves on a string,wave equation 1D,wave equation 1D, finite difference method,mesh finite differences,stencil 1D wave equation,mesh function,wave equation 1D, implementation,unit testing,software testing nose,vectorization,scalar code,array slices,slice,lambda function (Python),Neumann conditions,Dirichlet conditions,homogeneous Neumann conditions,homogeneous Dirichlet conditions,stencil Neumann boundary,index set notation,geometric mean,arithmetic mean,harmonic average,averaging geometric,averaging arithmetic,averaging harmonic,wave equation 1D, analytical properties,Fourier series,Fourier transform,discrete Fourier transform,wave equation 1D, exact numerical solution,Courant number,stability criterion,wave equation 1D, stability,wave equation 2D, implementation,Cython,declaration of variables in Cython,C extension module,wrapper code,Fortran subroutine,row-major ordering,column-major ordering,Fortran array storage,C/Python array storage,radiation condition,open boundary condition">
+
+
+
+<style type="text/css">
+    /* solarized style */
+    body {
+      margin:5;
+      padding:0;
+      border:0;	/* Remove the border around the viewport in old versions of IE */
+      width:100%;
+      background: #fdf6e3;
+      min-width:600px;	/* Minimum width of layout - remove if not required */
+      font-family: Verdana, Helvetica, Arial, sans-serif;
+      font-size: 1.0em;
+      line-height: 1.3em;
+      color: #657b83;
+    }
+    a { color: #657b83; text-decoration:none; }
+    a:hover { color: #b58900; background: #eee8d5; text-decoration:none; }
+    h1, h2, h3 { margin:.8em 0 .2em 0; padding:0; line-height: 125%; }
+    h2 { font-variant: small-caps; }
+    pre {
+      background: #fdf6e3;
+      -webkit-box-shadow: inset 0 0 2px #000000;
+      -moz-box-shadow: inset 0 0 2px #000000;
+      box-shadow: inset 0 0 2px #000000;
+      color: #586e75;
+      margin-left: 0px;
+      font-family: 'Droid Sans Mono', monospace;
+      padding: 2px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
+    }
+    tt { font-family: "Courier New", Courier; }
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p { text-indent: 0px; }
+    p.caption { width: 80%; font-style: normal; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .alert-text-small   { font-size: 80%;  }
+    .alert-text-large   { font-size: 130%; }
+    .alert-text-normal  { font-size: 90%;  }
+    .alert {
+             padding:8px 35px 8px 14px; margin-bottom:18px;
+             text-shadow:0 1px 0 rgba(255,255,255,0.5);
+             border:1px solid #FFBF00;
+             -webkit-border-radius: 4px; -moz-border-radius: 4px;
+             border-radius: 4px
+             color: #555;
+             background-color: #fbeed5;
+             background-position: 10px 5px;
+             background-repeat: no-repeat;
+             background-size: 38px;
+             padding-left: 55px;
+             width: 75%;
+     }
+     .alert-block {padding-top:14px; padding-bottom:14px}
+     .alert-block > p, .alert-block > ul {margin-bottom:1em}
+     .alert li {margin-top: 1em}
+     .alert-block p+p {margin-top:5px}
+     .alert-notice { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_yellow_notice.png); }
+     .alert-summary  { background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_yellow_summary.png); }
+     .alert-warning { background-image: url(https://doconce.googlecode.com/hg/bundled/html_images/small_yellow_warning.png); }
+     .alert-question {background-image:url(https://doconce.googlecode.com/hg/bundled/html_images/small_yellow_question.png); }
+
+</style>
+
+</head>
+
+<!-- tocinfo
+{'highest level': 1,
+ 'sections': [(' Finite difference methods for waves on a string ',
+               1,
+               'wave:string',
+               'wave:string'),
+              (' Discretizing the domain ',
+               2,
+               'wave:string:mesh',
+               'wave:string:mesh'),
+              (' Uniform meshes ', 3, None, '___sec2'),
+              (' The discrete solution ',
+               2,
+               'wave:string:numerical:sol',
+               'wave:string:numerical:sol'),
+              (' Fulfilling the equation at the mesh points ',
+               2,
+               'wave:string:samplingPDE',
+               'wave:string:samplingPDE'),
+              (' Replacing derivatives by finite differences ',
+               2,
+               'wave:string:fd',
+               'wave:string:fd'),
+              (' Algebraic version of the PDE ', 3, None, '___sec6'),
+              (' Algebraic version of the initial conditions ',
+               3,
+               None,
+               '___sec7'),
+              (' Formulating a recursive algorithm ',
+               2,
+               'wave:string:alg',
+               'wave:string:alg'),
+              (' Sketch of an implementation ',
+               2,
+               'wave:string:impl',
+               'wave:string:impl'),
+              (' Verification ', 1, None, '___sec10'),
+              (' A slightly generalized model problem ',
+               2,
+               'wave:pde2:fd',
+               'wave:pde2:fd'),
+              (' Using an analytical solution of physical significance ',
+               2,
+               None,
+               '___sec12'),
+              (' Manufactured solution ', 2, None, '___sec13'),
+              (' Constructing an exact solution of the discrete equations ',
+               2,
+               None,
+               '___sec14'),
+              (' Implementation ', 1, 'wave:pde1:impl', 'wave:pde1:impl'),
+              (' Making a solver function ', 2, None, '___sec16'),
+              (' Verification: exact quadratic solution ',
+               2,
+               None,
+               '___sec17'),
+              (' Visualization: animating $u(x,t)$ ', 2, None, '___sec18'),
+              (' Visualization via SciTools ', 3, None, '___sec19'),
+              (' Making movie files ', 3, None, '___sec20'),
+              (' Skipping frames for animation speed ', 3, None, '___sec21'),
+              (' Visualization via Matplotlib ', 3, None, '___sec22'),
+              (' Running a case ',
+               2,
+               'wave:pde1:guitar:data',
+               'wave:pde1:guitar:data'),
+              (' The benefits of scaling ', 2, None, '___sec24'),
+              (' Vectorization ', 1, None, '___sec25'),
+              (' Operations on slices of arrays ', 2, None, '___sec26'),
+              (' Finite difference schemes expressed as slices ',
+               2,
+               None,
+               '___sec27'),
+              (' Verification ', 2, None, '___sec28'),
+              (' Efficiency measurements ', 2, None, '___sec29'),
+              (' Exercises ', 1, None, '___sec30'),
+              (' Exercise 1: Simulate a standing wave ',
+               2,
+               'wave:exer:standingwave',
+               'wave:exer:standingwave'),
+              (' Exercise 2: Add storage of solution in a user action function ',
+               2,
+               'wave:exer:store:list',
+               'wave:exer:store:list'),
+              (' Exercise 3: Use a class for the user action function ',
+               2,
+               'wave:exer:store:list:class',
+               'wave:exer:store:list:class'),
+              (' Exercise 4: Compare several Courant numbers in one movie ',
+               2,
+               'wave:exer:multiple:C',
+               'wave:exer:multiple:C'),
+              (' Project 5: Calculus with 1D mesh functions ',
+               2,
+               'wave:exer:mesh1D:calculus',
+               'wave:exer:mesh1D:calculus'),
+              (' Generalization: reflecting boundaries ',
+               1,
+               None,
+               '___sec36'),
+              (' Neumann boundary condition ',
+               2,
+               'wave:pde2:Neumann',
+               'wave:pde2:Neumann'),
+              (' Discretization of derivatives at the boundary ',
+               2,
+               'wave:pde2:Neumann:discr',
+               'wave:pde2:Neumann:discr'),
+              (' Implementation of Neumann conditions ',
+               2,
+               'wave:pde2:Neumann:impl',
+               'wave:pde2:Neumann:impl'),
+              (' Index set notation ', 2, 'wave:indexset', 'wave:indexset'),
+              (' Alternative implementation via ghost cells ',
+               2,
+               'wave:pde1:Neumann:ghost',
+               'wave:pde1:Neumann:ghost'),
+              (' Idea ', 3, None, '___sec42'),
+              (' Implementation ', 3, None, '___sec43'),
+              (' Generalization: variable wave velocity ',
+               1,
+               'wave:pde2:var:c',
+               'wave:pde2:var:c'),
+              (' The model PDE with a variable coefficient ',
+               2,
+               None,
+               '___sec45'),
+              (' Discretizing the variable coefficient ',
+               2,
+               'wave:pde2:var:c:ideas',
+               'wave:pde2:var:c:ideas'),
+              (' Computing the coefficient between mesh points ',
+               2,
+               'wave:pde2:var:c:means',
+               'wave:pde2:var:c:means'),
+              (' How a variable coefficient affects the stability ',
+               2,
+               'wave:pde2:var:c:stability',
+               'wave:pde2:var:c:stability'),
+              (' Neumann condition and a variable coefficient ',
+               2,
+               'wave:pde2:var:c:Neumann',
+               'wave:pde2:var:c:Neumann'),
+              (' Implementation of variable coefficients ',
+               2,
+               'wave:pde2:var:c:impl',
+               'wave:pde2:var:c:impl'),
+              (' A more general model PDE with variable coefficients ',
+               2,
+               None,
+               '___sec51'),
+              (' Generalization: damping ', 2, None, '___sec52'),
+              (' Building a general 1D wave equation solver ',
+               1,
+               'wave:pde2:software',
+               'wave:pde2:software'),
+              (' User action function as a class ', 2, None, '___sec54'),
+              (' Collection of initial conditions ', 2, None, '___sec55'),
+              (' Exercises ', 1, None, '___sec56'),
+              (' Problem 6: Explore the effect of boundary conditions ',
+               2,
+               'wave:exer:1D:bceffects',
+               'wave:exer:1D:bceffects'),
+              (' Problem 7: Explore symmetry boundary conditions ',
+               2,
+               'wave:exer:symmetry:bc',
+               'wave:exer:symmetry:bc'),
+              (' Exercise 8: Send pulse waves through a layered medium ',
+               2,
+               'wave:app:exer:pulse1D',
+               'wave:app:exer:pulse1D'),
+              (' Exercise 9: Compare discretizations of a Neumann condition ',
+               2,
+               None,
+               '___sec60'),
+              (' Analysis of the continuous and discrete solutions ',
+               1,
+               'wave:pde1:analysis',
+               'wave:pde1:analysis'),
+              (' Properties of the solution of the wave equation ',
+               2,
+               'wave:pde1:properties',
+               'wave:pde1:properties'),
+              (' More precise definition of Fourier representations ',
+               2,
+               'wave:pde1:Fourier',
+               'wave:pde1:Fourier'),
+              (' Analysis of the finite difference scheme ',
+               2,
+               'wave:pde1:analysis',
+               'wave:pde1:analysis'),
+              (' Extending the analysis to 2D and 3D ',
+               2,
+               'wave:pde1:analysis:2D3D',
+               'wave:pde1:analysis:2D3D'),
+              (' Finite difference methods for 2D and 3D wave equations ',
+               1,
+               'wave:2D3D',
+               'wave:2D3D'),
+              (' Multi-dimensional wave equations ',
+               2,
+               'wave:2D3D:models',
+               'wave:2D3D:models'),
+              (' Mesh ', 2, 'wave:2D3D:mesh', 'wave:2D3D:mesh'),
+              (' Discretization ', 2, 'wave:2D3D:models', 'wave:2D3D:models'),
+              (' Discretizing the PDEs ', 3, None, '___sec70'),
+              (' Handling boundary conditions where is $u$ known ',
+               3,
+               None,
+               '___sec71'),
+              (' Discretizing the $\\partial u/\\partial n = 0$ ',
+               3,
+               None,
+               '___sec72'),
+              (' Implementation ', 1, 'wave:2D3D:impl', 'wave:2D3D:impl'),
+              (' Scalar computations ', 2, None, '___sec74'),
+              (' Domain and mesh ', 3, None, '___sec75'),
+              (' Stability limit ', 3, None, '___sec76'),
+              (' Solution arrays ', 3, None, '___sec77'),
+              (' Computing the solution ', 3, None, '___sec78'),
+              (' Vectorized computations ', 2, None, '___sec79'),
+              (' Verification ', 2, None, '___sec80'),
+              (' Testing a quadratic solution ', 3, None, '___sec81'),
+              (' Migrating loops to Cython ', 2, None, '___sec82'),
+              (' Declaring variables and annotating the code ',
+               3,
+               None,
+               '___sec83'),
+              (' Visual inspection of the C translation ',
+               3,
+               None,
+               '___sec84'),
+              (' Building the extension module ', 3, None, '___sec85'),
+              (' Calling the Cython function ', 3, None, '___sec86'),
+              (' Efficiency ', 3, None, '___sec87'),
+              (' Migrating loops to Fortran ', 2, None, '___sec88'),
+              (' The Fortran subroutine ', 3, None, '___sec89'),
+              (' Building the Fortran module with f2py ',
+               3,
+               None,
+               '___sec90'),
+              (' Examining doc strings ', 3, None, '___sec91'),
+              (' How to avoid array copying ', 3, None, '___sec92'),
+              (' Efficiency ', 3, None, '___sec93'),
+              (' Migrating loops to C via Cython ', 2, None, '___sec94'),
+              (' Translating index pairs to single indices ',
+               3,
+               None,
+               '___sec95'),
+              (' The complete C code ', 3, None, '___sec96'),
+              (' The Cython interface file ', 3, None, '___sec97'),
+              (' Building the extension module ', 3, None, '___sec98'),
+              (' Efficiency ', 3, None, '___sec99'),
+              (' Migrating loops to C via f2py ', 2, None, '___sec100'),
+              (' Migrating loops to C via Instant ', 2, None, '___sec101'),
+              (' Migrating loops to C++ via f2py ', 2, None, '___sec102'),
+              (' Using classes to implement a simulator ',
+               2,
+               None,
+               '___sec103'),
+              (' Callbacks to Python from Fortran or C ',
+               2,
+               None,
+               '___sec104'),
+              (' Exercises ', 1, None, '___sec105'),
+              (' Project 10: Calculus with 2D/3D mesh functions ',
+               2,
+               'wave:exer:mesh3D:calculus',
+               'wave:exer:mesh3D:calculus'),
+              (' Applications of wave equations ', 1, 'wave:app', 'wave:app'),
+              (' Waves on a string ',
+               2,
+               'wave:app:string',
+               'wave:app:string'),
+              (' Damping ', 3, None, '___sec109'),
+              (' External forcing ', 3, None, '___sec110'),
+              (' Modeling the tension via springs ', 3, None, '___sec111'),
+              (' Waves on a membrane ',
+               2,
+               'wave:app:membrane',
+               'wave:app:membrane'),
+              (' Elastic waves in a rod ',
+               2,
+               'wave:app:elastic:rod',
+               'wave:app:elastic:rod'),
+              (' The acoustic model for seismic waves ',
+               2,
+               'wave:app:acoustic:seismic',
+               'wave:app:acoustic:seismic'),
+              (' Anisotropy ', 3, None, '___sec115'),
+              (' Sound waves in liquids and gases ',
+               2,
+               'wave:app:sound',
+               'wave:app:sound'),
+              (' Spherical waves ',
+               2,
+               'wave:app:spherical',
+               'wave:app:spherical'),
+              (' The linear shallow water equations ',
+               2,
+               'wave:app:sw:2D',
+               'wave:app:sw:2D'),
+              (' Wind drag on the surface ', 3, None, '___sec119'),
+              (' Bottom drag ', 3, None, '___sec120'),
+              (" Effect of the Earth's rotation ", 3, None, '___sec121'),
+              (' Waves in blood vessels ',
+               2,
+               'wave:app:blood',
+               'wave:app:blood'),
+              (' Reduction to standard wave equation ', 3, None, '___sec123'),
+              (' Electromagnetic waves ',
+               2,
+               'wave:app:light',
+               'wave:app:light'),
+              (' Exercises ', 1, 'wave:app:exer', 'wave:app:exer'),
+              (' Exercise 11: Simulate waves on a non-homogeneous string ',
+               2,
+               'wave:app:exer:string:discont',
+               'wave:app:exer:string:discont'),
+              (' Exercise 12: Simulate damped waves on a string ',
+               2,
+               'wave:app:exer:string:damping',
+               'wave:app:exer:string:damping'),
+              (' Exercise 13: Simulate elastic waves in a rod ',
+               2,
+               'wave:app:exer:rod',
+               'wave:app:exer:rod'),
+              (' Exercise 14: Explain why numerical noise occurs ',
+               2,
+               'wave:app:exer:pulse1D:analysis',
+               'wave:app:exer:pulse1D:analysis'),
+              (' Exercise 15: Investigate harmonic averaging in a 1D model ',
+               2,
+               'wave:app:exer:pulse1D:harmonic',
+               'wave:app:exer:pulse1D:harmonic'),
+              (' Exercise 16: Test the efficiency of compiled loops in 3D ',
+               2,
+               'wave:exer:3D:f77:cy:efficiency',
+               'wave:exer:3D:f77:cy:efficiency'),
+              (' Exercise 17: Earthquake-generated tsunami in a 1D model ',
+               2,
+               'wave:app:exer:tsunami1D',
+               'wave:app:exer:tsunami1D'),
+              (' Exercise 18: Implement an open boundary condition ',
+               2,
+               'wave:app:exer:tsunami1D:radiation',
+               'wave:app:exer:tsunami1D:radiation'),
+              (' Exercise 19: Earthquake-generated tsunami over a subsea hill ',
+               2,
+               'wave:app:exer:tsunami1D:hill',
+               'wave:app:exer:tsunami1D:hill'),
+              (' Exercise 20: Implement Neumann conditions in 2D ',
+               2,
+               'wave:app:exer:wave2D:Neumann',
+               'wave:app:exer:wave2D:Neumann'),
+              (' Exercise 21: Implement a convergence test for a 2D code ',
+               2,
+               None,
+               '___sec136'),
+              (' Exercise 22: Earthquake-generated tsunami over a 3D hill ',
+               2,
+               'wave:app:exer:tsunami2D:hill',
+               'wave:app:exer:tsunami2D:hill'),
+              (' Exercise 23: Implement loops in compiled languages ',
+               2,
+               'wave:app:exer:tsunami2D:hill:compiled',
+               'wave:app:exer:tsunami2D:hill:compiled'),
+              (' Exercise 24: Write a complete program in Fortran or C ',
+               2,
+               'wave:app:exer:tsunami2D:hill:compiled2',
+               'wave:app:exer:tsunami2D:hill:compiled2'),
+              (' Exercise 25: Investigate Matplotlib for visualization ',
+               2,
+               'wave:app:exer:tsunami:hill:viz:matplotlib',
+               'wave:app:exer:tsunami:hill:viz:matplotlib'),
+              (' Exercise 26: Investigate visualization packages ',
+               2,
+               'wave:app:exer:tsunami:hill:viz:packages',
+               'wave:app:exer:tsunami:hill:viz:packages'),
+              (' Exercise 27: Investigate harmonic vs arithmetic mean ',
+               2,
+               'wave:app:exer:tsunami:hill:harmonic',
+               'wave:app:exer:tsunami:hill:harmonic'),
+              (' Exercise 28: Simulate seismic waves in 2D ',
+               2,
+               'wave:app:exer:seismic2D',
+               'wave:app:exer:seismic2D'),
+              (' Project 29: Modeling 3D acoustic waves in a room ',
+               2,
+               'wave:app:exer:acoustics',
+               'wave:app:exer:acoustics'),
+              (' Project 30: Solve a 1D transport equation ',
+               2,
+               'wave:app:exer:advec1D',
+               'wave:app:exer:advec1D')]}
+end of tocinfo -->
+
+<body>
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "none"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{\mathcal{I}_x}
+\newcommand{\Iy}{\mathcal{I}_y}
+\newcommand{\Iz}{\mathcal{I}_z}
+\newcommand{\It}{\mathcal{I}_t}
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+<a name="part0009"></a>
+<!-- begin top navigation -->
+<a href="._part0008_main_wave-solarized.html"><img src="http://hplgit.github.io/doconce/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0010_main_wave-solarized.html"><img src="http://hplgit.github.io/doconce/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end top navigation -->
+
+<p>
+<!-- !split -->
+
+<h3>Waves in blood vessels <a name="wave:app:blood"></a></h3>
+
+<p>
+The flow of blood in our bodies is basically fluid flow in
+a network of pipes. Unlike rigid pipes, the walls in the
+blood vessels are elastic and will increase their diameter when the
+pressure rises. The elastic forces will then push the wall back
+and accelerate the fluid. This interaction between the flow of blood
+and the deformation of the vessel wall results in waves traveling along
+our blood vessels.
+
+<p>
+A model for one-dimensional waves along blood vessels can be derived
+from averaging the fluid flow over the cross section of the blood
+vessels. Let \( x \) be a coordinate along the blood vessel and assume
+that all cross sections are circular, though with different radius \( R(x,t) \).
+The main quantities to compute is the cross section
+area \( A(x,t) \), the averaged pressure \( P(x,t) \), and the total volume
+flux \( Q(x,t) \).
+The area of this cross section
+is
+
+<p>
+$$
+\begin{equation}
+A(x,t) = 2\pi\int_{0}^{R(x,t)} rdr,
+\end{equation}
+$$
+
+Let \( v_x(x,t) \) be the velocity of blood averaged over
+the cross section at point \( x \). The volume flux,
+being the total volume of blood passing a cross section per time unit,
+becomes
+$$
+\begin{equation}
+Q(x,t) = A(x,t)v_x(x,t)
+\thinspace
+\end{equation}
+$$
+
+
+<p>
+Mass balance and Newton's second law lead to the PDEs
+
+<p>
+$$
+\begin{align}
+\frac{\partial A}{\partial t} + \frac{\partial Q}{\partial x} &= 0,
+\tag{92}\\ 
+\frac{\partial Q}{\partial t} +
+\frac{\gamma+2}{\gamma + 1}
+\frac{\partial}{\partial x}\left(\frac{Q^2}{A}\right)
++ \frac{A}{\varrho}\frac{\partial P}{\partial x}
+&= -2\pi (\gamma + 2)\frac{\mu}{\varrho}\frac{Q}{A},
+\tag{93}
+\end{align}
+$$
+
+where \( \gamma \) is a parameter related to the velocity profile,
+\( \varrho \) is the density of blood, and \( \mu \) is the dynamic viscosity
+of blood.
+
+<p>
+We have three unknowns \( A \), \( Q \), and \( P \), and two equations
+<a href="#mjx-eqn-92">(92)</a> and <a href="#mjx-eqn-93">(93)</a>.
+A third equation is needed to relate the flow to
+the deformations of the wall. A common form for this equation is
+
+<p>
+$$
+\begin{equation}
+\frac{\partial P}{\partial t} + \frac{1}{C}
+\frac{\partial Q}{\partial x} =0,
+\tag{94}
+\end{equation}
+$$
+
+where \( C \) is the compliance of the wall, given by the constitutive
+relation
+
+<p>
+$$
+\begin{equation}
+C = \frac{\partial A}{\partial P} + \frac{\partial A}{\partial t},
+\end{equation}
+$$
+
+which require a relationship between \( A \) and \( P \). One common model
+is to view the vessel wall, locally, as a thin elastic tube subject to an
+internal pressure. This gives the relation
+
+<p>
+$$ P=P_0 + \frac{\pi h E}{(1-\nu^2)A_0}(\sqrt{A} - \sqrt{A_0}),
+$$
+
+where \( P_0 \) and \( A_0 \) are corresponding reference values when the
+wall is not deformed, \( h \) is the
+thickness of the wall, and \( E \) and \( \nu \) are Young's modulus and
+Poisson's ratio of the elastic material in the wall.
+The derivative becomes
+
+<p>
+$$
+\begin{equation}
+C = \frac{\partial A}{\partial P} =
+\frac{2(1-\nu^2)A_0}{\pi h E}\sqrt{A_0} +
+2\left(\frac{(1-\nu^2)A_0}{\pi h E}\right)^2(P-P_0)
+\thinspace .
+\end{equation}
+$$
+
+Another (nonlinear) deformation model of the wall, which has a better
+fit with experiments, is
+
+<p>
+$$ P = P_0\exp{(\beta (A/A_0 - 1))},$$
+
+where \( \beta \) is some parameter to be estimated. This law leads to
+
+<p>
+$$
+\begin{equation}
+C = \frac{\partial A}{\partial P} = \frac{A_0}{\beta P}
+\thinspace .
+\end{equation}
+$$
+
+<h4>Reduction to standard wave equation  <a name="___sec123"></a></h4>
+
+<p>
+It is not uncommon to neglect the viscous term on the right-hand side of
+<a href="#mjx-eqn-93">(93)</a> and also the quadratic term
+with \( Q^2 \) on the left-hand side. The reduced equations
+<a href="#mjx-eqn-93">(93)</a>
+and <a href="#mjx-eqn-94">(94)</a> form a first-order
+linear wave equation system:
+
+<p>
+$$
+\begin{align}
+C\frac{\partial P}{\partial t} &= - \frac{\partial Q}{\partial x},\\ 
+\frac{\partial Q}{\partial t}
+&= - \frac{A}{\varrho}\frac{\partial P}{\partial x}
+\thinspace .
+\end{align}
+$$
+
+These can be combined into standard 1D wave equation PDE by differentiating
+the first equation with respect \( t \) and the second with respect to \( x \),
+$$ \frac{\partial}{\partial t}\left( CC\frac{\partial P}{\partial t}
+\right) = \frac{\partial}{\partial x}\left(
+\frac{A}{\varrho}\frac{\partial P}{\partial x}\right),$$
+
+which can be approximated by
+$$
+\begin{equation}
+\frac{\partial^2 Q}{\partial t^2} = c^2\frac{\partial^2 Q}{\partial x^2},\quad
+c = \sqrt{\frac{A}{\varrho C}},
+\end{equation}
+$$
+
+where the \( A \) and \( C \) in the expression for \( c \) are taken as constant
+reference values.
+
+<h3>Electromagnetic waves <a name="wave:app:light"></a></h3>
+
+<p>
+Light and radio waves are governed by standard wave equations arising
+from Maxwell's general equations. When there are no charges and
+no currents, as in a vacuum, Maxwell's equations take the form
+
+<p>
+$$
+\begin{align*}
+\nabla\cdot\pmb{E} &= 0,\\ 
+\nabla\cdot\pmb{B} &= 0,\\ 
+\nabla\times\pmb{E} &= -\frac{\partial\pmb{B}}{\partial t},\\ 
+\nabla\times\pmb{B} &= \mu_0\epsilon_0\frac{\partial\pmb{E}}{\partial t},
+\end{align*}
+$$
+
+where \( \epsilon_0=8.854187817620\cdot 10^{-12} \) (F/m)
+is the permittivity of free space, also known as the
+electric constant, and \( \mu_0=1.2566370614\cdot 10^{-6} \) (H/m)
+is the permeability of free space,
+also known as the magnetic constant.
+Taking the curl of the two last equations and using the
+identity
+$$ \nabla\times (\nabla\times \pmb{E}) = \nabla(\nabla \cdot \pmb{E})
+- \nabla^2\pmb{E} = - \nabla^2\pmb{E}\hbox{ when }\nabla\cdot\pmb{E}=0,
+$$
+
+immediately gives the wave equation governing the electric and magnetic field:
+$$
+\begin{align}
+\frac{\partial^2\pmb{E}}{\partial t^2} &=
+c^2\frac{\partial^2\pmb{E}}{\partial x^2},\\ 
+\frac{\partial^2\pmb{E}}{\partial t^2} &=
+c^2\frac{\partial^2\pmb{E}}{\partial x^2},
+\end{align}
+$$
+
+with \( c=1/\sqrt{\mu_0\epsilon_0} \) as the velocity of light.
+Each component of \( \pmb{E} \) and \( \pmb{B} \) fulfills a wave equation
+and can hence be solved independently.
+
+<p>
+<p>
+<!-- begin bottom navigation -->
+<a href="._part0008_main_wave-solarized.html"><img src="http://hplgit.github.io/doconce/bundled/html_images/prev1.png" border=0 alt="previous"></a>
+
+<a href="._part0010_main_wave-solarized.html"><img src="http://hplgit.github.io/doconce/bundled/html_images/next1.png" border=0 alt="next"></a>
+<!-- end bottom navigation -->
+
+<!-- ------------------- end of main content --------------- -->
+
+
+</body>
+</html>
+    
+
