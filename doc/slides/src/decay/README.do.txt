@@ -1,3 +1,13 @@
+TITLE: The Source Code of the Slides from the Course INF5620: Numerical Methods for PDEs
+AUTHOR: Hans Petter Langtangen
+DATE: today
+
+# Mako variables to hold URLs
+<%
+# Python code goes here
+decay_slides = "http://hplgit.github.io/INF5620/doc/pub/"
+%>
+
 ======= How to compile the slides =======
 
 ===== Doconce =====
@@ -20,16 +30,33 @@ To learn Doconce, browse the tutorial and get to know the manual.  The
 "http://hplgit.github.io/doconce/doc/web/index.html" is a starting
 point.
 
+===== How to edit =====
+
+The slides for a topic with nickname `name` are in
+`name/lec-name/*.do.txt`.  Invoke a `.do.txt` (Doconce) file in an
+editor like Emacs or Vim and just edit the ASCII text. The beginning
+of a slides is recognized by `!split`, usually followed by a heading.
+
+When you edit slides, go through the slides in the relevant formats
+and check if you need to shuffle material from one slide to the next,
+or split a slide in two, if the slide gets too long. This is, in principle,
+only a problem with LaTeX Beamer because the slide is then truncated and
+nobody can read what does not fit in the visible slides. All other
+formats have the possibility to scroll the slide.
+
 ===== Compile =====
 
 The script `../make_lectures.sh` runs the necessary Doconce commands to
 produce slides in various formats:
 
-  * LaTeX Beamer
-  * HTML5: deck.js, reveal.js
-  * HTML, one large page and one page per slide
-  * HTML, solarized style, one large page
-  * LaTeX PDF document with the text of all slides (for printing)
+  * "LaTeX Beamer": "${decay_slides}/lecture_decay-beamer.pdf"
+  * HTML5: "deck.js": "${decay_slides}/lecture_decay-deck.html" ,
+    "reveal.js": "${decay_slides}/lecture_decay-reveal.html"
+  * HTML: "one large page": "${decay_slides}/lecture_decay-1.html"
+    and "one page per slide": "${decay_slides}/lecture_decay.html"
+  * HTML: "solarized style, one large page": "${decay_slides}/lecture_decay-solarized.html"
+  * "LaTeX PDF": "${decay_slides}/lecture_decay-4print.pdf"
+    document with the text of all slides (for printing)
 
 Handouts based on Beamer is supported, but not included. It remains to
 see if handouts of Beamer slides are inferior or superior to the
@@ -59,4 +86,4 @@ all details of the URLs are put in Mako variables and used in the
 program. This makes the lectures independent of where a lot of
 resources for the course are put on the web.
 
-Contact "mailto:" "hpl@simula.no" in case of problems!
+Contact the author at "hpl@simula.no": "mailto:hpl@simula.no" in case of problems!
