@@ -1,0 +1,236 @@
+TITLE: Examples of scientific reports in different formats
+AUTHOR: Hans Petter Langtangen at Simula and Univ. of Oslo
+DATE: today
+
+The purpose of this page is to exemplify how to write scientific
+reports in various formats.
+
+# #ifndef CODE
+ * "Plain HTML": "_static/report_html.html" made from "HTML source": "_static/report_html.html.html"
+ * "HTML with LaTeX math": "_static/report_mathjax.html" made from "MathJax-extended HTML source": "_static/report_mathjax.html.html"
+ * "PDF": "_static/report_plain.pdf" made from plain "LaTeX source": "_static/report_latex.html"
+
+Formats generated from "Doconce": "https://github.com/hplgit/doconce":
+# #endif
+
+"PDF": "_static/report.pdf" for *electronic view* made from "LaTeX source": "_static/report.tex.html" generated from "Doconce source": "_static/report.do.txt.html" (where URLs and references are hyperlinks)
+
+# #ifdef CODE
+References must appear in a "Publish": "https://bitbucket.org/logg/publish"
+database, which is easily created from a BibTeX file `refs.bib` by
+
+!bc sys
+publish import refs
+!ec
+According to `publish_config.py`, the Publish database is named
+`.publish_references` ("invisible" since the name starts with a dot).
+
+Now we are ready to run `doconce` to produce various formats.
+The PDF file is created from LaTeX the following way:
+
+!bc sys
+doconce format pdflatex report
+doconce ptex2tex report envir=minted  -DPALATINO
+rm -f report.aux
+pdflatex -shell-escape report  # minted requires -shell-escape
+bibtex report
+pdflatex -shell-escape report
+!ec
+# #endif
+
+"PDF for printing": "_static/report_4printing.pdf" made from "LaTeX source": "_static/report.tex.html" generated from "Doconce source": "_static/report.do.txt.html" (where linked URLs appear as footnotes)
+
+# #ifdef CODE
+!bc sys
+doconce format pdflatex report --device=paper
+doconce ptex2tex report envir=minted -DADMON=box -DPALATINO
+rm -f report.aux
+pdflatex -shell-escape report
+bibtex report
+pdflatex -shell-escape report
+!ec
+# #endif
+
+"PDF for viewing on phone": "_static/report_4phone.pdf" made from "LaTeX source": "_static/report.tex.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format pdflatex report
+doconce ptex2tex report envir=minted -DA6PAPER -DPALATINO
+rm -f report.aux
+pdflatex -shell-escape report
+bibtex report
+pdflatex -shell-escape report
+!ec
+# #endif
+
+"Sphinx (default layout)": "_static/sphinx-default/index.html" made from "Sphinx-extended reStructuredText source": "_static/report_sphinx.rst.html" generated from "Doconce": "_static/report.do.txt.html" (other layouts: XXXXX)
+
+# #ifdef CODE
+!bc sys
+doconce sphinx_dir theme=pyramid report
+python automake_sphinx.py
+!ec
+# #endif
+
+"HTML with the blueish style": "_static/report_blueish.html" and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html-style=blueish
+!ec
+# #endif
+
+"HTML with the bloodish style": "_static/report_bloodish.html" and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html-style=bloodish
+!ec
+# #endif
+
+"HTML with Architects+Daughter Google font and the bloodish style": "_static/report_bloodish_Architects_Daughter.html " and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html_style=bloodish --html_body_font=Architects+Daughter --html_heading_font=Architects+Daughter
+!ec
+# #endif
+
+"HTML with Clicker+Script Google font and the bloodish style": "_static/report_bloodish_Clicker_Script.html " and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html_style=bloodish --html_body_font=Clicker+Script --html_heading_font=Clicker+Script
+!ec
+# #endif
+
+"HTML with Stalemate Google font and the bloodish style": "_static/report_bloodish_Stalemate.html" and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html_style=bloodish --html_body_font=Stalemate --html_heading_font=Stalemate
+!ec
+# #endif
+
+
+"HTML with with the solarized style": "_static/report_solarized.html" and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report --html-style=solarized --html_admon=apricot
+!ec
+# #endif
+
+"HTML with with the Vagrant template": "_static/report_vagrant.html" and LaTeX math made from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+# Copy the style to the current working dir
+cp -r /path/to/doconce/root/bundled/html_styles/style_vagrant .
+# Make sure the css and js directories are local
+cp -r style_vagrant/css css
+# Customize the template (perhaps easier in an interactive editor...)
+doconce replace LogoWord 'DiffEq' style_vagrant/template_vagrant.html
+doconce replace withSubWord 'Project' style_vagrant/template_vagrant.html
+doconce replace '<a href="">GO TO 1</a>' '<a href="http://wikipedia.org">Wikipedia</a>' style_vagrant/template_vagrant.html
+doconce replace '<a href="">GO TO 2</a>' '<a href="http://wolframalpha.com">WolframAlpha</a>' style_vagrant/template_vagrant.html
+doconce replace 'Here goes a footer, if desired, maybe with a Copyright &copy;' 'H. P. Langtangen &copy; 2013' style_vagrant/template_vagrant.html
+
+# TOC, TITLE and AUTHOR are not appropriate with HTML templates
+cp report.do.txt report2.do.txt
+doconce replace 'TITLE: '  '#TITLE: ' report2.do.txt
+doconce replace 'AUTHOR: '  '#AUTHOR: ' report2.do.txt
+doconce replace 'TOC: '  '#TOC: ' report2.do.txt
+doconce format html report2 --html-style=vagrant --html-template=style_vagrant/template_vagrant.html
+!ec
+# #endif
+
+"HTML with LaTeX math": "_static/report_github_minimal.html" made from "Doconce source": "_static/report.do.txt.html" with the GitHub "minimal" theme template
+
+# #ifdef CODE
+!bc sys
+# Copy the style to the current working dir
+cp -r /path/to/doconce/root/bundled/html_styles/style_github_minimal .
+# Make sure the css and js directories are local
+mv style_github_minimal/css/* css/
+mv style_github_minimal/js .
+# Tailor headings in the template to this project
+doconce replace 'Main Permanent Header' 'Project Report' style_github_minimal/template_github_minimal.html
+doconce replace 'Permanent SubHeader' 'A Differential Equation Problem' style_github_minimal/template_github_minimal.html
+
+cp report.do.txt report2.do.txt
+doconce replace 'TITLE: '  '#TITLE: ' report2.do.txt
+doconce replace 'AUTHOR: '  '#AUTHOR: ' report2.do.txt
+doconce replace 'TOC: '  '#TOC: ' report2.do.txt
+
+doconce format html report2 --html-template=style_github_minimal/template_github_minimal.html
+# HTML code is in report.html; it needs the .png figures
+# and the css and js directories
+!ec
+# #endif
+
+"HTML with LaTeX math": "_static/report_md.html" made from "Markdown": "_static/report.md.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format pandoc report
+# Remove title, author, etc. (does not work well)
+doconce subst '% .*' '' report.md
+doconce md2html report
+!ec
+# #endif
+
+"IPython notebook": "http://nbviewer.ipython.org/url/hplgit.github.com/teamods/writing_reports/_static/report.ipynb" made from "IPython notebook .ipynb file": "_static/report.ipynb.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format ipynb report
+# Put report.ipynb on the web, e.g.,
+# hplgit.github.com/teamods/writing_reports/_static/report.ipynb
+# URL: http://nbviewer.ipython.org/url/hplgit.github.com/teamods/writing_reports/_static/report.ipynb
+!ec
+# #endif
+
+"MediaWiki": "https://github.com/hplgit/hplgit.github.com/wiki/Experiments-with-Schemes-for-Exponential-Decay" made from "MediaWiki format": "_static/report.mwiki.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format mwiki report
+cp report.mwiki /some/path/to/my/username.github.com.wiki/Experiments-with-Schemes-for-Exponential-Decay.mediawiki
+!ec
+# #endif
+
+"Blog at doconce.blogspot.com": "http://doconce-report-demo.blogspot.no/" based on on "HTML code": "_static/report_blogger.html.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+cp report.do.txt report2.do.txt
+# Remove title, author and date
+doconce subst -m '^TITLE:.+$' '' report2.do.txt
+doconce subst -m '^AUTHOR:.+$' '' report2.do.txt
+doconce subst -m '^DATE:.+$' '' report2.do.txt
+# Figures must have URLs to where they are stored on the web
+site="https://raw.github.com/hplgit/hplgit.github.com"
+dir="/master/teamods/writing_reports/_static"
+for figname in BE FE CN error; do
+  doconce replace "[$figname," "[$site/$dir/$figname.png," report2.do.txt
+done
+doconce format html report2
+# Paste report2.html text into a new blog on your Google account
+!ec
+# #endif
+
+"Blog at doconcereportdemo.wordpress.com": "http://doconcereportdemo.wordpress.com/" based on "HTML code": "_static/report_wordpress.html.html" generated from "Doconce source": "_static/report.do.txt.html"
+
+# #ifdef CODE
+!bc sys
+doconce format html report2 --wordpress
+# Paste report2.html into a new on Wordpress
+!ec
+# #endif
+
+# #ifndef CODE
+"Show how all the Doconce formats are generated": "index_with_doconce_commands.html"!
+# #endif

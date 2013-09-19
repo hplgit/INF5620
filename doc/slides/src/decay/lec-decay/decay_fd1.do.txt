@@ -1,0 +1,537 @@
+!split
+======= Finite difference methods  =======
+label{decay:fdm}
+
+ * The finite difference method is the simplest method
+   for solving differential equations
+ * Fast to learn, derive, and implement
+ * A very useful tool to know, even if you aim at using the finite element
+   or the finite volume method
+
+FIGURE: [fig-decay/fdm_u_uei.png, width=400 frac=0.7]
+
+!split
+===== Topics in the first intro to the finite difference method =====
+
+ * How to derive a finite difference discretization of an ODE
+ * Key concepts: mesh, mesh function, finite difference approximations
+ * The Forward Euler, Backward Euler, and Crank-Nicolson methods
+ * Finite difference operator notation
+ * How to derive an algorithm and implement it in Python
+ * How to test the implementation
+
+!split
+===== A basic model for exponential decay =====
+label{decay:model}
+
+idx{decay (problem)} idx{exponential decay}
+
+The world's simplest (?) ODE:
+
+!bt
+\begin{equation*}
+u'(t) = -au(t),\quad u(0)=I,\ t\in (0,T]\ts
+\end{equation*}
+!et
+
+!bnotice Observation
+We can learn a lot about numerical methods, computer implementation,
+program testing, and real applications of these tools by using
+this very simple ODE as example. The teaching principle is to keep the math as
+simple as possible while learning computer tools.
+!enotice
+
+FIGURE: [fig-decay/FE1, width=600 frac=0.7]
+
+!split
+===== Applications =====
+
+ * Growth and decay of populations (cells, animals, human)
+ * Growth and decay of a fortune
+ * Radioactive decay
+ * Cooling/heating of an object
+ * Pressure variation in the atmosphere
+ * Vertical motion of a body in water/air
+ * Time-discretization of diffusion PDEs by Fourier techniques
+
+See the "text": "${doc_notes}/decay-sphinx/._part0008_main_decay.html" for details.
+
+!split
+===== Continuous problem =====
+
+!bt
+\begin{equation}
+u' = -au,\ t\in (0,T], \quad u(0)=I\thinspace .  label{decay:problem}
+\end{equation}
+!et
+
+Solution of the continuous problem ("continuous solution"):
+
+!bt
+\begin{equation*} u(t) = Ie^{-at}\ts\end{equation*}
+!et
+(special case that we can derive a formula for the discrete solution)
+
+!split
+===== Discrete problem =====
+
+$u^n\approx u(t_n)$ means that $u$ is found at discrete time points
+$t_1,t_2,t_3,\ldots$
+
+Typical computational formula:
+!bt
+\begin{equation*} u^{n+1} = Au^n\ts\end{equation*}
+!et
+The constant $A$ depends on the type of finite difference method.
+
+Solution of the discrete problem ("discrete solution"):
+
+!bt
+\begin{equation*} u^{n+1} = IA^n\ts\end{equation*}
+!et
+(special case that we can derive a formula for the discrete solution)
+
+
+!split
+===== The steps in the finite difference method =====
+label{decay:schemes:keysteps}
+
+Solving a differential equation by a finite difference method
+consists of four steps:
+
+ o discretizing the domain,
+ o fulfilling the equation at discrete time points,
+ o replacing derivatives by finite differences,
+ o formulating a recursive algorithm.
+
+!split
+===== Step 1: Discretizing the domain =====
+
+idx{mesh} idx{grid}
+
+
+The time domain $[0,T]$ is represented by a *mesh*: a finite number of
+$N_t+1$ points
+
+!bt
+\[0 = t_0 < t_1 < t_2 < \cdots < t_{N_t-1} < t_{N_t} = T\ts\]
+!et
+
+idx{mesh function}
+
+ * We seek the solution $u$ at the mesh points: $u(t_n)$, $n=1,2,\ldots,N_t$.
+ * Note: $u^0$ is known as $I$.
+ * Notational short-form for the numerical approximation to $u(t_n)$: $u^n$
+ * In the differential equation: $u$ is the exact solution
+ * In the numerical method and implementation: $u^n$ is the numerical
+   approximation, $\uex(t)$ is the exact solution
+
+!split
+===== Step 1: Discretizing the domain =====
+
+$u^n$ is a mesh function, defined at the mesh points $t_n$, $n=0,\ldots,N_t$
+only.
+
+
+FIGURE: [fig-decay/fdm_u_ue.png, width=600 frac=0.7]
+
+!split
+===== What about a mesh function between the mesh points? =====
+
+Can extend the mesh function to yield values between mesh points
+by *linear interpolation*:
+
+!bt
+\begin{equation}
+u(t) \approx u^n + \frac{u^{n+1}-u^n}{t_{n+1}-t_n}(t - t_n)\thinspace .
+\end{equation}
+!et
+
+FIGURE: [fig-decay/fdm_u_uei.png, width=500 frac=0.7]
+
+
+!split
+===== Step 2: Fulfilling the equation at discrete time points =====
+
+ * The ODE holds for all $t\in (0,T]$ (infinite no of points)
+ * Idea: let the ODE be valid at the mesh points only (finite no of points)
+
+!bt
+\begin{equation}
+u'(t_n) = -au(t_n),\quad n=1,\ldots,N_t\thinspace .
+label{decay:step2}
+\end{equation}
+!et
+
+idx{finite differences}
+
+!split
+===== Step 3: Replacing derivatives by finite differences =====
+
+Now it is time for the *finite difference* approximations of
+derivatives:
+
+!bt
+\begin{equation}
+u'(t_n) \approx \frac{u^{n+1}-u^{n}}{t_{n+1}-t_n}\thinspace .
+label{decay:FEdiff}
+\end{equation}
+!et
+
+FIGURE: [fig-decay/fd_forward, width=400 frac=0.8]
+
+!split
+===== Step 3: Replacing derivatives by finite differences =====
+
+Inserting the finite difference approximation in
+
+!bt
+\[ u'(t_n) = -au(t_n),\]
+!et
+gives
+
+!bt
+\begin{equation}
+\frac{u^{n+1}-u^{n}}{t_{n+1}-t_n} = -au^{n},\quad n=0,1,\ldots,N_t-1\thinspace .
+label{decay:step3}
+\end{equation}
+!et
+
+This is the
+
+ * discrete equation
+ * discrete problem
+ * finite difference method
+ * finite difference scheme
+
+
+!split
+===== Step 4: Formulating a recursive algorithm =====
+
+idx{difference equation}
+idx{discrete equation}
+idx{algebraic equation}
+idx{finite difference scheme}
+idx{Forward Euler scheme}
+
+ * How can we actually compute the $u^n$ values?
+ * Fundamental structure:
+   * given $u^0=I$
+   * compute $u^1$ from $u^0$
+   * compute $u^2$ from $u^1$
+   * compute $u^3$ from $u^2$ (and so forth)
+ * In general: we have $u^n$ and seek $u^{n+1}$
+
+!bnotice The Forward Euler scheme
+Solve wrt $u^{n+1}$ to get the computational formula:
+
+!bt
+\begin{equation}
+u^{n+1} = u^n - a(t_{n+1} -t_n)u^n\thinspace .
+label{decay:FE}
+\end{equation}
+!et
+!enotice
+
+!split
+===== Let us apply the scheme =====
+
+Assume constant time spacing: $\Delta t = t_{n+1}-t_n=\mbox{const}$
+
+!bt
+\begin{align*}
+u_0 &= I,\\
+u_1 & = u^0 - a\Delta t u^0 = I(1-a\Delta t),\\
+u_2 & = I(1-a\Delta t)^2,\\
+u^3 &= I(1-a\Delta t)^3,\\
+&\vdots\\
+u^{N_t} &= I(1-a\Delta t)^{N_t}\thinspace .
+\end{align*}
+!et
+
+Ooops - we can find the numerical solution by hand (in this simple
+example)! No need for a computer (yet)...
+
+!split
+===== A backward difference =====
+
+Here is another finite difference approximation to the
+derivative (backward difference):
+
+!bt
+\begin{equation}
+u'(t_n) \approx \frac{u^{n}-u^{n-1}}{t_{n}-t_{n-1}}\thinspace .
+label{decay:BEdiff}
+\end{equation}
+!et
+
+FIGURE: [fig-decay/fd_backward, width=400 frac=0.8]
+
+!split
+===== The Backward Euler scheme =====
+
+idx{backward scheme, 1-step}
+idx{Backward Euler scheme}
+
+Inserting the finite difference approximation in $u'(t_n)=-au(t_n)$ yields
+the Backward Euler (BE) scheme:
+
+!bt
+\begin{equation}
+\frac{u^{n}-u^{n-1}}{t_{n}-t_{n-1}} = -a u^n\thinspace .
+label{decay:BE0}
+\end{equation}
+!et
+Solve with respect to the unknown $u^{n+1}$:
+
+!bt
+\begin{equation}
+u^{n+1} = \frac{1}{1+ a(t_{n+1}-t_n)} u^n\thinspace .
+label{decay:BE}
+\end{equation}
+!et
+
+!split
+===== A centered difference =====
+
+Centered differences are better approximations than forward or
+backward differences.
+
+FIGURE: [fig-decay/fd_centered, width=400 frac=0.8]
+
+!split
+===== The Crank-Nicolson scheme; part 1 =====
+label{decay:schemes:CN}
+
+idx{Crank-Nicolson scheme}
+
+Idea 1: let the ODE hold at $t_{n+1/2}$
+
+!bt
+\[ u'(t_{n+1/2} = -au(t_{n+1/2})\ts\]
+!et
+
+Idea 2: approximate $u'(t_{n+1/2}$ by a centered difference
+
+!bt
+\begin{equation}
+u'(t_{n+\frac{1}{2}}) \approx \frac{u^{n+1}-u^n}{t_{n+1}-t_n}\thinspace .
+label{decay:CNdiff}
+\end{equation}
+!et
+
+Problem: $u(t_{n+1/2})$ is not defined, only $u^n=u(t_n)$ and $u^{n+1}=u(t_{n+1})$
+
+Solution:
+
+!bt
+\[ u(t_{n+1/2}) \approx \frac{1}{2}(u^n + u^{n+1}) \]
+!et
+
+!split
+===== The Crank-Nicolson scheme; part 2 =====
+
+Result:
+
+!bt
+\begin{equation}
+\frac{u^{n+1}-u^n}{t_{n+1}-t_n} = -a\frac{1}{2} (u^n + u^{n+1})\thinspace .
+label{decay:CN1}
+\end{equation}
+!et
+
+Solve wrt to $u^{n+1}$:
+
+!bt
+\begin{equation}
+u^{n+1} = \frac{1-\frac{1}{2} a(t_{n+1}-t_n)}{1 + \frac{1}{2} a(t_{n+1}-t_n)}u^n\thinspace .
+label{decay:CN}
+\end{equation}
+!et
+This is a Crank-Nicolson (CN) scheme or a midpoint or centered scheme.
+
+
+!split
+===== The unifying $\theta$-rule =====
+label{decay:schemes:theta}
+
+idx{weighted average} idx{theta-rule} idx{$\theta$-rule}
+
+The Forward Euler, Backward Euler, and Crank-Nicolson schemes can be
+formulated as one scheme with a varying parameter $\theta$:
+
+!bt
+\begin{equation}
+\frac{u^{n+1}-u^{n}}{t_{n+1}-t_n} = -a (\theta u^{n+1} + (1-\theta) u^{n})
+label{decay:th0}
+\thinspace .
+\end{equation}
+!et
+
+ * $\theta =0$: Forward Euler
+ * $\theta =1$: Backward Euler
+ * $\theta =1/2$: Crank-Nicolson
+ * We may alternatively choose any $\theta\in [0,1]$.
+
+$u^n$ is known, solve for $u^{n+1}$:
+
+!bt
+\begin{equation}
+u^{n+1} = \frac{1 - (1-\theta) a(t_{n+1}-t_n)}{1 + \theta a(t_{n+1}-t_n)}\thinspace .
+label{decay:th}
+\end{equation}
+!et
+
+
+!split
+===== Constant time step =====
+
+Very common assumption (not important, but exclusively used for
+simplicity hereafter): constant time step $t_{n+1}-t_n\equiv\Delta t$
+
+
+!bsummary Summary of schemes for constant time step
+# #if FORMAT in ('latex', 'pdflatex')
+!bt
+\begin{alignat}{2}
+u^{n+1} &= (1 - a\Delta t )u^n  & \hbox{Forward Euler}
+label{decay:FE:u}\\
+u^{n+1} &= \frac{1}{1+ a\Delta t} u^n  & \hbox{Backward Euler}
+label{decay:BE:u}\\
+u^{n+1} &= \frac{1-\frac{1}{2} a\Delta t}{1 + \frac{1}{2} a\Delta t} u^n & \hbox{Crank-Nicolson}
+label{decay:CN:u}\\
+u^{n+1} &= \frac{1 - (1-\theta) a\Delta t}{1 + \theta a \Delta t}u^n  & \hbox{The }\theta-\hbox{rule}
+label{decay:th:u}
+\end{alignat}
+!et
+# #else
+!bt
+\begin{align}
+u^{n+1} &= (1 - a\Delta t )u^n  \quad (\hbox{FE})
+label{decay:FE:u}\\
+u^{n+1} &= \frac{1}{1+ a\Delta t} u^n  \quad (\hbox{BE})
+label{decay:BE:u}\\
+u^{n+1} &= \frac{1-\frac{1}{2} a\Delta t}{1 + \frac{1}{2} a\Delta t} u^n \quad (\hbox{CN})
+label{decay:CN:u}\\
+u^{n+1} &= \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n \quad (\theta-\hbox{rule})
+label{decay:th:u}
+\end{align}
+!et
+# #endif
+!esummary
+
+!split
+===== Test the understanding! =====
+
+Derive Forward Euler, Backward Euler, and Crank-Nicolson schemes for
+Newton's law of cooling:
+
+!bt
+\[ T' = -k(T-T_s),\quad T(0)=T_0,\ t\in (0,t_{\mbox{end}}]\ts\]
+!et
+
+Physical quantities:
+
+ * $T(t)$: temperature of an object at time $t$
+ * $k$: parameter expressing heat loss to the surroundings
+ * $T_s$: temperature of the surroundings
+ * $T_0$: initial temperature
+
+
+
+!split
+===== Compact operator notation for finite differences =====
+label{decay:fd:op}
+
+idx{finite difference operator notation} idx{operator notation, finite differences}
+
+ * Finite difference formulas can be tedious to write and read/understand
+ * Handy tool: finite difference operator notation
+ * Advantage: communicates the nature of the difference in a compact way
+
+
+!bt
+\begin{equation}
+[D_t^- u  = -au]^n \thinspace .
+\end{equation}
+!et
+
+!split
+===== Compact operator notation for difference operators =====
+
+Forward difference:
+
+!bt
+\begin{equation}
+[D_t^+u]^n = \frac{u^{n+1} - u^{n}}{\Delta t}
+\approx \frac{d}{dt} u(t_n) label{fd:D:f}
+\thinspace .
+\end{equation}
+!et
+Centered difference:
+
+!bt
+\begin{equation}
+[D_tu]^n = \frac{u^{n+\frac{1}{2}} - u^{n-\frac{1}{2}}}{\Delta t}
+\approx \frac{d}{dt} u(t_n), label{fd:D:c}
+\end{equation}
+!et
+
+Backward difference:
+!bt
+\begin{equation}
+[D_t^-u]^n = \frac{u^{n} - u^{n-1}}{\Delta t}
+\approx \frac{d}{dt} u(t_n) label{fd:D:b}
+\end{equation}
+!et
+
+!split
+===== The Backward Euler scheme with operator notation =====
+
+!bt
+\begin{equation*}
+[D_t^-u]^n = -au^n \thinspace .
+\end{equation*}
+!et
+
+Common to put the whole equation inside square brackets:
+
+!bt
+\begin{equation}
+[D_t^- u  = -au]^n \thinspace .
+\end{equation}
+!et
+
+!split
+===== The Forward Euler scheme with operator notation =====
+
+!bt
+\begin{equation}
+[D_t^+ u  = -au]^n\ts
+\end{equation}
+!et
+
+!split
+===== The Crank-Nicolson scheme with operator notation =====
+
+Introduce an averaging operator:
+
+!bt
+\begin{equation}
+[\overline{u}^{t}]^n = \frac{1}{2} (u^{n-\frac{1}{2}} + u^{n+\frac{1}{2}} )
+\approx u(t_n) label{fd:mean:a}
+\end{equation}
+!et
+
+The Crank-Nicolson scheme can then be written as
+
+!bt
+\begin{equation}
+[D_t u = -a\overline{u}^t]^{n+\frac{1}{2}}\thinspace .
+label{fd:compact:ex:CN}
+\end{equation}
+!et
+
+Test: use the definitions and write out the above formula to see that
+it really is the Crank-Nicolson scheme!
+
