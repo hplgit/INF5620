@@ -179,7 +179,8 @@ upon in the section <a class="reference internal" href="main_wave.html#wave2d3d-
 <p>The key finite difference formula <a href="#equation-wave:2D3D:models:unp1">(?)</a>
 for updating the solution at
 a time level is implemented in a separate function as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">advance_scalar</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span>
+                   <span class="n">n</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="n">Ix</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>  <span class="n">Iy</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
@@ -200,20 +201,18 @@ a time level is implemented in a separate function as</p>
 </pre></div>
 </div>
 <p>The constants <tt class="docutils literal"><span class="pre">D1</span></tt> and <tt class="docutils literal"><span class="pre">D2</span></tt> in front of <tt class="docutils literal"><span class="pre">u_1</span></tt> and <tt class="docutils literal"><span class="pre">u_2</span></tt> have been
-introduced to allow this <tt class="docutils literal"><span class="pre">advance</span></tt> function to also be used for the
+introduced to allow this <tt class="docutils literal"><span class="pre">advance_scalar</span></tt> function to also be used for the
 first step <span class="math">\(u^1_{i,j}\)</span>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span>
-            <span class="mf">0.5</span><span class="o">*</span><span class="n">Cx2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">Cy2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span> <span class="o">=</span> <span class="n">advance_scalar</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span>
+                   <span class="n">n</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">Cx2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">Cy2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The special formula for the first step <span class="math">\(u^1_{i,j}\)</span>,
 given by <a href="#equation-wave:2D3D:models:u1">(?)</a>, is implemented
 in a very similar manner.</p>
-<p>The code segments with the loop over internal points and boundary
-points at each time level are put in a separate function <tt class="docutils literal"><span class="pre">advance_scalar</span></tt>.
-Below, we will make many alternative implementations to speed
-up the code since most of
-the CPU time is spent in this function.</p>
+<p>Below, we will make many alternative implementations of the
+<tt class="docutils literal"><span class="pre">advance_scalar</span></tt> function to speed up the code since most of
+the CPU time in simulations is spent in this function.</p>
 </div>
 </div>
 <div class="section" id="vectorized-computations">
@@ -250,10 +249,21 @@ to a new object, but vectorized operations often makes use of
 direct insertion in the original array through <tt class="docutils literal"><span class="pre">u_1[:,:]</span></tt> because
 sometimes not all of the array is to be filled by such a function
 evaluation. This is the case with the computational scheme for <span class="math">\(u^{n+1}_{i,j}\)</span>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_2</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
-      <span class="n">Cx2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> \
-      <span class="n">Cy2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">:])</span> <span class="o">+</span> \
-      <span class="n">dt2</span><span class="o">*</span><span class="n">f_a</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">advance_vectorized</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u_yy</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">D1</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">D2</span><span class="o">*</span><span class="n">u_2</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
+                   <span class="n">Cx2</span><span class="o">*</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">Cy2</span><span class="o">*</span><span class="n">u_yy</span> <span class="o">+</span> <span class="n">dt2</span><span class="o">*</span><span class="n">f_a</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c"># Boundary condition u=0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">u</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">u</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
 <p>Array slices in 2D are more complicated to understand than those in
@@ -261,7 +271,8 @@ evaluation. This is the case with the computational scheme for <span class="math
 For example, when doing <span class="math">\(u^{n}_{i,j} - u^{n}_{i-1,j}\)</span> for <span class="math">\(i\in{{\mathcal{I^+}_x}}\)</span>,
 we just keep <tt class="docutils literal"><span class="pre">j</span></tt> constant and make a slice in the first index:
 <tt class="docutils literal"><span class="pre">u_1[1:,j]</span> <span class="pre">-</span> <span class="pre">u_1[:-1,j]</span></tt>, exactly as in 1D. The <tt class="docutils literal"><span class="pre">1:</span></tt> slice
-specifies all the indices <span class="math">\(i=1,2,\ldots,N_x\)</span>,
+specifies all the indices <span class="math">\(i=1,2,\ldots,N_x\)</span> (up to the last
+valid index),
 while <tt class="docutils literal"><span class="pre">:-1</span></tt> specifies the relevant indices for the second term:
 <span class="math">\(0,1,\ldots,N_x-1\)</span> (up to, but not including the last index).</p>
 <p>In the above code segment, the situation is slightly more complicated,
@@ -274,11 +285,11 @@ as an array over all mesh points:</p>
 <div class="highlight-text"><div class="highlight"><pre>f_a = f(xv, yv, t[n])
 </pre></div>
 </div>
-<p>(We could, alternatively, used the call <tt class="docutils literal"><span class="pre">f(xv,</span> <span class="pre">yv,</span> <span class="pre">t[n])[1:-1,1:-1]</span></tt>
+<p>We could, alternatively, used the call <tt class="docutils literal"><span class="pre">f(xv,</span> <span class="pre">yv,</span> <span class="pre">t[n])[1:-1,1:-1]</span></tt>
 in the last term of the update statement, but other implementations
 in compiled languages benefit from having <tt class="docutils literal"><span class="pre">f</span></tt> available in an array
 rather than calling our Python function <tt class="docutils literal"><span class="pre">f(x,y,t)</span></tt> for
-every point.)</p>
+every point.</p>
 <p>The boundary conditions along the four sides makes use of
 a slice consisting of all indices along a boundary:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">[:</span> <span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -291,42 +302,42 @@ a slice consisting of all indices along a boundary:</p>
 <p>The callback function now has the arguments
 <tt class="docutils literal"><span class="pre">u,</span> <span class="pre">x,</span> <span class="pre">xv,</span> <span class="pre">y,</span> <span class="pre">yv,</span> <span class="pre">t,</span> <span class="pre">n</span></tt>. The inclusion of <tt class="docutils literal"><span class="pre">xv</span></tt> and <tt class="docutils literal"><span class="pre">yv</span></tt> makes it
 easy to, e.g., compute an exact 2D solution in the callback function
-and compute errors, through something like
+and compute errors, through an expression like
 <tt class="docutils literal"><span class="pre">u</span> <span class="pre">-</span> <span class="pre">exact_solution(xv,</span> <span class="pre">yv,</span> <span class="pre">t[n])</span></tt>.</p>
 </div>
 <div class="section" id="verification-3">
-<h2>Verification  (3)<a class="headerlink" href="#verification-3" title="Permalink to this headline">¶</a></h2>
+<span id="wave2d3d-impl-verify"></span><h2>Verification  (3)<a class="headerlink" href="#verification-3" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="testing-a-quadratic-solution">
 <h3>Testing a quadratic solution<a class="headerlink" href="#testing-a-quadratic-solution" title="Permalink to this headline">¶</a></h3>
-<p>The 1D solution from the section <em class="xref std std-ref">wave:pde2</em> can be generalized to
-multi dimensions and provides a test case where the exact
-solution also fulfills the discrete equations. In 2D we have</p>
-<div class="math">
-\[{u_{\small\mbox{e}}}(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
-\thinspace .\]</div>
+<p>The 1D solution from the section <a class="reference internal" href="main_wave.html#wave-pde2-fd-verify-quadratic"><em>Constructing an exact solution of the discrete equations</em></a> can be
+generalized to multi-dimensions and provides a test case where the
+exact solution also fulfills the discrete equations such that we know
+(to machine precision) what numbers the solver function should
+produce. In 2D we use the following generalization of
+<a href="#equation-wave:pde2:fd:verify:quadratic:uex">(?)</a>:</p>
+<div class="math" id="equation-wave2D3D:impl:verify:quadratic">
+<span class="eqno">(3)</span>\[     {u_{\small\mbox{e}}}(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
+     \thinspace .\]</div>
 <p>This solution fulfills the PDE problem if <span class="math">\(I(x,y)={u_{\small\mbox{e}}}(x,y,0)\)</span>,
-<span class="math">\(V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)\)</span>, and <span class="math">\(f=2c^2(1+\frac{1}{2}t)(y(L_y-y +
-x(L_x-x))\)</span>. With the results <span class="math">\([D_t D_t t]^n=0\)</span> and <span class="math">\([D_t D_t t^2]=2\)</span>,
-and</p>
+<span class="math">\(V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)\)</span>, and <span class="math">\(f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
+x(L_x-x))\)</span>. To show that <span class="math">\({u_{\small\mbox{e}}}\)</span> also solves the discrete equations,
+we start with the general results <span class="math">\([D_t D_t t]^n=0\)</span>
+and <span class="math">\([D_t D_t t^2]=2\)</span>, and use these to compute</p>
 <div class="math">
 \[[D_xD_x {u_{\small\mbox{e}}}]^n_{i,j} = [y(L_y-y)(1+\frac{1}{2}t) D_xD_x x(L_x-x)]^n_{i,j}
-= y_j(L_y-y_j)(1+\frac{1}{2}t_n)2,\]</div>
-<p>with similar calculations for the other terms,
-we can easily show that <span class="math">\({u_{\small\mbox{e}}}\)</span> fulfills the discrete equation</p>
-<div class="math">
-\[[D_t D_t {u_{\small\mbox{e}}} = c^2(D_x D_x {u_{\small\mbox{e}}} + D_y D_y {u_{\small\mbox{e}}} + f]^n_{i,j}
-\thinspace .\]</div>
-<p>With an
-exact solution of the discrete equation we should expect
-a numerical error at the level of the machine precision
-(as long as <span class="math">\(|{u_{\small\mbox{e}}}|\sim {\cal O}(1)\)</span>).
+= y_j(L_y-y_j)(1+\frac{1}{2}t_n)2{\thinspace .}\]</div>
+<p>A similar calculation must be carried out for the <span class="math">\([D_yD_y
+{u_{\small\mbox{e}}}]^n_{i,j}\)</span> and <span class="math">\([D_tD_t {u_{\small\mbox{e}}}]^n_{i,j}\)</span> terms.  One must also show
+that the quadratic solution fits the special formula for
+<span class="math">\(u^1_{i,j}\)</span>. The details are left as <a class="reference internal" href="main_wave.html#wave-exer-quadratic-2d"><em>Exercise 10: Check that a solution fulfills the discrete model</em></a>.
 The <tt class="docutils literal"><span class="pre">test_quadratic</span></tt> function in the
-<a class="reference external" href="/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
+<a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
 program implements this verification as a nose test.</p>
 </div>
 </div>
+</div>
 <div class="section" id="migrating-loops-to-cython">
-<h2>Migrating loops to Cython<a class="headerlink" href="#migrating-loops-to-cython" title="Permalink to this headline">¶</a></h2>
+<span id="wave2d3d-impl-cython"></span><h1>Migrating loops to Cython<a class="headerlink" href="#migrating-loops-to-cython" title="Permalink to this headline">¶</a></h1>
 <p id="index-2">Although vectorization can bring down the CPU time dramatically
 compared with scalar code, there is still some factor 5-10 to win
 in these types of applications
@@ -335,18 +346,43 @@ typically in Fortran, C, or C++. This can quite easily be done by
 adding a little extra code to our program. Cython is an extension of
 Python that offers the easiest way to nail our Python loops in the
 scalar code down to machine code and the efficiency of C.</p>
-<p>Cython can be viewed as an extension of Python where variables are
-declared with types and functions are marked to be implemented in C.
+<p>Cython can be viewed as an extended Python language where variables are
+declared with types and where functions are marked to be implemented in C.
 Migrating Python code to Cython is done by copying the desired code
 segments to functions (or classes) and placing them in one or more separate
 files with extension <tt class="docutils literal"><span class="pre">.pyx</span></tt>.</p>
 <div class="section" id="declaring-variables-and-annotating-the-code">
-<h3>Declaring variables and annotating the code<a class="headerlink" href="#declaring-variables-and-annotating-the-code" title="Permalink to this headline">¶</a></h3>
-<p>Our starting point is the plain <tt class="docutils literal"><span class="pre">advance_scalar</span></tt> function. We simply take
-a copy of this code and put it in a file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.pyx</span></tt>.
+<h2>Declaring variables and annotating the code<a class="headerlink" href="#declaring-variables-and-annotating-the-code" title="Permalink to this headline">¶</a></h2>
+<p>Our starting point is the plain <tt class="docutils literal"><span class="pre">advance_scalar</span></tt> function for a scalar
+implementation of the updating algorithm for new values
+<span class="math">\(u^{n+1}_{i,j}\)</span>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">advance_scalar</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span>
+                   <span class="n">n</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">Ix</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>  <span class="n">Iy</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">u_yy</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">D1</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">D2</span><span class="o">*</span><span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> \
+                     <span class="n">Cx2</span><span class="o">*</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">Cy2</span><span class="o">*</span><span class="n">u_yy</span> <span class="o">+</span> <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="c"># Boundary condition u=0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Ix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">u</span>
+</pre></div>
+</div>
+<p>We simply take
+a copy of this function and put it in a file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.pyx</span></tt>.
 The relevant Cython implementation arises from declaring variables with
 types and adding some important annotations to speed up array
-computing in Cython. Let us first list the code:</p>
+computing in Cython. Let us first list the complete code in the
+<tt class="docutils literal"><span class="pre">.pyx</span></tt> file:</p>
 <div class="highlight-cython"><div class="highlight"><pre><span class="k">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="k">cimport</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="k">cimport</span> <span class="nn">cython</span>
@@ -386,9 +422,9 @@ computing in Cython. Let us first list the code:</p>
 code with loops into Cython.</p>
 <ol class="arabic simple">
 <li>Variables are declared with types: for example,
-<tt class="docutils literal"><span class="pre">double</span> <span class="pre">v</span></tt> in the argument list and <tt class="docutils literal"><span class="pre">cdef</span> <span class="pre">double</span> <span class="pre">v</span></tt>
+<tt class="docutils literal"><span class="pre">double</span> <span class="pre">v</span></tt> in the argument list instead of just <tt class="docutils literal"><span class="pre">v</span></tt>, and <tt class="docutils literal"><span class="pre">cdef</span> <span class="pre">double</span> <span class="pre">v</span></tt>
 for a variable <tt class="docutils literal"><span class="pre">v</span></tt> in the body of the function.
-A Python <tt class="docutils literal"><span class="pre">float</span></tt> variable is declared as <tt class="docutils literal"><span class="pre">double</span></tt> for
+A Python <tt class="docutils literal"><span class="pre">float</span></tt> object is declared as <tt class="docutils literal"><span class="pre">double</span></tt> for
 translation to C by Cython, while an <tt class="docutils literal"><span class="pre">int</span></tt> object is
 declared by <tt class="docutils literal"><span class="pre">int</span></tt>.</li>
 <li>Arrays need a comprehensive type declaration involving<ul>
@@ -398,7 +434,7 @@ abbreviated as <tt class="docutils literal"><span class="pre">DT</span></tt> thr
 (instead of <tt class="docutils literal"><span class="pre">DT</span></tt> we could use the full name of the
 data type: <tt class="docutils literal"><span class="pre">np.float64_t</span></tt>, which is a Cython-defined type),</li>
 <li>the dimensions of the array, here <tt class="docutils literal"><span class="pre">ndim=2</span></tt> and <tt class="docutils literal"><span class="pre">ndim=1</span></tt>,</li>
-<li>specification of contiguous memory for the array (<tt class="docutils literal"><span class="pre">mode='c'</span></tt>)</li>
+<li>specification of contiguous memory for the array (<tt class="docutils literal"><span class="pre">mode='c'</span></tt>).</li>
 </ul>
 </li>
 <li>Functions declared with <tt class="docutils literal"><span class="pre">cpdef</span></tt> are translated to C but also
@@ -417,7 +453,7 @@ the function header.</li>
 </ol>
 </div>
 <div class="section" id="visual-inspection-of-the-c-translation">
-<span id="index-4"></span><h3>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h3>
+<span id="index-4"></span><h2>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h2>
 <p>Cython can visually explain how successfully it can translate a code from
 Python to C. The command</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; cython -a wave2D_u0_loop_cy.pyx</span>
@@ -426,7 +462,7 @@ Python to C. The command</p>
 <p>produces an HTML file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.html</span></tt>, which can be loaded into
 a web browser to illustrate which lines of the code that have been
 translated to C. Figure <a class="reference internal" href="main_wave.html#wave-2d3d-impl-fig-cython-ma1"><em>Visual illustration of Cython&#8217;s ability to translate Python to C</em></a> shows
-the results. Yellow lines indicate the lines that Cython did not manage
+the illustrated code. Yellow lines indicate the lines that Cython did not manage
 to translate to efficient C code and that remain in Python.
 For the present code we see that Cython is able to translate all the
 loops with array computing to C, which is our primary goal.</p>
@@ -434,20 +470,22 @@ loops with array computing to C, which is our primary goal.</p>
 <img alt="_images/wave2D_u0_loop_cy1.png" src="_images/wave2D_u0_loop_cy1.png" style="width: 500px;" />
 <p class="caption"><em>Visual illustration of Cython&#8217;s ability to translate Python to C</em></p>
 </div>
-<p>You can also inspect the generated C code directly, in the file
-<tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.c</span></tt>, but understanding this C code requires
-familiarity with writing Python extension modules in C by hand. However,
-deep down in the file we can see in detail how the compute-intensive
-statements are translated some complex C that is quite different from
-what we a human would write, at least with a direct corresponding to
-the mathematics in mind.</p>
-<span class="target" id="index-5"></span><span class="target" id="index-6"></span></div>
-<div class="section" id="building-the-extension-module-1">
+<p>You can also inspect the generated C code directly, as it appears
+in the file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.c</span></tt>. Nevertheless,
+understanding this C code requires some
+familiarity with writing Python extension modules in C by hand.
+Deep down in the file we can see in detail how the compute-intensive
+statements are translated some complex C code that is quite different from
+what we a human would write (at least if a direct correspondence to
+the mathematics was in mind).</p>
+<span class="target" id="index-5"></span><span class="target" id="index-6"></span><div class="section" id="building-the-extension-module-1">
 <span id="index-7"></span><h3>Building the extension module  (1)<a class="headerlink" href="#building-the-extension-module-1" title="Permalink to this headline">¶</a></h3>
 <p>Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a <em>C extension module</em>.
 This is usually done by making a <tt class="docutils literal"><span class="pre">setup.py</span></tt> script, which
-is the standard way of building and installing Python software:</p>
+is the standard way of building and installing Python software.
+For an extension module arising from Cython code, the following
+<tt class="docutils literal"><span class="pre">setup.py</span></tt> script is all we need to build and install the module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">distutils.core</span> <span class="kn">import</span> <span class="n">setup</span>
 <span class="kn">from</span> <span class="nn">distutils.extension</span> <span class="kn">import</span> <span class="n">Extension</span>
 <span class="kn">from</span> <span class="nn">Cython.Distutils</span> <span class="kn">import</span> <span class="n">build_ext</span>
@@ -460,76 +498,84 @@ is the standard way of building and installing Python software:</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>To translate to C, compile, and build the module <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy</span></tt>,
+<p>We run the script by
 run</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python setup.py build_ext --inplace</span>
 </pre></div>
 </div>
 <p>The <tt class="docutils literal"><span class="pre">--inplace</span></tt> option makes the extension module available in the
 current directory as the file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy.so</span></tt>. This
-file acts as a normal Python module:</p>
+file acts as a normal Python module that can be imported and inspected:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wave2D_u0_loop_cy</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">wave2D_u0_loop_cy</span><span class="p">)</span>
 <span class="go">[&#39;__builtins__&#39;, &#39;__doc__&#39;, &#39;__file__&#39;, &#39;__name__&#39;,</span>
 <span class="go"> &#39;__package__&#39;, &#39;__test__&#39;, &#39;advance&#39;, &#39;np&#39;]</span>
 </pre></div>
 </div>
+<p>The important output from the <tt class="docutils literal"><span class="pre">dir</span></tt> function is our Cython function
+<tt class="docutils literal"><span class="pre">advance</span></tt> (the module also features the imported <tt class="docutils literal"><span class="pre">numpy</span></tt> module under
+the name <tt class="docutils literal"><span class="pre">np</span></tt> as well as many standard Python objects with double
+underscores in their names).</p>
 <p>The <tt class="docutils literal"><span class="pre">setup.py</span></tt> file makes use of the <tt class="docutils literal"><span class="pre">distutils</span></tt> package in Python
 and Cython&#8217;s extension of this package.
 These tools know how Python was built on the computer and will
 use compatible compiler(s) and options when building other code
 in Cython, C, or C++. Quite some experience with building large
-program systems is needed to do the build process manually.</p>
+program systems is needed to do the build process manually, so using
+a <tt class="docutils literal"><span class="pre">setup.py</span></tt> script is strongly recommended.</p>
+<div class="admonition-simplified-build-of-a-cython-module admonition">
+<p class="first admonition-title">Simplified build of a Cython module</p>
 <p>When there is no need to link the C code with special libraries,
 Cython offers a shortcut for generating and importing the extension
 module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyximport</span><span class="p">;</span> <span class="n">pyximport</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>This makes the <tt class="docutils literal"><span class="pre">setup.py</span></tt> script redundant. However, in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt>
+<p class="last">This makes the <tt class="docutils literal"><span class="pre">setup.py</span></tt> script redundant. However, in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt>
 code we do not use <tt class="docutils literal"><span class="pre">pyximport</span></tt> and require an explicit build process
 of this and many other modules.</p>
 </div>
+</div>
+</div>
 <div class="section" id="calling-the-cython-function">
-<h3>Calling the Cython function<a class="headerlink" href="#calling-the-cython-function" title="Permalink to this headline">¶</a></h3>
+<h2>Calling the Cython function<a class="headerlink" href="#calling-the-cython-function" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy</span></tt>
 module contains our <tt class="docutils literal"><span class="pre">advance</span></tt> function, which we now may call from
 the Python program for the wave equation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">wave2D_u0_loop_cy</span>
-<span class="n">cython_advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_cy</span><span class="o">.</span><span class="n">advance</span>
+<span class="n">advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_cy</span><span class="o">.</span><span class="n">advance</span>
 <span class="o">...</span>
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nt</span><span class="p">):</span>        <span class="c"># time loop</span>
     <span class="n">f_a</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>     <span class="c"># precompute, size as u</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">cython_advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span>
-                       <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="efficiency-1">
 <h3>Efficiency  (1)<a class="headerlink" href="#efficiency-1" title="Permalink to this headline">¶</a></h3>
 <p>For a mesh consisting of <span class="math">\(120\times 120\)</span> cells, the scalar Python code
 require 1370 CPU time units, the vectorized version requires 5.5,
-while the Cython version requires only 1! For a mesh with <span class="math">\(60\times 60\)</span>
-cells Cython is about 1000 times faster than the scalar Python code,
-and the vectorized version is about 6 times slower than the Cython version.</p>
+while the Cython version requires only 1! For a smaller mesh with
+<span class="math">\(60\times 60\)</span> cells Cython is about 1000 times faster than the scalar
+Python code, and the vectorized version is about 6 times slower than
+the Cython version.</p>
+</div>
 </div>
 </div>
 <div class="section" id="migrating-loops-to-fortran">
-<h2>Migrating loops to Fortran<a class="headerlink" href="#migrating-loops-to-fortran" title="Permalink to this headline">¶</a></h2>
+<h1>Migrating loops to Fortran<a class="headerlink" href="#migrating-loops-to-fortran" title="Permalink to this headline">¶</a></h1>
 <p>Instead of relying on Cython&#8217;s (excellent) ability to translate Python to C,
 we can invoke a compiled language directly and write the loops ourselves.
 Let us start with Fortran 77, because this is a language with more
 convenient array handling than C (or plain C++). Or more precisely,
-we can with ease program with multi-dimensional indices in the <tt class="docutils literal"><span class="pre">numpy</span></tt>
-arrays that are transferred to Fortran, while in C these arrays are
-one-dimensional. Let us also mention that
-the Fortran compilers
-build on 60 years of intensive research on how to optimize loops with
-array computations.</p>
-<span class="target" id="index-8"></span><div class="section" id="the-fortran-subroutine">
-<span id="index-9"></span><h3>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h3>
-<p>We write a Fortran subroutine <tt class="docutils literal"><span class="pre">advance</span></tt> in a file
-<a class="reference external" href="/wave2D_u0/wave2D_u0_loop_f77.f">wave2D_u0_loop_f77.f</a>
+we can with ease program with the same multi-dimensional indices
+in the Fortran code as in the <tt class="docutils literal"><span class="pre">numpy</span></tt>
+arrays in the Python code, while in C these arrays are
+one-dimensional and requires us to reduce multi-dimensional indices
+to a single index.</p>
+<div class="section" id="the-fortran-subroutine">
+<h2>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-8"></span><p id="index-9">We write a Fortran subroutine <tt class="docutils literal"><span class="pre">advance</span></tt> in a file
+<a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_f77.f">wave2D_u0_loop_f77.f</a>
 for implementing the updating formula
 <a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(2)</a> and setting the solution to zero
 at the boundaries:</p>
@@ -577,11 +623,22 @@ an object to be returned from the <tt class="docutils literal"><span class="pre"
 precisely, Fortran is not able return an array from a function,
 but we need a <em>wrapper code</em> in C for the Fortran subroutine to enable
 calling it from Python, and in this wrapper code one can return <tt class="docutils literal"><span class="pre">u</span></tt>
-to the calling Python code.
-It is not strictly necessary to return <tt class="docutils literal"><span class="pre">u</span></tt> to the calling Python
+to the calling Python code.</p>
+<div class="admonition-remark admonition">
+<p class="first admonition-title">Remark</p>
+<p>It is not strictly necessary to return <tt class="docutils literal"><span class="pre">u</span></tt> to the calling Python
 code since the <tt class="docutils literal"><span class="pre">advance</span></tt> function will modify the elements of <tt class="docutils literal"><span class="pre">u</span></tt>,
 but the convention in Python is to get all output from a function
-as returned values.</p>
+as returned values. That is, the right way of calling the above
+Fortran subroutine from Python is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The less encouraged style, which works and resembles the way the
+Fortran subroutine is called from Fortran, reads</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="building-the-fortran-module-with-f2py">
 <h3>Building the Fortran module with f2py<a class="headerlink" href="#building-the-fortran-module-with-f2py" title="Permalink to this headline">¶</a></h3>
@@ -595,18 +652,21 @@ The necessary commands to run are</p>
 <span class="go">          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f</span>
 </pre></div>
 </div>
-<p>First, <tt class="docutils literal"><span class="pre">f2py</span></tt> interprets the Fortran code and makes a Fortran 90
+<p>The first command asks <tt class="docutils literal"><span class="pre">f2py</span></tt> to interpret the Fortran code and make
+a Fortran 90
 specification of the extension module in the file
-<tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.pyf</span></tt>. Second, <tt class="docutils literal"><span class="pre">f2py</span></tt> generates all necessary
-wrapper code, compiles our Fortran file and the wrapper code,
-and finally builds the module.
+<tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.pyf</span></tt>. The second command makes
+<tt class="docutils literal"><span class="pre">f2py</span></tt> generate all necessary
+wrapper code, compile our Fortran file and the wrapper code,
+and finally build the module.
 The build process takes place in the specified subdirectory <tt class="docutils literal"><span class="pre">build_f77</span></tt>
 so that files can be inspected if something goes wrong.
 The option <tt class="docutils literal"><span class="pre">-DF2PY_REPORT_ON_ARRAY_COPY=1</span></tt> makes <tt class="docutils literal"><span class="pre">f2py</span></tt> write a message
 for every array that is copied in the communication between Fortran and Python,
 which is very useful for avoiding unnecessary array copying (see below).
 The name of the module file
-is <tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.so</span></tt>, and this file can imported as any other
+is <tt class="docutils literal"><span class="pre">wave2D_u0_loop_f77.so</span></tt>, and this file can be imported and inspected
+as any other
 Python module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wave2D_u0_loop_f77</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">wave2D_u0_loop_f77</span><span class="p">)</span>
@@ -619,24 +679,26 @@ Python module:</p>
 <span class="go">      nx=(shape(u,0)-1),ny=(shape(u,1)-1),n=(len(t)-1))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="examining-doc-strings">
-<h3>Examining doc strings<a class="headerlink" href="#examining-doc-strings" title="Permalink to this headline">¶</a></h3>
-<p>Printing the doc strings of the module and its functions is
+<div class="admonition-examine-the-doc-strings admonition">
+<p class="first admonition-title">Examine the doc strings</p>
+<p class="last">Printing the doc strings of the module and its functions is
 extremely important after having created a module with <tt class="docutils literal"><span class="pre">f2py</span></tt>,
 because <tt class="docutils literal"><span class="pre">f2py</span></tt> makes Python interfaces to the Fortran functions
 that are different from how the functions are declared in
 the Fortran code (!). The rationale for this behavior is that
-<tt class="docutils literal"><span class="pre">f2py</span></tt> creates <em>Pythonic</em> interfaces to that Fortran routines
+<tt class="docutils literal"><span class="pre">f2py</span></tt> creates <em>Pythonic</em> interfaces such that Fortran routines
 can be called in the same way as one calls Python functions.
-Since output data from Python functions are always returned
-to the calling code and this is technically impossible in Fortran.
+Output data from Python functions is always returned
+to the calling code, but this is technically impossible in Fortran.
 Also, arrays in Python are passed to Python functions without
 their dimensions because that information is packed with the array
 data in the array objects, but this is not possible in Fortran.
-Therefore, <tt class="docutils literal"><span class="pre">f2py</span></tt> removes array dimensions from the argument list
-to a function like <tt class="docutils literal"><span class="pre">advance</span></tt> (!), and it makes it possible to
-return objects back to Python. Let us take a closer look at
+Therefore, <tt class="docutils literal"><span class="pre">f2py</span></tt> removes array dimensions from the argument list,
+and <tt class="docutils literal"><span class="pre">f2py</span></tt> makes it possible to
+return objects back to Python.</p>
+</div>
+<p>Let us follow the advice of examining the doc strings
+and take a close look at
 the documentation <tt class="docutils literal"><span class="pre">f2py</span></tt> has generated for our Fortran <tt class="docutils literal"><span class="pre">advance</span></tt>
 subroutine:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">wave2D_u0_loop_f77</span><span class="o">.</span><span class="n">advance</span><span class="o">.</span><span class="n">__doc__</span>
@@ -662,40 +724,43 @@ subroutine:</p>
 <span class="go">  u : rank-2 array(&#39;d&#39;) with bounds (nx + 1,ny + 1)</span>
 </pre></div>
 </div>
-<p>Here we see that the <tt class="docutils literal"><span class="pre">nx</span></tt>, <tt class="docutils literal"><span class="pre">ny</span></tt>, and <tt class="docutils literal"><span class="pre">n</span></tt> parameters declared in
+<p>Here we see that the <tt class="docutils literal"><span class="pre">nx</span></tt> and <tt class="docutils literal"><span class="pre">ny</span></tt> parameters declared in
 Fortran are optional arguments that can be omitted when calling
-<tt class="docutils literal"><span class="pre">advance</span></tt> from Python. We strongly recommend to print out the
+<tt class="docutils literal"><span class="pre">advance</span></tt> from Python.</p>
+<p>We strongly recommend to print out the
 documentation of <em>every</em> Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.</p>
-<span class="target" id="index-10"></span><span class="target" id="index-11"></span><span class="target" id="index-12"></span></div>
+</div>
+</div>
 <div class="section" id="how-to-avoid-array-copying">
-<span id="index-13"></span><h3>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h3>
-<p>Multi-dimensional arrays are stored as a stream of numbers in memory.
+<h2>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-10"></span><span class="target" id="index-11"></span><span class="target" id="index-12"></span><p id="index-13">Multi-dimensional arrays are stored as a stream of numbers in memory.
 For a two-dimensional array consisting of rows and columns there are
 two ways of creating such a stream: <em>row-major ordering</em>, which means
 that rows are stored consecutively in memory, or <em>column-major
-ordering</em>, which means that the columns are stored after each other.
+ordering</em>, which means that the columns are stored one after each other.
 All programming languages inherited from C, including Python, apply
 the row-major ordering, but Fortran uses column-major storage.
-Thinking of a two-dimensional array as a matrix, it means that Fortran
+Thinking of a two-dimensional array in Python or C
+as a matrix, it means that Fortran
 works with the transposed matrix.</p>
 <p>Fortunately, <tt class="docutils literal"><span class="pre">f2py</span></tt> creates extra code so that accessing <tt class="docutils literal"><span class="pre">u(i,j)</span></tt> in
 the Fortran subroutine corresponds to the element <tt class="docutils literal"><span class="pre">u[i,j]</span></tt> in the
 underlying <tt class="docutils literal"><span class="pre">numpy</span></tt> array (without the extra code, <tt class="docutils literal"><span class="pre">u(i,j)</span></tt> in Fortran
 would access <tt class="docutils literal"><span class="pre">u[j,i]</span></tt> in the <tt class="docutils literal"><span class="pre">numpy</span></tt> array).  Technically, <tt class="docutils literal"><span class="pre">f2py</span></tt>
-takes a copy of our <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays and reorders the data before
-sending the arrays to Fortran. Such copying can be costly. For 2D wave
+takes a copy of our <tt class="docutils literal"><span class="pre">numpy</span></tt> array and reorders the data before
+sending the array to Fortran. Such copying can be costly. For 2D wave
 simulations on a <span class="math">\(60\times 60\)</span> grid the overhead of copying is a
 factor of 5, which means that almost the whole performance gain of
 Fortran over vectorized <tt class="docutils literal"><span class="pre">numpy</span></tt> code is lost!</p>
 <p>To avoid having <tt class="docutils literal"><span class="pre">f2py</span></tt> to copy
-arrays with C storage to the corresponding Fortran storage, we can declare
+arrays with C storage to the corresponding Fortran storage, we declare
 the arrays with Fortran storage:</p>
-<div class="highlight-text"><div class="highlight"><pre>order = &#39;Fortran&#39; if version == &#39;f77&#39; else &#39;C&#39;
-u   = zeros((Nx+1,Ny+1), order=order)   # solution array
-u_1 = zeros((Nx+1,Ny+1), order=order)   # solution at t-dt
-u_2 = zeros((Nx+1,Ny+1), order=order)   # solution at t-2*dt
+<div class="highlight-python"><div class="highlight"><pre><span class="n">order</span> <span class="o">=</span> <span class="s">&#39;Fortran&#39;</span> <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s">&#39;f77&#39;</span> <span class="k">else</span> <span class="s">&#39;C&#39;</span>
+<span class="n">u</span>   <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>   <span class="c"># solution array</span>
+<span class="n">u_1</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>   <span class="c"># solution at t-dt</span>
+<span class="n">u_2</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>   <span class="c"># solution at t-2*dt</span>
 </pre></div>
 </div>
 <p>In the compile and build step of using <tt class="docutils literal"><span class="pre">f2py</span></tt>, it is recommended to add
@@ -713,13 +778,17 @@ code and <tt class="docutils literal"><span class="pre">float64</span></tt> (the
 on the Python side. The former reason is more common, and to check
 whether an array before a Fortran call has the right storage one can
 print the result of <tt class="docutils literal"><span class="pre">isfortran(a)</span></tt>, which is <tt class="docutils literal"><span class="pre">True</span></tt> if the array <tt class="docutils literal"><span class="pre">a</span></tt>
-has Fortran storage. A typical problem in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code is
+has Fortran storage.</p>
+<p>Let us look at an example where we face problems with array storage.
+A typical problem in the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code is
 to set</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">f_a</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>before the call to the Fortran <tt class="docutils literal"><span class="pre">advance</span></tt> routine. This computation creates
-a new array with C storage. There are two remedies, either direct insertion
+a new array with C storage. An undesired copy of <tt class="docutils literal"><span class="pre">f_a</span></tt> will be produced
+when sending <tt class="docutils literal"><span class="pre">f_a</span></tt> to a Fortran routine.
+There are two remedies, either direct insertion
 of data in an array with Fortran storage,</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">f_a</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;Fortran&#39;</span><span class="p">)</span>
 <span class="o">...</span>
@@ -730,12 +799,13 @@ of data in an array with Fortran storage,</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">f_a</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]),</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;Fortran&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
+<p>The former remedy is most efficient if the <tt class="docutils literal"><span class="pre">asarray</span></tt> operation is to
+be performed a large number of times.</p>
 <div class="section" id="efficiency-2">
 <h3>Efficiency  (2)<a class="headerlink" href="#efficiency-2" title="Permalink to this headline">¶</a></h3>
 <p>The efficiency of this Fortran code is very similar to the Cython code.
 There is usually nothing more to gain, from a computational efficiency
-point of view, by implementing the complete Python program in Fortran
+point of view, by implementing the <em>complete</em> Python program in Fortran
 or C. That will just be a lot more code for all administering work
 that is needed in scientific software, especially if we extend our
 sample program <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> to handle a real scientific problem.
@@ -745,8 +815,9 @@ explained, while the rest of the programming can be more conveniently
 done in Python.</p>
 </div>
 </div>
+</div>
 <div class="section" id="migrating-loops-to-c-via-cython">
-<h2>Migrating loops to C via Cython<a class="headerlink" href="#migrating-loops-to-c-via-cython" title="Permalink to this headline">¶</a></h2>
+<h1>Migrating loops to C via Cython<a class="headerlink" href="#migrating-loops-to-c-via-cython" title="Permalink to this headline">¶</a></h1>
 <p>The computationally intensive loops can alternatively be implemented
 in C code. Just as Fortran calls for care regarding the storage of
 two-dimensional arrays, working with two-dimensional arrays in C
@@ -759,7 +830,7 @@ pair <tt class="docutils literal"><span class="pre">[i][j]</span></tt> to a corr
 viewed as one-dimensional. This translation requires knowledge of
 how the numbers in <tt class="docutils literal"><span class="pre">u</span></tt> are stored in memory.</p>
 <div class="section" id="translating-index-pairs-to-single-indices">
-<h3>Translating index pairs to single indices<a class="headerlink" href="#translating-index-pairs-to-single-indices" title="Permalink to this headline">¶</a></h3>
+<h2>Translating index pairs to single indices<a class="headerlink" href="#translating-index-pairs-to-single-indices" title="Permalink to this headline">¶</a></h2>
 <p>Two-dimensional <tt class="docutils literal"><span class="pre">numpy</span></tt> arrays with the default C storage are stored
 row by row. In general, multi-dimensional arrays with C storage are
 stored such that the last index has the fastest variation, then the
@@ -772,23 +843,28 @@ in the following order:</p>
 </pre></div>
 </div>
 <p>Viewing <tt class="docutils literal"><span class="pre">u</span></tt> as one-dimensional, the index pair <span class="math">\((i,j)\)</span> translates
-to <tt class="docutils literal"><span class="pre">i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt>. Where a C programmer would naturally write
+to <span class="math">\(i(N_y+1)+j\)</span>. So, where a C programmer would naturally write
 an index <tt class="docutils literal"><span class="pre">u[i][j]</span></tt>, the indexing must read <tt class="docutils literal"><span class="pre">u[i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j]</span></tt>.
 This is tedious to write, so it can be handy to define a C macro,</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="cp">#define idx(i,j) (i)*(Ny+1) + j</span>
 </pre></div>
 </div>
 <p>so that we can write <tt class="docutils literal"><span class="pre">u[idx(i,j)]</span></tt>, which reads much better and is
-easier to debug. Macros perform simple text substitutions:
+easier to debug.</p>
+<div class="admonition-be-careful-with-macro-definitions admonition">
+<p class="first admonition-title">Be careful with macro definitions</p>
+<p class="last">Macros just perform simple text substitutions:
 <tt class="docutils literal"><span class="pre">idx(hello,world)</span></tt> is expanded to <tt class="docutils literal"><span class="pre">(hello)*(Ny+1)</span> <span class="pre">+</span> <span class="pre">world</span></tt>.
-The parenthesis in <tt class="docutils literal"><span class="pre">(i)</span></tt> are essential - with natural mathematical
+The parenthesis in <tt class="docutils literal"><span class="pre">(i)</span></tt> are essential - using the natural mathematical
 formula <tt class="docutils literal"><span class="pre">i*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt> in the macro definition,
 <tt class="docutils literal"><span class="pre">idx(i-1,j)</span></tt> would expand to <tt class="docutils literal"><span class="pre">i-1*(Ny+1)</span> <span class="pre">+</span> <span class="pre">j</span></tt>, which is the wrong
-formula. Macros are handy, but requires careful use.</p>
+formula. Macros are handy, but requires careful use.
+In C++, inline functions are safer and replace the need for macros.</p>
+</div>
 </div>
 <div class="section" id="the-complete-c-code">
-<h3>The complete C code<a class="headerlink" href="#the-complete-c-code" title="Permalink to this headline">¶</a></h3>
-<p>The C version of function <tt class="docutils literal"><span class="pre">advance</span></tt> can be coded as follows.</p>
+<h2>The complete C code<a class="headerlink" href="#the-complete-c-code" title="Permalink to this headline">¶</a></h2>
+<p>The C version of our function <tt class="docutils literal"><span class="pre">advance</span></tt> can be coded as follows.</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="cp">#define idx(i,j) (i)*(Ny+1) + j</span>
 
 <span class="kt">void</span> <span class="nf">advance</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_1</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_2</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">f</span><span class="p">,</span>
@@ -816,11 +892,13 @@ formula. Macros are handy, but requires careful use.</p>
 </div>
 </div>
 <div class="section" id="the-cython-interface-file">
-<h3>The Cython interface file<a class="headerlink" href="#the-cython-interface-file" title="Permalink to this headline">¶</a></h3>
+<h2>The Cython interface file<a class="headerlink" href="#the-cython-interface-file" title="Permalink to this headline">¶</a></h2>
 <p>All the code above appears in a file <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave//wave2D_u0/wave2D_u0_loop_c.c">wave2D_u0_loop_c.c</a>.
 We need to compile this file together with C wrapper code such that
-<tt class="docutils literal"><span class="pre">advance</span></tt> can be called from Python. Cython can be used to interface
-our C code. The Cython code, placed in a file with extension <tt class="docutils literal"><span class="pre">.pyx</span></tt>, here
+<tt class="docutils literal"><span class="pre">advance</span></tt> can be called from Python. Cython can be used to generate
+appropriate wrapper code.
+The relevant Cython code for interfacing C is
+placed in a file with extension <tt class="docutils literal"><span class="pre">.pyx</span></tt>. Here this file, called
 <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_c_cy.pyx">wave2D_u0_loop_c_cy.pyx</a>, looks like</p>
 <div class="highlight-cython"><div class="highlight"><pre><span class="k">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="k">cimport</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -845,7 +923,7 @@ our C code. The Cython code, placed in a file with extension <tt class="docutils
     <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
-<p>Here, we first declare the C functions to be interfaced.
+<p>We first declare the C functions to be interfaced.
 These must also appear in a C header file, <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_c.h">wave2D_u0_loop_c.h</a>,</p>
 <div class="highlight-c++"><div class="highlight"><pre><span class="k">extern</span> <span class="kt">void</span> <span class="nf">advance</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_1</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">u_2</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">f</span><span class="p">,</span>
                     <span class="kt">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">dt2</span><span class="p">,</span>
@@ -865,7 +943,7 @@ Finally, <tt class="docutils literal"><span class="pre">u</span></tt> must be re
 in Python.</p>
 </div>
 <div class="section" id="building-the-extension-module-2">
-<h3>Building the extension module  (2)<a class="headerlink" href="#building-the-extension-module-2" title="Permalink to this headline">¶</a></h3>
+<h2>Building the extension module  (2)<a class="headerlink" href="#building-the-extension-module-2" title="Permalink to this headline">¶</a></h2>
 <p>It remains to build the extension module. An appropriate
 <tt class="docutils literal"><span class="pre">setup.py</span></tt> file is</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">distutils.core</span> <span class="kn">import</span> <span class="n">setup</span>
@@ -886,20 +964,24 @@ in Python.</p>
 <p>All we need to specify is the <tt class="docutils literal"><span class="pre">.c</span></tt> file(s) and the <tt class="docutils literal"><span class="pre">.pyx</span></tt> interface
 file. Cython is automatically run to generate the necessary wrapper
 code. Files are then compiled and linked to an extension module
-residing in the file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_c_cy.so</span></tt>. This module can
-be imported in Python,</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">wave2D_u0_loop_c_cy</span> <span class="kn">as</span> <span class="nn">m</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+residing in the file <tt class="docutils literal"><span class="pre">wave2D_u0_loop_c_cy.so</span></tt>. Here is a
+session with running <tt class="docutils literal"><span class="pre">setup.py</span></tt>
+and examining the resulting module in Python</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python setup.py build_ext --inplace</span>
+<span class="go">Terminal&gt; python</span>
+<span class="gp">&gt;</span>&gt;&gt; import wave2D_u0_loop_c_cy as m
+<span class="gp">&gt;</span>&gt;&gt; dir<span class="o">(</span>m<span class="o">)</span>
 <span class="go">[&#39;__builtins__&#39;, &#39;__doc__&#39;, &#39;__file__&#39;, &#39;__name__&#39;, &#39;__package__&#39;,</span>
 <span class="go"> &#39;__test__&#39;, &#39;advance_cwrap&#39;, &#39;np&#39;]</span>
 </pre></div>
 </div>
 <p>The call to the C version of <tt class="docutils literal"><span class="pre">advance</span></tt> can go like this in Python:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_c_cy</span><span class="o">.</span><span class="n">advance_cwrap</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">wave2D_u0_loop_c_cy</span>
+<span class="n">advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_c_cy</span><span class="o">.</span><span class="n">advance_cwrap</span>
+<span class="o">...</span>
 <span class="n">f_a</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
 <span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="efficiency-3">
 <h3>Efficiency  (3)<a class="headerlink" href="#efficiency-3" title="Permalink to this headline">¶</a></h3>
@@ -910,9 +992,10 @@ we do not work with very small meshes and consequently little numerical
 work in the <tt class="docutils literal"><span class="pre">advance</span></tt> function.</p>
 </div>
 </div>
+</div>
 <div class="section" id="migrating-loops-to-c-via-f2py">
-<h2>Migrating loops to C via f2py<a class="headerlink" href="#migrating-loops-to-c-via-f2py" title="Permalink to this headline">¶</a></h2>
-<p>As an alternative to using Cython for interfacing C code, we can apply
+<h1>Migrating loops to C via f2py<a class="headerlink" href="#migrating-loops-to-c-via-f2py" title="Permalink to this headline">¶</a></h1>
+<p>An alternative to using Cython for interfacing C code is to apply
 <tt class="docutils literal"><span class="pre">f2py</span></tt>. The C code is the same, just the details of specifying how
 it is to be called from Python differ. The <tt class="docutils literal"><span class="pre">f2py</span></tt> tool requires
 the call specification to be a Fortran 90 module defined in a <tt class="docutils literal"><span class="pre">.pyf</span></tt>
@@ -933,16 +1016,20 @@ Fortran syntax and place it in a Fortran file, here
 <span class="k">      end</span>
 </pre></div>
 </div>
-<p>Since <tt class="docutils literal"><span class="pre">f2py</span></tt> is just concerned with the signature and not the
-complete contents of the function body, it can generate the
-Fortran 90 module specification:</p>
+<p>Note that we need a special <tt class="docutils literal"><span class="pre">f2py</span></tt> instruction, through a <tt class="docutils literal"><span class="pre">Cf2py</span></tt>
+comment line, for telling that all the function arguments are
+C variables. We also need to specify that the function is actually
+in C: <tt class="docutils literal"><span class="pre">intent(c)</span> <span class="pre">advance</span></tt>.</p>
+<p>Since <tt class="docutils literal"><span class="pre">f2py</span></tt> is just concerned with the function signature and not the
+complete contents of the function body, it can easily generate the
+Fortran 90 module specification based solely on the signature above:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; f2py -m wave2D_u0_loop_c_f2py \</span>
 <span class="go">          -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature \</span>
 <span class="go">          wave2D_u0_loop_c_f2py_signature.f</span>
 </pre></div>
 </div>
 <p>The compile and build step is as for the Fortran code, except that we
-list C file(s) instead of Fortran file(s):</p>
+list C files instead of Fortran files:</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; f2py -c wave2D_u0_loop_c_f2py.pyf \</span>
 <span class="go">          --build-dir tmp_build_c \</span>
 <span class="go">          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_c.c</span>
@@ -952,10 +1039,6 @@ list C file(s) instead of Fortran file(s):</p>
 the doc string to see the exact call syntax from the Python side.
 This doc string is identical for the C and Fortran versions of
 <tt class="docutils literal"><span class="pre">advance</span></tt>.</p>
-</div>
-<div class="section" id="migrating-loops-to-c-via-instant">
-<h2>Migrating loops to C via Instant<a class="headerlink" href="#migrating-loops-to-c-via-instant" title="Permalink to this headline">¶</a></h2>
-</div>
 <div class="section" id="id2">
 <h2>Migrating loops to C++ via f2py<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>C++ is a much more versatile language than C or Fortran and has over
@@ -964,11 +1047,14 @@ Many will therefore prefer to migrate compute-intensive Python code
 to C++. This is, in principle, easy: just write the desired C++ code
 and use some tool for interfacing it from Python. A tool like
 <a class="reference external" href="http://swig.org/">SWIG</a> can interpret the C++ code and generate
-interfaces for Python, Perl, Ruby, Java, and a wide range of
-languages. However, SWIG is a comprehensive tool with a correspondingly
-non-trivial learning curve. Alternative tools, such as
-<a class="reference external" href="http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html">Boost Python</a> and <a class="reference external" href="http://riverbankcomputing.co.uk/software/sip/intro">SIP</a>,
-are similarly comprehensive.</p>
+interfaces for a wide range of
+languages, including Python, Perl, Ruby, and Java.
+However, SWIG is a comprehensive tool with a correspondingly
+steep learning curve. Alternative tools, such as
+<a class="reference external" href="http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html">Boost Python</a>, <a class="reference external" href="http://riverbankcomputing.co.uk/software/sip/intro">SIP</a>,
+and <a class="reference external" href="http://qt-project.org/wiki/Category:LanguageBindings::PySide::Shiboken">Shiboken</a>
+are similarly comprehensive. Simpler tools include
+<a class="reference external" href="http://code.google.com/p/pybindgen/">PyBindGen</a>,</p>
 <p>A technically much easier way of interfacing C++ code is to drop the
 possibility to use C++ classes directly from Python, but instead
 make a C interface to the C++ code. The C interface can be handled
@@ -984,24 +1070,30 @@ C++ array classes in the C++ code, if desired.</p>
 <p><em>Remaining.</em> Use some array class. Key issue: <tt class="docutils literal"><span class="pre">extern</span> <span class="pre">&quot;C&quot;</span></tt> declaration of C++
 function in the C file with the interface we want to wrap.</p>
 </div>
+</div>
 <div class="section" id="using-classes-to-implement-a-simulator">
-<h2>Using classes to implement a simulator<a class="headerlink" href="#using-classes-to-implement-a-simulator" title="Permalink to this headline">¶</a></h2>
+<h1>Using classes to implement a simulator<a class="headerlink" href="#using-classes-to-implement-a-simulator" title="Permalink to this headline">¶</a></h1>
 <blockquote>
 <div><ul class="simple">
-<li>class <tt class="docutils literal"><span class="pre">Mesh</span></tt>, <tt class="docutils literal"><span class="pre">MeshFunction</span></tt>, <tt class="docutils literal"><span class="pre">Problem</span></tt>, <tt class="docutils literal"><span class="pre">Solver</span></tt>, <tt class="docutils literal"><span class="pre">Visualizer</span></tt>, <tt class="docutils literal"><span class="pre">File</span></tt></li>
-<li>communicate with compiled code by ensuring that
-classes work with arrays</li>
+<li>Introduce classes <tt class="docutils literal"><span class="pre">Mesh</span></tt>, <tt class="docutils literal"><span class="pre">Function</span></tt>, <tt class="docutils literal"><span class="pre">Problem</span></tt>, <tt class="docutils literal"><span class="pre">Solver</span></tt>, <tt class="docutils literal"><span class="pre">Visualizer</span></tt>,
+<tt class="docutils literal"><span class="pre">File</span></tt></li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="callbacks-to-python-from-fortran-or-c">
-<h2>Callbacks to Python from Fortran or C<a class="headerlink" href="#callbacks-to-python-from-fortran-or-c" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercises-3">
+<h1>Exercises  (3)<a class="headerlink" href="#exercises-3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="exercise-10-check-that-a-solution-fulfills-the-discrete-model">
+<span id="wave-exer-quadratic-2d"></span><h2>Exercise 10: Check that a solution fulfills the discrete model<a class="headerlink" href="#exercise-10-check-that-a-solution-fulfills-the-discrete-model" title="Permalink to this headline">¶</a></h2>
+<p>Carry out all mathematical details to show that
+<a href="#equation-wave2D3D:impl:verify:quadratic">(3)</a> is indeed a solution of the
+discrete model for a 2D wave equation with <span class="math">\(u=0\)</span> on the boundary.
+One must check the boundary conditions, the initial conditions,
+the general discrete equation at a time level and the special
+version of this equation for the first time level.
+Filename: <tt class="docutils literal"><span class="pre">check_quadratic_solution.pdf</span></tt>.</p>
 </div>
-</div>
-<div class="section" id="exercises">
-<h1>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="project-10-calculus-with-2d-3d-mesh-functions">
-<span id="wave-exer-mesh3d-calculus"></span><h2>Project 10: Calculus with 2D/3D mesh functions<a class="headerlink" href="#project-10-calculus-with-2d-3d-mesh-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="project-11-calculus-with-2d-3d-mesh-functions">
+<span id="wave-exer-mesh3d-calculus"></span><h2>Project 11: Calculus with 2D/3D mesh functions<a class="headerlink" href="#project-11-calculus-with-2d-3d-mesh-functions" title="Permalink to this headline">¶</a></h2>
 <p>The goal of this project is to redo
 <a class="reference internal" href="main_wave.html#wave-exer-mesh1d-calculus"><em>Project 5: Calculus with 1D mesh functions</em></a> with 2D and 3D
 mesh functions (<span class="math">\(f_{i,j}\)</span> and <span class="math">\(_{fi,j,k}\)</span>).</p>
@@ -1035,6 +1127,36 @@ corner cell to <span class="math">\(F_{i+1,j} + F_{i,j+1} - F_{i,j}\)</span>. Ca
 details of these computations and extend the ideas to 3D.
 Filename: <tt class="docutils literal"><span class="pre">mesh_calculus_3D.py</span></tt>.</p>
 </div>
+<div class="section" id="exercise-12-implement-neumann-conditions-in-2d">
+<span id="wave-app-exer-wave2d-neumann"></span><h2>Exercise 12: Implement Neumann conditions in 2D<a class="headerlink" href="#exercise-12-implement-neumann-conditions-in-2d" title="Permalink to this headline">¶</a></h2>
+<p>Modify the <a class="reference external" href="/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
+program, which solves the 2D wave equation <span class="math">\(u_{tt}=c^2(u_{xx}+u_{yy})\)</span>
+with constant wave velocity <span class="math">\(c\)</span> and <span class="math">\(u=0\)</span> on the boundary, to have
+Neumann boundary conditions: <span class="math">\(\partial u/\partial n=0\)</span>.
+Include both scalar code (for debugging and reference) and
+vectorized code (for speed).</p>
+<p>To test the code, use <span class="math">\(u=1.2\)</span> as solution (<span class="math">\(I(x,y)=1.2\)</span>, <span class="math">\(V=f=0\)</span>, and
+<span class="math">\(c\)</span> arbitrary), which should be exactly reproduced with any mesh
+as long as the stability criterion is satisfied.
+Another test is to use the plug-shaped pulse
+in the <tt class="docutils literal"><span class="pre">pulse</span></tt> function from the section <a class="reference internal" href="main_wave.html#wave-pde2-software"><em>Building a general 1D wave equation solver</em></a>
+and the <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn_vc.py">wave1D_dn_vc.py</a>
+program. This pulse
+is exactly propagated in 1D if <span class="math">\(c\Delta t/\Delta x=1\)</span>. Check
+that also the 2D program can propagate this pulse exactly
+in <span class="math">\(x\)</span> direction (<span class="math">\(c\Delta t/\Delta x=1\)</span>, <span class="math">\(\Delta y\)</span> arbitrary)
+and <span class="math">\(y\)</span> direction (<span class="math">\(c\Delta t/\Delta y=1\)</span>, <span class="math">\(\Delta x\)</span> arbitrary).
+Filename: <tt class="docutils literal"><span class="pre">wave2D_dn.py</span></tt>.</p>
+</div>
+<div class="section" id="exercise-13-test-the-efficiency-of-compiled-loops-in-3d">
+<span id="wave-exer-3d-f77-cy-efficiency"></span><h2>Exercise 13: Test the efficiency of compiled loops in 3D<a class="headerlink" href="#exercise-13-test-the-efficiency-of-compiled-loops-in-3d" title="Permalink to this headline">¶</a></h2>
+<p>Extend the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code and the Cython, Fortran, and C versions to 3D.
+Set up an efficiency experiment to determine the relative efficiency of
+pure scalar Python code, vectorized code, Cython-compiled loops,
+Fortran-compiled loops, and C-compiled loops.
+Normalize the CPU time for each mesh by the fastest version.
+Filename: <tt class="docutils literal"><span class="pre">wave3D_u0.py</span></tt>.</p>
+</div>
 </div>
 
 
@@ -1061,39 +1183,51 @@ Filename: <tt class="docutils literal"><span class="pre">mesh_calculus_3D.py</sp
 <li><a class="reference internal" href="#testing-a-quadratic-solution">Testing a quadratic solution</a></li>
 </ul>
 </li>
+</ul>
+</li>
 <li><a class="reference internal" href="#migrating-loops-to-cython">Migrating loops to Cython</a><ul>
 <li><a class="reference internal" href="#declaring-variables-and-annotating-the-code">Declaring variables and annotating the code</a></li>
-<li><a class="reference internal" href="#visual-inspection-of-the-c-translation">Visual inspection of the C translation</a></li>
+<li><a class="reference internal" href="#visual-inspection-of-the-c-translation">Visual inspection of the C translation</a><ul>
 <li><a class="reference internal" href="#building-the-extension-module-1">Building the extension module  (1)</a></li>
-<li><a class="reference internal" href="#calling-the-cython-function">Calling the Cython function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#calling-the-cython-function">Calling the Cython function</a><ul>
 <li><a class="reference internal" href="#efficiency-1">Efficiency  (1)</a></li>
 </ul>
 </li>
+</ul>
+</li>
 <li><a class="reference internal" href="#migrating-loops-to-fortran">Migrating loops to Fortran</a><ul>
-<li><a class="reference internal" href="#the-fortran-subroutine">The Fortran subroutine</a></li>
+<li><a class="reference internal" href="#the-fortran-subroutine">The Fortran subroutine</a><ul>
 <li><a class="reference internal" href="#building-the-fortran-module-with-f2py">Building the Fortran module with f2py</a></li>
-<li><a class="reference internal" href="#examining-doc-strings">Examining doc strings</a></li>
-<li><a class="reference internal" href="#how-to-avoid-array-copying">How to avoid array copying</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-avoid-array-copying">How to avoid array copying</a><ul>
 <li><a class="reference internal" href="#efficiency-2">Efficiency  (2)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#migrating-loops-to-c-via-cython">Migrating loops to C via Cython</a><ul>
 <li><a class="reference internal" href="#translating-index-pairs-to-single-indices">Translating index pairs to single indices</a></li>
 <li><a class="reference internal" href="#the-complete-c-code">The complete C code</a></li>
 <li><a class="reference internal" href="#the-cython-interface-file">The Cython interface file</a></li>
-<li><a class="reference internal" href="#building-the-extension-module-2">Building the extension module  (2)</a></li>
+<li><a class="reference internal" href="#building-the-extension-module-2">Building the extension module  (2)</a><ul>
 <li><a class="reference internal" href="#efficiency-3">Efficiency  (3)</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#migrating-loops-to-c-via-f2py">Migrating loops to C via f2py</a></li>
-<li><a class="reference internal" href="#migrating-loops-to-c-via-instant">Migrating loops to C via Instant</a></li>
-<li><a class="reference internal" href="#id2">Migrating loops to C++ via f2py</a></li>
-<li><a class="reference internal" href="#using-classes-to-implement-a-simulator">Using classes to implement a simulator</a></li>
-<li><a class="reference internal" href="#callbacks-to-python-from-fortran-or-c">Callbacks to Python from Fortran or C</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#exercises">Exercises</a><ul>
-<li><a class="reference internal" href="#project-10-calculus-with-2d-3d-mesh-functions">Project 10: Calculus with 2D/3D mesh functions</a></li>
+<li><a class="reference internal" href="#migrating-loops-to-c-via-f2py">Migrating loops to C via f2py</a><ul>
+<li><a class="reference internal" href="#id2">Migrating loops to C++ via f2py</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-classes-to-implement-a-simulator">Using classes to implement a simulator</a></li>
+<li><a class="reference internal" href="#exercises-3">Exercises  (3)</a><ul>
+<li><a class="reference internal" href="#exercise-10-check-that-a-solution-fulfills-the-discrete-model">Exercise 10: Check that a solution fulfills the discrete model</a></li>
+<li><a class="reference internal" href="#project-11-calculus-with-2d-3d-mesh-functions">Project 11: Calculus with 2D/3D mesh functions</a></li>
+<li><a class="reference internal" href="#exercise-12-implement-neumann-conditions-in-2d">Exercise 12: Implement Neumann conditions in 2D</a></li>
+<li><a class="reference internal" href="#exercise-13-test-the-efficiency-of-compiled-loops-in-3d">Exercise 13: Test the efficiency of compiled loops in 3D</a></li>
 </ul>
 </li>
 </ul>

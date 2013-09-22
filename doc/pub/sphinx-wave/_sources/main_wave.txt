@@ -31,7 +31,7 @@ with little or no permanent movement of the medium itself.
 The shape of the signals may undergo changes as they travel through
 matter, but usually not so much that the signals cannot be recognized
 at some later point in space and time.
-Many types of wave motion can be described by the *wave equation*
+Many types of wave motion can be described by the equation
 :math:`u_{tt}=\nabla\cdot (c^2\nabla u) + f`, which we will solve
 in the forthcoming text by finite difference methods.
 
@@ -110,8 +110,22 @@ specifying the initial shape of the string, :math:`I(x)`, and
 :eq:`wave:pde1:ic:ut` reflecting that the initial velocity of the
 string is zero. In addition, PDEs need *boundary conditions*, here
 :eq:`wave:pde1:bc:0` and :eq:`wave:pde1:bc:L`, specifying that
-the string is fixed at the ends, i.e., that the displacement :math:`u` is zero
-at the ends.
+the string is fixed at the ends, i.e., that the displacement :math:`u` is zero.
+
+The solution :math:`u(x,t)` varies in space and time and describes waves that
+are moving with velocity :math:`c` to the left and right.
+
+.. raw:: html
+        
+        <div>
+        <video  loop controls width='640' height='365' preload='none'>
+        <source src='mov-wave/guitar_C0.8/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+        <source src='mov-wave/guitar_C0.8/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+        </video>
+        </div>
+        <p><em>Example of waves on a string.</em></p>
+
+
 
 Sometimes we will use a more compact notation for the partial derivatives
 to save space:
@@ -119,10 +133,12 @@ to save space:
 
 .. math::
         
-        u_t = \frac{\partial u}{\partial t}, u_{tt} = \frac{\partial^2 u}{\partial t^2},
+        u_t = \frac{\partial u}{\partial t}, \quad
+        u_{tt} = \frac{\partial^2 u}{\partial t^2},
         
 
-and similar for derivatives with respect to other variables. Then the
+and similar expressions
+for derivatives with respect to other variables. Then the
 wave equation can be written compactly as :math:`u_{tt} = c^2u_{xx}`.
 
 
@@ -603,6 +619,8 @@ the special formula
         
 
 
+.. _wave:pde2:fd:standing:waves:
+
 Using an analytical solution of physical significance
 -----------------------------------------------------
 
@@ -642,6 +660,8 @@ run a series of finer and finer meshes, measure the integrated error
 in each mesh, and from this information estimate the convergence
 rate. If these rates are very close to 2, we have strong evidence that
 the implementation works.
+
+.. _wave:pde2:fd:MMS:
 
 Manufactured solution
 ---------------------
@@ -751,6 +771,8 @@ The next section describes a method of manufactured solutions where
 do not need to compute error measures and check that they converge
 as expected as the mesh is refined.
 
+.. _wave:pde2:fd:verify:quadratic:
+
 Constructing an exact solution of the discrete equations
 --------------------------------------------------------
 
@@ -759,7 +781,11 @@ and linear in time. More specifically, our choice of the manufactured
 solution is
 
 .. math::
-         {u_{\small\mbox{e}}} (x,t) = x(L-x)(1+\frac{1}{2}t), 
+   :label: wave:pde2:fd:verify:quadratic:uex
+        
+        {u_{\small\mbox{e}}} (x,t) = x(L-x)(1+\frac{1}{2}t),
+        
+        
 
 which by insertion in the PDE leads to :math:`f(x,t)=2(1+t)c^2`. This :math:`{u_{\small\mbox{e}}}`
 fulfills the boundary conditions and is compatible with :math:`I(x)=x(L-x)`
@@ -874,6 +900,8 @@ the user in a suppled function
 
 where ``u`` is the solution at the spatial points ``x`` at time ``t[n]``.
 
+.. _wave:pde1:impl:solver:
+
 Making a solver function
 ------------------------
 
@@ -958,6 +986,8 @@ A first attempt at a solver function is listed below.
 .. if :math:`I(x)=Q`, :math:`V=0`, :math:`u(0,t)=u(L,t)=Q`, and :math:`f=0`
 
 
+.. _wave:pde1:impl:verify:quadratic:
+
 Verification: exact quadratic solution
 --------------------------------------
 
@@ -1009,8 +1039,10 @@ nose test:
             nt.assert_almost_equal(diff, 0, places=14)
 
 
-Visualization: animating :math:`u(x,t)`
----------------------------------------
+.. _wave:pde1:impl:animate:
+
+Visualization: animating the solution
+-------------------------------------
 
 Now that we have verified the implementation it is time to do a
 real computation where we also display the evolution of the waves
@@ -1305,6 +1337,8 @@ wavelength :math:`\lambda = 2\pi/(\pi/L)=2L`. One period is therefore
 given by :math:`P=2L/c`. The dimensionless period is :math:`\bar P=Pc/L = 2`.
 
 
+.. _wave:pde1:impl:vec:
+
 Vectorization
 =============
 
@@ -1328,6 +1362,8 @@ at least in principle, be performed simultaneously.
 Vectorization not only speeds up the code on serial computers, but it
 also makes it easy to exploit parallel computing.
 
+
+.. _wave:pde1:impl:vec:slices:basics:
 
 Operations on slices of arrays
 ------------------------------
@@ -1464,6 +1500,8 @@ version becomes
         u2[1:-1] = u[:-2] - 2*u[1:-1] + u[2:] + f(x[1:-1])
 
 
+.. _wave:pde1:impl:vec:slices:fdm:
+
 Finite difference schemes expressed as slices
 ---------------------------------------------
 
@@ -1509,6 +1547,8 @@ contains a new version of the function ``solver`` where both the scalar
 and the vectorized loops are included (the argument ``version`` is
 set to ``scalar`` or ``vectorized``, respectively).
 
+
+.. _wave:pde1:impl:vec:verify:quadratic:
 
 Verification  (2)
 -----------------
@@ -1639,7 +1679,7 @@ Standing waves arise from an initial condition
 
 
 .. math::
-         u(x,0)= A \sin\left(\frac{pi}{L}mx\right),
+         u(x,0)= A \sin\left(\frac{\pi}{L}mx\right),
 
 where :math:`m` is an integer and :math:`A` is a freely chosen amplitude.
 The corresponding exact solution can be computed and reads
@@ -1658,8 +1698,8 @@ interest to see how the error develops in time.
 
 
 *Hint.* Import the ``solver`` function ``wave1D_u0_s.py`` into a new file
-``wave_standing.py``. Reimplement the ``viz`` function in this file
-that plots either the numerical and exact solution, or the error,
+where the ``viz`` function is reimplemented such that it
+plots either the numerical and exact solution, or the error,
 instead of just the numerical solution.
 
 .. --- end hint in exercise ---
@@ -2330,7 +2370,7 @@ A complete implementation appears in the program
     if ``x`` is defined to be the physical points.
     
     An alternative remedy is to let ``x`` also cover the ghost points such that
-    ``u[i]`` is the value at ``x[i]``.
+    ``u[i]`` is the value at ``x[i]``. This is the recommended approach.
 
 
 The ghost cell is only added to the boundary where we have a Neumann
@@ -2495,7 +2535,7 @@ With operator notation we can write the discretization as
 
 .. admonition:: Remark
 
-   *Remark.* Many are tempted to use the chain rule on the
+   Many are tempted to use the chain rule on the
    term :math:`\frac{\partial}{\partial x}\left( q(x)
    \frac{\partial u}{\partial x}\right)`, but this is not a good idea
    when discretizing such a term.
@@ -2805,7 +2845,7 @@ Implementation of variable coefficients
 
 The implementation of the scheme with a variable wave velocity
 may assume that :math:`c` is available as an array ``c[i]`` at
-the mesh points. The following loop is a straightforward
+the spatial mesh points. The following loop is a straightforward
 implementation of the scheme :eq:`wave:pde2:var:c:scheme:impl`:
 
 
@@ -3124,10 +3164,10 @@ The function ``pulse`` in ``wave1D_dn_vc.py`` demonstrates wave motion in
 heterogeneous media where :math:`c` varies. One can specify an interval
 where the wave velocity is decreased by a factor ``slowness_factor``
 (or increased by making this factor less than one).
-Four types of initial conditions are available: a square pulse (``plug``),
-a Gaussian function (``gaussian``), a cosine "hat" consisting of one
+Four types of initial conditions are available: a rectangular pulse (``plug``),
+a Gaussian function (``gaussian``), a "cosine hat" consisting of one
 period of the cosine function (``cosinehat``), and half a period of
-a cosine "hat" (``half-cosinehat``). These peak-shaped initial
+a "cosine hat" (``half-cosinehat``). These peak-shaped initial
 conditions can be placed in the middle (``loc='center'``) or at
 the left end (``loc='left'``) of the domain. The ``pulse``
 function is a flexible tool for playing around with various wave
@@ -3208,7 +3248,14 @@ The reader is encouraged to play around with the ``pulse`` function:
 
 To easily kill the graphics by Ctrl-C and restart a new simulation it might be
 easier to run the above two statements from the command line
-with ``python -c '...statements...'``.
+with
+
+
+.. code-block:: console
+
+        Terminal> python -c 'import wave1D_dn_vc as w; w.pulse(...)'
+
+
 
 
 
@@ -3320,10 +3367,9 @@ Use the ``pulse`` function in ``wave1D_dn_vc.py`` to investigate
 sending a pulse, located with its peak at :math:`x=0`, through the
 medium to the right where it hits another medium for :math:`x\in [0.7,0.9]`
 where the wave velocity is decreased by a factor :math:`s_f`.
-Report what happens with a Gaussian pulse, a "cosinehat" pulse,
-half a "cosinehat" pulse, and a plug pulse for resolutions
-:math:`N_x=40,80,160`, and :math:`s_f=2,4`. Make a reference solution in
-the homogeneous case too with :math:`s_f=1` and :math:`N_x=40`. Use :math:`C=1`
+Report what happens with a Gaussian pulse, a "cosine hat" pulse,
+half a "cosine hat" pulse, and a plug pulse for resolutions
+:math:`N_x=40,80,160`, and :math:`s_f=2,4`.  Use :math:`C=1`
 in the medium outside :math:`[0.7,0.9]`. Simulate until :math:`T=2`.
 Filename: ``pulse1D.py``.
 
@@ -3357,7 +3403,7 @@ error using
 the approximation
 and :eq:`wave:pde2:var:c:scheme:impl:Neumann2`.
 
-*b)* Switch to :math:`q(x)=\cos(\pi x/L)`, which symmetric at :math:`x=0,L`,
+*b)* Switch to :math:`q(x)=\cos(\pi x/L)`, which is symmetric at :math:`x=0,L`,
 and check the convergence rate
 of the scheme
 :eq:`wave:pde2:var:c:scheme:impl:Neumann2`. Now,
@@ -3407,8 +3453,8 @@ rate (compute the errors as usual over the entire mesh).
 
 .. _wave:pde1:analysis:
 
-Analysis of the continuous and discrete solutions
-=================================================
+Analysis of the difference equations
+====================================
 
 .. _wave:pde1:properties:
 
@@ -3451,7 +3497,8 @@ the same. Say the :math:`g_R(\xi)` function has a peak at :math:`\xi=0`. This pe
 is located at :math:`x=ct`, which means that it moves with the velocity
 :math:`dx/dt=c` in the :math:`x` coordinate system. Similarly, :math:`g_L(x+ct)`
 is a function initially with shape :math:`g_L(x)` that moves in the negative
-:math:`x` direction with constant velocity :math:`c`.
+:math:`x` direction with constant velocity :math:`c` (introduce :math:`\xi=x+ct`,
+look at the point :math:`\xi=0`, :math:`x=-ct`, which has velocity :math:`dx/dt=-c`).
 
 With the particular initial conditions
 
@@ -3485,6 +3532,24 @@ shape as :math:`I` but half
 of the initial amplitude. One part is traveling to the left and the
 other one to the right.
 
+.. raw:: html
+        
+        <div>
+        <video  loop controls width='640' height='365' preload='none'>
+        <source src='mov-wave/demo_BC_gaussian/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+        <source src='mov-wave/demo_BC_gaussian/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+        </video>
+        </div>
+        <p><em>Splitting of the initial profile into two waves.</em></p>
+
+
+
+The solution has two important physical features: constant amplitude
+of the left and right wave, and constant velocity of these two waves.
+It turns out that the numerical solution will also preserve the
+constant amplitude, but the velocity depends on the mesh parameters
+:math:`\Delta t` and :math:`\Delta x`.
+
 The solution :eq:`wave:pde1:gensol2` will be influenced by
 boundary conditions when the parts
 :math:`\frac{1}{2} I(x-ct)` and :math:`\frac{1}{2} I(x+ct)` hit the boundaries and get, e.g.,
@@ -3500,7 +3565,8 @@ in a simulation.
 
 A useful representation of solutions of wave equations is a linear
 combination of sine and/or cosine waves. Such a sum of waves is a
-solution if the governing PDE is linear and each wave fulfills the
+solution if the governing PDE is linear and each sine or cosine
+wave fulfills the
 equation.  To ease analytical calculations by hand we shall work with
 complex exponential functions instead of real-valued sine or cosine
 functions. The real part of complex expressions will typically be
@@ -3521,9 +3587,10 @@ Here, :math:`k` is the frequency of a component,
 and :math:`b_k` are
 constants that must be determined. We will very seldom
 need to compute the :math:`b_k` coefficients: most of the insight
-we look for, and understanding of the numerical methods, comes from
+we look for and the understanding of the numerical methods we want to
+establish, come from
 investigating how the PDE and the scheme treat a single
-component :math:`e^{ikx}` of the solution.
+component :math:`e^{ikx}` wave.
 
 Letting the number of :math:`k` values in :math:`K` tend to infinity makes the sum
 :eq:`wave:Fourier:I` converge to :math:`I(x)`, and this sum is known as a
@@ -3545,10 +3612,10 @@ ct)}` according to
 It is common to introduce the frequency in time :math:`\omega = kc` and
 assume that :math:`u(x,t)` is a sum of basic wave components
 written as :math:`e^{ikx -\omega t}`.
-Observe that inserting such a wave component in the governing PDE reveals that
+(Observe that inserting such a wave component in the governing PDE reveals that
 :math:`\omega^2 = k^2c^2`, or :math:`\omega \pm kc`, reflecting the
 two solutions: one (:math:`+kc`) traveling to the right and the other (:math:`-kc`)
-traveling to the left.
+traveling to the left.)
 
 .. _wave:pde1:Fourier:
 
@@ -3568,7 +3635,8 @@ The quick intuitive introduction above to representing a function by a sum
 of sine and cosine waves suffices as background for the forthcoming
 material on analyzing a single wave component. However, to understand
 all details of how different wave components sum up to the analytical
-and numerical solution, a more precise mathematical treatment is helpful.
+and numerical solution, a more precise mathematical treatment is helpful
+and therefore summarized below.
 
 It is well known that periodic functions can be represented by
 Fourier series. A generalization of the Fourier series idea to
@@ -3598,7 +3666,7 @@ reflects the frequency content in the function :math:`I(x)`. Fourier transforms
 are particularly fundamental for analyzing and understanding time-varying
 signals.
 
-The solution of the linear 1D wave PDE can now be expressed as
+The solution of the linear 1D wave PDE can be expressed as
 
 
 .. math::
@@ -3606,25 +3674,24 @@ The solution of the linear 1D wave PDE can now be expressed as
 
 
 In a finite difference method, we represent :math:`u` by a mesh function
-:math:`u^n_j`, where :math:`n` counts temporal mesh points and :math:`j` counts
+:math:`u^n_q`, where :math:`n` counts temporal mesh points and :math:`q` counts
 the spatial ones (the usual counter for spatial points, :math:`i`, is
-here used as imaginary unit). Similarly, :math:`I(x)` is approximated by
-the mesh function :math:`I_j`, :math:`j=0,\ldots,N_x`.
+here already used as imaginary unit). Similarly, :math:`I(x)` is approximated by
+the mesh function :math:`I_q`, :math:`q=0,\ldots,N_x`.
 On a mesh, it does not make sense to work with wave
 components :math:`e^{ikx}` for very large :math:`k`, because the shortest possible
 sine or cosine wave that can be represented on a mesh with spacing :math:`\Delta x`
 is the wave with wavelength :math:`2\Delta x` (the sine/cosine signal jumps
 up and down between each mesh point). The corresponding :math:`k` value is
 :math:`k=2\pi /(2\Delta x) = \pi/\Delta x`, known as the *Nyquist frequency*.
-Within this range of
-relevant frequencies one defines
-the `discrete Fourier transform <http://en.wikipedia.org/wiki/Discrete_Fourier_transform>`_, using :math:`N_x+1` discrete frequencies which are
-multiples of the Nyquist frequency (:math:`\pi/\Delta x`):
+Within the range of
+relevant frequencies :math:`(0,\pi/\Delta x]` one defines
+the `discrete Fourier transform <http://en.wikipedia.org/wiki/Discrete_Fourier_transform>`_, using :math:`N_x+1` discrete frequencies:
 
 
 .. math::
         
-        I_j \approx \frac{1}{N_x+1}\sum_{k=0}^{N_x} A_k e^{i2\pi k j/(N_x+1)},\quad
+        I_q = \frac{1}{N_x+1}\sum_{k=0}^{N_x} A_k e^{i2\pi k j/(N_x+1)},\quad
         i=0,\ldots,N_x,
         
 
@@ -3632,11 +3699,11 @@ multiples of the Nyquist frequency (:math:`\pi/\Delta x`):
 
 .. math::
           
-        A_k =\approx \sum_{j=0}^{N_x} I_j e^{-i2\pi k j/(N_x+1)},
+        A_k = \sum_{q=0}^{N_x} I_q e^{-i2\pi k q/(N_x+1)},
         \quad k=0,\ldots,N_x+1{\thinspace .}
         
 
-The :math:`A_k` values is the discrete Fourier transform of the :math:`I_j` values,
+The :math:`A_k` values is the discrete Fourier transform of the :math:`I_q` values,
 and the latter are the inverse discrete Fourier transform of the :math:`A_k`
 values.
 
@@ -3694,11 +3761,17 @@ for the wave equation :math:`u_t = c^2u_{xx}` allows basic wave components
 :math:`e^{i(kx - \tilde\omega t)}` as solution, but it turns out that
 the frequency in time, :math:`\tilde\omega`, is not equal to
 the exact :math:`\omega = kc`.  The idea now is to study how the scheme treats
-an arbitrary wave component with a given :math:`k`. How accurate is :math:`\tilde\omega`
-compared to :math:`\omega`? And does the amplitude of such a wave component
-preserve its (unit) amplitude, as it should,
-or does it get amplified or damped in time (due to a complex :math:`\tilde\omega`)?
-These are the questions we aim to answer in the following analysis.
+an arbitrary wave component with a given :math:`k`. We ask two key
+questions:
+
+ * How accurate is :math:`\tilde\omega`
+   compared to :math:`\omega`?
+
+ * Does the amplitude of such a wave component
+   preserve its (unit) amplitude, as it should,
+   or does it get amplified or damped in time (due to a complex :math:`\tilde\omega`)?
+
+The following analysis will answer these questions.
 Note the need for using :math:`q` as counter for the mesh point in :math:`x` direction
 since :math:`i` is already used as the imaginary unit (in this analysis).
 
@@ -3706,6 +3779,9 @@ since :math:`i` is already used as the imaginary unit (in this analysis).
 
 .. in the :math:`y` and :math:`z` directions.
 
+
+Preliminary results
+~~~~~~~~~~~~~~~~~~~
 
 A key result needed in the investigations is the finite difference
 approximation of a second-order derivative acting on a complex
@@ -3719,8 +3795,8 @@ wave component:
         \thinspace .
         
 
-Similarly, by just changing symbols (:math:`\omega\rightarrow k`,
-:math:`t\rightarrow x`, :math:`n\rightarrow p`) it follows that
+By just changing symbols (:math:`\omega\rightarrow k`,
+:math:`t\rightarrow x`, :math:`n\rightarrow q`) it follows that
 
 
 .. math::
@@ -3729,6 +3805,9 @@ Similarly, by just changing symbols (:math:`\omega\rightarrow k`,
         \frac{k\Delta x}{2}\right)e^{ikq\Delta x} \thinspace .
         
 
+
+Numerical wave propagation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Inserting a basic wave component :math:`u=e^{i(kx-\tilde\omega t)}` in
 :eq:`wave:pde1:analysis:scheme` results in the need to
@@ -3825,17 +3904,18 @@ the right-hand side can attain the value 1 when
 
 .. math::
         
-        \frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\mathbb{Z}
+        \frac{k\Delta x}{2} = m\frac{\pi}{2},\quad m\in\mathbb{Z}
         \thinspace .
         
 
-With :math:`q=1` we have :math:`k\Delta x = \pi`, which means that
+With :math:`m=1` we have :math:`k\Delta x = \pi`, which means that
 the wavelength :math:`\lambda = 2\pi/k` becomes :math:`2\Delta x`. This is
 the absolutely shortest wavelength that can be represented on the mesh:
-the wave jumps up and down between each mesh point. Higher values of :math:`q`
-are irrelevant since these waves are too short to be represented
+the wave jumps up and down between each mesh point. Larger values of :math:`|m|`
+are irrelevant since these correspond to :math:`k` values whose
+waves are too short to be represented
 on a mesh with spacing :math:`\Delta x`.
-For the shortest possible wave in the mesh, :math:`\sin\left(k\Delta x/2\right)=1`
+For the shortest possible wave in the mesh, :math:`\sin\left(k\Delta x/2\right)=1`,
 and we must require
 
 
@@ -3854,26 +3934,37 @@ and we must require
         
         
 
-For smoother wave components with longer wave lengths per length :math:`\Delta x`,
-:eq:`wave:pde1:stability` can in theory be relaxed. However,
-small round-off errors are always present in a numerical solution and these
-vary arbitrarily from mesh point to mesh point and can be viewed as
-unavoidable noise with wavelength :math:`2\Delta x`. As we shall see below, :math:`C>1`
-will for this very small noise lead to exponential growth of
-the shortest possible wave component in the mesh. This noise will
-therefore grow with time and destroy the whole solution.
 
 Consider a right-hand side in :eq:`wave:pde1:analysis:sineq2` of
 magnitude larger
 than unity. The solution :math:`\tilde\omega` of :eq:`wave:pde1:analysis:sineq2`
 .. see the chapter :ref:`sec:ode:o:eq1:analysis`
 
-must then be a complex number :math:`\tilde\omega = \tilde\omega_r + i\tilde\omega_i`.
+must then be a complex number
+:math:`\tilde\omega = \tilde\omega_r + i\tilde\omega_i` because
+the sine function is larger than unity for a complex argument.
 One can show that for any :math:`\omega_i`  there will also be a
 corresponding solution with :math:`-\omega_i`. The component with :math:`\omega_i>0`
 gives an amplification factor :math:`e^{\omega_it}` that grows exponentially
 in time. We cannot allow this and must therefore require :math:`C\leq 1`
 as a *stability criterion*.
+
+
+
+.. admonition:: Remark
+
+   For smoother wave components with longer wave lengths per length :math:`\Delta x`,
+   :eq:`wave:pde1:stability` can in theory be relaxed. However,
+   small round-off errors are always present in a numerical solution and these
+   vary arbitrarily from mesh point to mesh point and can be viewed as
+   unavoidable noise with wavelength :math:`2\Delta x`. As explained, :math:`C>1`
+   will for this very small noise lead to exponential growth of
+   the shortest possible wave component in the mesh. This noise will
+   therefore grow with time and destroy the whole solution.
+
+
+Numerical dispersion relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Equation :eq:`wave:pde1:analysis:sineq2` can be solved with respect
 to :math:`\tilde\omega`:
@@ -3922,7 +4013,7 @@ It appears that the most convenient expression to work with is :math:`\tilde c/c
         \frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),
         
 
-with :math:`p=k\Delta x/2` as a non-dimensional measure of spatial frequency.
+with :math:`p=k\Delta x/2` as a non-dimensional measure of the spatial frequency.
 In essence, :math:`p` tells how many spatial mesh points we have per
 spatial period of the wave component with frequency :math:`k` (the period is
 :math:`2\pi/k`), i.e., how well the spatial variation of the wave component
@@ -3930,7 +4021,8 @@ is resolved in the mesh. Wave components with wave length
 less than :math:`2\Delta x` (:math:`2\pi/k < 2\Delta x`) are not visible in the mesh,
 so it does not make sense to have :math:`p>\pi/2`.
 
-We may introduce the function :math:`r(C, p)=\tilde c/c`:
+We may introduce the function :math:`r(C, p)=\tilde c/c` for further investigation
+of numerical errors in the wave velocity:
 
 
 .. math::
@@ -3942,7 +4034,7 @@ We may introduce the function :math:`r(C, p)=\tilde c/c`:
 
 This function is very well suited for plotting since it combines several
 parameters in the problem into a dependence on two non-dimensional
-numbers :math:`C` and :math:`p`.
+numbers, :math:`C` and :math:`p`.
 
 
 .. _wave:pde1:fig:disprel:
@@ -3961,7 +4053,7 @@ Defining
         def r(C, p):
             return 2/(C*p)*asin(C*sin(p))
 
-we can easily plot :math:`r(C,p)` as a function of :math:`p` for various values of
+we can plot :math:`r(C,p)` as a function of :math:`p` for various values of
 :math:`C`, see Figure :ref:`wave:pde1:fig:disprel`. Note that the shortest
 waves have the most erroneous velocity, and that short waves move
 more slowly than they should.
@@ -3979,6 +4071,7 @@ discretization parameter :math:`p`:
         1 - p**2/6 + p**4/120 - p**6/5040 + C**2*p**2/6 -
         C**2*p**4/12 + 13*C**2*p**6/720 + 3*C**4*p**4/40 -
         C**4*p**6/16 + 5*C**6*p**6/112 + O(p**7)
+        >>> # Factorize each term and drop the remainder O(...) term
         >>> rs_factored = [factor(term) for term in rs.lseries(p)]
         >>> rs_factored = sum(rs_factored)
         >>> print rs_factored
@@ -3992,13 +4085,14 @@ Since we already know that the numerical solution is exact for :math:`C=1`, the
 remaining terms in the Taylor series expansion
 will also contain factors of :math:`C-1` and cancel for :math:`C=1`.
 
-From ``rs_factored`` expression above we also see that the leading
+From the ``rs_factored`` expression above we also see that the leading
 order terms in the error of this series expansion are
 
 
 .. math::
         
-        \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right)
+        \frac{1}{6}\left(\frac{k\Delta x}{2}\right)^2(C^2-1)
+        = \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right),
         
 
 pointing to an error :math:`{\mathcal{O}(\Delta t^2, \Delta x^2)}`, which is
@@ -4201,7 +4295,7 @@ We want to visualize the error in the numerical frequency. To avoid having
 
 
 .. math::
-         \frac{2}{kc Delta t} = \frac{2}{2kc\Delta t h/h} =
+         \frac{2}{kc\Delta t} = \frac{2}{2kc\Delta t h/h} =
         \frac{1}{Ckh},
 
 and
@@ -4271,10 +4365,12 @@ an axis are the most accurate.
 
 
 
+.. _wave:pde1:fig:disprel2D:
+
 .. figure:: disprel2D.png
    :width: 600
 
-   Error in numerical dispersion in 2D. {wave:pde1:fig:disprel2D}
+   *Error in numerical dispersion in 2D*
 
 
 
@@ -4632,7 +4728,6 @@ ghost cells below the :math:`y` axis.  The ghost values must be updated
 according to :math:`u^{n+1}_{i,-1}=u^{n+1}_{i,1}`.
 
 
-.. =======  Exercises  (3)  =======
 
 
 .. !split
@@ -4857,7 +4952,8 @@ a time level is implemented in a separate function as
 
 .. code-block:: python
 
-        def advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2, D1=2, D2=1):
+        def advance_scalar(u, u_1, u_2, f, x, y, t,
+                           n, Cx2, Cy2, dt2, D1=2, D2=1):
             Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
             for i in Ix[1:-1]:
                 for j in Iy[1:-1]:
@@ -4877,25 +4973,23 @@ a time level is implemented in a separate function as
             return u
 
 The constants ``D1`` and ``D2`` in front of ``u_1`` and ``u_2`` have been
-introduced to allow this ``advance`` function to also be used for the
+introduced to allow this ``advance_scalar`` function to also be used for the
 first step :math:`u^1_{i,j}`:
 
 
 .. code-block:: python
 
-        u = advance(u, u_1, u_2, f, x, y, t, n,
-                    0.5*Cx2, 0.5*Cy2, 0.5*dt2, D1=1, D2=0)
+        u = advance_scalar(u, u_1, u_2, f, x, y, t,
+                           n, 0.5*Cx2, 0.5*Cy2, 0.5*dt2, D1=1, D2=0)
 
 
 The special formula for the first step :math:`u^1_{i,j}`,
 given by :eq:`wave:2D3D:models:u1`, is implemented
 in a very similar manner.
 
-The code segments with the loop over internal points and boundary
-points at each time level are put in a separate function ``advance_scalar``.
-Below, we will make many alternative implementations to speed
-up the code since most of
-the CPU time is spent in this function.
+Below, we will make many alternative implementations of the
+``advance_scalar`` function to speed up the code since most of
+the CPU time in simulations is spent in this function.
 
 
 .. _wave2D3D:impl:vectorized:
@@ -4947,10 +5041,21 @@ evaluation. This is the case with the computational scheme for :math:`u^{n+1}_{i
 
 .. code-block:: python
 
-        u[1:-1,1:-1] = 2*u_1[1:-1,1:-1] - u_2[1:-1,1:-1] + \ 
-              Cx2*(u_1[:-2,1:-1] - 2*u_1[1:-1,1:-1] + u_1[2:,1:-1]) + \ 
-              Cy2*(u_1[1:-1,:-2] - 2*u_1[1:-1,1:-1] + u_1[1:-1,2:]) + \ 
-              dt2*f_a[1:-1,1:-1]
+        def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt2, D1=2, D2=1):
+            u_xx = u_1[:-2,1:-1] - 2*u_1[1:-1,1:-1] + u_1[2:,1:-1]
+            u_yy = u_1[1:-1,:-2] - 2*u_1[1:-1,1:-1] + u_1[1:-1,2:]
+            u[1:-1,1:-1] = D1*u_1[1:-1,1:-1] - D2*u_2[1:-1,1:-1] + \ 
+                           Cx2*u_xx + Cy2*u_yy + dt2*f_a[1:-1,1:-1]
+            # Boundary condition u=0
+            j = 0
+            u[:,j] = 0
+            j = u.shape[1]-1
+            u[:,j] = 0
+            i = 0
+            u[i,:] = 0
+            i = u.shape[0]-1
+            u[i,:] = 0
+            return u
 
 
 Array slices in 2D are more complicated to understand than those in
@@ -4958,7 +5063,8 @@ Array slices in 2D are more complicated to understand than those in
 For example, when doing :math:`u^{n}_{i,j} - u^{n}_{i-1,j}` for :math:`i\in{{\mathcal{I^+}_x}}`,
 we just keep ``j`` constant and make a slice in the first index:
 ``u_1[1:,j] - u_1[:-1,j]``, exactly as in 1D. The ``1:`` slice
-specifies all the indices :math:`i=1,2,\ldots,N_x`,
+specifies all the indices :math:`i=1,2,\ldots,N_x` (up to the last
+valid index),
 while ``:-1`` specifies the relevant indices for the second term:
 :math:`0,1,\ldots,N_x-1` (up to, but not including the last index).
 
@@ -4976,11 +5082,11 @@ as an array over all mesh points:
 
         f_a = f(xv, yv, t[n])
 
-(We could, alternatively, used the call ``f(xv, yv, t[n])[1:-1,1:-1]``
+We could, alternatively, used the call ``f(xv, yv, t[n])[1:-1,1:-1]``
 in the last term of the update statement, but other implementations
 in compiled languages benefit from having ``f`` available in an array
 rather than calling our Python function ``f(x,y,t)`` for
-every point.)
+every point.
 
 The boundary conditions along the four sides makes use of
 a slice consisting of all indices along a boundary:
@@ -4998,8 +5104,10 @@ The shown snippets appear in a function ``advance_vectorized``.
 The callback function now has the arguments
 ``u, x, xv, y, yv, t, n``. The inclusion of ``xv`` and ``yv`` makes it
 easy to, e.g., compute an exact 2D solution in the callback function
-and compute errors, through something like
+and compute errors, through an expression like
 ``u - exact_solution(xv, yv, t[n])``.
+
+.. _wave2D3D:impl:verify:
 
 Verification  (3)
 -----------------
@@ -5007,48 +5115,47 @@ Verification  (3)
 Testing a quadratic solution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The 1D solution from the section :ref:`wave:pde2` can be generalized to
-multi dimensions and provides a test case where the exact
-solution also fulfills the discrete equations. In 2D we have
+The 1D solution from the section :ref:`wave:pde2:fd:verify:quadratic` can be
+generalized to multi-dimensions and provides a test case where the
+exact solution also fulfills the discrete equations such that we know
+(to machine precision) what numbers the solver function should
+produce. In 2D we use the following generalization of
+:eq:`wave:pde2:fd:verify:quadratic:uex`:
 
 
 .. math::
+   :label: wave2D3D:impl:verify:quadratic
         
         {u_{\small\mbox{e}}}(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
         \thinspace .
         
+        
 
 This solution fulfills the PDE problem if :math:`I(x,y)={u_{\small\mbox{e}}}(x,y,0)`,
-:math:`V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)`, and :math:`f=2c^2(1+\frac{1}{2}t)(y(L_y-y +
-x(L_x-x))`. With the results :math:`[D_t D_t t]^n=0` and :math:`[D_t D_t t^2]=2`,
-and
+:math:`V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)`, and :math:`f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
+x(L_x-x))`. To show that :math:`{u_{\small\mbox{e}}}` also solves the discrete equations,
+we start with the general results :math:`[D_t D_t t]^n=0`
+and :math:`[D_t D_t t^2]=2`, and use these to compute
 
 
 .. math::
          [D_xD_x {u_{\small\mbox{e}}}]^n_{i,j} = [y(L_y-y)(1+\frac{1}{2}t) D_xD_x x(L_x-x)]^n_{i,j}
-        = y_j(L_y-y_j)(1+\frac{1}{2}t_n)2,
+        = y_j(L_y-y_j)(1+\frac{1}{2}t_n)2{\thinspace .}
         
 
-with similar calculations for the other terms,
-we can easily show that :math:`{u_{\small\mbox{e}}}` fulfills the discrete equation
-
-
-.. math::
-         [D_t D_t {u_{\small\mbox{e}}} = c^2(D_x D_x {u_{\small\mbox{e}}} + D_y D_y {u_{\small\mbox{e}}} + f]^n_{i,j}
-        \thinspace .
-        
-
-With an
-exact solution of the discrete equation we should expect
-a numerical error at the level of the machine precision
-(as long as :math:`|{u_{\small\mbox{e}}}|\sim {\cal O}(1)`).
+A similar calculation must be carried out for the :math:`[D_yD_y
+{u_{\small\mbox{e}}}]^n_{i,j}` and :math:`[D_tD_t {u_{\small\mbox{e}}}]^n_{i,j}` terms.  One must also show
+that the quadratic solution fits the special formula for
+:math:`u^1_{i,j}`. The details are left as :ref:`wave:exer:quadratic:2D`.
 The ``test_quadratic`` function in the
-`wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
+`wave2D_u0.py <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py>`_
 program implements this verification as a nose test.
 
 
+.. _wave2D3D:impl:Cython:
+
 Migrating loops to Cython
--------------------------
+=========================
 
 
 .. index:: Cython
@@ -5063,20 +5170,49 @@ adding a little extra code to our program. Cython is an extension of
 Python that offers the easiest way to nail our Python loops in the
 scalar code down to machine code and the efficiency of C.
 
-Cython can be viewed as an extension of Python where variables are
-declared with types and functions are marked to be implemented in C.
+Cython can be viewed as an extended Python language where variables are
+declared with types and where functions are marked to be implemented in C.
 Migrating Python code to Cython is done by copying the desired code
 segments to functions (or classes) and placing them in one or more separate
 files with extension ``.pyx``.
 
 Declaring variables and annotating the code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 
-Our starting point is the plain ``advance_scalar`` function. We simply take
-a copy of this code and put it in a file ``wave2D_u0_loop_cy.pyx``.
+Our starting point is the plain ``advance_scalar`` function for a scalar
+implementation of the updating algorithm for new values
+:math:`u^{n+1}_{i,j}`:
+
+
+.. code-block:: python
+
+        def advance_scalar(u, u_1, u_2, f, x, y, t,
+                           n, Cx2, Cy2, dt2, D1=2, D2=1):
+            Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+            for i in Ix[1:-1]:
+                for j in Iy[1:-1]:
+                    u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
+                    u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
+                    u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
+                             Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            # Boundary condition u=0
+            j = Iy[0]
+            for i in Ix: u[i,j] = 0
+            j = Iy[-1]
+            for i in Ix: u[i,j] = 0
+            i = Ix[0]
+            for j in Iy: u[i,j] = 0
+            i = Ix[-1]
+            for j in Iy: u[i,j] = 0
+            return u
+
+
+We simply take
+a copy of this function and put it in a file ``wave2D_u0_loop_cy.pyx``.
 The relevant Cython implementation arises from declaring variables with
 types and adding some important annotations to speed up array
-computing in Cython. Let us first list the code:
+computing in Cython. Let us first list the complete code in the
+``.pyx`` file:
 
 
 .. code-block:: cython
@@ -5124,9 +5260,9 @@ This example may act as a recipe on how to transform array-intensive
 code with loops into Cython.
 
 1. Variables are declared with types: for example,
-   ``double v`` in the argument list and ``cdef double v``
+   ``double v`` in the argument list instead of just ``v``, and ``cdef double v``
    for a variable ``v`` in the body of the function.
-   A Python ``float`` variable is declared as ``double`` for
+   A Python ``float`` object is declared as ``double`` for
    translation to C by Cython, while an ``int`` object is
    declared by ``int``.
 
@@ -5141,7 +5277,7 @@ code with loops into Cython.
 
    * the dimensions of the array, here ``ndim=2`` and ``ndim=1``,
 
-   * specification of contiguous memory for the array (``mode='c'``)
+   * specification of contiguous memory for the array (``mode='c'``).
 
 
 3. Functions declared with ``cpdef`` are translated to C but also
@@ -5165,7 +5301,7 @@ code with loops into Cython.
 
 
 Visual inspection of the C translation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 
 Cython can visually explain how successfully it can translate a code from
 Python to C. The command
@@ -5178,7 +5314,7 @@ Python to C. The command
 produces an HTML file ``wave2D_u0_loop_cy.html``, which can be loaded into
 a web browser to illustrate which lines of the code that have been
 translated to C. Figure :ref:`wave:2D3D:impl:fig:cython:ma1` shows
-the results. Yellow lines indicate the lines that Cython did not manage
+the illustrated code. Yellow lines indicate the lines that Cython did not manage
 to translate to efficient C code and that remain in Python.
 For the present code we see that Cython is able to translate all the
 loops with array computing to C, which is our primary goal.
@@ -5192,13 +5328,14 @@ loops with array computing to C, which is our primary goal.
    *Visual illustration of Cython's ability to translate Python to C*
 
 
-You can also inspect the generated C code directly, in the file
-``wave2D_u0_loop_cy.c``, but understanding this C code requires
-familiarity with writing Python extension modules in C by hand. However,
-deep down in the file we can see in detail how the compute-intensive
-statements are translated some complex C that is quite different from
-what we a human would write, at least with a direct corresponding to
-the mathematics in mind.
+You can also inspect the generated C code directly, as it appears
+in the file ``wave2D_u0_loop_cy.c``. Nevertheless,
+understanding this C code requires some
+familiarity with writing Python extension modules in C by hand.
+Deep down in the file we can see in detail how the compute-intensive
+statements are translated some complex C code that is quite different from
+what we a human would write (at least if a direct correspondence to
+the mathematics was in mind).
 
 
 
@@ -5217,7 +5354,9 @@ Building the extension module  (1)
 Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a *C extension module*.
 This is usually done by making a ``setup.py`` script, which
-is the standard way of building and installing Python software:
+is the standard way of building and installing Python software.
+For an extension module arising from Cython code, the following
+``setup.py`` script is all we need to build and install the module:
 
 
 .. code-block:: python
@@ -5233,7 +5372,7 @@ is the standard way of building and installing Python software:
           cmdclass={'build_ext': build_ext},
         )
 
-To translate to C, compile, and build the module ``wave2D_u0_loop_cy``,
+We run the script by
 run
 
 
@@ -5243,7 +5382,7 @@ run
 
 The ``--inplace`` option makes the extension module available in the
 current directory as the file ``wave2D_u0_loop_cy.so``. This
-file acts as a normal Python module:
+file acts as a normal Python module that can be imported and inspected:
 
 
         >>> import wave2D_u0_loop_cy
@@ -5251,28 +5390,39 @@ file acts as a normal Python module:
         ['__builtins__', '__doc__', '__file__', '__name__',
          '__package__', '__test__', 'advance', 'np']
 
+The important output from the ``dir`` function is our Cython function
+``advance`` (the module also features the imported ``numpy`` module under
+the name ``np`` as well as many standard Python objects with double
+underscores in their names).
 
 The ``setup.py`` file makes use of the ``distutils`` package in Python
 and Cython's extension of this package.
 These tools know how Python was built on the computer and will
 use compatible compiler(s) and options when building other code
 in Cython, C, or C++. Quite some experience with building large
-program systems is needed to do the build process manually.
+program systems is needed to do the build process manually, so using
+a ``setup.py`` script is strongly recommended.
 
-When there is no need to link the C code with special libraries,
-Cython offers a shortcut for generating and importing the extension
-module:
 
-.. code-block:: python
 
-        import pyximport; pyximport.install()
+.. admonition:: Simplified build of a Cython module
 
-This makes the ``setup.py`` script redundant. However, in the ``wave2D_u0.py``
-code we do not use ``pyximport`` and require an explicit build process
-of this and many other modules.
+   When there is no need to link the C code with special libraries,
+   Cython offers a shortcut for generating and importing the extension
+   module:
+   
+   
+   .. code-block:: python
+   
+           import pyximport; pyximport.install()
+   
+   This makes the ``setup.py`` script redundant. However, in the ``wave2D_u0.py``
+   code we do not use ``pyximport`` and require an explicit build process
+   of this and many other modules.
+
 
 Calling the Cython function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 The ``wave2D_u0_loop_cy``
 module contains our ``advance`` function, which we now may call from
@@ -5282,12 +5432,11 @@ the Python program for the wave equation:
 .. code-block:: python
 
         import wave2D_u0_loop_cy
-        cython_advance = wave2D_u0_loop_cy.advance
+        advance = wave2D_u0_loop_cy.advance
         ...
         for n in range(1, Nt):        # time loop
             f_a = f(xv, yv, t[n])     # precompute, size as u
-            u = cython_advance(u, u_1, u_2, f_a, x, y, t,
-                               Cx2, Cy2, dt2)
+            u = advance(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2)
 
 
 Efficiency  (1)
@@ -5295,26 +5444,36 @@ Efficiency  (1)
 
 For a mesh consisting of :math:`120\times 120` cells, the scalar Python code
 require 1370 CPU time units, the vectorized version requires 5.5,
-while the Cython version requires only 1! For a mesh with :math:`60\times 60`
-cells Cython is about 1000 times faster than the scalar Python code,
-and the vectorized version is about 6 times slower than the Cython version.
+while the Cython version requires only 1! For a smaller mesh with
+:math:`60\times 60` cells Cython is about 1000 times faster than the scalar
+Python code, and the vectorized version is about 6 times slower than
+the Cython version.
 
 .. In 3D these numbers are even more favorable.
 
 
 Migrating loops to Fortran
---------------------------
+==========================
 
 Instead of relying on Cython's (excellent) ability to translate Python to C,
 we can invoke a compiled language directly and write the loops ourselves.
 Let us start with Fortran 77, because this is a language with more
 convenient array handling than C (or plain C++). Or more precisely,
-we can with ease program with multi-dimensional indices in the ``numpy``
-arrays that are transferred to Fortran, while in C these arrays are
-one-dimensional. Let us also mention that
-the Fortran compilers
-build on 60 years of intensive research on how to optimize loops with
-array computations.
+we can with ease program with the same multi-dimensional indices
+in the Fortran code as in the ``numpy``
+arrays in the Python code, while in C these arrays are
+one-dimensional and requires us to reduce multi-dimensional indices
+to a single index.
+
+.. Fortran compilers
+
+.. build on 60 years of intensive research on how to optimize loops with
+
+.. array computations.
+
+
+The Fortran subroutine
+----------------------
 
 
 .. index:: wrapper code
@@ -5323,11 +5482,8 @@ array computations.
 .. index:: Fortran subroutine
 
 
-The Fortran subroutine
-~~~~~~~~~~~~~~~~~~~~~~
-
 We write a Fortran subroutine ``advance`` in a file
-`wave2D_u0_loop_f77.f </wave2D_u0/wave2D_u0_loop_f77.f>`_
+`wave2D_u0_loop_f77.f <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_f77.f>`_
 for implementing the updating formula
 :eq:`wave:2D3D:impl1:2Du0:ueq:discrete` and setting the solution to zero
 at the boundaries:
@@ -5379,10 +5535,30 @@ precisely, Fortran is not able return an array from a function,
 but we need a *wrapper code* in C for the Fortran subroutine to enable
 calling it from Python, and in this wrapper code one can return ``u``
 to the calling Python code.
-It is not strictly necessary to return ``u`` to the calling Python
-code since the ``advance`` function will modify the elements of ``u``,
-but the convention in Python is to get all output from a function
-as returned values.
+
+
+
+.. admonition:: Remark
+
+   It is not strictly necessary to return ``u`` to the calling Python
+   code since the ``advance`` function will modify the elements of ``u``,
+   but the convention in Python is to get all output from a function
+   as returned values. That is, the right way of calling the above
+   Fortran subroutine from Python is
+   
+   
+   .. code-block:: python
+   
+           u = advance(u, u_1, u_2, f, Cx2, Cy2, dt2)
+   
+   The less encouraged style, which works and resembles the way the
+   Fortran subroutine is called from Fortran, reads
+   
+   
+   .. code-block:: python
+   
+           advance(u, u_1, u_2, f, Cx2, Cy2, dt2)
+
 
 Building the Fortran module with f2py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5400,18 +5576,21 @@ The necessary commands to run are
         Terminal> f2py -c wave2D_u0_loop_f77.pyf --build-dir build_f77 \ 
                   -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f
 
-First, ``f2py`` interprets the Fortran code and makes a Fortran 90
+The first command asks ``f2py`` to interpret the Fortran code and make
+a Fortran 90
 specification of the extension module in the file
-``wave2D_u0_loop_f77.pyf``. Second, ``f2py`` generates all necessary
-wrapper code, compiles our Fortran file and the wrapper code,
-and finally builds the module.
+``wave2D_u0_loop_f77.pyf``. The second command makes
+``f2py`` generate all necessary
+wrapper code, compile our Fortran file and the wrapper code,
+and finally build the module.
 The build process takes place in the specified subdirectory ``build_f77``
 so that files can be inspected if something goes wrong.
 The option ``-DF2PY_REPORT_ON_ARRAY_COPY=1`` makes ``f2py`` write a message
 for every array that is copied in the communication between Fortran and Python,
 which is very useful for avoiding unnecessary array copying (see below).
 The name of the module file
-is ``wave2D_u0_loop_f77.so``, and this file can imported as any other
+is ``wave2D_u0_loop_f77.so``, and this file can be imported and inspected
+as any other
 Python module:
 
 
@@ -5426,24 +5605,30 @@ Python module:
               nx=(shape(u,0)-1),ny=(shape(u,1)-1),n=(len(t)-1))
 
 
-Examining doc strings
-~~~~~~~~~~~~~~~~~~~~~
 
-Printing the doc strings of the module and its functions is
-extremely important after having created a module with ``f2py``,
-because ``f2py`` makes Python interfaces to the Fortran functions
-that are different from how the functions are declared in
-the Fortran code (!). The rationale for this behavior is that
-``f2py`` creates *Pythonic* interfaces to that Fortran routines
-can be called in the same way as one calls Python functions.
-Since output data from Python functions are always returned
-to the calling code and this is technically impossible in Fortran.
-Also, arrays in Python are passed to Python functions without
-their dimensions because that information is packed with the array
-data in the array objects, but this is not possible in Fortran.
-Therefore, ``f2py`` removes array dimensions from the argument list
-to a function like ``advance`` (!), and it makes it possible to
-return objects back to Python. Let us take a closer look at
+
+
+.. admonition:: Examine the doc strings
+
+   Printing the doc strings of the module and its functions is
+   extremely important after having created a module with ``f2py``,
+   because ``f2py`` makes Python interfaces to the Fortran functions
+   that are different from how the functions are declared in
+   the Fortran code (!). The rationale for this behavior is that
+   ``f2py`` creates *Pythonic* interfaces such that Fortran routines
+   can be called in the same way as one calls Python functions.
+   Output data from Python functions is always returned
+   to the calling code, but this is technically impossible in Fortran.
+   Also, arrays in Python are passed to Python functions without
+   their dimensions because that information is packed with the array
+   data in the array objects, but this is not possible in Fortran.
+   Therefore, ``f2py`` removes array dimensions from the argument list,
+   and ``f2py`` makes it possible to
+   return objects back to Python.
+
+
+Let us follow the advice of examining the doc strings
+and take a close look at
 the documentation ``f2py`` has generated for our Fortran ``advance``
 subroutine:
 
@@ -5470,12 +5655,18 @@ subroutine:
         Return objects:
           u : rank-2 array('d') with bounds (nx + 1,ny + 1)
 
-Here we see that the ``nx``, ``ny``, and ``n`` parameters declared in
+Here we see that the ``nx`` and ``ny`` parameters declared in
 Fortran are optional arguments that can be omitted when calling
-``advance`` from Python. We strongly recommend to print out the
+``advance`` from Python.
+
+We strongly recommend to print out the
 documentation of *every* Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.
+
+
+How to avoid array copying
+--------------------------
 
 
 .. index:: row-major ordering
@@ -5490,35 +5681,33 @@ documentation.
 .. index:: C/Python array storage
 
 
-How to avoid array copying
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Multi-dimensional arrays are stored as a stream of numbers in memory.
 For a two-dimensional array consisting of rows and columns there are
 two ways of creating such a stream: *row-major ordering*, which means
 that rows are stored consecutively in memory, or *column-major
-ordering*, which means that the columns are stored after each other.
+ordering*, which means that the columns are stored one after each other.
 All programming languages inherited from C, including Python, apply
 the row-major ordering, but Fortran uses column-major storage.
-Thinking of a two-dimensional array as a matrix, it means that Fortran
+Thinking of a two-dimensional array in Python or C
+as a matrix, it means that Fortran
 works with the transposed matrix.
 
 Fortunately, ``f2py`` creates extra code so that accessing ``u(i,j)`` in
 the Fortran subroutine corresponds to the element ``u[i,j]`` in the
 underlying ``numpy`` array (without the extra code, ``u(i,j)`` in Fortran
 would access ``u[j,i]`` in the ``numpy`` array).  Technically, ``f2py``
-takes a copy of our ``numpy`` arrays and reorders the data before
-sending the arrays to Fortran. Such copying can be costly. For 2D wave
+takes a copy of our ``numpy`` array and reorders the data before
+sending the array to Fortran. Such copying can be costly. For 2D wave
 simulations on a :math:`60\times 60` grid the overhead of copying is a
 factor of 5, which means that almost the whole performance gain of
 Fortran over vectorized ``numpy`` code is lost!
 
 To avoid having ``f2py`` to copy
-arrays with C storage to the corresponding Fortran storage, we can declare
+arrays with C storage to the corresponding Fortran storage, we declare
 the arrays with Fortran storage:
 
-.. code-block:: text
 
+.. code-block:: python
 
         order = 'Fortran' if version == 'f77' else 'C'
         u   = zeros((Nx+1,Ny+1), order=order)   # solution array
@@ -5546,7 +5735,10 @@ code and ``float64`` (the default ``float`` type in ``numpy``) in the arrays
 on the Python side. The former reason is more common, and to check
 whether an array before a Fortran call has the right storage one can
 print the result of ``isfortran(a)``, which is ``True`` if the array ``a``
-has Fortran storage. A typical problem in the ``wave2D_u0.py`` code is
+has Fortran storage.
+
+Let us look at an example where we face problems with array storage.
+A typical problem in the ``wave2D_u0.py`` code is
 to set
 
 
@@ -5555,7 +5747,9 @@ to set
         f_a = f(xv, yv, t[n])
 
 before the call to the Fortran ``advance`` routine. This computation creates
-a new array with C storage. There are two remedies, either direct insertion
+a new array with C storage. An undesired copy of ``f_a`` will be produced
+when sending ``f_a`` to a Fortran routine.
+There are two remedies, either direct insertion
 of data in an array with Fortran storage,
 
 .. code-block:: python
@@ -5570,13 +5764,15 @@ or remaking the ``f(xv, yv, t[n])`` array,
 
         f_a = asarray(f(xv, yv, t[n]), order='Fortran')
 
+The former remedy is most efficient if the ``asarray`` operation is to
+be performed a large number of times.
 
 Efficiency  (2)
 ~~~~~~~~~~~~~~~
 
 The efficiency of this Fortran code is very similar to the Cython code.
 There is usually nothing more to gain, from a computational efficiency
-point of view, by implementing the complete Python program in Fortran
+point of view, by implementing the *complete* Python program in Fortran
 or C. That will just be a lot more code for all administering work
 that is needed in scientific software, especially if we extend our
 sample program ``wave2D_u0.py`` to handle a real scientific problem.
@@ -5587,7 +5783,7 @@ done in Python.
 
 
 Migrating loops to C via Cython
--------------------------------
+===============================
 
 The computationally intensive loops can alternatively be implemented
 in C code. Just as Fortran calls for care regarding the storage of
@@ -5602,7 +5798,7 @@ viewed as one-dimensional. This translation requires knowledge of
 how the numbers in ``u`` are stored in memory.
 
 Translating index pairs to single indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 Two-dimensional ``numpy`` arrays with the default C storage are stored
 row by row. In general, multi-dimensional arrays with C storage are
@@ -5620,7 +5816,7 @@ in the following order:
 
 
 Viewing ``u`` as one-dimensional, the index pair :math:`(i,j)` translates
-to ``i*(Ny+1) + j``. Where a C programmer would naturally write
+to :math:`i(N_y+1)+j`. So, where a C programmer would naturally write
 an index ``u[i][j]``, the indexing must read ``u[i*(Ny+1) + j]``.
 This is tedious to write, so it can be handy to define a C macro,
 
@@ -5630,17 +5826,25 @@ This is tedious to write, so it can be handy to define a C macro,
         #define idx(i,j) (i)*(Ny+1) + j
 
 so that we can write ``u[idx(i,j)]``, which reads much better and is
-easier to debug. Macros perform simple text substitutions:
-``idx(hello,world)`` is expanded to ``(hello)*(Ny+1) + world``.
-The parenthesis in ``(i)`` are essential - with natural mathematical
-formula ``i*(Ny+1) + j`` in the macro definition,
-``idx(i-1,j)`` would expand to ``i-1*(Ny+1) + j``, which is the wrong
-formula. Macros are handy, but requires careful use.
+easier to debug.
+
+
+
+.. admonition:: Be careful with macro definitions
+
+   Macros just perform simple text substitutions:
+   ``idx(hello,world)`` is expanded to ``(hello)*(Ny+1) + world``.
+   The parenthesis in ``(i)`` are essential - using the natural mathematical
+   formula ``i*(Ny+1) + j`` in the macro definition,
+   ``idx(i-1,j)`` would expand to ``i-1*(Ny+1) + j``, which is the wrong
+   formula. Macros are handy, but requires careful use.
+   In C++, inline functions are safer and replace the need for macros.
+
 
 The complete C code
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
-The C version of function ``advance`` can be coded as follows.
+The C version of our function ``advance`` can be coded as follows.
 
 
 .. code-block:: c
@@ -5671,12 +5875,14 @@ The C version of function ``advance`` can be coded as follows.
 
 
 The Cython interface file
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 All the code above appears in a file `wave2D_u0_loop_c.c <http://tinyurl.com/jvzzcfn/wave//wave2D_u0/wave2D_u0_loop_c.c>`_.
 We need to compile this file together with C wrapper code such that
-``advance`` can be called from Python. Cython can be used to interface
-our C code. The Cython code, placed in a file with extension ``.pyx``, here
+``advance`` can be called from Python. Cython can be used to generate
+appropriate wrapper code.
+The relevant Cython code for interfacing C is
+placed in a file with extension ``.pyx``. Here this file, called
 `wave2D_u0_loop_c_cy.pyx <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_c_cy.pyx>`_, looks like
 
 
@@ -5704,7 +5910,7 @@ our C code. The Cython code, placed in a file with extension ``.pyx``, here
                     u.shape[0]-1, u.shape[1]-1)
             return u
 
-Here, we first declare the C functions to be interfaced.
+We first declare the C functions to be interfaced.
 These must also appear in a C header file, `wave2D_u0_loop_c.h <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0_loop_c.h>`_,
 
 
@@ -5727,7 +5933,7 @@ Finally, ``u`` must be returned such that we can set ``u = advance(...)``
 in Python.
 
 Building the extension module  (2)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 It remains to build the extension module. An appropriate
 ``setup.py`` file is
@@ -5752,10 +5958,15 @@ It remains to build the extension module. An appropriate
 All we need to specify is the ``.c`` file(s) and the ``.pyx`` interface
 file. Cython is automatically run to generate the necessary wrapper
 code. Files are then compiled and linked to an extension module
-residing in the file ``wave2D_u0_loop_c_cy.so``. This module can
-be imported in Python,
+residing in the file ``wave2D_u0_loop_c_cy.so``. Here is a
+session with running ``setup.py``
+and examining the resulting module in Python
 
 
+.. code-block:: console
+
+        Terminal> python setup.py build_ext --inplace
+        Terminal> python
         >>> import wave2D_u0_loop_c_cy as m
         >>> dir(m)
         ['__builtins__', '__doc__', '__file__', '__name__', '__package__',
@@ -5766,7 +5977,9 @@ The call to the C version of ``advance`` can go like this in Python:
 
 .. code-block:: python
 
+        import wave2D_u0_loop_c_cy
         advance = wave2D_u0_loop_c_cy.advance_cwrap
+        ...
         f_a[:,:] = f(xv, yv, t[n])
         u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
 
@@ -5781,9 +5994,9 @@ we do not work with very small meshes and consequently little numerical
 work in the ``advance`` function.
 
 Migrating loops to C via f2py
------------------------------
+=============================
 
-As an alternative to using Cython for interfacing C code, we can apply
+An alternative to using Cython for interfacing C code is to apply
 ``f2py``. The C code is the same, just the details of specifying how
 it is to be called from Python differ. The ``f2py`` tool requires
 the call specification to be a Fortran 90 module defined in a ``.pyf``
@@ -5807,9 +6020,14 @@ Fortran syntax and place it in a Fortran file, here
               return
               end
 
-Since ``f2py`` is just concerned with the signature and not the
-complete contents of the function body, it can generate the
-Fortran 90 module specification:
+Note that we need a special ``f2py`` instruction, through a ``Cf2py``
+comment line, for telling that all the function arguments are
+C variables. We also need to specify that the function is actually
+in C: ``intent(c) advance``.
+
+Since ``f2py`` is just concerned with the function signature and not the
+complete contents of the function body, it can easily generate the
+Fortran 90 module specification based solely on the signature above:
 
 
 .. code-block:: console
@@ -5819,7 +6037,7 @@ Fortran 90 module specification:
                   wave2D_u0_loop_c_f2py_signature.f
 
 The compile and build step is as for the Fortran code, except that we
-list C file(s) instead of Fortran file(s):
+list C files instead of Fortran files:
 
 
 .. code-block:: console
@@ -5833,8 +6051,13 @@ the doc string to see the exact call syntax from the Python side.
 This doc string is identical for the C and Fortran versions of
 ``advance``.
 
-Migrating loops to C via Instant
---------------------------------
+.. No worries with transposed storage, copy of arrays can only take
+
+.. place if the type don't match
+
+
+.. ===== Migrating loops to C via Instant =====
+
 
 Migrating loops to C++ via f2py
 -------------------------------
@@ -5845,11 +6068,17 @@ Many will therefore prefer to migrate compute-intensive Python code
 to C++. This is, in principle, easy: just write the desired C++ code
 and use some tool for interfacing it from Python. A tool like
 `SWIG <http://swig.org/>`_ can interpret the C++ code and generate
-interfaces for Python, Perl, Ruby, Java, and a wide range of
-languages. However, SWIG is a comprehensive tool with a correspondingly
-non-trivial learning curve. Alternative tools, such as
-`Boost Python <http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html>`_ and `SIP <http://riverbankcomputing.co.uk/software/sip/intro>`_,
-are similarly comprehensive.
+interfaces for a wide range of
+languages, including Python, Perl, Ruby, and Java.
+However, SWIG is a comprehensive tool with a correspondingly
+steep learning curve. Alternative tools, such as
+`Boost Python <http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html>`_, `SIP <http://riverbankcomputing.co.uk/software/sip/intro>`_,
+and `Shiboken <http://qt-project.org/wiki/Category:LanguageBindings::PySide::Shiboken>`_
+are similarly comprehensive. Simpler tools include
+`PyBindGen <http://code.google.com/p/pybindgen/>`_,
+
+.. More tools for interfacing C++ from Python
+
 
 A technically much easier way of interfacing C++ code is to drop the
 possibility to use C++ classes directly from Python, but instead
@@ -5868,18 +6097,55 @@ C++ array classes in the C++ code, if desired.
 function in the C file with the interface we want to wrap.
 
 Using classes to implement a simulator
---------------------------------------
+======================================
 
- * class ``Mesh``, ``MeshFunction``, ``Problem``, ``Solver``, ``Visualizer``, ``File``
+ * Introduce classes ``Mesh``, ``Function``, ``Problem``, ``Solver``, ``Visualizer``,
+   ``File``
+.. communicate with compiled code by ensuring that classes work with arrays
 
- * communicate with compiled code by ensuring that
-   classes work with arrays
+.. ===== Callbacks to Python from Fortran or C =====
 
-Callbacks to Python from Fortran or C
--------------------------------------
+.. 5631 projects:
 
-Exercises
-=========
+.. Drop f_a, call py from f77
+
+.. Call py with cpdef f from Cython, but hardcode function name
+
+.. As above, but transfer function to Cython
+
+.. Instant
+
+.. test_quadratic for all
+
+.. Think of extensions: Neumann with modified stencil or ghost cells,
+
+.. variable coefficients, damping, ...
+
+
+Exercises  (3)
+==============
+
+
+
+.. --- begin exercise ---
+
+
+.. _wave:exer:quadratic:2D:
+
+Exercise 10: Check that a solution fulfills the discrete model
+--------------------------------------------------------------
+
+Carry out all mathematical details to show that
+:eq:`wave2D3D:impl:verify:quadratic` is indeed a solution of the
+discrete model for a 2D wave equation with :math:`u=0` on the boundary.
+One must check the boundary conditions, the initial conditions,
+the general discrete equation at a time level and the special
+version of this equation for the first time level.
+Filename: ``check_quadratic_solution.pdf``.
+
+.. --- end exercise ---
+
+
 
 
 
@@ -5888,7 +6154,7 @@ Exercises
 
 .. _wave:exer:mesh3D:calculus:
 
-Project 10: Calculus with 2D/3D mesh functions
+Project 11: Calculus with 2D/3D mesh functions
 ----------------------------------------------
 
 The goal of this project is to redo
@@ -5934,6 +6200,61 @@ rule. A similar idea can be used to compute :math:`F_{i,j+1}`. Thereafter,
 corner cell to :math:`F_{i+1,j} + F_{i,j+1} - F_{i,j}`. Carry out the
 details of these computations and extend the ideas to 3D.
 Filename: ``mesh_calculus_3D.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _wave:app:exer:wave2D:Neumann:
+
+Exercise 12: Implement Neumann conditions in 2D
+-----------------------------------------------
+
+Modify the `wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
+program, which solves the 2D wave equation :math:`u_{tt}=c^2(u_{xx}+u_{yy})`
+with constant wave velocity :math:`c` and :math:`u=0` on the boundary, to have
+Neumann boundary conditions: :math:`\partial u/\partial n=0`.
+Include both scalar code (for debugging and reference) and
+vectorized code (for speed).
+
+To test the code, use :math:`u=1.2` as solution (:math:`I(x,y)=1.2`, :math:`V=f=0`, and
+:math:`c` arbitrary), which should be exactly reproduced with any mesh
+as long as the stability criterion is satisfied.
+Another test is to use the plug-shaped pulse
+in the ``pulse`` function from the section :ref:`wave:pde2:software`
+and the `wave1D_dn_vc.py <http://tinyurl.com/jvzzcfn/wave/wave1D_dn_vc.py>`_
+program. This pulse
+is exactly propagated in 1D if :math:`c\Delta t/\Delta x=1`. Check
+that also the 2D program can propagate this pulse exactly
+in :math:`x` direction (:math:`c\Delta t/\Delta x=1`, :math:`\Delta y` arbitrary)
+and :math:`y` direction (:math:`c\Delta t/\Delta y=1`, :math:`\Delta x` arbitrary).
+Filename: ``wave2D_dn.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _wave:exer:3D:f77:cy:efficiency:
+
+Exercise 13: Test the efficiency of compiled loops in 3D
+--------------------------------------------------------
+
+Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
+Set up an efficiency experiment to determine the relative efficiency of
+pure scalar Python code, vectorized code, Cython-compiled loops,
+Fortran-compiled loops, and C-compiled loops.
+Normalize the CPU time for each mesh by the fastest version.
+Filename: ``wave3D_u0.py``.
 
 .. --- end exercise ---
 
@@ -6053,7 +6374,8 @@ which gives the component equations
         
 
 
-A basic assumption now is small displacements :math:`u_i` and small
+A basic reasonable assumption for a string
+is small displacements :math:`u_i` and small
 displacement gradients :math:`\Delta u_i/\Delta x`. For small :math:`g=\Delta u_i/\Delta x`
 we have that
 
@@ -6095,10 +6417,10 @@ and get the discretized wave equation,
         \varrho_i \frac{1}{\Delta t^2}
         \left(u^{n+1}_i - 2u^n_i - u^{n-1}_i\right) =
         T\frac{1}{\Delta x^2}
-        \left( u_{i+1} - 2u_i + u_{i-1}\right),
+        \left( u_{i+1} - 2u_i + u_{i-1}\right){\thinspace .}
         
 
-or we may go to the continuum limit :math:`\Delta x\rightarrow 0` and
+On the other hand, we may go to the continuum limit :math:`\Delta x\rightarrow 0` and
 replace :math:`u_i(t)` by :math:`u(x,t)`, :math:`\varrho_i` by :math:`\varrho(x)`, and
 recognize that the right-hand side of :eq:`wave:app:string:model0`
 approaches :math:`\partial^2 u/\partial x^2` as :math:`\Delta x\rightarrow 0`.
@@ -6130,7 +6452,7 @@ velocity does *not* appear inside the derivatives as in many other
 versions of the wave equation. However, most strings of interest have
 constant :math:`\varrho`.
 
-Normally, the end point of a string are fixed so that the displacement
+The end point of a string are fixed so that the displacement
 :math:`u` is zero. The boundary conditions are therefore :math:`u=0`.
 
 
@@ -6217,8 +6539,8 @@ stress tensor, and :math:`\boldsymbol{f}` body forces. The latter has normally n
 on elastic waves.
 
 For stationary deformation of an elastic rod, one has that
-:math:`\sigma_{xx} = Eu_x` and all other
-stress components are zero. Moreover, :math:`\boldsymbol{u} = u(x)\boldsymbol{i}`.
+:math:`\sigma_{xx} = Eu_x`, with all other
+stress components being zero. Moreover, :math:`\boldsymbol{u} = u(x)\boldsymbol{i}`.
 The parameter :math:`E` is known as Young's modulus.
 Assuming that this simple stress and deformation field, which is exact
 in the stationary case, is a good approximation in the transient
@@ -6236,7 +6558,8 @@ to
         
 
 
-The associated boundary conditions are :math:`u` or :math:`\sigma_{xx}` known, typically
+The associated boundary conditions are :math:`u` or :math:`\sigma_{xx}=Eu_x` known,
+typically
 :math:`u=0` for a clamped end and :math:`\sigma_{xx}=0` for a free end.
 
 .. _wave:app:acoustic:seismic:
@@ -6273,7 +6596,7 @@ generalized law,
 Here, :math:`\boldsymbol{u}` is the displacement field, :math:`\boldsymbol{\sigma}` is the stress tensor,
 :math:`\boldsymbol{I}` is the identity tensor,
 :math:`\varrho` is the medium's density, :math:`\boldsymbol{f}` are body forces (such as gravity),
-:math:`K` is the medium's bulk modulus and :math:`G` is the associated shear modulus.
+:math:`K` is the medium's bulk modulus and :math:`G` is the shear modulus.
 All these quantities may vary in space, while :math:`\boldsymbol{u}` and :math:`\boldsymbol{\sigma}` will
 also show significant variation in time during wave motion.
 
@@ -6297,8 +6620,10 @@ Introducing :math:`p` as a pressure via
 
 
 .. math::
+   :label: wave:app:acoustic:seismic:eqmotion3
         
-        p=-K\cdot\nabla\boldsymbol{u},
+        p=-K\nabla\cdot\boldsymbol{u},
+        
         
 
 and dividing :eq:`wave:app:acoustic:seismic:eqmotion2` by :math:`\varrho`,
@@ -6311,7 +6636,8 @@ we get
         \thinspace .
         
 
-Taking the divergence of this equation, using :math:`\nabla\cdot\boldsymbol{u} = -p/K`,
+Taking the divergence of this equation, using :math:`\nabla\cdot\boldsymbol{u} = -p/K`
+from :eq:`wave:app:acoustic:seismic:eqmotion3`,
 gives the *acoustic approximation to elastic waves*:
 
 
@@ -6337,7 +6663,7 @@ to model the generation of sound waves:
         
 
 
-A common further approximation of :eq:`wave:app:acoustic:seismic:accoustic`
+A common additional approximation of :eq:`wave:app:acoustic:seismic:accoustic`
 is based on using the chain rule on the right-hand side,
 
 
@@ -6348,9 +6674,10 @@ is based on using the chain rule on the right-hand side,
         \nabla p \approx \frac{K}{\varrho}\nabla^2 p,
         
 
-in that one assumes the relative spatial gradient :math:`\nabla\varrho^{-1}
-= -\varrho^{-2}\nabla\varrho` to be small. This results
-in
+under the assumption that
+the relative spatial gradient :math:`\nabla\varrho^{-1}
+= -\varrho^{-2}\nabla\varrho` is small. This approximation results
+in the simplified equation
 
 
 .. math::
@@ -6437,7 +6764,7 @@ a fluid, with frictional and body forces omitted, and
 density to pressure by thermodynamics considerations.
 A typical model
 for :eq:`wave:app:sound:prho` is the so-called `isentropic relation <http://en.wikipedia.org/wiki/Isentropic_process>`_, valid for
-adiabatic processes where there is not heat transfer:
+adiabatic processes where there is no heat transfer:
 
 
 .. math::
@@ -6449,12 +6776,12 @@ adiabatic processes where there is not heat transfer:
         
 
 Here, :math:`p_0` and :math:`\varrho_0` are references values for :math:`p` and :math:`
-\varrho`, for instances when the fluid is at rest, and
+\varrho` when the fluid is at rest, and
 :math:`\gamma` is the ratio of specific heat at constant pressure and
 constant volume (:math:`\gamma = 5/3` for air).
 
 The key approximation in a mathematical model for sound waves is to
-assume that those waves are small perturbations to the density, pressure,
+assume that these waves are small perturbations to the density, pressure,
 and velocity. We therefore write
 
 
@@ -6469,7 +6796,7 @@ where we have decomposed the fields in a constant
 equilibrium value, corresponding
 to :math:`\boldsymbol{u}=0`, and a small perturbation marked with a hat symbol.
 By inserting these decompositions in :eq:`wave:app:sound:cont` and
-(:ref:`wave:app:sound:Euler`, neglecting all product terms of small
+:eq:`wave:app:sound:Euler`, neglecting all product terms of small
 perturbations and/or their derivatives, and dropping the hat symbols,
 one gets the following linearized PDE system for the small perturbations in
 density, pressure, and velocity:
@@ -6488,7 +6815,7 @@ density, pressure, and velocity:
         \thinspace .
         
 
-Now we can eliminate :math:`\varrho_t` with the aid of :math:`\varrho(p)`,
+Now we can eliminate :math:`\varrho_t` by differentiating the relation :math:`\varrho(p)`,
 
 
 .. math::
@@ -6498,8 +6825,8 @@ Now we can eliminate :math:`\varrho_t` with the aid of :math:`\varrho(p)`,
         \thinspace .
         
 
-The product term :math:`p^{1/gamma -1}p_t` can be linearized as
-:math:`p_0^{1/gamma -1}p_t`, resulting in
+The product term :math:`p^{1/\gamma -1}p_t` can be linearized as
+:math:`p_0^{1/\gamma -1}p_t`, resulting in
 
 
 .. math::
@@ -6512,7 +6839,7 @@ We then get
 .. math::
    :label: wave:app:sound:cont:pert
         
-        p_t + \gamma p_0\nabla\cdot u = 0,
+        p_t + \gamma p_0\nabla\cdot\boldsymbol{u} = 0,
         
         
 
@@ -6565,13 +6892,13 @@ then reduces to the spherically symmetric wave equation
         
         \frac{\partial^2u}{\partial t^2}=\frac{1}{r^2}\frac{\partial}{\partial r}
         \left(c^2(r)r^2\frac{\partial u}{\partial t}\right)
-        + f(r),\quad r\in (0,R),\ t>0
+        + f(r,t),\quad r\in (0,R),\ t>0
         \thinspace .
         
 
-Assume that the wave velocity :math:`c` is constant. One can easily show
+One can easily show
 that the function :math:`v(r,t) = ru(r,t)` fulfills a standard wave equation
-in Cartesian coordinates. To this end, insert :math:`u=v/r` in
+in Cartesian coordinates if :math:`c` is constant. To this end, insert :math:`u=v/r` in
 
 
 .. math::
@@ -6600,24 +6927,23 @@ terms of :math:`v(r,t)` now becomes
 
 .. math::
         
-        \frac{\partial^2u}{\partial t^2}=
+        \frac{\partial^2v}{\partial t^2}=
         \frac{\partial}{\partial r}
-        \left(c^2(r)\frac{\partial v}{\partial t}
-        -\frac{1}{r}\frac{d c^2}{dr}v\right) + rf(r),\quad r\in (0,R),\ t>0
+        \left(c^2(r)\frac{\partial v}{\partial r}\right)
+        -\frac{1}{r}\frac{d c^2}{dr}v + rf(r,t),\quad r\in (0,R),\ t>0
         \thinspace .
         
 
 In the case of constant wave velocity :math:`c`, this equation reduces to
-the wave equation in a single Cartesian coordinate:
+the wave equation in a single Cartesian coordinate called :math:`r`:
 
 
 .. math::
    :label: wave:app:rsymm:Cart
         
-        \frac{\partial^2u}{\partial t^2}=
-        \frac{\partial}{\partial r}
-        \left(c^2(r)\frac{\partial v}{\partial t}\right)
-        + rf(r),\quad r\in (0,R),\ t>0
+        \frac{\partial^2v}{\partial t^2}=
+        c^2 \frac{\partial^2 v}{\partial r^2}
+        + rf(r,t),\quad r\in (0,R),\ t>0
         \thinspace .
         
         
@@ -6954,10 +7280,7 @@ where :math:`\beta` is some parameter to be estimated. This law leads to
         
 
 
-Reduction to standard wave equation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-It is not uncommon to neglect the viscous term on the right-hand side of
+*Reduction to standard wave equation.* It is not uncommon to neglect the viscous term on the right-hand side of
 :eq:`wave:app:blood:mom` and also the quadratic term
 with :math:`Q^2` on the left-hand side. The reduced equations
 :eq:`wave:app:blood:mom`
@@ -7064,7 +7387,7 @@ Exercises  (4)
 
 .. _wave:app:exer:string:discont:
 
-Exercise 11: Simulate waves on a non-homogeneous string
+Exercise 14: Simulate waves on a non-homogeneous string
 -------------------------------------------------------
 
 Simulate waves on a string that consists of two materials with
@@ -7098,7 +7421,7 @@ Filename: ``wave1D_u0_sv_discont.py``.
 
 .. _wave:app:exer:string:damping:
 
-Exercise 12: Simulate damped waves on a string
+Exercise 15: Simulate damped waves on a string
 ----------------------------------------------
 
 Formulate a mathematical model for damped waves on a string.
@@ -7118,7 +7441,7 @@ Filename: ``wave1D_u0_sv_damping.py``.
 
 .. _wave:app:exer:rod:
 
-Exercise 13: Simulate elastic waves in a rod
+Exercise 16: Simulate elastic waves in a rod
 --------------------------------------------
 
 A hammer hits the end of an elastic rod. The exercise is to simulate
@@ -7155,9 +7478,55 @@ Filename: ``wave_rod.py``.
 .. --- begin exercise ---
 
 
+.. _wave:app:exer:spherical:
+
+Exercise 17: Simulate spherical waves
+-------------------------------------
+
+Implement a model for spherically symmetric waves using the method
+described in the section :ref:`wave:app:spherical`. The boundary condition
+at :math:`r=0` must be :math:`\partial u/\partial r=0`, while the condition at
+:math:`r=R` can either be :math:`u=0` or a radiation condition as described
+in :ref:`wave:app:exer:radiationBC`. The :math:`u=0` condition is
+sufficient if :math:`R` is so large that the amplitude of the spherical
+wave has become insignificant. Make movie(s) of the case where the source
+term is located around :math:`r=0` and sends out pulses
+
+
+.. math::
+         f(r,t) = \left\lbrace\begin{array}{ll}
+        Q\exp{(-\frac{r^2}{2\Delta r^2})}\sin\omega t,& \sin\omega t\geq 0\\ 
+        0, & \sin\omega t < 0
+        \end{array}\right.
+        
+
+Here, :math:`Q` and :math:`\omega` are constants to be chosen.
+
+.. --- begin hint in exercise ---
+
+
+*Hint.* Use the program ``wave1D_u0_sv.py`` as a starting point. Let ``solver``
+compute the :math:`v` function and then set :math:`u=v/r`. However,
+:math:`u=v/r` for :math:`r=0` requires special treatment. One possibility is
+to compute ``u[1:] = v[1:]/r[1:]`` and then set ``u[0]=u[1]``. The latter
+makes it evident that :math:`\partial u/\partial r = 0` in a plot.
+
+.. --- end hint in exercise ---
+
+Filename: ``wave1D_spherical.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
 .. _wave:app:exer:pulse1D:analysis:
 
-Exercise 14: Explain why numerical noise occurs
+Exercise 18: Explain why numerical noise occurs
 -----------------------------------------------
 
 The experiments performed in :ref:`wave:app:exer:pulse1D` shows
@@ -7180,7 +7549,7 @@ Filename: ``pulse1D_analysis.pdf``.
 
 .. _wave:app:exer:pulse1D:harmonic:
 
-Exercise 15: Investigate harmonic averaging in a 1D model
+Exercise 19: Investigate harmonic averaging in a 1D model
 ---------------------------------------------------------
 
 Harmonic means are often used if the wave velocity is non-smooth or
@@ -7199,8 +7568,8 @@ Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 
 .. _wave:app:exer:radiationBC:
 
-Exercise 16: Implement open boundary conditions
------------------------------------------------
+Problem 20: Implement open boundary conditions
+----------------------------------------------
 
 
 .. index:: radiation condition
@@ -7301,7 +7670,7 @@ Filename: ``wave1D_open_BC.py``.
 
 .. _wave:app:exer:tsunami1D:hill:
 
-Problem 17: Earthquake-generated tsunami over a subsea hill
+Problem 21: Earthquake-generated tsunami over a subsea hill
 -----------------------------------------------------------
 
 A subsea earthquake leads to an immediate lift of the water surface, see
@@ -7443,46 +7812,12 @@ Filenames: ``tsunami1D_hill.py``, ``tsunami1D_hill.pdf``.
 .. --- begin exercise ---
 
 
-.. _wave:app:exer:wave2D:Neumann:
-
-Exercise 18: Implement Neumann conditions in 2D
------------------------------------------------
-
-Modify the `wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
-program, which solves the 2D wave equation :math:`u_{tt}=c^2(u_{xx}+u_{yy})`
-with constant wave velocity :math:`c` and :math:`u=0` on the boundary, to have
-Neumann boundary conditions: :math:`\partial u/\partial n=0`.
-Include both scalar code (for debugging and reference) and
-vectorized code (for speed).
-
-To test the code, use :math:`u=1.2` as solution (:math:`I(x,y)=1.2`, :math:`V=f=0`, and
-:math:`c` arbitrary), which should be exactly reproduced with any mesh
-as long as the stability criterion is satisfied.
-Another test is to use the plug-shaped pulse
-in the ``pulse`` function from the section :ref:`wave:pde2:software`
-and the `wave1D_dn_vc.py <http://tinyurl.com/jvzzcfn/wave/wave1D_dn_vc.py>`_
-program. This pulse
-is exactly propagated in 1D if :math:`c\Delta t/\Delta x=1`. Check
-that also the 2D program can propagate this pulse exactly
-in :math:`x` direction (:math:`c\Delta t/\Delta x=1`, :math:`\Delta y` arbitrary)
-and :math:`y` direction (:math:`c\Delta t/\Delta y=1`, :math:`\Delta x` arbitrary).
-Filename: ``wave2D_n.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
 .. _wave:app:exer:tsunami2D:hill:
 
-Exercise 19: Earthquake-generated tsunami over a 3D hill
---------------------------------------------------------
+Problem 22: Earthquake-generated tsunami over a 3D hill
+-------------------------------------------------------
 
-This exercise extends :ref:`wave:app:exer:tsunami1D:hill`
+This problem extends :ref:`wave:app:exer:tsunami1D:hill`
 to a three-dimensional wave phenomenon, governed by the 2D PDE
 :eq:`wave:app:sw:2D:eta:2ndoeq`. We assume that the earthquake
 arise from a fault along the line :math:`x=0` in the :math:`xy`-plane so that
@@ -7577,8 +7912,8 @@ Filenames: ``tsunami2D_hill.py``, ``tsunami2D_hill.pdf``.
 
 .. _wave:app:exer:tsunami:hill:viz:matplotlib:
 
-Exercise 20: Investigate Matplotlib for visualization
------------------------------------------------------
+Problem 23: Investigate Matplotlib for visualization
+----------------------------------------------------
 
 Play with native Matplotlib code for visualizing 2D
 solutions of the wave equation with variable wave velocity.
@@ -7598,8 +7933,8 @@ Filename: ``tsunami2D_hill_mpl.py``.
 
 .. _wave:app:exer:tsunami:hill:viz:packages:
 
-Exercise 21: Investigate visualization packages
------------------------------------------------
+Problem 24: Investigate visualization packages
+----------------------------------------------
 
 Create some fancy 3D visualization of the water waves *and* the subsea hill
 in :ref:`wave:app:exer:tsunami2D:hill`.
@@ -7624,8 +7959,8 @@ Filename: ``tsunami2D_hill_viz.py``.
 
 .. _wave:app:exer:tsunami2D:hill:compiled:
 
-Exercise 22: Implement loops in compiled languages
---------------------------------------------------
+Problem 25: Implement loops in compiled languages
+-------------------------------------------------
 
 Extend the program from :ref:`wave:app:exer:tsunami2D:hill` such
 that the loops over mesh points, inside the time loop, are
@@ -7647,30 +7982,9 @@ Filename: ``tsunami2D_hill_compiled.py``.
 .. --- begin exercise ---
 
 
-.. _wave:exer:3D:f77:cy:efficiency:
-
-Exercise 23: Test the efficiency of compiled loops in 3D
---------------------------------------------------------
-
-Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
-Set up an efficiency experiment to determine the relative efficiency of
-pure scalar Python code, vectorized code, Cython-compiled loops,
-Fortran-compiled loops, and C-compiled loops.
-Normalize the CPU time for each mesh by the fastest version.
-Filename: ``wave3D_u0.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
 .. _wave:app:exer:seismic2D:
 
-Exercise 24: Simulate seismic waves in 2D
+Exercise 26: Simulate seismic waves in 2D
 -----------------------------------------
 
 The goal of this exercise is to simulate seismic waves using the
@@ -7710,8 +8024,8 @@ Filename: ``seismic2D.py``.
 
 .. _wave:app:exer:acoustics:
 
-Project 25: Modeling 3D acoustic waves in a room
-------------------------------------------------
+Project 27: Model 3D acoustic waves in a room
+---------------------------------------------
 
 The equation for sound waves in air is derived in the section :ref:`wave:app:sound`
 and reads
@@ -7794,7 +8108,7 @@ Filename: ``acoustics.py``.
 
 .. _wave:app:exer:advec1D:
 
-Project 26: Solve a 1D transport equation
+Project 28: Solve a 1D transport equation
 -----------------------------------------
 
 We shall study the wave equation

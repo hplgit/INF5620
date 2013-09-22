@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="Finite difference methods for wave motion" href="index.html" />
-    <link rel="next" title="Analysis of the continuous and discrete solutions" href="._part0004_main_wave.html" />
+    <link rel="next" title="Analysis of the difference equations" href="._part0004_main_wave.html" />
     <link rel="prev" title="Implementation (1)" href="._part0002_main_wave.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="._part0004_main_wave.html" title="Analysis of the continuous and discrete solutions"
+          <a href="._part0004_main_wave.html" title="Analysis of the difference equations"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="._part0002_main_wave.html" title="Implementation (1)"
@@ -363,7 +363,7 @@ to <tt class="docutils literal"><span class="pre">u[1+i]</span></tt>. A correct 
 <p>Similarly, a source term usually coded as <tt class="docutils literal"><span class="pre">f(x[i],</span> <span class="pre">t[n])</span></tt> is incorrect
 if <tt class="docutils literal"><span class="pre">x</span></tt> is defined to be the physical points.</p>
 <p class="last">An alternative remedy is to let <tt class="docutils literal"><span class="pre">x</span></tt> also cover the ghost points such that
-<tt class="docutils literal"><span class="pre">u[i]</span></tt> is the value at <tt class="docutils literal"><span class="pre">x[i]</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">u[i]</span></tt> is the value at <tt class="docutils literal"><span class="pre">x[i]</span></tt>. This is the recommended approach.</p>
 </div>
 <p>The ghost cell is only added to the boundary where we have a Neumann
 condition. Suppose we have a Dirichlet condition at <span class="math">\(x=L\)</span> and
@@ -463,7 +463,7 @@ Define</p>
      \approx [D_xq D_x u]^n_i\]\[     \thinspace .\]</div>
 <div class="admonition-remark admonition">
 <p class="first admonition-title">Remark</p>
-<p class="last"><em>Remark.</em> Many are tempted to use the chain rule on the
+<p class="last">Many are tempted to use the chain rule on the
 term <span class="math">\(\frac{\partial}{\partial x}\left( q(x)
 \frac{\partial u}{\partial x}\right)\)</span>, but this is not a good idea
 when discretizing such a term.</p>
@@ -604,7 +604,7 @@ q_{i-\frac{1}{2}}(u_{i}^n - u_{i-1}^n)\right)
 <span id="wave-pde2-var-c-impl"></span><h2>Implementation of variable coefficients<a class="headerlink" href="#implementation-of-variable-coefficients" title="Permalink to this headline">¶</a></h2>
 <p>The implementation of the scheme with a variable wave velocity
 may assume that <span class="math">\(c\)</span> is available as an array <tt class="docutils literal"><span class="pre">c[i]</span></tt> at
-the mesh points. The following loop is a straightforward
+the spatial mesh points. The following loop is a straightforward
 implementation of the scheme <a href="#equation-wave:pde2:var:c:scheme:impl">(12)</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
     <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> \
@@ -809,10 +809,10 @@ functions, so we can just pass an instance, say <tt class="docutils literal"><sp
 heterogeneous media where <span class="math">\(c\)</span> varies. One can specify an interval
 where the wave velocity is decreased by a factor <tt class="docutils literal"><span class="pre">slowness_factor</span></tt>
 (or increased by making this factor less than one).
-Four types of initial conditions are available: a square pulse (<tt class="docutils literal"><span class="pre">plug</span></tt>),
-a Gaussian function (<tt class="docutils literal"><span class="pre">gaussian</span></tt>), a cosine &#8220;hat&#8221; consisting of one
+Four types of initial conditions are available: a rectangular pulse (<tt class="docutils literal"><span class="pre">plug</span></tt>),
+a Gaussian function (<tt class="docutils literal"><span class="pre">gaussian</span></tt>), a &#8220;cosine hat&#8221; consisting of one
 period of the cosine function (<tt class="docutils literal"><span class="pre">cosinehat</span></tt>), and half a period of
-a cosine &#8220;hat&#8221; (<tt class="docutils literal"><span class="pre">half-cosinehat</span></tt>). These peak-shaped initial
+a &#8220;cosine hat&#8221; (<tt class="docutils literal"><span class="pre">half-cosinehat</span></tt>). These peak-shaped initial
 conditions can be placed in the middle (<tt class="docutils literal"><span class="pre">loc='center'</span></tt>) or at
 the left end (<tt class="docutils literal"><span class="pre">loc='left'</span></tt>) of the domain. The <tt class="docutils literal"><span class="pre">pulse</span></tt>
 function is a flexible tool for playing around with various wave
@@ -888,7 +888,10 @@ is visualized in the plots.</p>
 </div>
 <p>To easily kill the graphics by Ctrl-C and restart a new simulation it might be
 easier to run the above two statements from the command line
-with <tt class="docutils literal"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">'...statements...'</span></tt>.</p>
+with</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python -c &#39;import wave1D_dn_vc as w; w.pulse(...)&#39;</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="exercises-2">
@@ -947,10 +950,9 @@ is a solution.</p>
 sending a pulse, located with its peak at <span class="math">\(x=0\)</span>, through the
 medium to the right where it hits another medium for <span class="math">\(x\in [0.7,0.9]\)</span>
 where the wave velocity is decreased by a factor <span class="math">\(s_f\)</span>.
-Report what happens with a Gaussian pulse, a &#8220;cosinehat&#8221; pulse,
-half a &#8220;cosinehat&#8221; pulse, and a plug pulse for resolutions
-<span class="math">\(N_x=40,80,160\)</span>, and <span class="math">\(s_f=2,4\)</span>. Make a reference solution in
-the homogeneous case too with <span class="math">\(s_f=1\)</span> and <span class="math">\(N_x=40\)</span>. Use <span class="math">\(C=1\)</span>
+Report what happens with a Gaussian pulse, a &#8220;cosine hat&#8221; pulse,
+half a &#8220;cosine hat&#8221; pulse, and a plug pulse for resolutions
+<span class="math">\(N_x=40,80,160\)</span>, and <span class="math">\(s_f=2,4\)</span>.  Use <span class="math">\(C=1\)</span>
 in the medium outside <span class="math">\([0.7,0.9]\)</span>. Simulate until <span class="math">\(T=2\)</span>.
 Filename: <tt class="docutils literal"><span class="pre">pulse1D.py</span></tt>.</p>
 </div>
@@ -970,7 +972,7 @@ adapted such that the solution has a simple form, say
 error using
 the approximation
 and <a href="#equation-wave:pde2:var:c:scheme:impl:Neumann2">(14)</a>.</p>
-<p><em>b)</em> Switch to <span class="math">\(q(x)=\cos(\pi x/L)\)</span>, which symmetric at <span class="math">\(x=0,L\)</span>,
+<p><em>b)</em> Switch to <span class="math">\(q(x)=\cos(\pi x/L)\)</span>, which is symmetric at <span class="math">\(x=0,L\)</span>,
 and check the convergence rate
 of the scheme
 <a href="#equation-wave:pde2:var:c:scheme:impl:Neumann2">(14)</a>. Now,
@@ -1050,7 +1052,7 @@ rate (compute the errors as usual over the entire mesh).</p>
                         title="previous chapter">Implementation  (1)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="._part0004_main_wave.html"
-                        title="next chapter">Analysis of the continuous and discrete solutions</a></p>
+                        title="next chapter">Analysis of the difference equations</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/._part0003_main_wave.txt"
@@ -1080,7 +1082,7 @@ rate (compute the errors as usual over the entire mesh).</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="._part0004_main_wave.html" title="Analysis of the continuous and discrete solutions"
+          <a href="._part0004_main_wave.html" title="Analysis of the difference equations"
              >next</a> |</li>
         <li class="right" >
           <a href="._part0002_main_wave.html" title="Implementation (1)"

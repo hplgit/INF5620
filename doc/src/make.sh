@@ -10,14 +10,19 @@ doconce format html $name $template
 cp $name.html $dest/
 done
 
+# These require full math
 names="oblig2 oblig3"
+names="oblig2"
 for name in $names; do
+preprocess -DFORMAT=html ../slides/src/newcommands_keep.p.tex > newcommands_keep.tex
 doconce format html $name
-#doconce format pdflatex $name
-#doconce ptex2tex $name
-#pdflatex $name
-#pdflatex $name
-#cp $name.html $name.pdf $dest/
+
+preprocess -DFORMAT=pdflatex ../slides/src/newcommands_keep.p.tex > newcommands_keep.tex
+doconce format pdflatex $name --device=paper
+doconce ptex2tex $name
+pdflatex $name
+pdflatex $name
+cp $name.html $name.pdf $dest/
 cp $name.html $dest/
 done
 

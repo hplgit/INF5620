@@ -14,8 +14,8 @@
 
 .. _wave:pde1:analysis:
 
-Analysis of the continuous and discrete solutions
-=================================================
+Analysis of the difference equations
+====================================
 
 .. _wave:pde1:properties:
 
@@ -58,7 +58,8 @@ the same. Say the :math:`g_R(\xi)` function has a peak at :math:`\xi=0`. This pe
 is located at :math:`x=ct`, which means that it moves with the velocity
 :math:`dx/dt=c` in the :math:`x` coordinate system. Similarly, :math:`g_L(x+ct)`
 is a function initially with shape :math:`g_L(x)` that moves in the negative
-:math:`x` direction with constant velocity :math:`c`.
+:math:`x` direction with constant velocity :math:`c` (introduce :math:`\xi=x+ct`,
+look at the point :math:`\xi=0`, :math:`x=-ct`, which has velocity :math:`dx/dt=-c`).
 
 With the particular initial conditions
 
@@ -92,6 +93,24 @@ shape as :math:`I` but half
 of the initial amplitude. One part is traveling to the left and the
 other one to the right.
 
+.. raw:: html
+        
+        <div>
+        <video  loop controls width='640' height='365' preload='none'>
+        <source src='mov-wave/demo_BC_gaussian/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+        <source src='mov-wave/demo_BC_gaussian/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+        </video>
+        </div>
+        <p><em>Splitting of the initial profile into two waves.</em></p>
+
+
+
+The solution has two important physical features: constant amplitude
+of the left and right wave, and constant velocity of these two waves.
+It turns out that the numerical solution will also preserve the
+constant amplitude, but the velocity depends on the mesh parameters
+:math:`\Delta t` and :math:`\Delta x`.
+
 The solution :eq:`wave:pde1:gensol2` will be influenced by
 boundary conditions when the parts
 :math:`\frac{1}{2} I(x-ct)` and :math:`\frac{1}{2} I(x+ct)` hit the boundaries and get, e.g.,
@@ -107,7 +126,8 @@ in a simulation.
 
 A useful representation of solutions of wave equations is a linear
 combination of sine and/or cosine waves. Such a sum of waves is a
-solution if the governing PDE is linear and each wave fulfills the
+solution if the governing PDE is linear and each sine or cosine
+wave fulfills the
 equation.  To ease analytical calculations by hand we shall work with
 complex exponential functions instead of real-valued sine or cosine
 functions. The real part of complex expressions will typically be
@@ -128,9 +148,10 @@ Here, :math:`k` is the frequency of a component,
 and :math:`b_k` are
 constants that must be determined. We will very seldom
 need to compute the :math:`b_k` coefficients: most of the insight
-we look for, and understanding of the numerical methods, comes from
+we look for and the understanding of the numerical methods we want to
+establish, come from
 investigating how the PDE and the scheme treat a single
-component :math:`e^{ikx}` of the solution.
+component :math:`e^{ikx}` wave.
 
 Letting the number of :math:`k` values in :math:`K` tend to infinity makes the sum
 :eq:`wave:Fourier:I` converge to :math:`I(x)`, and this sum is known as a
@@ -152,10 +173,10 @@ ct)}` according to
 It is common to introduce the frequency in time :math:`\omega = kc` and
 assume that :math:`u(x,t)` is a sum of basic wave components
 written as :math:`e^{ikx -\omega t}`.
-Observe that inserting such a wave component in the governing PDE reveals that
+(Observe that inserting such a wave component in the governing PDE reveals that
 :math:`\omega^2 = k^2c^2`, or :math:`\omega \pm kc`, reflecting the
 two solutions: one (:math:`+kc`) traveling to the right and the other (:math:`-kc`)
-traveling to the left.
+traveling to the left.)
 
 .. _wave:pde1:Fourier:
 
@@ -175,7 +196,8 @@ The quick intuitive introduction above to representing a function by a sum
 of sine and cosine waves suffices as background for the forthcoming
 material on analyzing a single wave component. However, to understand
 all details of how different wave components sum up to the analytical
-and numerical solution, a more precise mathematical treatment is helpful.
+and numerical solution, a more precise mathematical treatment is helpful
+and therefore summarized below.
 
 It is well known that periodic functions can be represented by
 Fourier series. A generalization of the Fourier series idea to
@@ -205,7 +227,7 @@ reflects the frequency content in the function :math:`I(x)`. Fourier transforms
 are particularly fundamental for analyzing and understanding time-varying
 signals.
 
-The solution of the linear 1D wave PDE can now be expressed as
+The solution of the linear 1D wave PDE can be expressed as
 
 
 .. math::
@@ -213,25 +235,24 @@ The solution of the linear 1D wave PDE can now be expressed as
 
 
 In a finite difference method, we represent :math:`u` by a mesh function
-:math:`u^n_j`, where :math:`n` counts temporal mesh points and :math:`j` counts
+:math:`u^n_q`, where :math:`n` counts temporal mesh points and :math:`q` counts
 the spatial ones (the usual counter for spatial points, :math:`i`, is
-here used as imaginary unit). Similarly, :math:`I(x)` is approximated by
-the mesh function :math:`I_j`, :math:`j=0,\ldots,N_x`.
+here already used as imaginary unit). Similarly, :math:`I(x)` is approximated by
+the mesh function :math:`I_q`, :math:`q=0,\ldots,N_x`.
 On a mesh, it does not make sense to work with wave
 components :math:`e^{ikx}` for very large :math:`k`, because the shortest possible
 sine or cosine wave that can be represented on a mesh with spacing :math:`\Delta x`
 is the wave with wavelength :math:`2\Delta x` (the sine/cosine signal jumps
 up and down between each mesh point). The corresponding :math:`k` value is
 :math:`k=2\pi /(2\Delta x) = \pi/\Delta x`, known as the *Nyquist frequency*.
-Within this range of
-relevant frequencies one defines
-the `discrete Fourier transform <http://en.wikipedia.org/wiki/Discrete_Fourier_transform>`_, using :math:`N_x+1` discrete frequencies which are
-multiples of the Nyquist frequency (:math:`\pi/\Delta x`):
+Within the range of
+relevant frequencies :math:`(0,\pi/\Delta x]` one defines
+the `discrete Fourier transform <http://en.wikipedia.org/wiki/Discrete_Fourier_transform>`_, using :math:`N_x+1` discrete frequencies:
 
 
 .. math::
         
-        I_j \approx \frac{1}{N_x+1}\sum_{k=0}^{N_x} A_k e^{i2\pi k j/(N_x+1)},\quad
+        I_q = \frac{1}{N_x+1}\sum_{k=0}^{N_x} A_k e^{i2\pi k j/(N_x+1)},\quad
         i=0,\ldots,N_x,
         
 
@@ -239,11 +260,11 @@ multiples of the Nyquist frequency (:math:`\pi/\Delta x`):
 
 .. math::
           
-        A_k =\approx \sum_{j=0}^{N_x} I_j e^{-i2\pi k j/(N_x+1)},
+        A_k = \sum_{q=0}^{N_x} I_q e^{-i2\pi k q/(N_x+1)},
         \quad k=0,\ldots,N_x+1{\thinspace .}
         
 
-The :math:`A_k` values is the discrete Fourier transform of the :math:`I_j` values,
+The :math:`A_k` values is the discrete Fourier transform of the :math:`I_q` values,
 and the latter are the inverse discrete Fourier transform of the :math:`A_k`
 values.
 
@@ -301,11 +322,17 @@ for the wave equation :math:`u_t = c^2u_{xx}` allows basic wave components
 :math:`e^{i(kx - \tilde\omega t)}` as solution, but it turns out that
 the frequency in time, :math:`\tilde\omega`, is not equal to
 the exact :math:`\omega = kc`.  The idea now is to study how the scheme treats
-an arbitrary wave component with a given :math:`k`. How accurate is :math:`\tilde\omega`
-compared to :math:`\omega`? And does the amplitude of such a wave component
-preserve its (unit) amplitude, as it should,
-or does it get amplified or damped in time (due to a complex :math:`\tilde\omega`)?
-These are the questions we aim to answer in the following analysis.
+an arbitrary wave component with a given :math:`k`. We ask two key
+questions:
+
+ * How accurate is :math:`\tilde\omega`
+   compared to :math:`\omega`?
+
+ * Does the amplitude of such a wave component
+   preserve its (unit) amplitude, as it should,
+   or does it get amplified or damped in time (due to a complex :math:`\tilde\omega`)?
+
+The following analysis will answer these questions.
 Note the need for using :math:`q` as counter for the mesh point in :math:`x` direction
 since :math:`i` is already used as the imaginary unit (in this analysis).
 
@@ -313,6 +340,9 @@ since :math:`i` is already used as the imaginary unit (in this analysis).
 
 .. in the :math:`y` and :math:`z` directions.
 
+
+Preliminary results
+~~~~~~~~~~~~~~~~~~~
 
 A key result needed in the investigations is the finite difference
 approximation of a second-order derivative acting on a complex
@@ -326,8 +356,8 @@ wave component:
         \thinspace .
         
 
-Similarly, by just changing symbols (:math:`\omega\rightarrow k`,
-:math:`t\rightarrow x`, :math:`n\rightarrow p`) it follows that
+By just changing symbols (:math:`\omega\rightarrow k`,
+:math:`t\rightarrow x`, :math:`n\rightarrow q`) it follows that
 
 
 .. math::
@@ -336,6 +366,9 @@ Similarly, by just changing symbols (:math:`\omega\rightarrow k`,
         \frac{k\Delta x}{2}\right)e^{ikq\Delta x} \thinspace .
         
 
+
+Numerical wave propagation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Inserting a basic wave component :math:`u=e^{i(kx-\tilde\omega t)}` in
 :eq:`wave:pde1:analysis:scheme` results in the need to
@@ -432,17 +465,18 @@ the right-hand side can attain the value 1 when
 
 .. math::
         
-        \frac{k\Delta x}{2} = q\frac{\pi}{2},\quad q\in\mathbb{Z}
+        \frac{k\Delta x}{2} = m\frac{\pi}{2},\quad m\in\mathbb{Z}
         \thinspace .
         
 
-With :math:`q=1` we have :math:`k\Delta x = \pi`, which means that
+With :math:`m=1` we have :math:`k\Delta x = \pi`, which means that
 the wavelength :math:`\lambda = 2\pi/k` becomes :math:`2\Delta x`. This is
 the absolutely shortest wavelength that can be represented on the mesh:
-the wave jumps up and down between each mesh point. Higher values of :math:`q`
-are irrelevant since these waves are too short to be represented
+the wave jumps up and down between each mesh point. Larger values of :math:`|m|`
+are irrelevant since these correspond to :math:`k` values whose
+waves are too short to be represented
 on a mesh with spacing :math:`\Delta x`.
-For the shortest possible wave in the mesh, :math:`\sin\left(k\Delta x/2\right)=1`
+For the shortest possible wave in the mesh, :math:`\sin\left(k\Delta x/2\right)=1`,
 and we must require
 
 
@@ -461,26 +495,37 @@ and we must require
         
         
 
-For smoother wave components with longer wave lengths per length :math:`\Delta x`,
-:eq:`wave:pde1:stability` can in theory be relaxed. However,
-small round-off errors are always present in a numerical solution and these
-vary arbitrarily from mesh point to mesh point and can be viewed as
-unavoidable noise with wavelength :math:`2\Delta x`. As we shall see below, :math:`C>1`
-will for this very small noise lead to exponential growth of
-the shortest possible wave component in the mesh. This noise will
-therefore grow with time and destroy the whole solution.
 
 Consider a right-hand side in :eq:`wave:pde1:analysis:sineq2` of
 magnitude larger
 than unity. The solution :math:`\tilde\omega` of :eq:`wave:pde1:analysis:sineq2`
 .. see the chapter :ref:`sec:ode:o:eq1:analysis`
 
-must then be a complex number :math:`\tilde\omega = \tilde\omega_r + i\tilde\omega_i`.
+must then be a complex number
+:math:`\tilde\omega = \tilde\omega_r + i\tilde\omega_i` because
+the sine function is larger than unity for a complex argument.
 One can show that for any :math:`\omega_i`  there will also be a
 corresponding solution with :math:`-\omega_i`. The component with :math:`\omega_i>0`
 gives an amplification factor :math:`e^{\omega_it}` that grows exponentially
 in time. We cannot allow this and must therefore require :math:`C\leq 1`
 as a *stability criterion*.
+
+
+
+.. admonition:: Remark
+
+   For smoother wave components with longer wave lengths per length :math:`\Delta x`,
+   :eq:`wave:pde1:stability` can in theory be relaxed. However,
+   small round-off errors are always present in a numerical solution and these
+   vary arbitrarily from mesh point to mesh point and can be viewed as
+   unavoidable noise with wavelength :math:`2\Delta x`. As explained, :math:`C>1`
+   will for this very small noise lead to exponential growth of
+   the shortest possible wave component in the mesh. This noise will
+   therefore grow with time and destroy the whole solution.
+
+
+Numerical dispersion relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Equation :eq:`wave:pde1:analysis:sineq2` can be solved with respect
 to :math:`\tilde\omega`:
@@ -529,7 +574,7 @@ It appears that the most convenient expression to work with is :math:`\tilde c/c
         \frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),
         
 
-with :math:`p=k\Delta x/2` as a non-dimensional measure of spatial frequency.
+with :math:`p=k\Delta x/2` as a non-dimensional measure of the spatial frequency.
 In essence, :math:`p` tells how many spatial mesh points we have per
 spatial period of the wave component with frequency :math:`k` (the period is
 :math:`2\pi/k`), i.e., how well the spatial variation of the wave component
@@ -537,7 +582,8 @@ is resolved in the mesh. Wave components with wave length
 less than :math:`2\Delta x` (:math:`2\pi/k < 2\Delta x`) are not visible in the mesh,
 so it does not make sense to have :math:`p>\pi/2`.
 
-We may introduce the function :math:`r(C, p)=\tilde c/c`:
+We may introduce the function :math:`r(C, p)=\tilde c/c` for further investigation
+of numerical errors in the wave velocity:
 
 
 .. math::
@@ -549,7 +595,7 @@ We may introduce the function :math:`r(C, p)=\tilde c/c`:
 
 This function is very well suited for plotting since it combines several
 parameters in the problem into a dependence on two non-dimensional
-numbers :math:`C` and :math:`p`.
+numbers, :math:`C` and :math:`p`.
 
 
 .. _wave:pde1:fig:disprel:
@@ -568,7 +614,7 @@ Defining
         def r(C, p):
             return 2/(C*p)*asin(C*sin(p))
 
-we can easily plot :math:`r(C,p)` as a function of :math:`p` for various values of
+we can plot :math:`r(C,p)` as a function of :math:`p` for various values of
 :math:`C`, see Figure :ref:`wave:pde1:fig:disprel`. Note that the shortest
 waves have the most erroneous velocity, and that short waves move
 more slowly than they should.
@@ -586,6 +632,7 @@ discretization parameter :math:`p`:
         1 - p**2/6 + p**4/120 - p**6/5040 + C**2*p**2/6 -
         C**2*p**4/12 + 13*C**2*p**6/720 + 3*C**4*p**4/40 -
         C**4*p**6/16 + 5*C**6*p**6/112 + O(p**7)
+        >>> # Factorize each term and drop the remainder O(...) term
         >>> rs_factored = [factor(term) for term in rs.lseries(p)]
         >>> rs_factored = sum(rs_factored)
         >>> print rs_factored
@@ -599,13 +646,14 @@ Since we already know that the numerical solution is exact for :math:`C=1`, the
 remaining terms in the Taylor series expansion
 will also contain factors of :math:`C-1` and cancel for :math:`C=1`.
 
-From ``rs_factored`` expression above we also see that the leading
+From the ``rs_factored`` expression above we also see that the leading
 order terms in the error of this series expansion are
 
 
 .. math::
         
-        \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right)
+        \frac{1}{6}\left(\frac{k\Delta x}{2}\right)^2(C^2-1)
+        = \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right),
         
 
 pointing to an error :math:`{\mathcal{O}(\Delta t^2, \Delta x^2)}`, which is
@@ -808,7 +856,7 @@ We want to visualize the error in the numerical frequency. To avoid having
 
 
 .. math::
-         \frac{2}{kc Delta t} = \frac{2}{2kc\Delta t h/h} =
+         \frac{2}{kc\Delta t} = \frac{2}{2kc\Delta t h/h} =
         \frac{1}{Ckh},
 
 and
@@ -878,10 +926,12 @@ an axis are the most accurate.
 
 
 
+.. _wave:pde1:fig:disprel2D:
+
 .. figure:: fig-wave/disprel2D.png
    :width: 600
 
-   Error in numerical dispersion in 2D. {wave:pde1:fig:disprel2D}
+   *Error in numerical dispersion in 2D*
 
 
 

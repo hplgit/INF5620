@@ -7,7 +7,7 @@ Automatically generated HTML file from Doconce source
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
-<meta name="description" content="Second compulsory project">
+<meta name="description" content="Second compulsory project: 2D wave equation">
 
 
 
@@ -85,15 +85,96 @@ MathJax.Hub.Config({
 <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
 
 
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\ts}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{\mathcal{I}_x}
+\newcommand{\Iy}{\mathcal{I}_y}
+\newcommand{\Iz}{\mathcal{I}_z}
+\newcommand{\It}{\mathcal{I}_t}
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
 
 
     
 <!-- ------------------- main content ---------------------- -->
 
 
-<title>Second compulsory project</title>
+<title>Second compulsory project: 2D wave equation</title>
 
-<center><h1>Second compulsory project</h1></center>  <!-- document title -->
+<center><h1>Second compulsory project: 2D wave equation</h1></center>  <!-- document title -->
 
 <p>
 <!-- author(s): INF5620 -->
@@ -106,7 +187,7 @@ MathJax.Hub.Config({
 <p>
 <!-- institution(s) -->
 <p>
-<center><h4>Fall 2013</h4></center> <!-- date -->
+<center><h4>2013</h4></center> <!-- date -->
 <p>
 <a href="oblig2.pdf">PDF version</a>
 
@@ -134,18 +215,33 @@ MathJax.Hub.Config({
 <p>
 The project addresses the two-dimensional, standard, linear wave equation,
 with damping,
-$$ \frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
 \frac{\partial}{\partial x}\left( q (x,y)
 \frac{\partial u}{\partial x}\right) +
 \frac{\partial}{\partial y}\left( q (x,y)
 \frac{\partial u}{\partial y}\right) + f(x,y,t),
+\end{equation}
 $$
 
 with boundary condition
-$$ \frac{\partial u}{\partial n} = 0,$$
+$$
+\begin{equation}
+ \frac{\partial u}{\partial n} = 0,
+\end{equation}
+$$
 
-in a rectangular spatial domain \( [0,L_x]\times [0,L_y] \).
-The initial conditions are \( u(x,y,0)=I(x,y) \) and \( u_t(x,y,0)=V(x,y) \).
+in a rectangular spatial domain \( \Omega = [0,L_x]\times [0,L_y] \).
+The initial conditions are
+
+<p>
+$$
+\begin{align}
+u(x,y,0)&=I(x,y),\\
+u_t(x,y,0)&=V(x,y).
+\end{align}
+$$
 
 <h2>Discretization  <a name="___sec1"></a></h2>
 
@@ -192,7 +288,7 @@ formulas. See how many of them that lead to a wrong non-constant solution.
 <h2>Verification: quadratic solution  <a name="___sec5"></a></h2>
 
 <p>
-Assume an exact solution on the form \( X(x)Y(y)T(t) \) where
+Assume an exact solution on the form \( \uex(x,y,t)=X(x)Y(y)T(t) \) where
 \( X \), \( Y \), and \( T \) are polynomials of degree three or less.
 Construct \( X \) and \( Y \) such that the normal derivative vanishes at the
 four boundaries. Fit a corresponding source term \( f(x,y,t) \) in the wave
@@ -222,8 +318,6 @@ Implement a corresponding nose test.
 <h2>Verification: standing, undamped waves  <a name="___sec7"></a></h2>
 
 <p>
-<!-- Make the text here shorter, need to add a sin wt term for exact solution -->
-<!-- and test it by hand -->
 <!-- adjust the rest of oblig1 -->
 <!-- Merge exercises to problems/projects -->
 <!-- List a set of exercises for wednesday -->
@@ -255,13 +349,13 @@ Use the
 truncation error analysis to
 set up a model for the error in terms of the discretization parameters.
 Note that the truncation error is not the true error
-\( e^n_{i,j=\uex(x_i,y_j,t_n) - u^n_{i,j} \), but we assume
-that \( e^n_{i,j \) depends on the discretization parameters in the same way.
-We also assume that a norm of \( e^n_{i,j \), e.g.,
+\( e^n_{i,j}=\uex(x_i,y_j,t_n) - u^n_{i,j} \), but we assume
+that \( e^n_{i,j} \) depends on the discretization parameters in the same way.
+We also assume that a norm of \( e^n_{i,j} \), e.g.,
 
 <p>
-$$ E = ||$e^n_{i,j$||_{\ell^\infty} = \max_{i\in\Ix}\max_{j\in\Iy}\max_{t\in\It}
-|e^n_{i,j|,$$
+$$ E = ||e^n_{i,j}||_{\ell^\infty} = \max_{i}\max_{j}\max_{t}
+|e^n_{i,j}|,$$
 
 also depends on the discretization parameters in the same way.
 Introduce a common discretization parameter \( h \) such that
@@ -329,7 +423,7 @@ velocity is given by \( q = gH(x,y) \), where \( g \) is the acceleration of
 gravity and \( H(x,y) \) is the stillwater depth.
 
 <p>
-It can be wise to do <a href="../pub/sphinx_wave/._part0010_main_wave.html#problem-17-earthquake-generated-tsunami-over-a-subsea-hill">Problem 17</a>, because a 1D program corresponding to the present
+It can be wise to do <a href="../pub/sphinx_wave/._part0010_main_wave.html#problem-21-earthquake-generated-tsunami-over-a-subsea-hill">Problem 21</a>, because a 1D program corresponding to the present
 2D problem allows much faster experimentation with parameters and
 effects.
 
@@ -465,7 +559,7 @@ Try to make the hill transparent. Suitable tools are
 <p>
 Implement an open boundary condition at \( x=L_x \), \( u_t + \sqrt{q}u_x=0 \),
 as suggested
-in <a href="../pub/sphinx_wave/._part0010_main_wave.html#exercise-16-implement-open-boundary-conditions">Exercise 16</a>.
+in <a href="../pub/sphinx_wave/._part0010_main_wave.html#problem-20-implement-open-boundary-conditions">Problem 20</a>.
 This condition is only correct in 1D, but might work satisfactorily in 2D if
 the wave is approximately one-dimensional when it hits the boundary.
 See how well this condition works in letting the tsunami pass out of
