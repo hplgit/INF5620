@@ -5,10 +5,9 @@ Finite difference methods for wave motion
 =========================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 23, 2013
+:Date: Sep 24, 2013
 
-This is still a **preliminary version** (expect typos).
-Updated from H12 until the section :ref:`wave:pde1:analysis`.
+This is still a **preliminary version**.
 
 
 
@@ -1690,21 +1689,56 @@ The corresponding exact solution can be computed and reads
         \cos\left(\frac{\pi}{L}mct\right){\thinspace .}
         
 
-Make an animation where you show
-both the numerical and the exact solution, or the error. It is of
-interest to see how the error develops in time.
+
+
+*a)* Explain that for a function :math:`\sin kx\cos \omega t` the wave length
+in space is :math:`\lambda = 2\pi /k` and the period in time is :math:`P=2\pi/\omega`.
+Use these expressions to find the wave length in space and period in
+time of :math:`{u_{\small\mbox{e}}}` above.
+
+*b)* Import the ``solver`` function ``wave1D_u0_s.py`` into a new file
+where the ``viz`` function is reimplemented such that it
+plots either the numerical *and* the exact solution, *or* the error.
+
+*c)* Make animations where you illustrate how the error
+:math:`e^n_i ={u_{\small\mbox{e}}}(x_i, t_n)- u^n_i`
+develops and increases in time. Also make animations of
+:math:`u` and :math:`{u_{\small\mbox{e}}}` simultaneously.
 
 .. --- begin hint in exercise ---
 
 
-*Hint.* Import the ``solver`` function ``wave1D_u0_s.py`` into a new file
-where the ``viz`` function is reimplemented such that it
-plots either the numerical and exact solution, or the error,
-instead of just the numerical solution.
+*Hint 1.* Quite long time simulations are needed in order to display significant
+discrepancies between the numerical and exact solution.
 
 .. --- end hint in exercise ---
 
+
+.. --- begin hint in exercise ---
+
+
+*Hint 2.* A possible set of parameters is :math:`L=12`, :math:`m=9`, :math:`c=2`, :math:`A=1`, :math:`N_x=80`,
+:math:`C=0.8`. The error mesh function :math:`e^n` can be simulated for 10 periods,
+while 20-30 periods are needed to show significant differences between
+the curves for the numerical and exact solution.
+
+.. --- end hint in exercise ---
+
+
 Filename: ``wave_standing.py``.
+
+.. Closing remarks for this Exercise
+
+
+Remarks
+~~~~~~~
+
+The important
+parameters for numerical quality are :math:`C` and :math:`k\Delta x`, where
+:math:`C=c\Delta t/\Delta x` is the Courant number and :math:`k` is defined above
+(:math:`k\Delta x` is proportional to how many mesh points we have per wave length
+in space, see the section :ref:`wave:pde1:num:dispersion` for explanation).
+
 
 .. --- end exercise ---
 
@@ -2674,7 +2708,7 @@ Before any implementation, it remains to solve
 How a variable coefficient affects the stability
 ------------------------------------------------
 
-The stability criterion derived in the section :ref:`wave:pde1:analysis`
+The stability criterion derived in the section :ref:`wave:pde1:stability`
 reads :math:`\Delta t\leq \Delta x/c`. If :math:`c=c(x)`, the criterion will depend
 on the spatial location. We must therefore choose a :math:`\Delta t` that
 is small enough such that no mesh cell has :math:`\Delta x/c(x) >\Delta t`.
@@ -3738,10 +3772,11 @@ the discrete Fourier transform appears in the example below.
         plt.show()
 
 
-.. _wave:pde1:analysis:
+.. _wave:pde1:stability:
 
-Analysis of the finite difference scheme
-----------------------------------------
+Stability
+---------
+
 
 .. index::
    single: wave equation; 1D, exact numerical solution
@@ -3933,7 +3968,7 @@ and we must require
 
 
 .. math::
-   :label: wave:pde1:stability
+   :label: wave:pde1:stability:crit
         
         C\leq 1 \thinspace .
         
@@ -3959,7 +3994,7 @@ as a *stability criterion*.
 .. admonition:: Remark
 
    For smoother wave components with longer wave lengths per length :math:`\Delta x`,
-   :eq:`wave:pde1:stability` can in theory be relaxed. However,
+   :eq:`wave:pde1:stability:crit` can in theory be relaxed. However,
    small round-off errors are always present in a numerical solution and these
    vary arbitrarily from mesh point to mesh point and can be viewed as
    unavoidable noise with wavelength :math:`2\Delta x`. As explained, :math:`C>1`
@@ -3968,8 +4003,10 @@ as a *stability criterion*.
    therefore grow with time and destroy the whole solution.
 
 
+.. _wave:pde1:num:dispersion:
+
 Numerical dispersion relation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 Equation :eq:`wave:pde1:analysis:sineq2` can be solved with respect
 to :math:`\tilde\omega`:
@@ -7403,8 +7440,6 @@ with :math:`c=1/\sqrt{\mu_0\epsilon_0}` as the velocity of light.
 Each component of :math:`\pmb{E}` and :math:`\pmb{B}` fulfills a wave equation
 and can hence be solved independently.
 
-.. !split
-
 
 .. _wave:app:exer:
 
@@ -7423,19 +7458,18 @@ Exercise 14: Simulate waves on a non-homogeneous string
 
 Simulate waves on a string that consists of two materials with
 different density. The tension in the string is constant, but the
-density has a jump at the boundary between the materials.
-Experiment
-with different sizes of the jump to derive a couple of demonstrations
-that visualizes the effect on the waves of having a two-material
-string.
+density has a jump at the middle of the string.  Experiment with
+different sizes of the jump and produce animations that visualize the
+effect of the jump on the wave motion.
 
 .. --- begin hint in exercise ---
 
 
-*Hint.* the section :ref:`wave:app:string`
-explains how the density enters the mathematical model. Modify the
-``wave1D_u0_sv.py`` code to incorporate the tension and a function
-specifying the density.
+*Hint.* According to the section :ref:`wave:app:string`,
+the density enters the mathematical model as :math:`\varrho` in
+:math:`\varrho u_{tt} = Tu_{xx}`, where :math:`T` is the string tension. Modify, e.g., the
+``wave1D_u0_sv.py`` code to incorporate the tension and two density values.
+Make a mesh function ``rho`` with density values at each spatial mesh point.
 
 .. --- end hint in exercise ---
 
