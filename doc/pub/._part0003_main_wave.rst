@@ -1,5 +1,7 @@
 .. !split
 
+.. _wave:pde2:Neumann:
+
 Generalization: reflecting boundaries
 =====================================
 
@@ -17,10 +19,8 @@ in a finite difference scheme, one based on deriving a modified
 stencil at the boundary, and another one based on extending the mesh
 with ghost cells and ghost points.
 
-.. Should show how different conditions influence the solution!
 
-
-.. _wave:pde2:Neumann:
+.. _wave:pde2:Neumann:bc:
 
 Neumann boundary condition
 --------------------------
@@ -1129,7 +1129,7 @@ targets the following initial-boundary value problem
 .. math::
    :label: wave:pde2:software:ueq
         
-        u_t = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T],
+        u_t = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T]
         
         
 
@@ -1137,21 +1137,21 @@ targets the following initial-boundary value problem
 
 .. math::
           
-        u(x,0) = I(x),\quad x\in [0,L],
+        u(x,0) = I(x),\quad x\in [0,L]
         
 
 
 
 .. math::
           
-        u_t(x,0) = V(t),\quad x\in [0,L],
+        u_t(x,0) = V(t),\quad x\in [0,L]
         
 
 
 
 .. math::
           
-        u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T],
+        u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
         
 
 
@@ -1274,8 +1274,8 @@ functions, so we can just pass an instance, say ``p``, as the
 ``user_action`` argument in the ``solver`` function, and any call to
 ``user_action`` will be a call to ``p.__call__``.
 
-Collection of initial conditions
---------------------------------
+Pulse propagation in two media
+------------------------------
 
 The function ``pulse`` in ``wave1D_dn_vc.py`` demonstrates wave motion in
 heterogeneous media where :math:`c` varies. One can specify an interval
@@ -1377,53 +1377,32 @@ Exercises  (2)
 .. --- begin exercise ---
 
 
-.. _wave:exer:1D:bceffects:
+.. _wave:exer:standingwave:damped:uex:
 
-Problem 6: Explore the effect of boundary conditions
-----------------------------------------------------
+Exercise 6: Find the analytical solution to a damped wave equation
+------------------------------------------------------------------
 
-.. Could be a nice video as answer, where all steps are explained.
-
-
-The purpose of this exercise is to increase the understanding of
-the solutions of the wave equation :math:`u_{tt}=c^2u_xx`
-and how boundary conditions,
-especially :math:`u=0` versus :math:`u_x=0`, impact the solution.
-
-We address plug-shaped waves, starting from rest (:math:`u_t=0`)
-at :math:`t=0`.
-The plug shape means that :math:`u=1` in some region and :math:`u=0` outside this
-region. Present the simulations as movies with the names indicated
-(and a file extension depending on the movie format).
-
-.. --- begin hint in exercise ---
+Consider the wave equation with damping :eq:`wave:pde3`.
+The goal is to find an exact solution to a wave problem with damping.
+A starting point is the standing wave solution from
+:ref:`wave:exer:standingwave`. It becomes necessary to
+include a damping term :math:`e^{-ct}` and also have both a sine and cosine
+component in time:
 
 
-*Hint.* One can use the ``plug``
-function with ``C=1`` in the program `wave1D_dn.py <http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn.py>`_ for simulating such waves.
+.. math::
+         {u_{\small\mbox{e}}}(x,t) =  e^{-\beta t}
+        \sin kx \left( A\cos\omega t
+        + B\sin\omega t\right)
+        {\thinspace .}
+        
 
-.. --- end hint in exercise ---
-
-
-
-*a)* Demonstrate that the initial profile is split in two
-waves, with same shape as the initial profile, but half the amplitude.
-The two waves are traveling to the left and right. Stop the simulation
-before the waves hit the boundaries.
-Filename: ``wave1D_split_ic``.
-
-*b)* Apply :math:`u_x=0` at both ends. Demonstrate how the waves are reflected
-from the boundaries. Run the simulation for two periods, where one
-period is the time it takes for the two waves to reflect and come
-back to exactly the initial condition.
-Filename: ``wave1D_reflecting_bc``.
-
-*c)* Repeat the previous experiment, but use :math:`u=0` at both ends.
-Filename: ``wave1D_u0_bc``.
-
-*d)* Repeat the previous experiment, but use :math:`u=0` at one and :math:`u_x=0`
-at the other. Run the simulation for four periods.
-Filename: ``wave1D_mixed_bc``.
+Find :math:`k` from the boundary conditions
+:math:`u(0,t)=u(L,t)=0`. Then use the PDE to find constraints on
+:math:`\beta`, :math:`\omega`, :math:`A`, and :math:`B`.
+Set up a complete initial-boundary value problem
+and its solution.
+Filename: ``damped_waves.pdf``.
 
 .. --- end exercise ---
 
@@ -1553,7 +1532,8 @@ Run experiments to establish the rate of convergence.
 
 
 .. math::
-         [D_tD_tu]^n_i = [qD_xu]_{i+\frac{1}{2}}^n - [qD_xu]_{i-\frac{1}{2}}^n
+         [D_tD_tu]^n_i = \frac{1}{\Delta x}\left(
+        [qD_xu]_{i+\frac{1}{2}}^n - [qD_xu]_{i-\frac{1}{2}}^n\right)
         + [f]_i^n,
 
 and place the boundary at :math:`x_{i+\frac{1}{2}}`, :math:`i=N_x`, instead of

@@ -132,8 +132,9 @@ Filename: ``pulse1D_analysis.pdf``.
 Exercise 15: Investigate harmonic averaging in a 1D model
 ---------------------------------------------------------
 
-Will harmonic averaging of the wave velocity give better numerical
-results for the case :math:`s_f=4` in :ref:`wave:app:exer:pulse1D`?
+Harmonic means are often used if the wave velocity is non-smooth or
+discontinuous.  Will harmonic averaging of the wave velocity give less
+numerical noise for the case :math:`s_f=4` in :ref:`wave:app:exer:pulse1D`?
 Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 
 .. --- end exercise ---
@@ -145,17 +146,98 @@ Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 .. --- begin exercise ---
 
 
-.. _wave:exer:3D:f77:cy:efficiency:
+.. _wave:app:exer:radiationBC:
 
-Exercise 16: Test the efficiency of compiled loops in 3D
---------------------------------------------------------
+Exercise 16: Implement open boundary conditions
+-----------------------------------------------
 
-Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
-Set up an efficiency experiment to determine the relative efficiency of
-pure scalar Python code, vectorized code, Cython-compiled loops,
-Fortran-compiled loops, and C-compiled loops.
-Normalize the CPU time for each mesh by the fastest version.
-Filename: ``wave3D_u0.py``.
+
+.. index:: radiation condition
+
+
+.. index:: open boundary condition
+
+
+To enable a wave to leave the computational domain and travel
+undisturbed through
+the boundary :math:`x=L`, one can in a one-dimensional problem impose the
+following condition, called a *radiation condition* or
+*open boundary condition*:
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+The parameter :math:`c` is the wave velocity.
+
+Show that :eq:`wave:app:exer:radiationBC:eq` accepts
+a solution :math:`u = g_R(x-ct)`, but not :math:`u = g_L(x+ct)`. This means
+that :eq:`wave:app:exer:radiationBC:eq` will allow any
+right-going wave :math:`g_R(x-ct)` to pass through the boundary.
+
+A corresponding open boundary condition for a left-going wave
+through :math:`x=0` is
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eqL
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+
+The condition :eq:`wave:app:exer:radiationBC:eq`
+can be
+discretized by centered differences at the spatial end point :math:`i=N_x`,
+corresponding to :math:`x=x_R`:
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq:op
+        
+        [D_{2t}u + cD_{2x}u =0]^n_{N_x}
+        
+        \thinspace .
+        
+
+Eliminate the fictitious value :math:`u_{N_x+1}^n` by using
+the discrete equation at the same point.
+The equation for the first step, :math:`u_i^1`, is in principal affected,
+but we can then use the condition :math:`u_{N_x}=0` since the wave
+has not yet reached the right boundary.
+
+A corresponding open boundary condition for a left-going wave
+through :math:`x=0` is
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq:opL
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+Implement a solver that incorporates the conditions
+:eq:`wave:app:exer:radiationBC:eq:op` and
+:eq:`wave:app:exer:radiationBC:eq:opL`.  Start with some
+peak-shaped Gaussian function in the middle of the domain as :math:`I(x)`
+and demonstrate that waves travel undisturbed out of the domain at
+:math:`x=L` and :math:`x=0`.  Make a nose test for checking that the surface is
+flat after a certain time.
+
+*Remark.* The condition :eq:`wave:app:exer:radiationBC:eq`
+works perfectly in 1D when :math:`c` is known. In 2D and 3D, however, the
+condition reads :math:`u_t + c_x u_x + c_y u_y=0`, where :math:`c_x` and
+:math:`c_y` are the wave speeds in the :math:`x` and :math:`y` directions. Estimating
+these components (i.e., the direction of the wave) is often
+challenging. Other methods are normally used in 2D and 3D to
+let waves move out of a computational domain.
+Filename: ``wave1D_open_BC.py``.
 
 .. --- end exercise ---
 
@@ -166,48 +248,25 @@ Filename: ``wave3D_u0.py``.
 .. --- begin exercise ---
 
 
-.. _wave:app:exer:tsunami1D:
+.. _wave:app:exer:tsunami1D:hill:
 
-Exercise 17: Earthquake-generated tsunami in a 1D model
--------------------------------------------------------
+Problem 17: Earthquake-generated tsunami over a subsea hill
+-----------------------------------------------------------
 
-A subsea earthquake leads to an immediate lift of the surface, see
-Figure :ref:`wave:app:fig:1D:tsunami:flat`. The initial surface shape :math:`I(x)` is symmetric
-around :math:`x=0` and will split into two tsunamis, one traveling to the right
-and one to the left, as depicted in Figure :ref:`wave:app:fig:1D:tsunami:2waves`.
-Since the water surface will remain symmetric with respect to :math:`x=0`, given that
-the outgoing wave to the left does not come back due to reflection,
-we insert a boundary :math:`x=0` and impose a symmetry condition there: :math:`\partial\eta\ 
-\partial x =0`, where :math:`\eta(x,t)` is the elevation of the water surface.
-We are not interested in what happens with the right-going wave after
-it hits the right boundary, so whether we impose
-:math:`\eta =0` or :math:`\partial\eta /\partial x=0` at that boundary is not of importance.
-
-The shape of the initial surface can be taken as a
-Gaussian function,
+A subsea earthquake leads to an immediate lift of the water surface, see
+Figure :ref:`wave:app:fig:1D:tsunami:flat`.  The lifted water surface
+splits into two
+tsunamis, one traveling to the right and one to the left, as depicted
+in Figure :ref:`wave:app:fig:1D:tsunami:2waves`.  Since tsunamis are
+normally very long waves, compared to the depth, with a small
+amplitude, compared to the wave length, the wave equation model
+described in the section :ref:`wave:app:sw:2D` is relevant:
 
 
 .. math::
-        
-        I(x;I_0,I_a,I_m,I_s) =
-        I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
-        
+         \eta_{tt} = (gH(x)\eta_x)_x,
 
-with :math:`I_m=0` reflecting the location of the peak of :math:`I(x)` and
-:math:`I_s` being a measure of the width of the function :math:`I(x)`
-(:math:`I_s` is :math:`\sqrt{2}` times the standard deviation of the familiar
-normal distribution curve).
-
-Set up the relevant one-dimensional, linear, wave equation for :math:`\eta`,
-assuming long waves of small amplitude in comparison with the depth,
-as described in the section :ref:`wave:app:sw:2D`. Import the ``viz`` method
-from the ``wave1D.py`` program and make a call to it to solve the
-present tsunami problem.  The constant speed of the right-going wave is
-:math:`c=\sqrt{gH}` and use this quantity to determine a suitable time :math:`T`
-for when the wave hits the right boundary and the simulation is to be
-stopped. An alternative is to check in ``plot_u`` if :math:`u[-2]` is
-significantly different from 0 and then return ``True`` to stop
-the simulation.
+where :math:`g` is the acceleration of gravity, and :math:`H(x)` is the still water depth.
 
 
 .. _wave:app:fig:1D:tsunami:flat:
@@ -226,108 +285,37 @@ the simulation.
 
    *An initial surface elevation is split into two waves*
 
-Filename: ``tsunami1D_flat.py``.
-
-.. --- end exercise ---
 
 
+To simulate the right-going tsunami, we can impose
+a symmetry boundary at :math:`x=0`: :math:`\partial\eta\ \partial x =0`.
+We then simulate the wave motion
+in :math:`[0,L]`. Unless the ocean ends at :math:`x=L`, the waves should travel
+undisturbed through the boundary :math:`x=L`. A radiation condition
+as explained in :ref:`wave:app:exer:radiationBC` can be
+used for this purpose. Alternatively, one can just stop the simulations
+before the wave hits the boundary at :math:`x=L`. In that case it does not
+matter what kind of boundary condition we use
+at :math:`x=L`. Imposing :math:`\eta =0` and stopping the simulations when
+:math:`|\eta_i^n| > \epsilon`, :math:`i=N_x-1`, is a possibility (:math:`\epsilon` is a
+small parameter).
 
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami1D:radiation:
-
-Exercise 18: Implement an open boundary condition
--------------------------------------------------
-
-
-.. index:: radiation condition
-
-
-.. index:: open boundary condition
-
-
-To enable the right-going wave in :ref:`wave:app:exer:tsunami1D`
-to leave the computational domain and travel undisturbed through
-the boundary, one can in a one-dimensional problem impose the
-following condition, called a *radiation condition* or
-*open boundary condition*:
+The shape of the initial surface can be taken as a
+Gaussian function,
 
 
 .. math::
-   :label: wave:app:exer:tsunami1D:radiation:eq
         
-        \frac{\partial\eta}{\partial t} + c\frac{\partial\eta}{\partial x} = 0,
-        
-        
-
-at the right boundary :math:`x=x_R`. The parameter :math:`c` is the wave velocity,
-which for the model in :ref:`wave:app:exer:tsunami1D`
-is :math:`c=\sqrt{gH(x_R)}`.
-
-Show that :eq:`wave:app:exer:tsunami1D:radiation:eq` accepts
-a solution :math:`\eta = g_R(x-ct)`, but not :math:`\eta = g_L(x+ct)`. This means
-that :eq:`wave:app:exer:tsunami1D:radiation:eq` will allow any
-right-going wave :math:`g_R(x-ct)` pass through the boundary.
-
-The condition :eq:`wave:app:exer:tsunami1D:radiation:eq` can be
-discretized by centered differences at the spatial end point :math:`i=N_x`,
-corresponding to :math:`x=x_R`:
-
-
-.. math::
-   :label: wave:app:exer:tsunami1D:radiation:eq:op
-        
-        [D_{2t}\eta + cD_{2x}\eta =0]^n_{N_x}
-        
-        \thinspace .
+        I(x;I_0,I_a,I_m,I_s) =
+        I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
         
 
-Eliminate the fictitious value :math:`\eta_{N_x+1}^n` by using
-the discrete equation at the same point :math:`(n,N_x)`.
-The equation for the first step, :math:`\eta_i^1`, is in principal affected,
-but we can then use the condition :math:`\eta^1_{N_x}=0` since the wave
-has not yet reached the right boundary.
+with :math:`I_m=0` reflecting the location of the peak of :math:`I(x)` and
+:math:`I_s` being a measure of the width of the function :math:`I(x)`
+(:math:`I_s` is :math:`\sqrt{2}` times the standard deviation of the familiar
+normal distribution curve).
 
-Modify the ``solver`` function in the ``wave1D.py`` program to
-incorporate the condition :eq:`wave:app:exer:tsunami1D:radiation:eq:op`.
-Demonstrate that the tsunami travels through the domain and out of
-the right boundary without leaving any reflections behind.
-Make a nose test for checking that after a certain time :math:`T`, the surface is
-flat.
-
-*Remark 1.* The condition :eq:`wave:app:exer:tsunami1D:radiation:eq`
-works perfectly in 1D when :math:`c` is known. In 2D and 3D, however, the
-condition reads :math:`\eta_t + c_x\eta_x + c_y\eta_y=0`, where :math:`c_x` and
-:math:`c_y` are the wave speeds in the :math:`x` and :math:`y` directions, and estimating
-these components (i.e., the direction of the wave) is often
-challenging. Other methods are normally used in 2D and 3D to
-let waves move out of a computational domain.
-
-*Remark 2.* A radiation or open boundary condition at the left
-boundary takes the same form as :eq:`wave:app:exer:tsunami1D:radiation:eq`,
-except that there is a minus sign in front of the :math:`c\eta_x`
-term. One can easily show that with this sign, the condition accepts
-left-going waves of the form :math:`\eta = g_L(x+ct)`.
-Filename: ``wave1D_Ropen.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami1D:hill:
-
-Exercise 19: Earthquake-generated tsunami over a subsea hill
-------------------------------------------------------------
-
-We consider the same problem as in :ref:`wave:app:exer:tsunami1D`, but now there is a hill at the sea
+Now we extend the problem with a hill at the sea
 bottom, see Figure :ref:`wave:app:fig:1D:tsunami:hill`. The wave speed
 :math:`c=\sqrt{gH(x)} = \sqrt{g(H_0-B(x))}` will then be reduced in the
 shallow water above the hill.
@@ -378,23 +366,22 @@ Also an abrupt construction may be tried:
 for :math:`x\in [B_m - B_s, B_m + B_s]` while :math:`B=B_0` outside this
 interval.
 
-
+The `wave1D_dn_vc.py <http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn_vc.py>`_
+program can be used as starting point for the implementation.
 Visualize both the bottom topography and the
-water surface elevation (this requires modifying ``plot_u``).
-Allow for a flexible choice of bottom shape,
+water surface elevation in
+the same plot.
+Allow for a flexible choice of bottom shape:
 :eq:`wave:app:exer:tsunami1D:hill:Gauss`,
 :eq:`wave:app:exer:tsunami1D:hill:cohat`,
-:eq:`wave:app:exer:tsunami1D:hill:box`, or :math:`B(x)=B_0` (flat)
-and see if the waves become
-qualitatively different. Also investigate the amount of numerical
-noise that is triggered by rapid changes in the bottom function
-and a small water gap at the top of the hill, and how this noise
-varies with the mesh resolution :math:`\Delta x`.
-Use either the open boundary condition from
-:ref:`wave:app:exer:tsunami1D:radiation`, or set :math:`\eta =0` at
-the right boundary and stop the simulation when the wave hits this
-boundary.
-Filename: ``tsunami1D_hill.py``.
+:eq:`wave:app:exer:tsunami1D:hill:box`, or :math:`B(x)=B_0` (flat).
+
+The purpose of this problem is to explore the quality of the numerical
+solution :math:`\eta^n_i` for different shapes of the bottom obstruction.
+The "cosine hat" and the box-shaped hills have abrupt changes in the
+derivative of :math:`H(x)` and are more likely to generate numerical noise
+than the smooth Gaussian shape of the hill. Investigate if this is true.
+Filenames: ``tsunami1D_hill.py``, ``tsunami1D_hill.pdf``.
 
 .. --- end exercise ---
 
@@ -407,7 +394,7 @@ Filename: ``tsunami1D_hill.py``.
 
 .. _wave:app:exer:wave2D:Neumann:
 
-Exercise 20: Implement Neumann conditions in 2D
+Exercise 18: Implement Neumann conditions in 2D
 -----------------------------------------------
 
 Modify the `wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
@@ -439,69 +426,9 @@ Filename: ``wave2D_n.py``.
 .. --- begin exercise ---
 
 
-Exercise 21: Implement a convergence test for a 2D code
--------------------------------------------------------
-
-Use the following manufactured solution to verify a 2D code
-for :math:`u_{tt}=c^2(u_{xx}+u_{yy})` in the spatial domain
-:math:`[0,L_x]\times [0,L_y]`, with :math:`\partial u/\partial n` on the boundary
-(cf. :ref:`wave:app:exer:wave2D:Neumann`):
-
-
-.. math::
-   :label: wave:app:exer:standing:waves
-        
-        {u_{\small\mbox{e}}}(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),
-        
-        
-
-Here, :math:`m_x` and :math:`m_y` are freely chosen integers such that
-the wave lengths in the :math:`x` and :math:`y` directions become :math:`2L_x/m_x` and
-:math:`2L_y/m_y`, respectively. The parameter :math:`\omega` is calculated
-by inserting :eq:`wave:app:exer:standing:waves` in the wave equation.
-The solution
-:eq:`wave:app:exer:standing:waves` is a *standing wave*
-with :math:`\partial u/\partial n=0`.
-This :math:`{u_{\small\mbox{e}}}` is not an exact solution of the discrete equations so the
-test must be based on empirical analysis of the convergence.
-The error :math:`E` is assumed to behave like
-
-
-.. math::
-        
-        E = C_t\Delta t^2 + C_x\Delta x^2 + C_y\Delta y^2,
-        
-
-for some constants :math:`C_t`, :math:`C_x`, and :math:`C_y`.
-Choose :math:`\Delta t=F_th`, :math:`\Delta x =F_xh`, and :math:`\Delta y=F_yh`, where
-:math:`h` is a common discretization parameter to be varied (:math:`h\rightarrow 0`)
-and :math:`F_t`, :math:`F_x`, and :math:`F_y` are freely chosen constant factors
-compatible with the stability criterion in 2D. The error can then
-be expressed as
-
-
-.. math::
-        
-        E = Ch^2,
-        
-
-where :math:`C=C_xF_t^2 + C_yF_x^2 + C_tF_t^2`.
-Perform experiments with decreasing :math:`h`, compute :math:`E`, and verify that
-:math:`E/h^2` is approximately constant.
-Filename: ``wave2D_n2.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
 .. _wave:app:exer:tsunami2D:hill:
 
-Exercise 22: Earthquake-generated tsunami over a 3D hill
+Exercise 19: Earthquake-generated tsunami over a 3D hill
 --------------------------------------------------------
 
 This exercise extends :ref:`wave:app:exer:tsunami1D:hill`
@@ -509,12 +436,12 @@ to a three-dimensional wave phenomenon, governed by the 2D PDE
 :eq:`wave:app:sw:2D:eta:2ndoeq`. We assume that the earthquake
 arise from a fault along the line :math:`x=0` in the :math:`xy`-plane so that
 the initial lift of the surface can be taken as :math:`I(x)` in
-:ref:`wave:app:exer:tsunami1D:hill`. That is, a plan wave is
+:ref:`wave:app:exer:tsunami1D:hill`. That is, a plane wave is
 propagating to the right, but will experience bending because of
 the bottom.
 
 The bottom shape is now a function of :math:`x` and :math:`y`.
-An "elliptic" Gauss function in two dimensions, with its peak
+An "elliptic" Gaussian function in two dimensions, with its peak
 at :math:`(B_{mx}, B_{my})`, generalizes
 :eq:`wave:app:exer:tsunami1D:hill:Gauss`:
 
@@ -568,72 +495,25 @@ The :math:`b` parameter controls the rectangular shape of the cross section of
 the box.
 
 Note that the initial condition and the listed bottom shapes are
-symmetric around the line :math:`y=B_{my}`. We therefore expect the
-surface elevation also to be symmetric with respect to this line.
-This means that we can halve the computational domain by working
-with  :math:`[0,L_x]\times [0, B_{my}]`. Along the upper boundary, :math:`y=B_{my}`,
-we must impose the symmetry condition :math:`\partial \eta/\partial n=0`.
-Such a symmetry condition (:math:`-\eta_x=0`)
-is also needed at the :math:`x=0` boundary because
-the initial condition has a symmetry here. At the lower boundary
-:math:`y=0` we also set a Neumann condition (which becomes :math:`-\eta_y=0`).
-At the right boundary :math:`x=L_x`
-one can either implement a radiation (or open boundary) condition
-as in :ref:`wave:app:exer:tsunami1D:radiation` or just set
-:math:`\eta = 0` or use a reflecting condition :math:`\partial\eta/\partial n
-=\eta_x =0`.
+symmetric around the line :math:`y=B_{my}`. We therefore expect the surface
+elevation also to be symmetric with respect to this line.  This means
+that we can halve the computational domain by working with
+:math:`[0,L_x]\times [0, B_{my}]`. Along the upper boundary, :math:`y=B_{my}`, we
+must impose the symmetry condition :math:`\partial \eta/\partial n=0`.  Such
+a symmetry condition (:math:`-\eta_x=0`) is also needed at the :math:`x=0`
+boundary because the initial condition has a symmetry here. At the
+lower boundary :math:`y=0` we also set a Neumann condition (which becomes
+:math:`-\eta_y=0`).  The wave motion is to be simulated until the wave hits
+the reflecting boundaries where :math:`\partial\eta/\partial n =\eta_x =0`
+(one can also set :math:`\eta =0` - the particular condition does not matter
+as long as the simulation is stopped before the wave is influenced
+by the boundary condition).
 
 Visualize the surface elevation.  Investigate how different hill shapes,
 different sizes of the water gap above the hill, and different
-resolutions :math:`\Delta x` and :math:`\Delta t` influence
+resolutions :math:`\Delta x = \Delta y = h` and :math:`\Delta t` influence
 the numerical quality of the solution.
-Filename: ``tsunami2D_hill.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami2D:hill:compiled:
-
-Exercise 23: Implement loops in compiled languages
---------------------------------------------------
-
-Extend the program from :ref:`wave:app:exer:tsunami2D:hill` such
-that the loops over mesh points, inside the time loop, are
-implemented in compiled languages.
-Consider implementations in
-Cython, Fortran via ``f2py``, C via Cython, C via ``f2py``, C/C++ via Instant,
-and C/C++ via ``scipy.weave``.
-Perform efficiency experiments to investigate the relative performance
-of the various implementations. It is often advantageous to normalize
-CPU times by the fastest method on a given mesh.
-Filename: ``tsunami3D_hill_compiled.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami2D:hill:compiled2:
-
-Exercise 24: Write a complete program in Fortran or C
------------------------------------------------------
-
-As an extension of :ref:`wave:app:exer:tsunami2D:hill:compiled2`,
-write the whole ``tsunami3D_hill.py`` code in Fortran, C, or C++ to check
-if there is more to be won with respect to efficiency in large-scale
-problems. This exercise will also illustrate the difference in
-program development with Fortran/C/C++ and Python.
-Filename: ``tsunami3D_hill.f``.
+Filenames: ``tsunami2D_hill.py``, ``tsunami2D_hill.pdf``.
 
 .. --- end exercise ---
 
@@ -646,7 +526,7 @@ Filename: ``tsunami3D_hill.f``.
 
 .. _wave:app:exer:tsunami:hill:viz:matplotlib:
 
-Exercise 25: Investigate Matplotlib for visualization
+Exercise 20: Investigate Matplotlib for visualization
 -----------------------------------------------------
 
 Play with native Matplotlib code for visualizing 2D
@@ -667,13 +547,12 @@ Filename: ``tsunami2D_hill_mpl.py``.
 
 .. _wave:app:exer:tsunami:hill:viz:packages:
 
-Exercise 26: Investigate visualization packages
+Exercise 21: Investigate visualization packages
 -----------------------------------------------
 
-Explore one or more of the programs below
-for visualizing solutions of 2D or 3D wave equations with variable
-wave velocity. Try to visualize
-both the solution and the wave velocity in the same plot.
+Create some fancy 3D visualization of the water waves *and* the subsea hill
+in :ref:`wave:app:exer:tsunami2D:hill`.
+Try to make the hill transparent. Possible visualization tools are
 
   * `Mayavi <http://code.enthought.com/projects/mayavi/>`_
 
@@ -681,7 +560,7 @@ both the solution and the wave velocity in the same plot.
 
   * `OpenDX <http://www.opendx.org/>`_
 
-Filename: ``tsunami2D_hill_mayavi.py``.
+Filename: ``tsunami2D_hill_viz.py``.
 
 .. --- end exercise ---
 
@@ -692,28 +571,42 @@ Filename: ``tsunami2D_hill_mayavi.py``.
 .. --- begin exercise ---
 
 
-.. _wave:app:exer:tsunami:hill:harmonic:
+.. _wave:app:exer:tsunami2D:hill:compiled:
 
-Exercise 27: Investigate harmonic vs arithmetic mean
-----------------------------------------------------
+Exercise 22: Implement loops in compiled languages
+--------------------------------------------------
 
-In :ref:`wave:app:exer:tsunami1D:hill`, investigate if
-there is significant difference between the harmonic mean
-:eq:`wave:pde2:var:c:mean:harmonic` and the standard
-arithmetic mean :eq:`wave:pde2:var:c:mean:arithmetic`.
-Use extreme cases for the investigations where the subsea hill is
-close to the flat surface. Pay particular attention to the
-box-shaped obstruction :eq:`wave:app:exer:tsunami1D:hill:box` since
-it has discontinuities.
+Extend the program from :ref:`wave:app:exer:tsunami2D:hill` such
+that the loops over mesh points, inside the time loop, are
+implemented in compiled languages.
+Consider implementations in
+Cython, Fortran via ``f2py``, C via Cython, C via ``f2py``, C/C++ via Instant,
+and C/C++ via ``scipy.weave``.
+Perform efficiency experiments to investigate the relative performance
+of the various implementations. It is often advantageous to normalize
+CPU times by the fastest method on a given mesh.
+Filename: ``tsunami2D_hill_compiled.py``.
 
-Repeat the investigations for the case of a box-shaped obstruction
-in the 2D model from :ref:`wave:app:exer:tsunami2D:hill`.
+.. --- end exercise ---
 
-*Remark.* With a small gap between the obstruction and the free surface,
-and with abrupt changes in the bottom shape, the model PDE does not
-necessarily describe the wave motion in an accurate or qualitatively correct
-way.
-Filename: ``tsunami2D_hill_harmonic.py``.
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _wave:exer:3D:f77:cy:efficiency:
+
+Exercise 23: Test the efficiency of compiled loops in 3D
+--------------------------------------------------------
+
+Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
+Set up an efficiency experiment to determine the relative efficiency of
+pure scalar Python code, vectorized code, Cython-compiled loops,
+Fortran-compiled loops, and C-compiled loops.
+Normalize the CPU time for each mesh by the fastest version.
+Filename: ``wave3D_u0.py``.
 
 .. --- end exercise ---
 
@@ -726,7 +619,7 @@ Filename: ``tsunami2D_hill_harmonic.py``.
 
 .. _wave:app:exer:seismic2D:
 
-Exercise 28: Simulate seismic waves in 2D
+Exercise 24: Simulate seismic waves in 2D
 -----------------------------------------
 
 The goal of this exercise is to simulate seismic waves using the
@@ -766,7 +659,7 @@ Filename: ``seismic2D.py``.
 
 .. _wave:app:exer:acoustics:
 
-Project 29: Modeling 3D acoustic waves in a room
+Project 25: Modeling 3D acoustic waves in a room
 ------------------------------------------------
 
 The equation for sound waves in air is derived in the section :ref:`wave:app:sound`
@@ -850,7 +743,7 @@ Filename: ``acoustics.py``.
 
 .. _wave:app:exer:advec1D:
 
-Project 30: Solve a 1D transport equation
+Project 26: Solve a 1D transport equation
 -----------------------------------------
 
 We shall study the wave equation

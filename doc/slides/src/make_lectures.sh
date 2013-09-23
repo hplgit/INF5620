@@ -13,7 +13,6 @@ filename=`echo $dofile | sed 's/\.do\.txt//'`
 # gives far less errors and warnings)
 rm -f *.aux
 preprocess -DFORMAT=pdflatex ../newcommands_keep.p.tex > newcommands_keep.tex
-cp ../.ptex2tex.cfg .  # LaTeX styles for code
 doconce format pdflatex $filename --device=paper -DWITH_TOC
 ptex2tex $filename
 pdflatex $filename

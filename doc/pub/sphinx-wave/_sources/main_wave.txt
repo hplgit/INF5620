@@ -5,7 +5,7 @@ Finite difference methods for wave motion
 =========================================
 
 :Author: Hans Petter Langtangen
-:Date: Sep 18, 2013
+:Date: Sep 23, 2013
 
 This is still a **preliminary version** (expect typos).
 Updated from H12 until the section :ref:`wave:pde1:analysis`.
@@ -88,7 +88,7 @@ The displacement function :math:`u` is governed by the mathematical model
 .. math::
    :label: wave:pde1:bc:0
           
-        u(0,t)  = 0, \quad  t\in (0,T],
+        u(0,t)  = 0, \quad  t\in (0,T]
         
         
 
@@ -98,7 +98,7 @@ The displacement function :math:`u` is governed by the mathematical model
    :label: wave:pde1:bc:L
           
         u(L,t)  = 0, \quad  t\in (0,T]
-        \thinspace . 
+        
         
 
 The constant :math:`c` and the function :math:`I(x)` must be prescribed.
@@ -540,7 +540,7 @@ for one-dimensional wave phenomena:
 .. math::
    :label: wave:pde2:bc:0
           
-        u(0,t)  = 0, \quad  t>0,
+        u(0,t)  = 0, \quad  t>0
         
         
 
@@ -550,7 +550,6 @@ for one-dimensional wave phenomena:
    :label: wave:pde2:bc:L
           
         u(L,t)  = 0, \quad  t>0
-        \thinspace .
         
         
 
@@ -1277,10 +1276,14 @@ value of these vary between 0 and 1:
 
 Replacing old by new variables in the PDE, using :math:`f=0`,
 and dropping the bars, results in the *scaled equation*
-:math:`u_{tt} = u_{xx}`. This is simply
-the original equation with :math:`c=1`. The initial condition
-corresponds to :eq:`wave:pde1:guitar:I` with :math:`a=1`, :math:`L=1`, and
-:math:`x_0\in [0,1]`. This means that we only need to decide on :math:`x_0`, because
+:math:`u_{tt} = u_{xx}`. This equation has no physical parameter (!).
+
+If we have a program implemented for the physical wave equation with
+dimensions, we can obtain the dimensionless, scaled version by
+setting :math:`c=1`. The initial condition
+corresponds to :eq:`wave:pde1:guitar:I`, but with setting
+:math:`a=1`, :math:`L=1`, and :math:`x_0\in [0,1]`. This means that we only need to
+decide on the :math:`x_0` value as a fraction of unity, because
 the scaled problem corresponds to setting all
 other parameters to unity! In the code we can just set
 ``a=c=L=1``, ``x0=0.8``, and there is no need to calculate with
@@ -1840,6 +1843,8 @@ Filename: ``mesh_calculus_1D.py``.
 
 .. !split
 
+.. _wave:pde2:Neumann:
+
 Generalization: reflecting boundaries
 =====================================
 
@@ -1857,10 +1862,8 @@ in a finite difference scheme, one based on deriving a modified
 stencil at the boundary, and another one based on extending the mesh
 with ghost cells and ghost points.
 
-.. Should show how different conditions influence the solution!
 
-
-.. _wave:pde2:Neumann:
+.. _wave:pde2:Neumann:bc:
 
 Neumann boundary condition
 --------------------------
@@ -2969,7 +2972,7 @@ targets the following initial-boundary value problem
 .. math::
    :label: wave:pde2:software:ueq
         
-        u_t = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T],
+        u_t = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T]
         
         
 
@@ -2977,21 +2980,21 @@ targets the following initial-boundary value problem
 
 .. math::
           
-        u(x,0) = I(x),\quad x\in [0,L],
+        u(x,0) = I(x),\quad x\in [0,L]
         
 
 
 
 .. math::
           
-        u_t(x,0) = V(t),\quad x\in [0,L],
+        u_t(x,0) = V(t),\quad x\in [0,L]
         
 
 
 
 .. math::
           
-        u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T],
+        u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
         
 
 
@@ -3114,8 +3117,8 @@ functions, so we can just pass an instance, say ``p``, as the
 ``user_action`` argument in the ``solver`` function, and any call to
 ``user_action`` will be a call to ``p.__call__``.
 
-Collection of initial conditions
---------------------------------
+Pulse propagation in two media
+------------------------------
 
 The function ``pulse`` in ``wave1D_dn_vc.py`` demonstrates wave motion in
 heterogeneous media where :math:`c` varies. One can specify an interval
@@ -3217,53 +3220,32 @@ Exercises  (2)
 .. --- begin exercise ---
 
 
-.. _wave:exer:1D:bceffects:
+.. _wave:exer:standingwave:damped:uex:
 
-Problem 6: Explore the effect of boundary conditions
-----------------------------------------------------
+Exercise 6: Find the analytical solution to a damped wave equation
+------------------------------------------------------------------
 
-.. Could be a nice video as answer, where all steps are explained.
-
-
-The purpose of this exercise is to increase the understanding of
-the solutions of the wave equation :math:`u_{tt}=c^2u_xx`
-and how boundary conditions,
-especially :math:`u=0` versus :math:`u_x=0`, impact the solution.
-
-We address plug-shaped waves, starting from rest (:math:`u_t=0`)
-at :math:`t=0`.
-The plug shape means that :math:`u=1` in some region and :math:`u=0` outside this
-region. Present the simulations as movies with the names indicated
-(and a file extension depending on the movie format).
-
-.. --- begin hint in exercise ---
+Consider the wave equation with damping :eq:`wave:pde3`.
+The goal is to find an exact solution to a wave problem with damping.
+A starting point is the standing wave solution from
+:ref:`wave:exer:standingwave`. It becomes necessary to
+include a damping term :math:`e^{-ct}` and also have both a sine and cosine
+component in time:
 
 
-*Hint.* One can use the ``plug``
-function with ``C=1`` in the program `wave1D_dn.py <http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn.py>`_ for simulating such waves.
+.. math::
+         {u_{\small\mbox{e}}}(x,t) =  e^{-\beta t}
+        \sin kx \left( A\cos\omega t
+        + B\sin\omega t\right)
+        {\thinspace .}
+        
 
-.. --- end hint in exercise ---
-
-
-
-*a)* Demonstrate that the initial profile is split in two
-waves, with same shape as the initial profile, but half the amplitude.
-The two waves are traveling to the left and right. Stop the simulation
-before the waves hit the boundaries.
-Filename: ``wave1D_split_ic``.
-
-*b)* Apply :math:`u_x=0` at both ends. Demonstrate how the waves are reflected
-from the boundaries. Run the simulation for two periods, where one
-period is the time it takes for the two waves to reflect and come
-back to exactly the initial condition.
-Filename: ``wave1D_reflecting_bc``.
-
-*c)* Repeat the previous experiment, but use :math:`u=0` at both ends.
-Filename: ``wave1D_u0_bc``.
-
-*d)* Repeat the previous experiment, but use :math:`u=0` at one and :math:`u_x=0`
-at the other. Run the simulation for four periods.
-Filename: ``wave1D_mixed_bc``.
+Find :math:`k` from the boundary conditions
+:math:`u(0,t)=u(L,t)=0`. Then use the PDE to find constraints on
+:math:`\beta`, :math:`\omega`, :math:`A`, and :math:`B`.
+Set up a complete initial-boundary value problem
+and its solution.
+Filename: ``damped_waves.pdf``.
 
 .. --- end exercise ---
 
@@ -3393,7 +3375,8 @@ Run experiments to establish the rate of convergence.
 
 
 .. math::
-         [D_tD_tu]^n_i = [qD_xu]_{i+\frac{1}{2}}^n - [qD_xu]_{i-\frac{1}{2}}^n
+         [D_tD_tu]^n_i = \frac{1}{\Delta x}\left(
+        [qD_xu]_{i+\frac{1}{2}}^n - [qD_xu]_{i-\frac{1}{2}}^n\right)
         + [f]_i^n,
 
 and place the boundary at :math:`x_{i+\frac{1}{2}}`, :math:`i=N_x`, instead of
@@ -4324,14 +4307,14 @@ can be written in the compact form
         
         
 
-In a 2D problem, :math:`d=2`, and
+In a 2D problem (:math:`d=2`),
 
 
 .. math::
          \nabla^2 u = \frac{\partial^2 u}{\partial x^2} +
         \frac{\partial^2 u}{\partial y^2} ,
 
-while in three space dimensions, :math:`d=3`, and
+while in three space dimensions (:math:`d=3`),
 
 
 .. math::
@@ -4408,7 +4391,8 @@ At *each point* of the boundary :math:`\partial\Omega` of :math:`\Omega` we need
 *one* boundary condition involving the unknown :math:`u`.
 The boundary conditions are of three principal types:
 
- 1. :math:`u` is prescribed (usually for a known incoming wave),
+ 1. :math:`u` is prescribed (:math:`u=0` or a known time variation for
+    an incoming wave),
 
  2. :math:`\partial u/\partial n = \boldsymbol{n}\cdot\nabla u` prescribed
     (zero for reflecting boundaries),
@@ -4422,7 +4406,7 @@ time need *two* initial conditions:
 
  1. :math:`u=I`,
 
- 2. :math:`\partial u/\partial u = V`.
+ 2. :math:`u_t = V`.
 
 .. _wave:2D3D:mesh:
 
@@ -4430,26 +4414,42 @@ Mesh
 ----
 
 We introduce a mesh in time and in space. The mesh in time consists
-of time points :math:`t_0=0 < t_1 <\cdots < t_{N_t}`, often with a constant
+of time points
+
+
+.. math::
+         t_0=0 < t_1 <\cdots < t_{N_t},
+
+
+often with a constant
 spacing :math:`\Delta t= t_{n+1}-t_{n}`, :math:`n\in{{\mathcal{I^-}_t}}`.
 
-When using finite difference approximations, the domain shape in space is
-normally simple. We assume that :math:`\Omega` has the shape of a :math:`d`-dimensional
-box shape.
-Mesh points are introduced separately in the various space directions:
-:math:`x_0 < x_1 <\cdots < x_{N_x}` in :math:`x` direction,
-:math:`y_0 < y_1 <\cdots < y_{N_y}` in :math:`y` direction, and
-:math:`z_0 < z_1 <\cdots < z_{N_z}` in :math:`z` direction.
+Finite difference methods are easy to implement on simple
+rectangle- or box-shaped
+domains. More complicated shapes of the domain
+require substantially more advanced techniques and
+implementational efforts. On a rectangle- or box-shaped domain
+mesh points are introduced separately in the various space directions:
+
+
+.. math::
+        
+        &x_0 < x_1 <\cdots < x_{N_x}  \hbox{ in }x \hbox{ direction},\\ 
+        &y_0 < y_1 <\cdots < y_{N_y}  \hbox{ in }y \hbox{ direction},\\ 
+        &z_0 < z_1 <\cdots < z_{N_z}  \hbox{ in }z \hbox{ direction}{\thinspace .}
+        
+
+We can write a general mesh point as :math:`(x_i,y_j,z_k,t_n)`, with
+:math:`i\in{\mathcal{I}_x}`, :math:`j\in{\mathcal{I}_y}`, :math:`k\in{\mathcal{I}_z}`, and :math:`n\in{\mathcal{I}_t}`.
+
 It is a very common choice to use constant mesh spacings:
 :math:`\Delta x = x_{i+1}-x_{i}`, :math:`i\in{{\mathcal{I^-}_x}}`,
 :math:`\Delta y = y_{j+1}-y_{j}`, :math:`j\in{{\mathcal{I^-}_y}}`, and
-:math:`\Delta z = z_{k+1}-z_{k}`, :math:`k\in{{\mathcal{I^-}_z}}`, but often with
-:math:`\Delta x\neq \Delta y\neq \Delta z`. In case the mesh spacings
-are equal in the spatial directions, one often introduces the
-symbol :math:`h`:
+:math:`\Delta z = z_{k+1}-z_{k}`, :math:`k\in{{\mathcal{I^-}_z}}`.
+With equal mesh spacings one often introduces
 :math:`h = \Delta x = \Delta y =\Delta z`.
 
-The unknown :math:`u` at mesh point :math:`(x_i,y_j,z_k,t_n)` is denoted
+The unknown :math:`u` at mesh point :math:`(x_i,y_j,z_k,t_n)` is denoted by
 :math:`u^{n}_{i,j,k}`. In 2D problems we just skip the :math:`z` coordinate
 (by assuming no variation in that direction: :math:`\partial/\partial z=0`)
 and write :math:`u^n_{i,j}`.
@@ -4463,13 +4463,12 @@ Discretization
 Two- and three-dimensional wave equations are easily discretized by
 assembling building blocks for discretization of
 1D wave equations, because the multi-dimensional versions just contain
-terms of the same type that occur in 1D.
+terms of the same type that occurs in 1D.
 
 Discretizing the PDEs
 ~~~~~~~~~~~~~~~~~~~~~
 
-For example,
-:eq:`wave:2D3D:model1:v2` can be discretized as
+Equation :eq:`wave:2D3D:model1:v2` can be discretized as
 
 
 .. math::
@@ -4500,7 +4499,17 @@ which becomes
         
 
 Assuming as usual that all values at the time levels :math:`n` and :math:`n-1`
-are known, we can solve for the only unknown :math:`u^{n+1}_{i,j}`.
+are known, we can solve for the only unknown :math:`u^{n+1}_{i,j}`. The
+result can be compactly written as
+
+
+.. math::
+   :label: wave:2D3D:models:unp1
+        
+        u^{n+1}_{i,j} = 2u^n_{i,j} + u^{n-1}_{i,j} + c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}{\thinspace .}
+        
+        
+
 
 As in the 1D case, we need to develop a special formula for :math:`u^1_{i,j}`
 where we combine the general scheme for :math:`u^{n+1}_{i,j}`, when :math:`n=0`,
@@ -4510,6 +4519,17 @@ with the discretization of the initial condition:
 .. math::
          [D_{2t}u = V]^0_{i,j}\quad\Rightarrow\quad u^{-1}_{i,j} = u^1_{i,j} - 2\Delta t V_{i,j}
         \thinspace .
+        
+
+The result becomes, in compact form,
+
+
+.. math::
+   :label: wave:2D3D:models:u1
+        
+        u^{n+1}_{i,j} = u^n_{i,j} -2\Delta V_{i,j} + \frac{1}{2}
+        c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}{\thinspace .}
+        
         
 
 
@@ -4544,8 +4564,10 @@ scheme
 
 
 Also here we need to develop a special formula for :math:`u^1_{i,j,k}`
-by combining the scheme for :math:`n=0` with the discrete initial condition
-:math:`u^{-1}_{i,j,k}=u^1_{i,j,k} - 2\Delta tV_{i,j,k}`.
+by combining the scheme for :math:`n=0` with the discrete initial condition,
+which is just a matter of inserting
+:math:`u^{-1}_{i,j,k}=u^1_{i,j,k} - 2\Delta tV_{i,j,k}` in the scheme
+and solving for :math:`u^1_{i,j,k}`.
 
 Handling boundary conditions where is :math:`u` known
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4554,14 +4576,17 @@ The schemes listed above are valid for the internal points in the mesh.
 After updating these, we need to visit all the mesh points at the
 boundaries and set the prescribed :math:`u` value.
 
-Discretizing the :math:`\partial u/\partial n = 0`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Discretizing the Neumann condition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The condition :math:`\partial u/\partial n = 0` was implemented in 1D by
-discretizing it with a :math:`D_{2t}u` centered difference, and thereafter
+discretizing it with a :math:`D_{2x}u` centered difference, and thereafter
 eliminating the fictitious :math:`u` point outside the mesh by using the
-general scheme at the boundary point. Exactly the same idea is reused
-in multi dimensions. Consider  :math:`\partial u/\partial n = 0`
+general scheme at the boundary point. Alternatively, one can introduce
+ghost cells and update a ghost value to for use in the Neumann
+condition. Exactly the same ideas are reused in multi dimensions.
+
+Consider  :math:`\partial u/\partial n = 0`
 at a boundary :math:`y=0`. The normal direction is then in :math:`-y` direction,
 so
 
@@ -4590,13 +4615,22 @@ The discretized PDE at the boundary point :math:`(i,0)` reads
         + f^n_{i,j},
         
 
-We can then just insert :math:`u^1_{i,j}` for :math:`u^n_{i,-1}` in this equation
-and then solve for the boundary value :math:`u^{n+1}_{i,0}`.
+We can then just insert :math:`u^1_{i,1}` for :math:`u^n_{i,-1}` in this equation
+and then solve for the boundary value :math:`u^{n+1}_{i,0}` as done in 1D.
 
 From these calculations, we see a pattern:
 the general scheme applies at the boundary :math:`j=0` too if we just
 replace :math:`j-1` by :math:`j+1`. Such a pattern is particularly useful for
-implementations.
+implementations. The details follow from the explained 1D case
+in the section :ref:`wave:pde2:Neumann:impl`.
+
+The alternative approach to eliminating fictitious values outside the
+mesh is to have :math:`u^n_{i,-1}` available as a ghost value.  The mesh is
+extended with one extra line (2D) or plane (3D) of ghost cells at a
+Neumann boundary. In the present example it means that we need a line
+ghost cells below the :math:`y` axis.  The ghost values must be updated
+according to :math:`u^{n+1}_{i,-1}=u^{n+1}_{i,1}`.
+
 
 .. =======  Exercises  (3)  =======
 
@@ -4651,7 +4685,7 @@ the complete initial-boundary value problem is defined by
 
 where :math:`\partial\Omega` is the boundary of :math:`\Omega`, in this case
 the four sides of the rectangle :math:`[0,L_x]\times [0,L_y]`:
-:math:`x=0,`, :math:`x=L_x`, :math:`y=0`, and :math:`y=L_y`.
+:math:`x=0`, :math:`x=L_x`, :math:`y=0`, and :math:`y=L_y`.
 
 The PDE is discretized as
 
@@ -4664,16 +4698,23 @@ program:
 
 
 .. math::
-   :label: wave:2D3D:impl1:2Du0:ueq:discrete
         
-        u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + C_x^2(
+        u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + \nonumber
+        
+
+
+
+.. math::
+   :label: wave:2D3D:impl1:2Du0:ueq:discrete
+          
+        \quad C_x^2(
         u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
         (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,
         
         
 
-for all interior mesh points :math:`i=0,\ldots,N_x-1` and
-:math:`j=0,\ldots,N_y-1`, and for :math:`n=1,\ldots, N_t`.
+for all interior mesh points :math:`i\in{{\mathcal{I^i}_x}}` and
+:math:`j\in{{\mathcal{I^i}_y}}`, and for :math:`n\in{{\mathcal{I^+}_t}}`.
 The constants :math:`C_x` and :math:`C_y` are defined as
 
 .. math::
@@ -4692,15 +4733,24 @@ is combined with the discretization of the initial condition :math:`u_t=V`,
 
 
 .. math::
-   :label: wave:2D3D:impl1:2Du0:ueq:discrete
         
-        u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \frac{1}{2}C_x^2(
+        u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \nonumber
+        
+
+
+
+.. math::
+   :label: wave:2D3D:impl1:2Du0:ueq:discrete
+          
+        \quad \frac{1}{2}C_x^2(
         u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
         (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,
         
         
 
 
+
+.. _wave2D3D:impl:scalar:
 
 Scalar computations
 -------------------
@@ -4728,34 +4778,20 @@ the ``solver`` function is then
 .. code-block:: python
 
         def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
-                   user_action=None, version='scalar',
-                   dt_safety_factor=1):
+                   user_action=None, version='scalar'):
 
 Key parameters used in the calculations are created as
 
 .. code-block:: python
 
-        x = linspace(0, Lx, Nx+1)  # mesh points in x dir
-        y = linspace(0, Ly, Ny+1)  # mesh points in y dir
+        x = linspace(0, Lx, Nx+1)                  # mesh points in x dir
+        y = linspace(0, Ly, Ny+1)                  # mesh points in y dir
         dx = x[1] - x[0]
         dy = y[1] - y[0]
-        N = int(round(T/float(dt)))
-        t = linspace(0, N*dt, N+1)    # mesh points in time
+        Nt = int(round(T/float(dt)))
+        t = linspace(0, N*dt, N+1)                 # mesh points in time
         Cx2 = (c*dt/dx)**2;  Cy2 = (c*dt/dy)**2    # help variables
         dt2 = dt**2
-
-
-Stability limit
-~~~~~~~~~~~~~~~
-
-Specifying a negative ``dt`` parameter makes us use the stability
-limit with a safety factor:
-
-.. code-block:: python
-
-        if dt <= 0:
-            stability_limit = (1/float(c))*(1/sqrt(1/dx**2 + 1/dy**2))
-            dt = dt_safety_factor*stability_limit
 
 
 Solution arrays
@@ -4773,57 +4809,86 @@ We store :math:`u^{n+1}_{i,j}`, :math:`u^{n}_{i,j}`, and
 
 where :math:`u^{n+1}_{i,j}` corresponds to ``u[i,j]``,
 :math:`u^{n}_{i,j}` to ``u_1[i,j]``, and
-:math:`u^{n-1}_{i,j}` to ``u_1[i,j]``
+:math:`u^{n-1}_{i,j}` to ``u_2[i,j]``
+
+
+.. index:: index set notation
+
+
+Index sets
+~~~~~~~~~~
+
+It is also convenient to introduce the index sets (cf. The section :ref:`wave:indexset`)
+
+
+.. code-block:: python
+
+        Ix = range(0, u.shape[0])
+        Iy = range(0, u.shape[1])
+        It = range(0, t.shape[0])
+
 
 Computing the solution
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Inserting the initial
 condition ``I`` in ``u_1`` and making a callback to the user in terms of
-the ``user_action`` function should be straightforward generalization of
-the 1D code:
+the ``user_action`` function is a straightforward generalization of
+the 1D code from the section :ref:`wave:string:impl`:
 
 
 .. code-block:: python
 
-        for i in range(0, Nx+1):
-            for j in range(0, Ny+1):
+        for i in Ix:
+            for j in Iy:
                 u_1[i,j] = I(x[i], y[j])
         
         if user_action is not None:
             user_action(u_1, x, xv, y, yv, t, 0)
 
-The ``user_action`` function has more arguments which will be commented
-upon in the section on vectorization.
+The ``user_action`` function has additional arguments compared to the
+1D case. The arguments ``xv`` and ``yv`` fact will be commented
+upon in the section :ref:`wave2D3D:impl:vectorized`.
 
-The key finite difference formula for updating the solution at
-a time level is implemented as
-
-
-.. code-block:: python
-
-        for i in range(1, Nx):
-            for j in range(1, Ny):
-                u[i,j] = 2*u_1[i,j] - u_2[i,j] + \ 
-                         Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \ 
-                         Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \ 
-                         dt2*f(x[i], y[j], t[n])
-
-We must thereafter ensure that ``u`` is zero on the four boundaries:
+The key finite difference formula :eq:`wave:2D3D:models:unp1`
+for updating the solution at
+a time level is implemented in a separate function as
 
 
 .. code-block:: python
 
-        j = 0
-        for i in range(0, Nx+1): u[i,j] = 0
-        j = Ny
-        for i in range(0, Nx+1): u[i,j] = 0
-        i = 0
-        for j in range(0, Ny+1): u[i,j] = 0
-        i = Nx
-        for j in range(0, Ny+1): u[i,j] = 0
+        def advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2, D1=2, D2=1):
+            Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+            for i in Ix[1:-1]:
+                for j in Iy[1:-1]:
+                    u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
+                    u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
+                    u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
+                             Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            # Boundary condition u=0
+            j = Iy[0]
+            for i in Ix: u[i,j] = 0
+            j = Iy[-1]
+            for i in Ix: u[i,j] = 0
+            i = Ix[0]
+            for j in Iy: u[i,j] = 0
+            i = Ix[-1]
+            for j in Iy: u[i,j] = 0
+            return u
 
-The special formula for the first step (:math:`u^1_{i,j}`) is implemented
+The constants ``D1`` and ``D2`` in front of ``u_1`` and ``u_2`` have been
+introduced to allow this ``advance`` function to also be used for the
+first step :math:`u^1_{i,j}`:
+
+
+.. code-block:: python
+
+        u = advance(u, u_1, u_2, f, x, y, t, n,
+                    0.5*Cx2, 0.5*Cy2, 0.5*dt2, D1=1, D2=0)
+
+
+The special formula for the first step :math:`u^1_{i,j}`,
+given by :eq:`wave:2D3D:models:u1`, is implemented
 in a very similar manner.
 
 The code segments with the loop over internal points and boundary
@@ -4833,11 +4898,13 @@ up the code since most of
 the CPU time is spent in this function.
 
 
+.. _wave2D3D:impl:vectorized:
+
 Vectorized computations
 -----------------------
 
 The scalar code above turns out to be extremely slow for large 2D
-meshes, and probably useless beyond initial debugging in 3D.
+meshes, and probably useless in 3D beyond debugging of small test cases.
 Vectorization is therefore a must for multi-dimensional
 finite difference computations in Python. For example,
 with a mesh consisting of :math:`30\times 30` cells, vectorization
@@ -4852,6 +4919,7 @@ sufficient: these must be extended to vectorized versions,
 
 .. code-block:: python
 
+        from numpy import newaxis
         xv = x[:,newaxis]
         yv = y[newaxis,:]
         # or
@@ -4859,8 +4927,9 @@ sufficient: these must be extended to vectorized versions,
         yv = y.reshape((1, y.size))
 
 This is a standard required technique when evaluating functions over
-a 2D mesh, say ``sin(xv)*cos(xv)``, which then gives a results with shape
+a 2D mesh, say ``sin(xv)*cos(xv)``, which then gives a result with shape
 ``(Nx+1,Ny+1)``.
+
 With the ``xv`` and ``yv`` arrays for vectorized computing,
 setting the initial condition is just a matter of
 
@@ -4886,12 +4955,13 @@ evaluation. This is the case with the computational scheme for :math:`u^{n+1}_{i
 
 Array slices in 2D are more complicated to understand than those in
 1D, but the logic from 1D applies to each dimension separately.
-For example, when doing :math:`u^{n}_{i,j} - u^{n}_{i-1,j}` for :math:`i=1,\ldots,N_x`,
+For example, when doing :math:`u^{n}_{i,j} - u^{n}_{i-1,j}` for :math:`i\in{{\mathcal{I^+}_x}}`,
 we just keep ``j`` constant and make a slice in the first index:
 ``u_1[1:,j] - u_1[:-1,j]``, exactly as in 1D. The ``1:`` slice
-specifies all the indices :math:`i=1,\ldots,N_x` for the term :math:`u^n_{i,j}`,
-while ``:-1`` specifies the relevant indices for the second term,
-where :math:`i-1=1,\ldots,N_x` and the indices therefore becomes :math:`0,1,\ldots,N_x-1`.
+specifies all the indices :math:`i=1,2,\ldots,N_x`,
+while ``:-1`` specifies the relevant indices for the second term:
+:math:`0,1,\ldots,N_x-1` (up to, but not including the last index).
+
 In the above code segment, the situation is slightly more complicated,
 because each displaced slice in one direction is
 accompanied by a ``1:-1`` slice in the other direction. The reason is
@@ -5800,7 +5870,7 @@ function in the C file with the interface we want to wrap.
 Using classes to implement a simulator
 --------------------------------------
 
- * class ``Mesh``, ``Function``, ``Problem``, ``Solver``, ``Visualizer``, ``File``
+ * class ``Mesh``, ``MeshFunction``, ``Problem``, ``Solver``, ``Visualizer``, ``File``
 
  * communicate with compiled code by ensuring that
    classes work with arrays
@@ -7113,8 +7183,9 @@ Filename: ``pulse1D_analysis.pdf``.
 Exercise 15: Investigate harmonic averaging in a 1D model
 ---------------------------------------------------------
 
-Will harmonic averaging of the wave velocity give better numerical
-results for the case :math:`s_f=4` in :ref:`wave:app:exer:pulse1D`?
+Harmonic means are often used if the wave velocity is non-smooth or
+discontinuous.  Will harmonic averaging of the wave velocity give less
+numerical noise for the case :math:`s_f=4` in :ref:`wave:app:exer:pulse1D`?
 Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 
 .. --- end exercise ---
@@ -7126,17 +7197,98 @@ Filenames: ``pulse1D_harmonic.pdf``, ``pulse1D_harmonic.py``.
 .. --- begin exercise ---
 
 
-.. _wave:exer:3D:f77:cy:efficiency:
+.. _wave:app:exer:radiationBC:
 
-Exercise 16: Test the efficiency of compiled loops in 3D
---------------------------------------------------------
+Exercise 16: Implement open boundary conditions
+-----------------------------------------------
 
-Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
-Set up an efficiency experiment to determine the relative efficiency of
-pure scalar Python code, vectorized code, Cython-compiled loops,
-Fortran-compiled loops, and C-compiled loops.
-Normalize the CPU time for each mesh by the fastest version.
-Filename: ``wave3D_u0.py``.
+
+.. index:: radiation condition
+
+
+.. index:: open boundary condition
+
+
+To enable a wave to leave the computational domain and travel
+undisturbed through
+the boundary :math:`x=L`, one can in a one-dimensional problem impose the
+following condition, called a *radiation condition* or
+*open boundary condition*:
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+The parameter :math:`c` is the wave velocity.
+
+Show that :eq:`wave:app:exer:radiationBC:eq` accepts
+a solution :math:`u = g_R(x-ct)`, but not :math:`u = g_L(x+ct)`. This means
+that :eq:`wave:app:exer:radiationBC:eq` will allow any
+right-going wave :math:`g_R(x-ct)` to pass through the boundary.
+
+A corresponding open boundary condition for a left-going wave
+through :math:`x=0` is
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eqL
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+
+The condition :eq:`wave:app:exer:radiationBC:eq`
+can be
+discretized by centered differences at the spatial end point :math:`i=N_x`,
+corresponding to :math:`x=x_R`:
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq:op
+        
+        [D_{2t}u + cD_{2x}u =0]^n_{N_x}
+        
+        \thinspace .
+        
+
+Eliminate the fictitious value :math:`u_{N_x+1}^n` by using
+the discrete equation at the same point.
+The equation for the first step, :math:`u_i^1`, is in principal affected,
+but we can then use the condition :math:`u_{N_x}=0` since the wave
+has not yet reached the right boundary.
+
+A corresponding open boundary condition for a left-going wave
+through :math:`x=0` is
+
+
+.. math::
+   :label: wave:app:exer:radiationBC:eq:opL
+        
+        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        
+        
+
+Implement a solver that incorporates the conditions
+:eq:`wave:app:exer:radiationBC:eq:op` and
+:eq:`wave:app:exer:radiationBC:eq:opL`.  Start with some
+peak-shaped Gaussian function in the middle of the domain as :math:`I(x)`
+and demonstrate that waves travel undisturbed out of the domain at
+:math:`x=L` and :math:`x=0`.  Make a nose test for checking that the surface is
+flat after a certain time.
+
+*Remark.* The condition :eq:`wave:app:exer:radiationBC:eq`
+works perfectly in 1D when :math:`c` is known. In 2D and 3D, however, the
+condition reads :math:`u_t + c_x u_x + c_y u_y=0`, where :math:`c_x` and
+:math:`c_y` are the wave speeds in the :math:`x` and :math:`y` directions. Estimating
+these components (i.e., the direction of the wave) is often
+challenging. Other methods are normally used in 2D and 3D to
+let waves move out of a computational domain.
+Filename: ``wave1D_open_BC.py``.
 
 .. --- end exercise ---
 
@@ -7147,48 +7299,25 @@ Filename: ``wave3D_u0.py``.
 .. --- begin exercise ---
 
 
-.. _wave:app:exer:tsunami1D:
+.. _wave:app:exer:tsunami1D:hill:
 
-Exercise 17: Earthquake-generated tsunami in a 1D model
--------------------------------------------------------
+Problem 17: Earthquake-generated tsunami over a subsea hill
+-----------------------------------------------------------
 
-A subsea earthquake leads to an immediate lift of the surface, see
-Figure :ref:`wave:app:fig:1D:tsunami:flat`. The initial surface shape :math:`I(x)` is symmetric
-around :math:`x=0` and will split into two tsunamis, one traveling to the right
-and one to the left, as depicted in Figure :ref:`wave:app:fig:1D:tsunami:2waves`.
-Since the water surface will remain symmetric with respect to :math:`x=0`, given that
-the outgoing wave to the left does not come back due to reflection,
-we insert a boundary :math:`x=0` and impose a symmetry condition there: :math:`\partial\eta\ 
-\partial x =0`, where :math:`\eta(x,t)` is the elevation of the water surface.
-We are not interested in what happens with the right-going wave after
-it hits the right boundary, so whether we impose
-:math:`\eta =0` or :math:`\partial\eta /\partial x=0` at that boundary is not of importance.
-
-The shape of the initial surface can be taken as a
-Gaussian function,
+A subsea earthquake leads to an immediate lift of the water surface, see
+Figure :ref:`wave:app:fig:1D:tsunami:flat`.  The lifted water surface
+splits into two
+tsunamis, one traveling to the right and one to the left, as depicted
+in Figure :ref:`wave:app:fig:1D:tsunami:2waves`.  Since tsunamis are
+normally very long waves, compared to the depth, with a small
+amplitude, compared to the wave length, the wave equation model
+described in the section :ref:`wave:app:sw:2D` is relevant:
 
 
 .. math::
-        
-        I(x;I_0,I_a,I_m,I_s) =
-        I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
-        
+         \eta_{tt} = (gH(x)\eta_x)_x,
 
-with :math:`I_m=0` reflecting the location of the peak of :math:`I(x)` and
-:math:`I_s` being a measure of the width of the function :math:`I(x)`
-(:math:`I_s` is :math:`\sqrt{2}` times the standard deviation of the familiar
-normal distribution curve).
-
-Set up the relevant one-dimensional, linear, wave equation for :math:`\eta`,
-assuming long waves of small amplitude in comparison with the depth,
-as described in the section :ref:`wave:app:sw:2D`. Import the ``viz`` method
-from the ``wave1D.py`` program and make a call to it to solve the
-present tsunami problem.  The constant speed of the right-going wave is
-:math:`c=\sqrt{gH}` and use this quantity to determine a suitable time :math:`T`
-for when the wave hits the right boundary and the simulation is to be
-stopped. An alternative is to check in ``plot_u`` if :math:`u[-2]` is
-significantly different from 0 and then return ``True`` to stop
-the simulation.
+where :math:`g` is the acceleration of gravity, and :math:`H(x)` is the still water depth.
 
 
 .. _wave:app:fig:1D:tsunami:flat:
@@ -7207,108 +7336,37 @@ the simulation.
 
    *An initial surface elevation is split into two waves*
 
-Filename: ``tsunami1D_flat.py``.
-
-.. --- end exercise ---
 
 
+To simulate the right-going tsunami, we can impose
+a symmetry boundary at :math:`x=0`: :math:`\partial\eta\ \partial x =0`.
+We then simulate the wave motion
+in :math:`[0,L]`. Unless the ocean ends at :math:`x=L`, the waves should travel
+undisturbed through the boundary :math:`x=L`. A radiation condition
+as explained in :ref:`wave:app:exer:radiationBC` can be
+used for this purpose. Alternatively, one can just stop the simulations
+before the wave hits the boundary at :math:`x=L`. In that case it does not
+matter what kind of boundary condition we use
+at :math:`x=L`. Imposing :math:`\eta =0` and stopping the simulations when
+:math:`|\eta_i^n| > \epsilon`, :math:`i=N_x-1`, is a possibility (:math:`\epsilon` is a
+small parameter).
 
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami1D:radiation:
-
-Exercise 18: Implement an open boundary condition
--------------------------------------------------
-
-
-.. index:: radiation condition
-
-
-.. index:: open boundary condition
-
-
-To enable the right-going wave in :ref:`wave:app:exer:tsunami1D`
-to leave the computational domain and travel undisturbed through
-the boundary, one can in a one-dimensional problem impose the
-following condition, called a *radiation condition* or
-*open boundary condition*:
+The shape of the initial surface can be taken as a
+Gaussian function,
 
 
 .. math::
-   :label: wave:app:exer:tsunami1D:radiation:eq
         
-        \frac{\partial\eta}{\partial t} + c\frac{\partial\eta}{\partial x} = 0,
-        
-        
-
-at the right boundary :math:`x=x_R`. The parameter :math:`c` is the wave velocity,
-which for the model in :ref:`wave:app:exer:tsunami1D`
-is :math:`c=\sqrt{gH(x_R)}`.
-
-Show that :eq:`wave:app:exer:tsunami1D:radiation:eq` accepts
-a solution :math:`\eta = g_R(x-ct)`, but not :math:`\eta = g_L(x+ct)`. This means
-that :eq:`wave:app:exer:tsunami1D:radiation:eq` will allow any
-right-going wave :math:`g_R(x-ct)` pass through the boundary.
-
-The condition :eq:`wave:app:exer:tsunami1D:radiation:eq` can be
-discretized by centered differences at the spatial end point :math:`i=N_x`,
-corresponding to :math:`x=x_R`:
-
-
-.. math::
-   :label: wave:app:exer:tsunami1D:radiation:eq:op
-        
-        [D_{2t}\eta + cD_{2x}\eta =0]^n_{N_x}
-        
-        \thinspace .
+        I(x;I_0,I_a,I_m,I_s) =
+        I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
         
 
-Eliminate the fictitious value :math:`\eta_{N_x+1}^n` by using
-the discrete equation at the same point :math:`(n,N_x)`.
-The equation for the first step, :math:`\eta_i^1`, is in principal affected,
-but we can then use the condition :math:`\eta^1_{N_x}=0` since the wave
-has not yet reached the right boundary.
+with :math:`I_m=0` reflecting the location of the peak of :math:`I(x)` and
+:math:`I_s` being a measure of the width of the function :math:`I(x)`
+(:math:`I_s` is :math:`\sqrt{2}` times the standard deviation of the familiar
+normal distribution curve).
 
-Modify the ``solver`` function in the ``wave1D.py`` program to
-incorporate the condition :eq:`wave:app:exer:tsunami1D:radiation:eq:op`.
-Demonstrate that the tsunami travels through the domain and out of
-the right boundary without leaving any reflections behind.
-Make a nose test for checking that after a certain time :math:`T`, the surface is
-flat.
-
-*Remark 1.* The condition :eq:`wave:app:exer:tsunami1D:radiation:eq`
-works perfectly in 1D when :math:`c` is known. In 2D and 3D, however, the
-condition reads :math:`\eta_t + c_x\eta_x + c_y\eta_y=0`, where :math:`c_x` and
-:math:`c_y` are the wave speeds in the :math:`x` and :math:`y` directions, and estimating
-these components (i.e., the direction of the wave) is often
-challenging. Other methods are normally used in 2D and 3D to
-let waves move out of a computational domain.
-
-*Remark 2.* A radiation or open boundary condition at the left
-boundary takes the same form as :eq:`wave:app:exer:tsunami1D:radiation:eq`,
-except that there is a minus sign in front of the :math:`c\eta_x`
-term. One can easily show that with this sign, the condition accepts
-left-going waves of the form :math:`\eta = g_L(x+ct)`.
-Filename: ``wave1D_Ropen.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami1D:hill:
-
-Exercise 19: Earthquake-generated tsunami over a subsea hill
-------------------------------------------------------------
-
-We consider the same problem as in :ref:`wave:app:exer:tsunami1D`, but now there is a hill at the sea
+Now we extend the problem with a hill at the sea
 bottom, see Figure :ref:`wave:app:fig:1D:tsunami:hill`. The wave speed
 :math:`c=\sqrt{gH(x)} = \sqrt{g(H_0-B(x))}` will then be reduced in the
 shallow water above the hill.
@@ -7359,23 +7417,22 @@ Also an abrupt construction may be tried:
 for :math:`x\in [B_m - B_s, B_m + B_s]` while :math:`B=B_0` outside this
 interval.
 
-
+The `wave1D_dn_vc.py <http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn_vc.py>`_
+program can be used as starting point for the implementation.
 Visualize both the bottom topography and the
-water surface elevation (this requires modifying ``plot_u``).
-Allow for a flexible choice of bottom shape,
+water surface elevation in
+the same plot.
+Allow for a flexible choice of bottom shape:
 :eq:`wave:app:exer:tsunami1D:hill:Gauss`,
 :eq:`wave:app:exer:tsunami1D:hill:cohat`,
-:eq:`wave:app:exer:tsunami1D:hill:box`, or :math:`B(x)=B_0` (flat)
-and see if the waves become
-qualitatively different. Also investigate the amount of numerical
-noise that is triggered by rapid changes in the bottom function
-and a small water gap at the top of the hill, and how this noise
-varies with the mesh resolution :math:`\Delta x`.
-Use either the open boundary condition from
-:ref:`wave:app:exer:tsunami1D:radiation`, or set :math:`\eta =0` at
-the right boundary and stop the simulation when the wave hits this
-boundary.
-Filename: ``tsunami1D_hill.py``.
+:eq:`wave:app:exer:tsunami1D:hill:box`, or :math:`B(x)=B_0` (flat).
+
+The purpose of this problem is to explore the quality of the numerical
+solution :math:`\eta^n_i` for different shapes of the bottom obstruction.
+The "cosine hat" and the box-shaped hills have abrupt changes in the
+derivative of :math:`H(x)` and are more likely to generate numerical noise
+than the smooth Gaussian shape of the hill. Investigate if this is true.
+Filenames: ``tsunami1D_hill.py``, ``tsunami1D_hill.pdf``.
 
 .. --- end exercise ---
 
@@ -7388,7 +7445,7 @@ Filename: ``tsunami1D_hill.py``.
 
 .. _wave:app:exer:wave2D:Neumann:
 
-Exercise 20: Implement Neumann conditions in 2D
+Exercise 18: Implement Neumann conditions in 2D
 -----------------------------------------------
 
 Modify the `wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
@@ -7420,69 +7477,9 @@ Filename: ``wave2D_n.py``.
 .. --- begin exercise ---
 
 
-Exercise 21: Implement a convergence test for a 2D code
--------------------------------------------------------
-
-Use the following manufactured solution to verify a 2D code
-for :math:`u_{tt}=c^2(u_{xx}+u_{yy})` in the spatial domain
-:math:`[0,L_x]\times [0,L_y]`, with :math:`\partial u/\partial n` on the boundary
-(cf. :ref:`wave:app:exer:wave2D:Neumann`):
-
-
-.. math::
-   :label: wave:app:exer:standing:waves
-        
-        {u_{\small\mbox{e}}}(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),
-        
-        
-
-Here, :math:`m_x` and :math:`m_y` are freely chosen integers such that
-the wave lengths in the :math:`x` and :math:`y` directions become :math:`2L_x/m_x` and
-:math:`2L_y/m_y`, respectively. The parameter :math:`\omega` is calculated
-by inserting :eq:`wave:app:exer:standing:waves` in the wave equation.
-The solution
-:eq:`wave:app:exer:standing:waves` is a *standing wave*
-with :math:`\partial u/\partial n=0`.
-This :math:`{u_{\small\mbox{e}}}` is not an exact solution of the discrete equations so the
-test must be based on empirical analysis of the convergence.
-The error :math:`E` is assumed to behave like
-
-
-.. math::
-        
-        E = C_t\Delta t^2 + C_x\Delta x^2 + C_y\Delta y^2,
-        
-
-for some constants :math:`C_t`, :math:`C_x`, and :math:`C_y`.
-Choose :math:`\Delta t=F_th`, :math:`\Delta x =F_xh`, and :math:`\Delta y=F_yh`, where
-:math:`h` is a common discretization parameter to be varied (:math:`h\rightarrow 0`)
-and :math:`F_t`, :math:`F_x`, and :math:`F_y` are freely chosen constant factors
-compatible with the stability criterion in 2D. The error can then
-be expressed as
-
-
-.. math::
-        
-        E = Ch^2,
-        
-
-where :math:`C=C_xF_t^2 + C_yF_x^2 + C_tF_t^2`.
-Perform experiments with decreasing :math:`h`, compute :math:`E`, and verify that
-:math:`E/h^2` is approximately constant.
-Filename: ``wave2D_n2.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
 .. _wave:app:exer:tsunami2D:hill:
 
-Exercise 22: Earthquake-generated tsunami over a 3D hill
+Exercise 19: Earthquake-generated tsunami over a 3D hill
 --------------------------------------------------------
 
 This exercise extends :ref:`wave:app:exer:tsunami1D:hill`
@@ -7490,12 +7487,12 @@ to a three-dimensional wave phenomenon, governed by the 2D PDE
 :eq:`wave:app:sw:2D:eta:2ndoeq`. We assume that the earthquake
 arise from a fault along the line :math:`x=0` in the :math:`xy`-plane so that
 the initial lift of the surface can be taken as :math:`I(x)` in
-:ref:`wave:app:exer:tsunami1D:hill`. That is, a plan wave is
+:ref:`wave:app:exer:tsunami1D:hill`. That is, a plane wave is
 propagating to the right, but will experience bending because of
 the bottom.
 
 The bottom shape is now a function of :math:`x` and :math:`y`.
-An "elliptic" Gauss function in two dimensions, with its peak
+An "elliptic" Gaussian function in two dimensions, with its peak
 at :math:`(B_{mx}, B_{my})`, generalizes
 :eq:`wave:app:exer:tsunami1D:hill:Gauss`:
 
@@ -7549,72 +7546,25 @@ The :math:`b` parameter controls the rectangular shape of the cross section of
 the box.
 
 Note that the initial condition and the listed bottom shapes are
-symmetric around the line :math:`y=B_{my}`. We therefore expect the
-surface elevation also to be symmetric with respect to this line.
-This means that we can halve the computational domain by working
-with  :math:`[0,L_x]\times [0, B_{my}]`. Along the upper boundary, :math:`y=B_{my}`,
-we must impose the symmetry condition :math:`\partial \eta/\partial n=0`.
-Such a symmetry condition (:math:`-\eta_x=0`)
-is also needed at the :math:`x=0` boundary because
-the initial condition has a symmetry here. At the lower boundary
-:math:`y=0` we also set a Neumann condition (which becomes :math:`-\eta_y=0`).
-At the right boundary :math:`x=L_x`
-one can either implement a radiation (or open boundary) condition
-as in :ref:`wave:app:exer:tsunami1D:radiation` or just set
-:math:`\eta = 0` or use a reflecting condition :math:`\partial\eta/\partial n
-=\eta_x =0`.
+symmetric around the line :math:`y=B_{my}`. We therefore expect the surface
+elevation also to be symmetric with respect to this line.  This means
+that we can halve the computational domain by working with
+:math:`[0,L_x]\times [0, B_{my}]`. Along the upper boundary, :math:`y=B_{my}`, we
+must impose the symmetry condition :math:`\partial \eta/\partial n=0`.  Such
+a symmetry condition (:math:`-\eta_x=0`) is also needed at the :math:`x=0`
+boundary because the initial condition has a symmetry here. At the
+lower boundary :math:`y=0` we also set a Neumann condition (which becomes
+:math:`-\eta_y=0`).  The wave motion is to be simulated until the wave hits
+the reflecting boundaries where :math:`\partial\eta/\partial n =\eta_x =0`
+(one can also set :math:`\eta =0` - the particular condition does not matter
+as long as the simulation is stopped before the wave is influenced
+by the boundary condition).
 
 Visualize the surface elevation.  Investigate how different hill shapes,
 different sizes of the water gap above the hill, and different
-resolutions :math:`\Delta x` and :math:`\Delta t` influence
+resolutions :math:`\Delta x = \Delta y = h` and :math:`\Delta t` influence
 the numerical quality of the solution.
-Filename: ``tsunami2D_hill.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami2D:hill:compiled:
-
-Exercise 23: Implement loops in compiled languages
---------------------------------------------------
-
-Extend the program from :ref:`wave:app:exer:tsunami2D:hill` such
-that the loops over mesh points, inside the time loop, are
-implemented in compiled languages.
-Consider implementations in
-Cython, Fortran via ``f2py``, C via Cython, C via ``f2py``, C/C++ via Instant,
-and C/C++ via ``scipy.weave``.
-Perform efficiency experiments to investigate the relative performance
-of the various implementations. It is often advantageous to normalize
-CPU times by the fastest method on a given mesh.
-Filename: ``tsunami3D_hill_compiled.py``.
-
-.. --- end exercise ---
-
-
-
-
-
-.. --- begin exercise ---
-
-
-.. _wave:app:exer:tsunami2D:hill:compiled2:
-
-Exercise 24: Write a complete program in Fortran or C
------------------------------------------------------
-
-As an extension of :ref:`wave:app:exer:tsunami2D:hill:compiled2`,
-write the whole ``tsunami3D_hill.py`` code in Fortran, C, or C++ to check
-if there is more to be won with respect to efficiency in large-scale
-problems. This exercise will also illustrate the difference in
-program development with Fortran/C/C++ and Python.
-Filename: ``tsunami3D_hill.f``.
+Filenames: ``tsunami2D_hill.py``, ``tsunami2D_hill.pdf``.
 
 .. --- end exercise ---
 
@@ -7627,7 +7577,7 @@ Filename: ``tsunami3D_hill.f``.
 
 .. _wave:app:exer:tsunami:hill:viz:matplotlib:
 
-Exercise 25: Investigate Matplotlib for visualization
+Exercise 20: Investigate Matplotlib for visualization
 -----------------------------------------------------
 
 Play with native Matplotlib code for visualizing 2D
@@ -7648,13 +7598,12 @@ Filename: ``tsunami2D_hill_mpl.py``.
 
 .. _wave:app:exer:tsunami:hill:viz:packages:
 
-Exercise 26: Investigate visualization packages
+Exercise 21: Investigate visualization packages
 -----------------------------------------------
 
-Explore one or more of the programs below
-for visualizing solutions of 2D or 3D wave equations with variable
-wave velocity. Try to visualize
-both the solution and the wave velocity in the same plot.
+Create some fancy 3D visualization of the water waves *and* the subsea hill
+in :ref:`wave:app:exer:tsunami2D:hill`.
+Try to make the hill transparent. Possible visualization tools are
 
   * `Mayavi <http://code.enthought.com/projects/mayavi/>`_
 
@@ -7662,7 +7611,7 @@ both the solution and the wave velocity in the same plot.
 
   * `OpenDX <http://www.opendx.org/>`_
 
-Filename: ``tsunami2D_hill_mayavi.py``.
+Filename: ``tsunami2D_hill_viz.py``.
 
 .. --- end exercise ---
 
@@ -7673,28 +7622,42 @@ Filename: ``tsunami2D_hill_mayavi.py``.
 .. --- begin exercise ---
 
 
-.. _wave:app:exer:tsunami:hill:harmonic:
+.. _wave:app:exer:tsunami2D:hill:compiled:
 
-Exercise 27: Investigate harmonic vs arithmetic mean
-----------------------------------------------------
+Exercise 22: Implement loops in compiled languages
+--------------------------------------------------
 
-In :ref:`wave:app:exer:tsunami1D:hill`, investigate if
-there is significant difference between the harmonic mean
-:eq:`wave:pde2:var:c:mean:harmonic` and the standard
-arithmetic mean :eq:`wave:pde2:var:c:mean:arithmetic`.
-Use extreme cases for the investigations where the subsea hill is
-close to the flat surface. Pay particular attention to the
-box-shaped obstruction :eq:`wave:app:exer:tsunami1D:hill:box` since
-it has discontinuities.
+Extend the program from :ref:`wave:app:exer:tsunami2D:hill` such
+that the loops over mesh points, inside the time loop, are
+implemented in compiled languages.
+Consider implementations in
+Cython, Fortran via ``f2py``, C via Cython, C via ``f2py``, C/C++ via Instant,
+and C/C++ via ``scipy.weave``.
+Perform efficiency experiments to investigate the relative performance
+of the various implementations. It is often advantageous to normalize
+CPU times by the fastest method on a given mesh.
+Filename: ``tsunami2D_hill_compiled.py``.
 
-Repeat the investigations for the case of a box-shaped obstruction
-in the 2D model from :ref:`wave:app:exer:tsunami2D:hill`.
+.. --- end exercise ---
 
-*Remark.* With a small gap between the obstruction and the free surface,
-and with abrupt changes in the bottom shape, the model PDE does not
-necessarily describe the wave motion in an accurate or qualitatively correct
-way.
-Filename: ``tsunami2D_hill_harmonic.py``.
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _wave:exer:3D:f77:cy:efficiency:
+
+Exercise 23: Test the efficiency of compiled loops in 3D
+--------------------------------------------------------
+
+Extend the ``wave2D_u0.py`` code and the Cython, Fortran, and C versions to 3D.
+Set up an efficiency experiment to determine the relative efficiency of
+pure scalar Python code, vectorized code, Cython-compiled loops,
+Fortran-compiled loops, and C-compiled loops.
+Normalize the CPU time for each mesh by the fastest version.
+Filename: ``wave3D_u0.py``.
 
 .. --- end exercise ---
 
@@ -7707,7 +7670,7 @@ Filename: ``tsunami2D_hill_harmonic.py``.
 
 .. _wave:app:exer:seismic2D:
 
-Exercise 28: Simulate seismic waves in 2D
+Exercise 24: Simulate seismic waves in 2D
 -----------------------------------------
 
 The goal of this exercise is to simulate seismic waves using the
@@ -7747,7 +7710,7 @@ Filename: ``seismic2D.py``.
 
 .. _wave:app:exer:acoustics:
 
-Project 29: Modeling 3D acoustic waves in a room
+Project 25: Modeling 3D acoustic waves in a room
 ------------------------------------------------
 
 The equation for sound waves in air is derived in the section :ref:`wave:app:sound`
@@ -7831,7 +7794,7 @@ Filename: ``acoustics.py``.
 
 .. _wave:app:exer:advec1D:
 
-Project 30: Solve a 1D transport equation
+Project 26: Solve a 1D transport equation
 -----------------------------------------
 
 We shall study the wave equation

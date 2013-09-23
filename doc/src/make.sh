@@ -1,12 +1,23 @@
 #!/bin/sh
 set -x
 
-names="about index index notes plan lectures exercise_delivery oblig1 oblig2 default_project software_packages"
+names="about index notes plan lectures exercise_delivery default_project software_packages"
 dest=../web
 template="--html_template=uio.html"
 
 for name in $names; do
 doconce format html $name $template
+cp $name.html $dest/
+done
+
+names="oblig2 oblig3"
+for name in $names; do
+doconce format html $name
+#doconce format pdflatex $name
+#doconce ptex2tex $name
+#pdflatex $name
+#pdflatex $name
+#cp $name.html $name.pdf $dest/
 cp $name.html $dest/
 done
 

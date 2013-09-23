@@ -109,32 +109,93 @@ Filename: <tt class="docutils literal"><span class="pre">pulse1D_analysis.pdf</s
 </div>
 <div class="section" id="exercise-15-investigate-harmonic-averaging-in-a-1d-model">
 <span id="wave-app-exer-pulse1d-harmonic"></span><h2>Exercise 15: Investigate harmonic averaging in a 1D model<a class="headerlink" href="#exercise-15-investigate-harmonic-averaging-in-a-1d-model" title="Permalink to this headline">¶</a></h2>
-<p>Will harmonic averaging of the wave velocity give better numerical
-results for the case <span class="math">\(s_f=4\)</span> in <a class="reference internal" href="main_wave.html#wave-app-exer-pulse1d"><em>Exercise 8: Send pulse waves through a layered medium</em></a>?
+<p>Harmonic means are often used if the wave velocity is non-smooth or
+discontinuous.  Will harmonic averaging of the wave velocity give less
+numerical noise for the case <span class="math">\(s_f=4\)</span> in <a class="reference internal" href="main_wave.html#wave-app-exer-pulse1d"><em>Exercise 8: Send pulse waves through a layered medium</em></a>?
 Filenames: <tt class="docutils literal"><span class="pre">pulse1D_harmonic.pdf</span></tt>, <tt class="docutils literal"><span class="pre">pulse1D_harmonic.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-16-test-the-efficiency-of-compiled-loops-in-3d">
-<span id="wave-exer-3d-f77-cy-efficiency"></span><h2>Exercise 16: Test the efficiency of compiled loops in 3D<a class="headerlink" href="#exercise-16-test-the-efficiency-of-compiled-loops-in-3d" title="Permalink to this headline">¶</a></h2>
-<p>Extend the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code and the Cython, Fortran, and C versions to 3D.
-Set up an efficiency experiment to determine the relative efficiency of
-pure scalar Python code, vectorized code, Cython-compiled loops,
-Fortran-compiled loops, and C-compiled loops.
-Normalize the CPU time for each mesh by the fastest version.
-Filename: <tt class="docutils literal"><span class="pre">wave3D_u0.py</span></tt>.</p>
+<div class="section" id="exercise-16-implement-open-boundary-conditions">
+<span id="wave-app-exer-radiationbc"></span><h2>Exercise 16: Implement open boundary conditions<a class="headerlink" href="#exercise-16-implement-open-boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-0"></span><p id="index-1">To enable a wave to leave the computational domain and travel
+undisturbed through
+the boundary <span class="math">\(x=L\)</span>, one can in a one-dimensional problem impose the
+following condition, called a <em>radiation condition</em> or
+<em>open boundary condition</em>:</p>
+<div class="math" id="equation-wave:app:exer:radiationBC:eq">
+<span class="eqno">(1)</span>\[     \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}\]</div>
+<p>The parameter <span class="math">\(c\)</span> is the wave velocity.</p>
+<p>Show that <a href="#equation-wave:app:exer:radiationBC:eq">(1)</a> accepts
+a solution <span class="math">\(u = g_R(x-ct)\)</span>, but not <span class="math">\(u = g_L(x+ct)\)</span>. This means
+that <a href="#equation-wave:app:exer:radiationBC:eq">(1)</a> will allow any
+right-going wave <span class="math">\(g_R(x-ct)\)</span> to pass through the boundary.</p>
+<p>A corresponding open boundary condition for a left-going wave
+through <span class="math">\(x=0\)</span> is</p>
+<div class="math" id="equation-wave:app:exer:radiationBC:eqL">
+<span class="eqno">(2)</span>\[     \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}\]</div>
+<p>The condition <a href="#equation-wave:app:exer:radiationBC:eq">(1)</a>
+can be
+discretized by centered differences at the spatial end point <span class="math">\(i=N_x\)</span>,
+corresponding to <span class="math">\(x=x_R\)</span>:</p>
+<div class="math" id="equation-wave:app:exer:radiationBC:eq:op">
+<span class="eqno">(3)</span>\[     [D_{2t}u + cD_{2x}u =0]^n_{N_x}\]\[     \thinspace .\]</div>
+<p>Eliminate the fictitious value <span class="math">\(u_{N_x+1}^n\)</span> by using
+the discrete equation at the same point.
+The equation for the first step, <span class="math">\(u_i^1\)</span>, is in principal affected,
+but we can then use the condition <span class="math">\(u_{N_x}=0\)</span> since the wave
+has not yet reached the right boundary.</p>
+<p>A corresponding open boundary condition for a left-going wave
+through <span class="math">\(x=0\)</span> is</p>
+<div class="math" id="equation-wave:app:exer:radiationBC:eq:opL">
+<span class="eqno">(4)</span>\[     \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}\]</div>
+<p>Implement a solver that incorporates the conditions
+<a href="#equation-wave:app:exer:radiationBC:eq:op">(3)</a> and
+<a href="#equation-wave:app:exer:radiationBC:eq:opL">(4)</a>.  Start with some
+peak-shaped Gaussian function in the middle of the domain as <span class="math">\(I(x)\)</span>
+and demonstrate that waves travel undisturbed out of the domain at
+<span class="math">\(x=L\)</span> and <span class="math">\(x=0\)</span>.  Make a nose test for checking that the surface is
+flat after a certain time.</p>
+<p><em>Remark.</em> The condition <a href="#equation-wave:app:exer:radiationBC:eq">(1)</a>
+works perfectly in 1D when <span class="math">\(c\)</span> is known. In 2D and 3D, however, the
+condition reads <span class="math">\(u_t + c_x u_x + c_y u_y=0\)</span>, where <span class="math">\(c_x\)</span> and
+<span class="math">\(c_y\)</span> are the wave speeds in the <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions. Estimating
+these components (i.e., the direction of the wave) is often
+challenging. Other methods are normally used in 2D and 3D to
+let waves move out of a computational domain.
+Filename: <tt class="docutils literal"><span class="pre">wave1D_open_BC.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-17-earthquake-generated-tsunami-in-a-1d-model">
-<span id="wave-app-exer-tsunami1d"></span><h2>Exercise 17: Earthquake-generated tsunami in a 1D model<a class="headerlink" href="#exercise-17-earthquake-generated-tsunami-in-a-1d-model" title="Permalink to this headline">¶</a></h2>
-<p>A subsea earthquake leads to an immediate lift of the surface, see
-Figure <a class="reference internal" href="main_wave.html#wave-app-fig-1d-tsunami-flat"><em>Sketch of initial water surface due to a subsea earthquake</em></a>. The initial surface shape <span class="math">\(I(x)\)</span> is symmetric
-around <span class="math">\(x=0\)</span> and will split into two tsunamis, one traveling to the right
-and one to the left, as depicted in Figure <a class="reference internal" href="main_wave.html#wave-app-fig-1d-tsunami-2waves"><em>An initial surface elevation is split into two waves</em></a>.
-Since the water surface will remain symmetric with respect to <span class="math">\(x=0\)</span>, given that
-the outgoing wave to the left does not come back due to reflection,
-we insert a boundary <span class="math">\(x=0\)</span> and impose a symmetry condition there: <span class="math">\(\partial\eta\
-\partial x =0\)</span>, where <span class="math">\(\eta(x,t)\)</span> is the elevation of the water surface.
-We are not interested in what happens with the right-going wave after
-it hits the right boundary, so whether we impose
-<span class="math">\(\eta =0\)</span> or <span class="math">\(\partial\eta /\partial x=0\)</span> at that boundary is not of importance.</p>
+<div class="section" id="problem-17-earthquake-generated-tsunami-over-a-subsea-hill">
+<span id="wave-app-exer-tsunami1d-hill"></span><h2>Problem 17: Earthquake-generated tsunami over a subsea hill<a class="headerlink" href="#problem-17-earthquake-generated-tsunami-over-a-subsea-hill" title="Permalink to this headline">¶</a></h2>
+<p>A subsea earthquake leads to an immediate lift of the water surface, see
+Figure <a class="reference internal" href="main_wave.html#wave-app-fig-1d-tsunami-flat"><em>Sketch of initial water surface due to a subsea earthquake</em></a>.  The lifted water surface
+splits into two
+tsunamis, one traveling to the right and one to the left, as depicted
+in Figure <a class="reference internal" href="main_wave.html#wave-app-fig-1d-tsunami-2waves"><em>An initial surface elevation is split into two waves</em></a>.  Since tsunamis are
+normally very long waves, compared to the depth, with a small
+amplitude, compared to the wave length, the wave equation model
+described in the section <a class="reference internal" href="main_wave.html#wave-app-sw-2d"><em>The linear shallow water equations</em></a> is relevant:</p>
+<div class="math">
+\[\eta_{tt} = (gH(x)\eta_x)_x,\]</div>
+<p>where <span class="math">\(g\)</span> is the acceleration of gravity, and <span class="math">\(H(x)\)</span> is the still water depth.</p>
+<div class="figure" id="wave-app-fig-1d-tsunami-flat">
+<img alt="_images/earthquake_tsunami_flat.png" src="_images/earthquake_tsunami_flat.png" style="width: 800px;" />
+<p class="caption"><em>Sketch of initial water surface due to a subsea earthquake</em></p>
+</div>
+<div class="figure" id="wave-app-fig-1d-tsunami-2waves">
+<img alt="_images/earthquake_tsunami_2waves.png" src="_images/earthquake_tsunami_2waves.png" style="width: 800px;" />
+<p class="caption"><em>An initial surface elevation is split into two waves</em></p>
+</div>
+<p>To simulate the right-going tsunami, we can impose
+a symmetry boundary at <span class="math">\(x=0\)</span>: <span class="math">\(\partial\eta\ \partial x =0\)</span>.
+We then simulate the wave motion
+in <span class="math">\([0,L]\)</span>. Unless the ocean ends at <span class="math">\(x=L\)</span>, the waves should travel
+undisturbed through the boundary <span class="math">\(x=L\)</span>. A radiation condition
+as explained in <a class="reference internal" href="main_wave.html#wave-app-exer-radiationbc"><em>Exercise 16: Implement open boundary conditions</em></a> can be
+used for this purpose. Alternatively, one can just stop the simulations
+before the wave hits the boundary at <span class="math">\(x=L\)</span>. In that case it does not
+matter what kind of boundary condition we use
+at <span class="math">\(x=L\)</span>. Imposing <span class="math">\(\eta =0\)</span> and stopping the simulations when
+<span class="math">\(|\eta_i^n| &gt; \epsilon\)</span>, <span class="math">\(i=N_x-1\)</span>, is a possibility (<span class="math">\(\epsilon\)</span> is a
+small parameter).</p>
 <p>The shape of the initial surface can be taken as a
 Gaussian function,</p>
 <div class="math">
@@ -144,75 +205,7 @@ I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},\]</div>
 <span class="math">\(I_s\)</span> being a measure of the width of the function <span class="math">\(I(x)\)</span>
 (<span class="math">\(I_s\)</span> is <span class="math">\(\sqrt{2}\)</span> times the standard deviation of the familiar
 normal distribution curve).</p>
-<p>Set up the relevant one-dimensional, linear, wave equation for <span class="math">\(\eta\)</span>,
-assuming long waves of small amplitude in comparison with the depth,
-as described in the section <a class="reference internal" href="main_wave.html#wave-app-sw-2d"><em>The linear shallow water equations</em></a>. Import the <tt class="docutils literal"><span class="pre">viz</span></tt> method
-from the <tt class="docutils literal"><span class="pre">wave1D.py</span></tt> program and make a call to it to solve the
-present tsunami problem.  The constant speed of the right-going wave is
-<span class="math">\(c=\sqrt{gH}\)</span> and use this quantity to determine a suitable time <span class="math">\(T\)</span>
-for when the wave hits the right boundary and the simulation is to be
-stopped. An alternative is to check in <tt class="docutils literal"><span class="pre">plot_u</span></tt> if <span class="math">\(u[-2]\)</span> is
-significantly different from 0 and then return <tt class="docutils literal"><span class="pre">True</span></tt> to stop
-the simulation.</p>
-<div class="figure" id="wave-app-fig-1d-tsunami-flat">
-<img alt="_images/earthquake_tsunami_flat.png" src="_images/earthquake_tsunami_flat.png" style="width: 800px;" />
-<p class="caption"><em>Sketch of initial water surface due to a subsea earthquake</em></p>
-</div>
-<div class="figure" id="wave-app-fig-1d-tsunami-2waves">
-<img alt="_images/earthquake_tsunami_2waves.png" src="_images/earthquake_tsunami_2waves.png" style="width: 800px;" />
-<p class="caption"><em>An initial surface elevation is split into two waves</em></p>
-</div>
-<p>Filename: <tt class="docutils literal"><span class="pre">tsunami1D_flat.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-18-implement-an-open-boundary-condition">
-<span id="wave-app-exer-tsunami1d-radiation"></span><h2>Exercise 18: Implement an open boundary condition<a class="headerlink" href="#exercise-18-implement-an-open-boundary-condition" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="index-0"></span><p id="index-1">To enable the right-going wave in <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d"><em>Exercise 17: Earthquake-generated tsunami in a 1D model</em></a>
-to leave the computational domain and travel undisturbed through
-the boundary, one can in a one-dimensional problem impose the
-following condition, called a <em>radiation condition</em> or
-<em>open boundary condition</em>:</p>
-<div class="math" id="equation-wave:app:exer:tsunami1D:radiation:eq">
-<span class="eqno">(1)</span>\[     \frac{\partial\eta}{\partial t} + c\frac{\partial\eta}{\partial x} = 0,\]</div>
-<p>at the right boundary <span class="math">\(x=x_R\)</span>. The parameter <span class="math">\(c\)</span> is the wave velocity,
-which for the model in <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d"><em>Exercise 17: Earthquake-generated tsunami in a 1D model</em></a>
-is <span class="math">\(c=\sqrt{gH(x_R)}\)</span>.</p>
-<p>Show that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(1)</a> accepts
-a solution <span class="math">\(\eta = g_R(x-ct)\)</span>, but not <span class="math">\(\eta = g_L(x+ct)\)</span>. This means
-that <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(1)</a> will allow any
-right-going wave <span class="math">\(g_R(x-ct)\)</span> pass through the boundary.</p>
-<p>The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(1)</a> can be
-discretized by centered differences at the spatial end point <span class="math">\(i=N_x\)</span>,
-corresponding to <span class="math">\(x=x_R\)</span>:</p>
-<div class="math" id="equation-wave:app:exer:tsunami1D:radiation:eq:op">
-<span class="eqno">(2)</span>\[     [D_{2t}\eta + cD_{2x}\eta =0]^n_{N_x}\]\[     \thinspace .\]</div>
-<p>Eliminate the fictitious value <span class="math">\(\eta_{N_x+1}^n\)</span> by using
-the discrete equation at the same point <span class="math">\((n,N_x)\)</span>.
-The equation for the first step, <span class="math">\(\eta_i^1\)</span>, is in principal affected,
-but we can then use the condition <span class="math">\(\eta^1_{N_x}=0\)</span> since the wave
-has not yet reached the right boundary.</p>
-<p>Modify the <tt class="docutils literal"><span class="pre">solver</span></tt> function in the <tt class="docutils literal"><span class="pre">wave1D.py</span></tt> program to
-incorporate the condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq:op">(2)</a>.
-Demonstrate that the tsunami travels through the domain and out of
-the right boundary without leaving any reflections behind.
-Make a nose test for checking that after a certain time <span class="math">\(T\)</span>, the surface is
-flat.</p>
-<p><em>Remark 1.</em> The condition <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(1)</a>
-works perfectly in 1D when <span class="math">\(c\)</span> is known. In 2D and 3D, however, the
-condition reads <span class="math">\(\eta_t + c_x\eta_x + c_y\eta_y=0\)</span>, where <span class="math">\(c_x\)</span> and
-<span class="math">\(c_y\)</span> are the wave speeds in the <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions, and estimating
-these components (i.e., the direction of the wave) is often
-challenging. Other methods are normally used in 2D and 3D to
-let waves move out of a computational domain.</p>
-<p><em>Remark 2.</em> A radiation or open boundary condition at the left
-boundary takes the same form as <a href="#equation-wave:app:exer:tsunami1D:radiation:eq">(1)</a>,
-except that there is a minus sign in front of the <span class="math">\(c\eta_x\)</span>
-term. One can easily show that with this sign, the condition accepts
-left-going waves of the form <span class="math">\(\eta = g_L(x+ct)\)</span>.
-Filename: <tt class="docutils literal"><span class="pre">wave1D_Ropen.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-19-earthquake-generated-tsunami-over-a-subsea-hill">
-<span id="wave-app-exer-tsunami1d-hill"></span><h2>Exercise 19: Earthquake-generated tsunami over a subsea hill<a class="headerlink" href="#exercise-19-earthquake-generated-tsunami-over-a-subsea-hill" title="Permalink to this headline">¶</a></h2>
-<p>We consider the same problem as in <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d"><em>Exercise 17: Earthquake-generated tsunami in a 1D model</em></a>, but now there is a hill at the sea
+<p>Now we extend the problem with a hill at the sea
 bottom, see Figure <a class="reference internal" href="main_wave.html#wave-app-fig-1d-tsunami-hill"><em>Sketch of an earthquake-generated tsunami passing over a subsea hill</em></a>. The wave speed
 <span class="math">\(c=\sqrt{gH(x)} = \sqrt{g(H_0-B(x))}\)</span> will then be reduced in the
 shallow water above the hill.</p>
@@ -223,37 +216,36 @@ shallow water above the hill.</p>
 <p>One possible form of the
 hill is a Gaussian function,</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:Gauss">
-<span class="eqno">(3)</span>\[     B(x;B_0,B_a,B_m,B_s) =
+<span class="eqno">(5)</span>\[     B(x;B_0,B_a,B_m,B_s) =
      B_0 + B_a\exp{\left(-\left(\frac{x-B_m}{B_s}\right)^2\right)},\]</div>
 <p>but many other shapes are also possible, e.g., a &#8220;cosine hat&#8221; where</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:cohat">
-<span class="eqno">(4)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a\cos{\left( \pi\frac{x-B_m}{2B_s}\right)},\]</div>
+<span class="eqno">(6)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a\cos{\left( \pi\frac{x-B_m}{2B_s}\right)},\]</div>
 <p>when <span class="math">\(x\in [B_m - B_s, B_m + B_s]\)</span> while <span class="math">\(B=B_0\)</span> outside this
 interval.</p>
 <p>Also an abrupt construction may be tried:</p>
 <div class="math" id="equation-wave:app:exer:tsunami1D:hill:box">
-<span class="eqno">(5)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a,\]</div>
+<span class="eqno">(7)</span>\[     B(x; B_0, B_a, B_m, B_s) = B_0 + B_a,\]</div>
 <p>for <span class="math">\(x\in [B_m - B_s, B_m + B_s]\)</span> while <span class="math">\(B=B_0\)</span> outside this
 interval.</p>
-<p>Visualize both the bottom topography and the
-water surface elevation (this requires modifying <tt class="docutils literal"><span class="pre">plot_u</span></tt>).
-Allow for a flexible choice of bottom shape,
-<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(3)</a>,
-<a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(4)</a>,
-<a href="#equation-wave:app:exer:tsunami1D:hill:box">(5)</a>, or <span class="math">\(B(x)=B_0\)</span> (flat)
-and see if the waves become
-qualitatively different. Also investigate the amount of numerical
-noise that is triggered by rapid changes in the bottom function
-and a small water gap at the top of the hill, and how this noise
-varies with the mesh resolution <span class="math">\(\Delta x\)</span>.
-Use either the open boundary condition from
-<a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-radiation"><em>Exercise 18: Implement an open boundary condition</em></a>, or set <span class="math">\(\eta =0\)</span> at
-the right boundary and stop the simulation when the wave hits this
-boundary.
-Filename: <tt class="docutils literal"><span class="pre">tsunami1D_hill.py</span></tt>.</p>
+<p>The <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave1D/wave1D_dn_vc.py">wave1D_dn_vc.py</a>
+program can be used as starting point for the implementation.
+Visualize both the bottom topography and the
+water surface elevation in
+the same plot.
+Allow for a flexible choice of bottom shape:
+<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(5)</a>,
+<a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(6)</a>,
+<a href="#equation-wave:app:exer:tsunami1D:hill:box">(7)</a>, or <span class="math">\(B(x)=B_0\)</span> (flat).</p>
+<p>The purpose of this problem is to explore the quality of the numerical
+solution <span class="math">\(\eta^n_i\)</span> for different shapes of the bottom obstruction.
+The &#8220;cosine hat&#8221; and the box-shaped hills have abrupt changes in the
+derivative of <span class="math">\(H(x)\)</span> and are more likely to generate numerical noise
+than the smooth Gaussian shape of the hill. Investigate if this is true.
+Filenames: <tt class="docutils literal"><span class="pre">tsunami1D_hill.py</span></tt>, <tt class="docutils literal"><span class="pre">tsunami1D_hill.pdf</span></tt>.</p>
 </div>
-<div class="section" id="exercise-20-implement-neumann-conditions-in-2d">
-<span id="wave-app-exer-wave2d-neumann"></span><h2>Exercise 20: Implement Neumann conditions in 2D<a class="headerlink" href="#exercise-20-implement-neumann-conditions-in-2d" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-18-implement-neumann-conditions-in-2d">
+<span id="wave-app-exer-wave2d-neumann"></span><h2>Exercise 18: Implement Neumann conditions in 2D<a class="headerlink" href="#exercise-18-implement-neumann-conditions-in-2d" title="Permalink to this headline">¶</a></h2>
 <p>Modify the <a class="reference external" href="/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
 program, which solves the 2D wave equation <span class="math">\(u_{tt}=c^2(u_{xx}+u_{yy})\)</span>
 with constant wave velocity <span class="math">\(c\)</span> and <span class="math">\(u=0\)</span> on the boundary, to have
@@ -273,70 +265,37 @@ in <span class="math">\(x\)</span> direction (<span class="math">\(c\Delta t/\De
 and <span class="math">\(y\)</span> direction (<span class="math">\(c\Delta t/\Delta y=1\)</span>, <span class="math">\(\Delta x\)</span> arbitrary).
 Filename: <tt class="docutils literal"><span class="pre">wave2D_n.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-21-implement-a-convergence-test-for-a-2d-code">
-<h2>Exercise 21: Implement a convergence test for a 2D code<a class="headerlink" href="#exercise-21-implement-a-convergence-test-for-a-2d-code" title="Permalink to this headline">¶</a></h2>
-<p>Use the following manufactured solution to verify a 2D code
-for <span class="math">\(u_{tt}=c^2(u_{xx}+u_{yy})\)</span> in the spatial domain
-<span class="math">\([0,L_x]\times [0,L_y]\)</span>, with <span class="math">\(\partial u/\partial n\)</span> on the boundary
-(cf. <a class="reference internal" href="main_wave.html#wave-app-exer-wave2d-neumann"><em>Exercise 20: Implement Neumann conditions in 2D</em></a>):</p>
-<div class="math" id="equation-wave:app:exer:standing:waves">
-<span class="eqno">(6)</span>\[     {u_{\small\mbox{e}}}(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),\]</div>
-<p>Here, <span class="math">\(m_x\)</span> and <span class="math">\(m_y\)</span> are freely chosen integers such that
-the wave lengths in the <span class="math">\(x\)</span> and <span class="math">\(y\)</span> directions become <span class="math">\(2L_x/m_x\)</span> and
-<span class="math">\(2L_y/m_y\)</span>, respectively. The parameter <span class="math">\(\omega\)</span> is calculated
-by inserting <a href="#equation-wave:app:exer:standing:waves">(6)</a> in the wave equation.
-The solution
-<a href="#equation-wave:app:exer:standing:waves">(6)</a> is a <em>standing wave</em>
-with <span class="math">\(\partial u/\partial n=0\)</span>.
-This <span class="math">\({u_{\small\mbox{e}}}\)</span> is not an exact solution of the discrete equations so the
-test must be based on empirical analysis of the convergence.
-The error <span class="math">\(E\)</span> is assumed to behave like</p>
-<div class="math">
-\[E = C_t\Delta t^2 + C_x\Delta x^2 + C_y\Delta y^2,\]</div>
-<p>for some constants <span class="math">\(C_t\)</span>, <span class="math">\(C_x\)</span>, and <span class="math">\(C_y\)</span>.
-Choose <span class="math">\(\Delta t=F_th\)</span>, <span class="math">\(\Delta x =F_xh\)</span>, and <span class="math">\(\Delta y=F_yh\)</span>, where
-<span class="math">\(h\)</span> is a common discretization parameter to be varied (<span class="math">\(h\rightarrow 0\)</span>)
-and <span class="math">\(F_t\)</span>, <span class="math">\(F_x\)</span>, and <span class="math">\(F_y\)</span> are freely chosen constant factors
-compatible with the stability criterion in 2D. The error can then
-be expressed as</p>
-<div class="math">
-\[E = Ch^2,\]</div>
-<p>where <span class="math">\(C=C_xF_t^2 + C_yF_x^2 + C_tF_t^2\)</span>.
-Perform experiments with decreasing <span class="math">\(h\)</span>, compute <span class="math">\(E\)</span>, and verify that
-<span class="math">\(E/h^2\)</span> is approximately constant.
-Filename: <tt class="docutils literal"><span class="pre">wave2D_n2.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-22-earthquake-generated-tsunami-over-a-3d-hill">
-<span id="wave-app-exer-tsunami2d-hill"></span><h2>Exercise 22: Earthquake-generated tsunami over a 3D hill<a class="headerlink" href="#exercise-22-earthquake-generated-tsunami-over-a-3d-hill" title="Permalink to this headline">¶</a></h2>
-<p>This exercise extends <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-hill"><em>Exercise 19: Earthquake-generated tsunami over a subsea hill</em></a>
+<div class="section" id="exercise-19-earthquake-generated-tsunami-over-a-3d-hill">
+<span id="wave-app-exer-tsunami2d-hill"></span><h2>Exercise 19: Earthquake-generated tsunami over a 3D hill<a class="headerlink" href="#exercise-19-earthquake-generated-tsunami-over-a-3d-hill" title="Permalink to this headline">¶</a></h2>
+<p>This exercise extends <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-hill"><em>Problem 17: Earthquake-generated tsunami over a subsea hill</em></a>
 to a three-dimensional wave phenomenon, governed by the 2D PDE
 <a href="#equation-wave:app:sw:2D:eta:2ndoeq">(?)</a>. We assume that the earthquake
 arise from a fault along the line <span class="math">\(x=0\)</span> in the <span class="math">\(xy\)</span>-plane so that
 the initial lift of the surface can be taken as <span class="math">\(I(x)\)</span> in
-<a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-hill"><em>Exercise 19: Earthquake-generated tsunami over a subsea hill</em></a>. That is, a plan wave is
+<a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-hill"><em>Problem 17: Earthquake-generated tsunami over a subsea hill</em></a>. That is, a plane wave is
 propagating to the right, but will experience bending because of
 the bottom.</p>
 <p>The bottom shape is now a function of <span class="math">\(x\)</span> and <span class="math">\(y\)</span>.
-An &#8220;elliptic&#8221; Gauss function in two dimensions, with its peak
+An &#8220;elliptic&#8221; Gaussian function in two dimensions, with its peak
 at <span class="math">\((B_{mx}, B_{my})\)</span>, generalizes
-<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(3)</a>:</p>
+<a href="#equation-wave:app:exer:tsunami1D:hill:Gauss">(5)</a>:</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:Gauss">
-<span class="eqno">(7)</span>\[     B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
+<span class="eqno">(8)</span>\[     B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
      B_0 + B_a\exp{\left(-\left(\frac{x-B_{mx}}{B_s}\right)^2
      -\left(\frac{y-B_{my}}{bB_s}\right)^2\right)},\]</div>
 <p>where <span class="math">\(b\)</span> is a scaling parameter: <span class="math">\(b=1\)</span> gives a circular Gaussian
 function with circular contour lines, while <span class="math">\(b\neq 1\)</span> gives an elliptic
 shape with elliptic contour lines.</p>
-<p>The &#8220;cosine hat&#8221; <a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(4)</a> can also be
+<p>The &#8220;cosine hat&#8221; <a href="#equation-wave:app:exer:tsunami1D:hill:cohat">(6)</a> can also be
 generalized to</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:cohat">
-<span class="eqno">(8)</span>\[     B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
+<span class="eqno">(9)</span>\[     B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
      B_0 + B_a\cos{\left( \pi\frac{x-B_{mx}}{2B_s}\right)}
      \cos{\left( \pi\frac{y-B_{my}}{2B_s}\right)},\]</div>
 <p>when <span class="math">\(0 \leq \sqrt{x^2+y^2} \leq B_s\)</span> and <span class="math">\(B=B_0\)</span> outside this circle.</p>
 <p>A box-shaped obstacle means that</p>
 <div class="math" id="equation-wave:app:exer:tsunami2D:hill:box">
-<span class="eqno">(9)</span>\[     B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a\]</div>
+<span class="eqno">(10)</span>\[     B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a\]</div>
 <p>for <span class="math">\(x\)</span> and <span class="math">\(y\)</span> inside a rectangle</p>
 <div class="math">
 \[B_{mx}-B_s \leq  x \leq B_{mx} + B_s,\quad
@@ -345,29 +304,51 @@ B_{my}-bB_s \leq  y \leq B_{my} + bB_s,\]</div>
 The <span class="math">\(b\)</span> parameter controls the rectangular shape of the cross section of
 the box.</p>
 <p>Note that the initial condition and the listed bottom shapes are
-symmetric around the line <span class="math">\(y=B_{my}\)</span>. We therefore expect the
-surface elevation also to be symmetric with respect to this line.
-This means that we can halve the computational domain by working
-with  <span class="math">\([0,L_x]\times [0, B_{my}]\)</span>. Along the upper boundary, <span class="math">\(y=B_{my}\)</span>,
-we must impose the symmetry condition <span class="math">\(\partial \eta/\partial n=0\)</span>.
-Such a symmetry condition (<span class="math">\(-\eta_x=0\)</span>)
-is also needed at the <span class="math">\(x=0\)</span> boundary because
-the initial condition has a symmetry here. At the lower boundary
-<span class="math">\(y=0\)</span> we also set a Neumann condition (which becomes <span class="math">\(-\eta_y=0\)</span>).
-At the right boundary <span class="math">\(x=L_x\)</span>
-one can either implement a radiation (or open boundary) condition
-as in <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-radiation"><em>Exercise 18: Implement an open boundary condition</em></a> or just set
-<span class="math">\(\eta = 0\)</span> or use a reflecting condition <span class="math">\(\partial\eta/\partial n
-=\eta_x =0\)</span>.</p>
+symmetric around the line <span class="math">\(y=B_{my}\)</span>. We therefore expect the surface
+elevation also to be symmetric with respect to this line.  This means
+that we can halve the computational domain by working with
+<span class="math">\([0,L_x]\times [0, B_{my}]\)</span>. Along the upper boundary, <span class="math">\(y=B_{my}\)</span>, we
+must impose the symmetry condition <span class="math">\(\partial \eta/\partial n=0\)</span>.  Such
+a symmetry condition (<span class="math">\(-\eta_x=0\)</span>) is also needed at the <span class="math">\(x=0\)</span>
+boundary because the initial condition has a symmetry here. At the
+lower boundary <span class="math">\(y=0\)</span> we also set a Neumann condition (which becomes
+<span class="math">\(-\eta_y=0\)</span>).  The wave motion is to be simulated until the wave hits
+the reflecting boundaries where <span class="math">\(\partial\eta/\partial n =\eta_x =0\)</span>
+(one can also set <span class="math">\(\eta =0\)</span> - the particular condition does not matter
+as long as the simulation is stopped before the wave is influenced
+by the boundary condition).</p>
 <p>Visualize the surface elevation.  Investigate how different hill shapes,
 different sizes of the water gap above the hill, and different
-resolutions <span class="math">\(\Delta x\)</span> and <span class="math">\(\Delta t\)</span> influence
+resolutions <span class="math">\(\Delta x = \Delta y = h\)</span> and <span class="math">\(\Delta t\)</span> influence
 the numerical quality of the solution.
-Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill.py</span></tt>.</p>
+Filenames: <tt class="docutils literal"><span class="pre">tsunami2D_hill.py</span></tt>, <tt class="docutils literal"><span class="pre">tsunami2D_hill.pdf</span></tt>.</p>
 </div>
-<div class="section" id="exercise-23-implement-loops-in-compiled-languages">
-<span id="wave-app-exer-tsunami2d-hill-compiled"></span><h2>Exercise 23: Implement loops in compiled languages<a class="headerlink" href="#exercise-23-implement-loops-in-compiled-languages" title="Permalink to this headline">¶</a></h2>
-<p>Extend the program from <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami2d-hill"><em>Exercise 22: Earthquake-generated tsunami over a 3D hill</em></a> such
+<div class="section" id="exercise-20-investigate-matplotlib-for-visualization">
+<span id="wave-app-exer-tsunami-hill-viz-matplotlib"></span><h2>Exercise 20: Investigate Matplotlib for visualization<a class="headerlink" href="#exercise-20-investigate-matplotlib-for-visualization" title="Permalink to this headline">¶</a></h2>
+<p>Play with native Matplotlib code for visualizing 2D
+solutions of the wave equation with variable wave velocity.
+See if there
+are effective ways to visualize both the solution and the wave
+velocity.
+Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_mpl.py</span></tt>.</p>
+</div>
+<div class="section" id="exercise-21-investigate-visualization-packages">
+<span id="wave-app-exer-tsunami-hill-viz-packages"></span><h2>Exercise 21: Investigate visualization packages<a class="headerlink" href="#exercise-21-investigate-visualization-packages" title="Permalink to this headline">¶</a></h2>
+<p>Create some fancy 3D visualization of the water waves <em>and</em> the subsea hill
+in <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami2d-hill"><em>Exercise 19: Earthquake-generated tsunami over a 3D hill</em></a>.
+Try to make the hill transparent. Possible visualization tools are</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://code.enthought.com/projects/mayavi/">Mayavi</a></li>
+<li><a class="reference external" href="http://www.paraview.org/">Paraview</a></li>
+<li><a class="reference external" href="http://www.opendx.org/">OpenDX</a></li>
+</ul>
+</div></blockquote>
+<p>Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_viz.py</span></tt>.</p>
+</div>
+<div class="section" id="exercise-22-implement-loops-in-compiled-languages">
+<span id="wave-app-exer-tsunami2d-hill-compiled"></span><h2>Exercise 22: Implement loops in compiled languages<a class="headerlink" href="#exercise-22-implement-loops-in-compiled-languages" title="Permalink to this headline">¶</a></h2>
+<p>Extend the program from <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami2d-hill"><em>Exercise 19: Earthquake-generated tsunami over a 3D hill</em></a> such
 that the loops over mesh points, inside the time loop, are
 implemented in compiled languages.
 Consider implementations in
@@ -376,61 +357,19 @@ and C/C++ via <tt class="docutils literal"><span class="pre">scipy.weave</span><
 Perform efficiency experiments to investigate the relative performance
 of the various implementations. It is often advantageous to normalize
 CPU times by the fastest method on a given mesh.
-Filename: <tt class="docutils literal"><span class="pre">tsunami3D_hill_compiled.py</span></tt>.</p>
+Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_compiled.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-24-write-a-complete-program-in-fortran-or-c">
-<span id="wave-app-exer-tsunami2d-hill-compiled2"></span><h2>Exercise 24: Write a complete program in Fortran or C<a class="headerlink" href="#exercise-24-write-a-complete-program-in-fortran-or-c" title="Permalink to this headline">¶</a></h2>
-<p>As an extension of <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami2d-hill-compiled2"><em>Exercise 24: Write a complete program in Fortran or C</em></a>,
-write the whole <tt class="docutils literal"><span class="pre">tsunami3D_hill.py</span></tt> code in Fortran, C, or C++ to check
-if there is more to be won with respect to efficiency in large-scale
-problems. This exercise will also illustrate the difference in
-program development with Fortran/C/C++ and Python.
-Filename: <tt class="docutils literal"><span class="pre">tsunami3D_hill.f</span></tt>.</p>
+<div class="section" id="exercise-23-test-the-efficiency-of-compiled-loops-in-3d">
+<span id="wave-exer-3d-f77-cy-efficiency"></span><h2>Exercise 23: Test the efficiency of compiled loops in 3D<a class="headerlink" href="#exercise-23-test-the-efficiency-of-compiled-loops-in-3d" title="Permalink to this headline">¶</a></h2>
+<p>Extend the <tt class="docutils literal"><span class="pre">wave2D_u0.py</span></tt> code and the Cython, Fortran, and C versions to 3D.
+Set up an efficiency experiment to determine the relative efficiency of
+pure scalar Python code, vectorized code, Cython-compiled loops,
+Fortran-compiled loops, and C-compiled loops.
+Normalize the CPU time for each mesh by the fastest version.
+Filename: <tt class="docutils literal"><span class="pre">wave3D_u0.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-25-investigate-matplotlib-for-visualization">
-<span id="wave-app-exer-tsunami-hill-viz-matplotlib"></span><h2>Exercise 25: Investigate Matplotlib for visualization<a class="headerlink" href="#exercise-25-investigate-matplotlib-for-visualization" title="Permalink to this headline">¶</a></h2>
-<p>Play with native Matplotlib code for visualizing 2D
-solutions of the wave equation with variable wave velocity.
-See if there
-are effective ways to visualize both the solution and the wave
-velocity.
-Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_mpl.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-26-investigate-visualization-packages">
-<span id="wave-app-exer-tsunami-hill-viz-packages"></span><h2>Exercise 26: Investigate visualization packages<a class="headerlink" href="#exercise-26-investigate-visualization-packages" title="Permalink to this headline">¶</a></h2>
-<p>Explore one or more of the programs below
-for visualizing solutions of 2D or 3D wave equations with variable
-wave velocity. Try to visualize
-both the solution and the wave velocity in the same plot.</p>
-<blockquote>
-<div><ul class="simple">
-<li><a class="reference external" href="http://code.enthought.com/projects/mayavi/">Mayavi</a></li>
-<li><a class="reference external" href="http://www.paraview.org/">Paraview</a></li>
-<li><a class="reference external" href="http://www.opendx.org/">OpenDX</a></li>
-</ul>
-</div></blockquote>
-<p>Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_mayavi.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-27-investigate-harmonic-vs-arithmetic-mean">
-<span id="wave-app-exer-tsunami-hill-harmonic"></span><h2>Exercise 27: Investigate harmonic vs arithmetic mean<a class="headerlink" href="#exercise-27-investigate-harmonic-vs-arithmetic-mean" title="Permalink to this headline">¶</a></h2>
-<p>In <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami1d-hill"><em>Exercise 19: Earthquake-generated tsunami over a subsea hill</em></a>, investigate if
-there is significant difference between the harmonic mean
-<a href="#equation-wave:pde2:var:c:mean:harmonic">(?)</a> and the standard
-arithmetic mean <a href="#equation-wave:pde2:var:c:mean:arithmetic">(?)</a>.
-Use extreme cases for the investigations where the subsea hill is
-close to the flat surface. Pay particular attention to the
-box-shaped obstruction <a href="#equation-wave:app:exer:tsunami1D:hill:box">(5)</a> since
-it has discontinuities.</p>
-<p>Repeat the investigations for the case of a box-shaped obstruction
-in the 2D model from <a class="reference internal" href="main_wave.html#wave-app-exer-tsunami2d-hill"><em>Exercise 22: Earthquake-generated tsunami over a 3D hill</em></a>.</p>
-<p><em>Remark.</em> With a small gap between the obstruction and the free surface,
-and with abrupt changes in the bottom shape, the model PDE does not
-necessarily describe the wave motion in an accurate or qualitatively correct
-way.
-Filename: <tt class="docutils literal"><span class="pre">tsunami2D_hill_harmonic.py</span></tt>.</p>
-</div>
-<div class="section" id="exercise-28-simulate-seismic-waves-in-2d">
-<span id="wave-app-exer-seismic2d"></span><h2>Exercise 28: Simulate seismic waves in 2D<a class="headerlink" href="#exercise-28-simulate-seismic-waves-in-2d" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-24-simulate-seismic-waves-in-2d">
+<span id="wave-app-exer-seismic2d"></span><h2>Exercise 24: Simulate seismic waves in 2D<a class="headerlink" href="#exercise-24-simulate-seismic-waves-in-2d" title="Permalink to this headline">¶</a></h2>
 <p>The goal of this exercise is to simulate seismic waves using the
 PDE model <a href="#equation-wave:app:acoustic:seismic:accoustic1a">(?)</a> in a
 2D <span class="math">\(xz\)</span> domain with geological layers.
@@ -453,8 +392,8 @@ to have <span class="math">\(p=p_0\)</span>, where <span class="math">\(p_0\)</s
 at the upper boundary.
 Filename: <tt class="docutils literal"><span class="pre">seismic2D.py</span></tt>.</p>
 </div>
-<div class="section" id="project-29-modeling-3d-acoustic-waves-in-a-room">
-<span id="wave-app-exer-acoustics"></span><h2>Project 29: Modeling 3D acoustic waves in a room<a class="headerlink" href="#project-29-modeling-3d-acoustic-waves-in-a-room" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="project-25-modeling-3d-acoustic-waves-in-a-room">
+<span id="wave-app-exer-acoustics"></span><h2>Project 25: Modeling 3D acoustic waves in a room<a class="headerlink" href="#project-25-modeling-3d-acoustic-waves-in-a-room" title="Permalink to this headline">¶</a></h2>
 <p>The equation for sound waves in air is derived in the section <a class="reference internal" href="main_wave.html#wave-app-sound"><em>Sound waves in liquids and gases</em></a>
 and reads</p>
 <div class="math">
@@ -501,11 +440,11 @@ because of discontinuity in <span class="math">\(b\)</span> and absorption becau
 Experiment with the impact of the <span class="math">\(\tau_s\)</span> parameter.
 Filename: <tt class="docutils literal"><span class="pre">acoustics.py</span></tt>.</p>
 </div>
-<div class="section" id="project-30-solve-a-1d-transport-equation">
-<span id="wave-app-exer-advec1d"></span><h2>Project 30: Solve a 1D transport equation<a class="headerlink" href="#project-30-solve-a-1d-transport-equation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="project-26-solve-a-1d-transport-equation">
+<span id="wave-app-exer-advec1d"></span><h2>Project 26: Solve a 1D transport equation<a class="headerlink" href="#project-26-solve-a-1d-transport-equation" title="Permalink to this headline">¶</a></h2>
 <p>We shall study the wave equation</p>
 <div class="math" id="equation-wave:app:exer:advec1D:ueq">
-<span class="eqno">(10)</span>\[     u_t + cu_x = 0,\quad x\in (0,L],\ t\in (0, T],\]</div>
+<span class="eqno">(11)</span>\[     u_t + cu_x = 0,\quad x\in (0,L],\ t\in (0, T],\]</div>
 <p>with initial condition</p>
 <div class="math">
 \[u(x,0) = I(x),\quad x\in [0,L],\]</div>
@@ -518,7 +457,7 @@ comes in at <span class="math">\(x=0\)</span>. Roughly speaking,
 we need only one boundary condition because of
 the spatial derivative is of first order only.</p>
 <p><em>Physical interpretation.</em> The parameter <span class="math">\(c\)</span> can be constant or variable, <span class="math">\(c=c(x)\)</span>. The
-equation <a href="#equation-wave:app:exer:advec1D:ueq">(10)</a> arises in <em>transport</em>
+equation <a href="#equation-wave:app:exer:advec1D:ueq">(11)</a> arises in <em>transport</em>
 problems where a quantity <span class="math">\(u\)</span>, which could be temperature or
 concentration of some contaminant, is transported with the velocity
 <span class="math">\(c\)</span> of a fluid. In addition to the transport imposed by &#8220;travelling with
@@ -526,14 +465,14 @@ the fluid&#8221;, <span class="math">\(u\)</span> may also be transported by dif
 heat conduction or Fickian diffusion), but we have in
 the model <span class="math">\(u_t + cu_x\)</span> assumed that diffusion effects are negligible,
 which they often are.</p>
-<p>A widely used numerical scheme for <a href="#equation-wave:app:exer:advec1D:ueq">(10)</a>
+<p>A widely used numerical scheme for <a href="#equation-wave:app:exer:advec1D:ueq">(11)</a>
 applies a forward difference in time and a backward difference in
 space when <span class="math">\(c&gt;0\)</span>:</p>
 <div class="math" id="equation-wave:app:exer:advec1D:u:upwind">
-<span class="eqno">(11)</span>\[     [D_t^+ u + cD_x^-u = 0]_i^n\]\[     \thinspace .\]</div>
+<span class="eqno">(12)</span>\[     [D_t^+ u + cD_x^-u = 0]_i^n\]\[     \thinspace .\]</div>
 <p>For <span class="math">\(c&lt;0\)</span> we use a forward difference in space: <span class="math">\([cD_x^+u]_i^n\)</span>.</p>
 <p>We shall hereafter assume that <span class="math">\(=c(x)&gt;0\)</span>.</p>
-<p>To compute <a href="#equation-wave:app:exer:advec1D:u:avar:sol">(16)</a> we need to integrate
+<p>To compute <a href="#equation-wave:app:exer:advec1D:u:avar:sol">(17)</a> we need to integrate
 <span class="math">\(1/c\)</span> to obtain <span class="math">\(C\)</span> and then compute the inverse of <span class="math">\(C\)</span>.</p>
 <p>The inverse function computation can be easily done if we first think
 discretely. Say we have some function <span class="math">\(y=g(x)\)</span> and seeks its inverse.
@@ -563,20 +502,20 @@ a Trapezoidal rule. Suppose we have computed <span class="math">\(C(x_i)\)</span
 to compute <span class="math">\(C(x_{i+1})\)</span>. Using the Trapezoidal rule with <span class="math">\(m\)</span> subintervals
 over the integration domain <span class="math">\([x_i,x_{i+1}]\)</span> gives</p>
 <div class="math" id="equation-wave:app:exer:advec1D:C:recursion">
-<span class="eqno">(12)</span>\[     C(x_{i+1}) = C(x_i) + \int_{x_i}^{x_{i+1}} \frac{dx}{c}
+<span class="eqno">(13)</span>\[     C(x_{i+1}) = C(x_i) + \int_{x_i}^{x_{i+1}} \frac{dx}{c}
      \approx h\left(
      \frac{1}{2}\frac{1}{c(x_i)} + \frac{1}{2}\frac{1}{c(x_{i+1})}
      + \sum_{j=1}^{m-1} \frac{1}{c(x_i + jh)}\right),\]</div>
 <p>where <span class="math">\(h=(x_{i+1}-x_i)/m\)</span> is the length of the subintervals used
 for the integral over <span class="math">\([x_i,x_{i+1}]\)</span>.
-We observe that <a href="#equation-wave:app:exer:advec1D:C:recursion">(12)</a> is a
+We observe that <a href="#equation-wave:app:exer:advec1D:C:recursion">(13)</a> is a
 <em>difference equation</em> which we can solve by repeatedly
-applying <a href="#equation-wave:app:exer:advec1D:C:recursion">(12)</a> for
+applying <a href="#equation-wave:app:exer:advec1D:C:recursion">(13)</a> for
 <span class="math">\(i=0,1,\ldots,N_x-1\)</span> if a mesh <span class="math">\(x_0,x_,\ldots,x_{N_x}\)</span> is prescribed.
 Note that <span class="math">\(C(0)=0\)</span>.</p>
 <p><em>a)</em> Show that under the assumption of <span class="math">\(a=\hbox{const}\)</span>,</p>
 <div class="math" id="equation-wave:app:exer:advec1D:uexact">
-<span class="eqno">(13)</span>\[     u(x,t) = I(x - ct)\]</div>
+<span class="eqno">(14)</span>\[     u(x,t) = I(x - ct)\]</div>
 <p>fulfills the PDE as well as the initial and boundary condition
 (provided <span class="math">\(I(0)=I(L)\)</span>).</p>
 <p><em>b)</em> Set up a computational algorithm and implement it in a function.
@@ -587,11 +526,11 @@ the numerical solution is exact at the mesh points if
 <p><em>d)</em> Make a movie comparing the numerical and exact solution for the
 following two choices of initial conditions:</p>
 <div class="math" id="equation-wave:app:exer:advec1D:I:sin">
-<span class="eqno">(14)</span>\[      I(x) = \left\lbrack\sin\left(\pi\frac{x}{L}\right)\right\rbrack^{2n}\]</div>
+<span class="eqno">(15)</span>\[      I(x) = \left\lbrack\sin\left(\pi\frac{x}{L}\right)\right\rbrack^{2n}\]</div>
 <p>where <span class="math">\(n\)</span> is an integer, typically <span class="math">\(n=5\)</span>,
 and</p>
 <div class="math" id="equation-wave:app:exer:advec1D:I:gauss">
-<span class="eqno">(15)</span>\[     I(x) = \exp{\left( -\frac{(x-L/2)^2}{2\sigma2}\right)} \thinspace .\]</div>
+<span class="eqno">(16)</span>\[     I(x) = \exp{\left( -\frac{(x-L/2)^2}{2\sigma2}\right)} \thinspace .\]</div>
 <p>Choose <span class="math">\(\Delta t = c^{-1}\Delta x, 0.9c^{-1}\Delta x, 0.5c^{-1}\Delta x\)</span>.</p>
 <p><em>e)</em> The performance of the suggested numerical scheme can be investigated
 by analyzing the numerical dispersion relation.
@@ -627,11 +566,11 @@ for an observer moving with velocity <span class="math">\(c(x)\)</span>, <span c
 This can be used to derive an exact solution when <span class="math">\(a\)</span> varies
 with <span class="math">\(x\)</span>. Show first that</p>
 <div class="math" id="equation-wave:app:exer:advec1D:u:avar:sol">
-<span class="eqno">(16)</span>\[     u(x,t) = f(C(x) - t),\]</div>
+<span class="eqno">(17)</span>\[     u(x,t) = f(C(x) - t),\]</div>
 <p>where</p>
 <div class="math">
 \[C'(x) = \frac{1}{c(x)},\]</div>
-<p>is a solution of <a href="#equation-wave:app:exer:advec1D:ueq">(10)</a> for any
+<p>is a solution of <a href="#equation-wave:app:exer:advec1D:ueq">(11)</a> for any
 differentiable function <span class="math">\(f\)</span>.</p>
 <p><em>Solution.</em> Let <span class="math">\(\xi = C(x) - t\)</span>.
 We have that</p>
@@ -660,13 +599,13 @@ End up with a function <tt class="docutils literal"><span class="pre">u_exact_va
 the value of <span class="math">\(I(C^{-1}(C(x)-t_n))\)</span>.</p>
 <p><em>k)</em> Make movies showing a comparison of the numerical and exact solutions
 for the two initial conditions
-<a href="#equation-wave:app:exer:advec1D:I:sin">(14)</a> and <a href="#equation-wave:app:exer:advec1D:I:gauss">(15)</a>.
+<a href="#equation-wave:app:exer:advec1D:I:sin">(15)</a> and <a href="#equation-wave:app:exer:advec1D:I:gauss">(16)</a>.
 Choose <span class="math">\(\Delta t = \Delta x /\max_{0,L} c(x)\)</span>
 and the velocity of the medium as</p>
 <ol class="arabic simple">
 <li><span class="math">\(c(x) = 1 + \epsilon\sin(k\pi x/L)\)</span>, <span class="math">\(\epsilon &lt;1\)</span>,</li>
 <li><span class="math">\(c(x) = 1 + I(x)\)</span>, where <span class="math">\(I\)</span> is given by
-<a href="#equation-wave:app:exer:advec1D:I:sin">(14)</a> or <a href="#equation-wave:app:exer:advec1D:I:gauss">(15)</a>.</li>
+<a href="#equation-wave:app:exer:advec1D:I:sin">(15)</a> or <a href="#equation-wave:app:exer:advec1D:I:gauss">(16)</a>.</li>
 </ol>
 <p>The PDE <span class="math">\(u_t + cu_x=0\)</span> expresses that the initial condition <span class="math">\(I(x)\)</span>
 is transported with velocity <span class="math">\(c(x)\)</span>.</p>
@@ -691,21 +630,17 @@ is transported with velocity <span class="math">\(c(x)\)</span>.</p>
 <li><a class="reference internal" href="#exercise-13-simulate-elastic-waves-in-a-rod">Exercise 13: Simulate elastic waves in a rod</a></li>
 <li><a class="reference internal" href="#exercise-14-explain-why-numerical-noise-occurs">Exercise 14: Explain why numerical noise occurs</a></li>
 <li><a class="reference internal" href="#exercise-15-investigate-harmonic-averaging-in-a-1d-model">Exercise 15: Investigate harmonic averaging in a 1D model</a></li>
-<li><a class="reference internal" href="#exercise-16-test-the-efficiency-of-compiled-loops-in-3d">Exercise 16: Test the efficiency of compiled loops in 3D</a></li>
-<li><a class="reference internal" href="#exercise-17-earthquake-generated-tsunami-in-a-1d-model">Exercise 17: Earthquake-generated tsunami in a 1D model</a></li>
-<li><a class="reference internal" href="#exercise-18-implement-an-open-boundary-condition">Exercise 18: Implement an open boundary condition</a></li>
-<li><a class="reference internal" href="#exercise-19-earthquake-generated-tsunami-over-a-subsea-hill">Exercise 19: Earthquake-generated tsunami over a subsea hill</a></li>
-<li><a class="reference internal" href="#exercise-20-implement-neumann-conditions-in-2d">Exercise 20: Implement Neumann conditions in 2D</a></li>
-<li><a class="reference internal" href="#exercise-21-implement-a-convergence-test-for-a-2d-code">Exercise 21: Implement a convergence test for a 2D code</a></li>
-<li><a class="reference internal" href="#exercise-22-earthquake-generated-tsunami-over-a-3d-hill">Exercise 22: Earthquake-generated tsunami over a 3D hill</a></li>
-<li><a class="reference internal" href="#exercise-23-implement-loops-in-compiled-languages">Exercise 23: Implement loops in compiled languages</a></li>
-<li><a class="reference internal" href="#exercise-24-write-a-complete-program-in-fortran-or-c">Exercise 24: Write a complete program in Fortran or C</a></li>
-<li><a class="reference internal" href="#exercise-25-investigate-matplotlib-for-visualization">Exercise 25: Investigate Matplotlib for visualization</a></li>
-<li><a class="reference internal" href="#exercise-26-investigate-visualization-packages">Exercise 26: Investigate visualization packages</a></li>
-<li><a class="reference internal" href="#exercise-27-investigate-harmonic-vs-arithmetic-mean">Exercise 27: Investigate harmonic vs arithmetic mean</a></li>
-<li><a class="reference internal" href="#exercise-28-simulate-seismic-waves-in-2d">Exercise 28: Simulate seismic waves in 2D</a></li>
-<li><a class="reference internal" href="#project-29-modeling-3d-acoustic-waves-in-a-room">Project 29: Modeling 3D acoustic waves in a room</a></li>
-<li><a class="reference internal" href="#project-30-solve-a-1d-transport-equation">Project 30: Solve a 1D transport equation</a></li>
+<li><a class="reference internal" href="#exercise-16-implement-open-boundary-conditions">Exercise 16: Implement open boundary conditions</a></li>
+<li><a class="reference internal" href="#problem-17-earthquake-generated-tsunami-over-a-subsea-hill">Problem 17: Earthquake-generated tsunami over a subsea hill</a></li>
+<li><a class="reference internal" href="#exercise-18-implement-neumann-conditions-in-2d">Exercise 18: Implement Neumann conditions in 2D</a></li>
+<li><a class="reference internal" href="#exercise-19-earthquake-generated-tsunami-over-a-3d-hill">Exercise 19: Earthquake-generated tsunami over a 3D hill</a></li>
+<li><a class="reference internal" href="#exercise-20-investigate-matplotlib-for-visualization">Exercise 20: Investigate Matplotlib for visualization</a></li>
+<li><a class="reference internal" href="#exercise-21-investigate-visualization-packages">Exercise 21: Investigate visualization packages</a></li>
+<li><a class="reference internal" href="#exercise-22-implement-loops-in-compiled-languages">Exercise 22: Implement loops in compiled languages</a></li>
+<li><a class="reference internal" href="#exercise-23-test-the-efficiency-of-compiled-loops-in-3d">Exercise 23: Test the efficiency of compiled loops in 3D</a></li>
+<li><a class="reference internal" href="#exercise-24-simulate-seismic-waves-in-2d">Exercise 24: Simulate seismic waves in 2D</a></li>
+<li><a class="reference internal" href="#project-25-modeling-3d-acoustic-waves-in-a-room">Project 25: Modeling 3D acoustic waves in a room</a></li>
+<li><a class="reference internal" href="#project-26-solve-a-1d-transport-equation">Project 26: Solve a 1D transport equation</a></li>
 </ul>
 </li>
 </ul>

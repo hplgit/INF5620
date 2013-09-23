@@ -1,140 +1,367 @@
-#TITLE: Highly recommended finite element project in INF5620
+TITLE: Second compulsory project
+AUTHOR: INF5620
+DATE: Fall 2013
 
-===== Project: 1D wave equation with finite elements =====
-file=wave1D_fem.py, wave1D_fem.pdf
+# #if FORMAT == "html"
+"PDF version": "oblig2.pdf"
+# #endif
 
-The purpose of this project is to derive and analyze a finite element
-method for the 1D wave equation
+ * Deadline: Oct 15
+ * Work in groups of two (or three if the amount of work is suitably extended)
+ * Make a directory `oblig2` in the top directory of your INF5620
+   repo on GitHub or
+   Bitbucket to hold the various files of the project. Include a `README`
+   file with a short overview of the different files and the full names
+   of the students who did the project.
+ * Make reusable, flexible code.
+ * Write a short report summarizing the main results. LaTeX is
+   probably the preferred format, but there are several
+   "other options": "../writing_reports/index.html" too.
+ * Note that the last part of this compulsory exericse allows different
+   groups to go in different directions (visualization, high-performance
+   computing, more advanced numerics).
 
+======= Mathematical problem =======
+
+The project addresses the two-dimensional, standard, linear wave equation,
+with damping,
 !bt
-\[ u_{tt} = c^2 u_{xx},\quad x\in [0,L],\ t\in (0,T],\]
+\[ \frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
+\frac{\partial}{\partial x}\left( q (x,y)
+\frac{\partial u}{\partial x}\right) +
+\frac{\partial}{\partial y}\left( q (x,y)
+\frac{\partial u}{\partial y}\right) + f(x,y,t),
+\]
 !et
-with boundary and initial conditions
-
+with boundary condition
 !bt
-\[ u(0,t) = U_0(t),\quad u_x(L,t)=0,\quad u(x,0)=I(0),\quad u_t(x,0)=V(x)
-\thinspace .\]
+\[ \frac{\partial u}{\partial n} = 0,\]
 !et
+in a rectangular spatial domain $[0,L_x]\times [0,L_y]$.
+The initial conditions are $u(x,y,0)=I(x,y)$ and $u_t(x,y,0)=V(x,y)$.
 
-The analysis will give insight on how to adjust the default behavior
-of the finite element method such that its properties are as good as
-those for the finite difference method. With the necessary adjustments
-discovered in 2D, one gets an accurate
-finite element method for simulating 2D and
-3D waves in complex geometries.
 
-!bsubex
-Use a finite difference method in time to formulate a sequence of
-spatial problems for $u^n(x)$, $n=0,1,\ldots,N$.
-!esubex
+======= Discretization =======
 
-!bsubex
-Use a Galerkin method to derive a variational form of each of the
-spatial problems. Integrate the $u_{xx}$ term by parts.
-!esubex
+Derive the discrete set of equations to be implemented in a program:
 
-!bsubex
-Derive the linear system to be solved at each time level and express
-it in the form
+  * the general scheme for computing $u_{i,j}^{n+1}$ at interior
+    spatial mesh points,
+  * the modified scheme for the first step,
+  * the modified scheme at boundary points (first step and subsequent
+    steps), unless you use the interior
+    scheme also at the boundary with extra ghost cells.
 
-!bt
-\[ Mc^{n+1} = 2Mc^{n} - Mc^{n-1} + C^2Kc^{n},\]
-!et
-where $M$ and $K$ are matrices, $C$ is the Courant number,
-$c^n=(c_0^n,c_1^n,\ldots,c^n_{N_x})$,
-$c_j^n$ being the coefficients in the expansion $u^n = \sum_{j=0}^{N_x}
-c_j\varphi_j(x)$.
+======= Truncation error =======
 
-!bhint
-Group the general expressions
-for the linear system according to the above equation and then compute
-the actual matrix entries by assembling element matrices for $M$ and $K$.
-!ehint
+Compute the truncation error of the scheme at an arbitrary interior mesh point.
 
-__Remark.__ Unless $M$ is diagonal, a (tridiagonal) *linear system*
-must be solved at each time step, whereas the finite difference method
-leads to an explicit formula for $u^{n+1}_i$ at each spatial point at
-a new time level.
-!esubex
+======= Implementation =======
 
-!bsubex
-Interpret equation number $i$ in the linear system as a finite
-difference approximation of $u_{tt}=c^2u_{xx}$ using the following scheme:
+Implement the numerical scheme in a program. You may use
+"`wave2D_u0.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0/wave2D_u0.py"
+as a starting point (this program solves the 2D wave equation
+with constant wave velocity and $u=0$ on the boundary).
+You will need to include both scalar (pointwise)
+computation of the scheme for debugging and reference as well as a
+vectorized version for speed.
+
+======= Verification: constant solution =======
+
+Construct a test case with constant solution (not 0 or 1).
+Make a corresponding nose test.
+
+Invent 10 types of possible bugs in the implementation of the mathematical
+formulas. See how many of them that lead to a wrong non-constant solution.
+
+======= Verification: quadratic solution =======
+
+Assume an exact solution on the form $X(x)Y(y)T(t)$ where
+$X$, $Y$, and $T$ are polynomials of degree three or less.
+Construct $X$ and $Y$ such that the normal derivative vanishes at the
+four boundaries. Fit a corresponding source term $f(x,y,t)$ in the wave
+equation. Prove that this solution can also be an exact solution of the
+discretized wave equation if $b=0$
+(you need to check all the stencils involved). Implement a corresponding
+nose test.
+
+
+======= Exact 1D plug-wave solution in 2D =======
+
+The program "`wave1D_dn_vc.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave1D/wave1D_dn_vc.py" has a `pulse` function for simulating the propagation of a plug wave,
+where $I(x)$ is constant in some region of the domain and zero elsewhere.
+With unit Courant number, the plug is split into two identical waves,
+moving in opposite direction, exactly one cell per time
+step. The discrete solution is then equal to the exact solution.
+
+Test the 2D program using a one-dimensional plug wave in $x$ direction with
+$c\Delta t/\Delta x=1$ (the plug is constant in $y$ direction and hence
+compatible with the $\partial/\partial y=0$ boundary condition).
+Also propagate a one-dimensional plug wave in the $y$
+direction with $c\Delta t/\Delta y=1$. Both test cases are essentially
+1D test cases, and the results should as in the 1D case.
+Implement a corresponding nose test.
+
+======= Verification: standing, undamped waves =======
+
+# Make the text here shorter, need to add a sin wt term for exact solution
+# and test it by hand
+# adjust the rest of oblig1
+# Merge exercises to problems/projects
+# List a set of exercises for wednesday
+# move Project10 Calculus with 2D/3D mesh functions to final wave_app_exer
+# correct typos etc
+# generate slides
+# find why one movie did not work on Wed
+
+With no damping and constant wave velocity,
+our wave equation problem without any source
+term admits
+a standing wave solution:
 
 !bt
 \begin{equation}
-[D_tD_t( u + \frac{1}{6}\Delta x^2 D_xD_x u ) = c^2 D_xD_x u]_{i}^{n}
-label{oblig2:fdm:fem:discrete}
-\thinspace .
+\uex(x,y,t)=A\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t)
+label{wave:app:exer:standing:waves}
 \end{equation}
 !et
+for arbitrary amplitude $A$, arbitrary integers $m_x$ and $m_y$,
+and a suitable choice of $\omega$. This solution can be used to test
+the convergence rate of the numerical method.
 
-!bhint
-Write out equation number $i$ and substitute $c_j$ by $u_j$ to help
-interpreting finite element equations as finite difference schemes.
-Study the material on "interpreting the mass matrix as a finite difference
-operator": "http://hplgit.github.com/INF5620/doc/pub/sphinx-fem/main_fem.html#comparison-of-finite-element-and-finite-difference-approximation".
-The similarity of finite differences and elements regarding the $u_{xx}$ term
-is evident from a "detailed example": "http://hplgit.github.com/INF5620/doc/pub/sphinx-fem/main_fem.html#computing-with-finite-elements" in the course
-material on solving $-u_{xx}=f$ by finite elements.
-!ehint
-!esubex
+Use the
+truncation error analysis to
+set up a model for the error in terms of the discretization parameters.
+Note that the truncation error is not the true error
+$e^n_{i,j=\uex(x_i,y_j,t_n) - u^n_{i,j}$, but we assume
+that $e^n_{i,j$ depends on the discretization parameters in the same way.
+We also assume that a norm of $e^n_{i,j$, e.g.,
 
-!bsubex
-Perform an analysis of the scheme (ref{oblig2:fdm:fem:discrete})
-in the same way as is done for the corresponding finite difference
-scheme in the "course notes": "http://hplgit.github.com/INF5620/doc/pub/sphinx-wave/main_wave.html#analysis-of-the-continuous-and-discrete-solutions".
-That is, investigate a Fourier component $u^n_p = \exp{(i(kp\Delta x - \tilde
-\omega n\Delta t))}$. Show that the stability criterion is
 !bt
-\[ C \leq \frac{1}{\sqrt{3}},\]
+\[ E = ||$e^n_{i,j$||_{\ell^\infty} = \max_{i\in\Ix}\max_{j\in\Iy}\max_{t\in\It}
+|e^n_{i,j|,\]
 !et
-and therefore that any hope for recovering the exact solution for $C=1$
-becomes impossible.
-!esubex
+also depends on the discretization parameters in the same way.
+Introduce a common discretization parameter $h$ such that
+$\Delta t$, $\Delta x$, and $\Delta y$ are proportional to $h$.
+Show that $E=Ch^2$ for some $C$ is the expected behavior of the error.
+Perform experiments with decreasing $h$, compute $E$, and verify that
+$E/h^2$ is approximately constant.
 
-!bsubex
-Find the numerical dispersion relation
-($\tilde\omega$ expressed by other parameters) and plot the
-error in wave velocity $\tilde c/c$ ($\tilde c = \tilde \omega/k$, $c=\omega/c$)
-as a function of $k\Delta x$ for various Courant numbers.
-Compare with "the corresponding plot for the finite difference method": "http://hplgit.github.com/INF5620/doc/pub/sphinx-wave/main_wave.html#wave-pde1-fig-disprel" for $u_{tt}=c^2u_{xx}$ (computed with the aid of the
-program "dispersion_relation_1D.py":
-"https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/dispersion_relation_1D.py").
-!esubex
+======= Verification: standing, damped waves =======
 
-!bsubex
-Use the Trapezoidal rule to compute the $M$ matrix. Show that the finite
-element method with P1 elements now produces the same scheme at the
-interior mesh points as the standard finite difference method for
-$u_{tt}=c^2u_{xx}$. Also show that the equations for $i=1$ and
-$i=N_x$ are identical in the two methods.
-!esubex
+Try to find an analytical solution of damped waves using an ansatz
+of the type
 
-!bsubex
-Instead of using the Trapezoidal rule to produce a diagonal $M$ matrix,
-one can replace $M$ by $\mbox{diag}(Me)$, where $e=(1,1,\ldots,1)$
-and $\mbox{diag}(w)$ means a diagonal matrix with the vector $w$
-on the diagonal. The interpretation of this approach is that we
-sum each row in $M$ and place the sum on the diagonal.
-Show that this method produces the same results as Trapezoidal integration
-(in a 1D problem). Also show that if you replace each row in the element
-matrices associated with $M$ by the row sum on the diagonal, the same
-result arises.
-!esubex
+!bt
+\begin{equation}
+\uex(x,y,t)=\left(A\cos (\omega t)
++ B\sin (\omega t)\right)
+e^{-bt}\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\ts
+label{wave:app:exer:standing:waves:damped}
+\end{equation}
+!et
+See if $A$, $B$, and $\omega$ can be adjusted such that
+(ref{wave:app:exer:standing:waves:damped}) solves the PDE with no
+source term. Make a corresponding convergence test.
 
-!bremarks
-Say we want to solve the 3D wave equation $u_{tt}=c^2\nabla^2u$ with
-finite elements and get the same stability as in the finite difference
-method. We can then compute $M$ and $K$ in the usual way and thereafter
-just replace $M$ by $\mbox{diag}(Me)$. When the mass matrix is lumped
-this way and becomes diagonal, we get the same representation of
-of the terms
-$u^{n-1}$, $u^n$, and $u^{n+1}$ as in the finite difference method.
-The $K$ matrix also resembles finite differences for P1 elements.
-With Q1 elements the $K$ matrix has more nonzero entries per row, but
-this does not change the numerical properties of the scheme significantly.
-The key issue is to use a lumped mass matrix.
-!eremarks
+======= Verification: manufactured solution =======
+
+Choose some $q(x,y)\neq 0$ and find $f(x,y,t)$ such that
+({wave:app:exer:standing:waves:damped}) is a solution to the general
+2D wave equation problem with damping and variable wave velocity.
+Find corresponding $I$ and $V$, and make a convergence test that
+recovers the expected convergence rate. Make a corresponding nose test.
+
+__Hint.__ You may explore `sympy` for automating the analytical work:
+
+!bc ipy
+>>> from sympy import *
+>>> x = Symbol('x')
+>>> q=x**2
+>>> u=sin(x)
+>>> r = diff(q*diff(u, x), x)   # Derivative: (q*u_x)_x
+>>> simplify(r)
+x*(-x*sin(x) + 2*cos(x))
+!ec
+
+======= Investigate a physical problem =======
+
+The purpose of this part is to explore what happens to a wave that
+enters a medium with different wave velocity. A particular physical
+interpretation can be wave propagation of a tsunami over a subsea
+hill. The unknown $u(x,y,t)$ is then the elevation of the ocean
+surface, and the boundary condition $\partial u/\partial n=0$ means
+that the waves are perfectly reflected, because of a steep hill at the
+shore, or the condition expresses symmetry in the solution.  The wave
+velocity is given by $q = gH(x,y)$, where $g$ is the acceleration of
+gravity and $H(x,y)$ is the stillwater depth.
+
+[[[
+It can be wise to do "Exercise 18": "../pub/main_wave.html#{wave:app:exer:tsunami1D:hill}", because a 1D program corresponding to the present
+2D problem allows much faster experimentation with parameters and
+effects.
+
+The initial surface is taken as a smooth Gaussian function
+
+!bt
+\begin{equation}
+I(x;I_0,I_a,I_m,I_s) =
+I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
+\end{equation}
+!et
+with $I_m=0$ reflecting the location of the peak of $I(x)$ and
+$I_s$ being a measure of the width of the function $I(x)$
+($I_s$ is $\sqrt{2}$ times the standard deviation of the familiar
+normal distribution curve).
+
+Three different bottom shapes can be investigated.
+A 2D Gaussian hill can be modeled by
+
+!bt
+\begin{equation}
+B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
+B_0 + B_a\exp{\left(-\left(\frac{x-B_{mx}}{B_s}\right)^2
+-\left(\frac{y-B_{my}}{bB_s}\right)^2\right)},
+label{wave:app:exer:tsunami2D:hill:Gauss}
+\end{equation}
+!et
+where $b$ is a scaling parameter: $b=1$ gives a circular Gaussian
+function with circular contour lines, while $b\neq 1$ gives an elliptic
+shape with elliptic contour lines.
+
+A less smooth hill is modeled by the "cosine hat" function
+
+!bt
+\begin{equation}
+B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
+B_0 + B_a\cos{\left( \pi\frac{x-B_{mx}}{2B_s}\right)}
+\cos{\left( \pi\frac{y-B_{my}}{2B_s}\right)},
+label{wave:app:exer:tsunami2D:hill:cohat}
+\end{equation}
+!et
+when $0 \leq \sqrt{x^2+y^2} \leq B_s$ and $B=B_0$ outside this circle.
+
+A more dramatic hill shape is a box:
+
+!bt
+\begin{equation}
+B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a
+label{wave:app:exer:tsunami2D:hill:box}
+\end{equation}
+!et
+for $x$ and $y$ inside a rectangle
+!bt
+\[ B_{mx}-B_s \leq  x \leq B_{mx} + B_s,\quad
+B_{my}-bB_s \leq  y \leq B_{my} + bB_s,
+\]
+!et
+and $B=B_0$ outside this rectangle.
+The $b$ parameter controls the rectangular shape of the cross section of
+the box.
+
+Note that the initial condition and the listed bottom shapes are
+symmetric around the line $y=B_{my}$. We therefore expect the surface
+elevation also to be symmetric with respect to this line.  This means
+that we can halve the computational domain by working with
+$[0,L_x]\times [0, B_{my}]$. Along the upper boundary, $y=B_{my}$, we
+must impose the symmetry condition $\partial \eta/\partial n=0$.  Such
+a symmetry condition ($-\eta_x=0$) is also needed at the $x=0$
+boundary because the initial condition has a symmetry here. At the
+lower boundary $y=0$ we also set a Neumann condition (which becomes
+$-\eta_y=0$).  The wave motion is to be simulated until the wave hits
+the reflecting boundaries where $\partial\eta/\partial n =\eta_x =0$.
+
+Investigate how different hill shapes, different sizes of the water
+gap above the hill, and different resolutions $\Delta x = \Delta y =
+h$ and $\Delta t$ influence the numerical quality of the solution. One
+anticipates that the less smooth hill shapes will introduce more
+numerical noise.  Presenting the results as movies of the surface
+elevation is effective.
+
+======= Additional tasks =======
+
+The groups can select between one or more of the following tasks.
+
+===== Harmonic averaging =====
+
+Harmonic means are often used if the coefficient $q$ is
+non-smooth or discontinuous. Investigate if harmonic averaging of $q$
+works better than the arithmetic averging for the box-shaped subsea hill.
+The effect might not be big unless the water gap at the top of the
+hill is small. It can be wise to test the effect of harmonic averaging in
+1D first.
+
+__Remark.__ With a small gap between the obstruction and the free surface,
+and with abrupt changes in the bottom shape, the model PDE does not
+necessarily describe the wave motion in an accurate or qualitatively correct
+way.
+
+
+===== Visualization =====
+
+Create some fancy 3D visualization of the water waves *and* the subsea hill.
+Try to make the hill transparent. Suitable tools are
+
+  * "Mayavi": "http://code.enthought.com/projects/mayavi/"
+  * "Paraview": "http://www.paraview.org/"
+  * "OpenDX": "http://www.opendx.org/"
+  * "Matplotlib": "http://matplotlib.org/"
+
+===== Open outlet boundary: 1D condition =====
+
+Implement an open boundary condition at $x=L_x$, $u_t + \sqrt{q}u_x=0$,
+as suggested
+[[[
+in "Exercise 14": "../pub/main_wave.html#wave:app:exer:radiationBC".
+This condition is only correct in 1D, but might work satisfactorily in 2D if
+the wave is approximately one-dimensional when it hits the boundary.
+See how well this condition works in letting the tsunami pass out of
+the domain. The distance from the subsea hill (which disturbes the wave)
+and the outlet boundary $x=L_x$ is an important parameter.
+
+===== Open outlet boundary: absorbing layer =====
+
+Instead of using a condition $u_t + \sqrt{q}u_x=0$, which is exact only
+for plane waves propagating in $x$ direction, one can add an
+artificial domain $[L_x,L_x+\delta]\times [0,L_y]$ where waves are
+sufficiently damped and absorbed. The goal of an open boundary condition
+is to avoid waves being reflected back into the domain. Turn on
+the damping parameter $b$ in $[L_x,L_x+\delta]\times [0,L_y]$,
+and test if it is wise to vary $b$, say in a linear or exponential
+fashion to have a smooth transition from $b=0$ in the physical
+domain and to some significant (efficient) $b$ value towards the
+artificial boundary $x=L_x+\delta$.
+
+
+===== Compiled loops =====
+
+Extend the program with compiled loops using one or more of the
+following techniques:
+
+ * Cython code
+ * Fortran code interfaced via `f2py`
+ * C code interfaced via Cython or `f2py`
+ * C/C++ code interfaced via `scipy.weave`
+ * C/C++ code interfaced via "Instant": "https://launchpad.net/instant"
+
+Note that Instant comes with FEniCS (`sudo apt-get install fenics` on
+Ubuntu will install Instant) and it is described in the
+"FEniCS book": "https://launchpad.net/fenics-book".
+
+===== Parallel computing =====
+
+Make a parallel version of the program using different approaches:
+
+ * Automatic OpenMP code in migrated Cython loops using
+   "`cython.parallel`": "http://docs.cython.org/src/userguide/parallelism.html"
+ * OpenMP in migrated C or Fortran loops
+ * MPI in migrated C or Fortran loops
+ * mpi4py MPI programming from Python (distribute vectorized code)
+ * Automatic parallelization of vectorized NumPy code via
+   "NumbaPro": "http://docs.continuum.io/numbapro/" (a license can be
+   made available)
 
 

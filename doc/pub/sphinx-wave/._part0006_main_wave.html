@@ -72,18 +72,20 @@ the complete initial-boundary value problem is defined by</p>
 \[u = 0,\quad (x,y)\in\partial\Omega,\ t\in (0,T],\]</div>
 <p>where <span class="math">\(\partial\Omega\)</span> is the boundary of <span class="math">\(\Omega\)</span>, in this case
 the four sides of the rectangle <span class="math">\([0,L_x]\times [0,L_y]\)</span>:
-<span class="math">\(x=0,\)</span>, <span class="math">\(x=L_x\)</span>, <span class="math">\(y=0\)</span>, and <span class="math">\(y=L_y\)</span>.</p>
+<span class="math">\(x=0\)</span>, <span class="math">\(x=L_x\)</span>, <span class="math">\(y=0\)</span>, and <span class="math">\(y=L_y\)</span>.</p>
 <p>The PDE is discretized as</p>
 <div class="math">
 \[[D_t D_t u = c^2(D_xD_x u + D_yD_y u) + f]^n_{i,j},\]</div>
 <p>which leads to an explicit updating formula to be implemented in a
 program:</p>
+<div class="math">
+\[u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + \nonumber\]</div>
 <div class="math" id="equation-wave:2D3D:impl1:2Du0:ueq:discrete">
-<span class="eqno">(1)</span>\[     u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + C_x^2(
+<span class="eqno">(1)</span>\[     \quad C_x^2(
      u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
      (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,\]</div>
-<p>for all interior mesh points <span class="math">\(i=0,\ldots,N_x-1\)</span> and
-<span class="math">\(j=0,\ldots,N_y-1\)</span>, and for <span class="math">\(n=1,\ldots, N_t\)</span>.
+<p>for all interior mesh points <span class="math">\(i\in{{\mathcal{I^i}_x}}\)</span> and
+<span class="math">\(j\in{{\mathcal{I^i}_y}}\)</span>, and for <span class="math">\(n\in{{\mathcal{I^+}_t}}\)</span>.
 The constants <span class="math">\(C_x\)</span> and <span class="math">\(C_y\)</span> are defined as</p>
 <div class="math">
 \[C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
@@ -95,12 +97,14 @@ For the first step, <span class="math">\(n=0\)</span>, <a href="#equation-wave:2
 is combined with the discretization of the initial condition <span class="math">\(u_t=V\)</span>,
 <span class="math">\([D_{2t} u = V]^0_{i,j}\)</span> to obtain a special formula for
 <span class="math">\(u^1_{i,j}\)</span> at the interior mesh points:</p>
+<div class="math">
+\[u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \nonumber\]</div>
 <div class="math" id="equation-wave:2D3D:impl1:2Du0:ueq:discrete">
-<span class="eqno">(2)</span>\[     u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \frac{1}{2}C_x^2(
+<span class="eqno">(2)</span>\[     \quad \frac{1}{2}C_x^2(
      u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
      (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,\]</div>
 <div class="section" id="scalar-computations">
-<h2>Scalar computations<a class="headerlink" href="#scalar-computations" title="Permalink to this headline">¶</a></h2>
+<span id="wave2d3d-impl-scalar"></span><h2>Scalar computations<a class="headerlink" href="#scalar-computations" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">solver</span></tt> function for a 2D case with constant wave velocity and
 <span class="math">\(u=0\)</span> as boundary condition follows the setup from the similar
 function for the 1D case in <tt class="docutils literal"><span class="pre">wave1D_u0_s.py</span></tt>, but there are
@@ -118,29 +122,18 @@ may differ in the various spatial directions.
 We therefore give <span class="math">\(\Delta t\)</span> explicitly. The signature of
 the <tt class="docutils literal"><span class="pre">solver</span></tt> function is then</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">Lx</span><span class="p">,</span> <span class="n">Ly</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span>
-           <span class="n">user_action</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;scalar&#39;</span><span class="p">,</span>
-           <span class="n">dt_safety_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+           <span class="n">user_action</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s">&#39;scalar&#39;</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>Key parameters used in the calculations are created as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Lx</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># mesh points in x dir</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ly</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># mesh points in y dir</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Lx</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>                  <span class="c"># mesh points in x dir</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ly</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>                  <span class="c"># mesh points in y dir</span>
 <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">dy</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c"># mesh points in time</span>
+<span class="n">Nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>                 <span class="c"># mesh points in time</span>
 <span class="n">Cx2</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">dx</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">;</span>  <span class="n">Cy2</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">dy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>    <span class="c"># help variables</span>
 <span class="n">dt2</span> <span class="o">=</span> <span class="n">dt</span><span class="o">**</span><span class="mi">2</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="stability-limit">
-<h3>Stability limit<a class="headerlink" href="#stability-limit" title="Permalink to this headline">¶</a></h3>
-<p>Specifying a negative <tt class="docutils literal"><span class="pre">dt</span></tt> parameter makes us use the stability
-limit with a safety factor:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">dt</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="n">stability_limit</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">dy</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">dt</span> <span class="o">=</span> <span class="n">dt_safety_factor</span><span class="o">*</span><span class="n">stability_limit</span>
 </pre></div>
 </div>
 </div>
@@ -155,46 +148,66 @@ limit with a safety factor:</p>
 </div>
 <p>where <span class="math">\(u^{n+1}_{i,j}\)</span> corresponds to <tt class="docutils literal"><span class="pre">u[i,j]</span></tt>,
 <span class="math">\(u^{n}_{i,j}\)</span> to <tt class="docutils literal"><span class="pre">u_1[i,j]</span></tt>, and
-<span class="math">\(u^{n-1}_{i,j}\)</span> to <tt class="docutils literal"><span class="pre">u_1[i,j]</span></tt></p>
+<span class="math">\(u^{n-1}_{i,j}\)</span> to <tt class="docutils literal"><span class="pre">u_2[i,j]</span></tt></p>
+</div>
+<div class="section" id="index-sets">
+<span id="index-1"></span><h3>Index sets<a class="headerlink" href="#index-sets" title="Permalink to this headline">¶</a></h3>
+<p>It is also convenient to introduce the index sets (cf. The section <a class="reference internal" href="main_wave.html#wave-indexset"><em>Index set notation</em></a>)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Ix</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">Iy</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">It</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="computing-the-solution">
 <h3>Computing the solution<a class="headerlink" href="#computing-the-solution" title="Permalink to this headline">¶</a></h3>
 <p>Inserting the initial
 condition <tt class="docutils literal"><span class="pre">I</span></tt> in <tt class="docutils literal"><span class="pre">u_1</span></tt> and making a callback to the user in terms of
-the <tt class="docutils literal"><span class="pre">user_action</span></tt> function should be straightforward generalization of
-the 1D code:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+the <tt class="docutils literal"><span class="pre">user_action</span></tt> function is a straightforward generalization of
+the 1D code from the section <a class="reference internal" href="main_wave.html#wave-string-impl"><em>Sketch of an implementation</em></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">:</span>
         <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 
 <span class="k">if</span> <span class="n">user_action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
     <span class="n">user_action</span><span class="p">(</span><span class="n">u_1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">user_action</span></tt> function has more arguments which will be commented
-upon in the section on vectorization.</p>
-<p>The key finite difference formula for updating the solution at
-a time level is implemented as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Ny</span><span class="p">):</span>
-        <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> \
-                 <span class="n">Cx2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">+</span> \
-                 <span class="n">Cy2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> \
-                 <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+<p>The <tt class="docutils literal"><span class="pre">user_action</span></tt> function has additional arguments compared to the
+1D case. The arguments <tt class="docutils literal"><span class="pre">xv</span></tt> and <tt class="docutils literal"><span class="pre">yv</span></tt> fact will be commented
+upon in the section <a class="reference internal" href="main_wave.html#wave2d3d-impl-vectorized"><em>Vectorized computations</em></a>.</p>
+<p>The key finite difference formula <a href="#equation-wave:2D3D:models:unp1">(?)</a>
+for updating the solution at
+a time level is implemented in a separate function as</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">Ix</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>  <span class="n">Iy</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">u_yy</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">D1</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">D2</span><span class="o">*</span><span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> \
+                     <span class="n">Cx2</span><span class="o">*</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">Cy2</span><span class="o">*</span><span class="n">u_yy</span> <span class="o">+</span> <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="c"># Boundary condition u=0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">Ix</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Ix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">Iy</span><span class="p">:</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
-<p>We must thereafter ensure that <tt class="docutils literal"><span class="pre">u</span></tt> is zero on the four boundaries:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">j</span> <span class="o">=</span> <span class="n">Ny</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">i</span> <span class="o">=</span> <span class="n">Nx</span>
-<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<p>The constants <tt class="docutils literal"><span class="pre">D1</span></tt> and <tt class="docutils literal"><span class="pre">D2</span></tt> in front of <tt class="docutils literal"><span class="pre">u_1</span></tt> and <tt class="docutils literal"><span class="pre">u_2</span></tt> have been
+introduced to allow this <tt class="docutils literal"><span class="pre">advance</span></tt> function to also be used for the
+first step <span class="math">\(u^1_{i,j}\)</span>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span>
+            <span class="mf">0.5</span><span class="o">*</span><span class="n">Cx2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">Cy2</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt2</span><span class="p">,</span> <span class="n">D1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">D2</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The special formula for the first step (<span class="math">\(u^1_{i,j}\)</span>) is implemented
+<p>The special formula for the first step <span class="math">\(u^1_{i,j}\)</span>,
+given by <a href="#equation-wave:2D3D:models:u1">(?)</a>, is implemented
 in a very similar manner.</p>
 <p>The code segments with the loop over internal points and boundary
 points at each time level are put in a separate function <tt class="docutils literal"><span class="pre">advance_scalar</span></tt>.
@@ -204,9 +217,9 @@ the CPU time is spent in this function.</p>
 </div>
 </div>
 <div class="section" id="vectorized-computations">
-<h2>Vectorized computations<a class="headerlink" href="#vectorized-computations" title="Permalink to this headline">¶</a></h2>
+<span id="wave2d3d-impl-vectorized"></span><h2>Vectorized computations<a class="headerlink" href="#vectorized-computations" title="Permalink to this headline">¶</a></h2>
 <p>The scalar code above turns out to be extremely slow for large 2D
-meshes, and probably useless beyond initial debugging in 3D.
+meshes, and probably useless in 3D beyond debugging of small test cases.
 Vectorization is therefore a must for multi-dimensional
 finite difference computations in Python. For example,
 with a mesh consisting of <span class="math">\(30\times 30\)</span> cells, vectorization
@@ -216,7 +229,8 @@ like <span class="math">\(I(x,y)\)</span> and <span class="math">\(f(x,y,t)\)</s
 and <tt class="docutils literal"><span class="pre">f(x,y,t)</span></tt>, for the entire mesh in one array operation.
 Having the one-dimensional coordinate arrays <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> is not
 sufficient: these must be extended to vectorized versions,</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">xv</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">newaxis</span>
+<span class="n">xv</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">]</span>
 <span class="n">yv</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">newaxis</span><span class="p">,:]</span>
 <span class="c"># or</span>
 <span class="n">xv</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -224,9 +238,9 @@ sufficient: these must be extended to vectorized versions,</p>
 </pre></div>
 </div>
 <p>This is a standard required technique when evaluating functions over
-a 2D mesh, say <tt class="docutils literal"><span class="pre">sin(xv)*cos(xv)</span></tt>, which then gives a results with shape
-<tt class="docutils literal"><span class="pre">(Nx+1,Ny+1)</span></tt>.
-With the <tt class="docutils literal"><span class="pre">xv</span></tt> and <tt class="docutils literal"><span class="pre">yv</span></tt> arrays for vectorized computing,
+a 2D mesh, say <tt class="docutils literal"><span class="pre">sin(xv)*cos(xv)</span></tt>, which then gives a result with shape
+<tt class="docutils literal"><span class="pre">(Nx+1,Ny+1)</span></tt>.</p>
+<p>With the <tt class="docutils literal"><span class="pre">xv</span></tt> and <tt class="docutils literal"><span class="pre">yv</span></tt> arrays for vectorized computing,
 setting the initial condition is just a matter of</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">u_1</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">)</span>
 </pre></div>
@@ -244,13 +258,13 @@ evaluation. This is the case with the computational scheme for <span class="math
 </div>
 <p>Array slices in 2D are more complicated to understand than those in
 1D, but the logic from 1D applies to each dimension separately.
-For example, when doing <span class="math">\(u^{n}_{i,j} - u^{n}_{i-1,j}\)</span> for <span class="math">\(i=1,\ldots,N_x\)</span>,
+For example, when doing <span class="math">\(u^{n}_{i,j} - u^{n}_{i-1,j}\)</span> for <span class="math">\(i\in{{\mathcal{I^+}_x}}\)</span>,
 we just keep <tt class="docutils literal"><span class="pre">j</span></tt> constant and make a slice in the first index:
 <tt class="docutils literal"><span class="pre">u_1[1:,j]</span> <span class="pre">-</span> <span class="pre">u_1[:-1,j]</span></tt>, exactly as in 1D. The <tt class="docutils literal"><span class="pre">1:</span></tt> slice
-specifies all the indices <span class="math">\(i=1,\ldots,N_x\)</span> for the term <span class="math">\(u^n_{i,j}\)</span>,
-while <tt class="docutils literal"><span class="pre">:-1</span></tt> specifies the relevant indices for the second term,
-where <span class="math">\(i-1=1,\ldots,N_x\)</span> and the indices therefore becomes <span class="math">\(0,1,\ldots,N_x-1\)</span>.
-In the above code segment, the situation is slightly more complicated,
+specifies all the indices <span class="math">\(i=1,2,\ldots,N_x\)</span>,
+while <tt class="docutils literal"><span class="pre">:-1</span></tt> specifies the relevant indices for the second term:
+<span class="math">\(0,1,\ldots,N_x-1\)</span> (up to, but not including the last index).</p>
+<p>In the above code segment, the situation is slightly more complicated,
 because each displaced slice in one direction is
 accompanied by a <tt class="docutils literal"><span class="pre">1:-1</span></tt> slice in the other direction. The reason is
 that we only work with the internal points for the index that is
@@ -313,7 +327,7 @@ program implements this verification as a nose test.</p>
 </div>
 <div class="section" id="migrating-loops-to-cython">
 <h2>Migrating loops to Cython<a class="headerlink" href="#migrating-loops-to-cython" title="Permalink to this headline">¶</a></h2>
-<p id="index-1">Although vectorization can bring down the CPU time dramatically
+<p id="index-2">Although vectorization can bring down the CPU time dramatically
 compared with scalar code, there is still some factor 5-10 to win
 in these types of applications
 by implementing the finite difference scheme in compiled code,
@@ -368,7 +382,7 @@ computing in Cython. Let us first list the code:</p>
     <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
-<p id="index-2">This example may act as a recipe on how to transform array-intensive
+<p id="index-3">This example may act as a recipe on how to transform array-intensive
 code with loops into Cython.</p>
 <ol class="arabic simple">
 <li>Variables are declared with types: for example,
@@ -403,7 +417,7 @@ the function header.</li>
 </ol>
 </div>
 <div class="section" id="visual-inspection-of-the-c-translation">
-<span id="index-3"></span><h3>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h3>
+<span id="index-4"></span><h3>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h3>
 <p>Cython can visually explain how successfully it can translate a code from
 Python to C. The command</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; cython -a wave2D_u0_loop_cy.pyx</span>
@@ -427,9 +441,9 @@ deep down in the file we can see in detail how the compute-intensive
 statements are translated some complex C that is quite different from
 what we a human would write, at least with a direct corresponding to
 the mathematics in mind.</p>
-<span class="target" id="index-4"></span><span class="target" id="index-5"></span></div>
+<span class="target" id="index-5"></span><span class="target" id="index-6"></span></div>
 <div class="section" id="building-the-extension-module-1">
-<span id="index-6"></span><h3>Building the extension module  (1)<a class="headerlink" href="#building-the-extension-module-1" title="Permalink to this headline">¶</a></h3>
+<span id="index-7"></span><h3>Building the extension module  (1)<a class="headerlink" href="#building-the-extension-module-1" title="Permalink to this headline">¶</a></h3>
 <p>Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a <em>C extension module</em>.
 This is usually done by making a <tt class="docutils literal"><span class="pre">setup.py</span></tt> script, which
@@ -512,8 +526,8 @@ one-dimensional. Let us also mention that
 the Fortran compilers
 build on 60 years of intensive research on how to optimize loops with
 array computations.</p>
-<span class="target" id="index-7"></span><div class="section" id="the-fortran-subroutine">
-<span id="index-8"></span><h3>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="index-8"></span><div class="section" id="the-fortran-subroutine">
+<span id="index-9"></span><h3>The Fortran subroutine<a class="headerlink" href="#the-fortran-subroutine" title="Permalink to this headline">¶</a></h3>
 <p>We write a Fortran subroutine <tt class="docutils literal"><span class="pre">advance</span></tt> in a file
 <a class="reference external" href="/wave2D_u0/wave2D_u0_loop_f77.f">wave2D_u0_loop_f77.f</a>
 for implementing the updating formula
@@ -654,9 +668,9 @@ Fortran are optional arguments that can be omitted when calling
 documentation of <em>every</em> Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.</p>
-<span class="target" id="index-9"></span><span class="target" id="index-10"></span><span class="target" id="index-11"></span></div>
+<span class="target" id="index-10"></span><span class="target" id="index-11"></span><span class="target" id="index-12"></span></div>
 <div class="section" id="how-to-avoid-array-copying">
-<span id="index-12"></span><h3>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h3>
+<span id="index-13"></span><h3>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h3>
 <p>Multi-dimensional arrays are stored as a stream of numbers in memory.
 For a two-dimensional array consisting of rows and columns there are
 two ways of creating such a stream: <em>row-major ordering</em>, which means
@@ -974,7 +988,7 @@ function in the C file with the interface we want to wrap.</p>
 <h2>Using classes to implement a simulator<a class="headerlink" href="#using-classes-to-implement-a-simulator" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
-<li>class <tt class="docutils literal"><span class="pre">Mesh</span></tt>, <tt class="docutils literal"><span class="pre">Function</span></tt>, <tt class="docutils literal"><span class="pre">Problem</span></tt>, <tt class="docutils literal"><span class="pre">Solver</span></tt>, <tt class="docutils literal"><span class="pre">Visualizer</span></tt>, <tt class="docutils literal"><span class="pre">File</span></tt></li>
+<li>class <tt class="docutils literal"><span class="pre">Mesh</span></tt>, <tt class="docutils literal"><span class="pre">MeshFunction</span></tt>, <tt class="docutils literal"><span class="pre">Problem</span></tt>, <tt class="docutils literal"><span class="pre">Solver</span></tt>, <tt class="docutils literal"><span class="pre">Visualizer</span></tt>, <tt class="docutils literal"><span class="pre">File</span></tt></li>
 <li>communicate with compiled code by ensuring that
 classes work with arrays</li>
 </ul>
@@ -1037,8 +1051,8 @@ Filename: <tt class="docutils literal"><span class="pre">mesh_calculus_3D.py</sp
 <li><a class="reference internal" href="#">Implementation  (3)</a><ul>
 <li><a class="reference internal" href="#scalar-computations">Scalar computations</a><ul>
 <li><a class="reference internal" href="#domain-and-mesh">Domain and mesh</a></li>
-<li><a class="reference internal" href="#stability-limit">Stability limit</a></li>
 <li><a class="reference internal" href="#solution-arrays">Solution arrays</a></li>
+<li><a class="reference internal" href="#index-sets">Index sets</a></li>
 <li><a class="reference internal" href="#computing-the-solution">Computing the solution</a></li>
 </ul>
 </li>

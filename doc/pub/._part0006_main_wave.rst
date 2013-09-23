@@ -48,7 +48,7 @@ the complete initial-boundary value problem is defined by
 
 where :math:`\partial\Omega` is the boundary of :math:`\Omega`, in this case
 the four sides of the rectangle :math:`[0,L_x]\times [0,L_y]`:
-:math:`x=0,`, :math:`x=L_x`, :math:`y=0`, and :math:`y=L_y`.
+:math:`x=0`, :math:`x=L_x`, :math:`y=0`, and :math:`y=L_y`.
 
 The PDE is discretized as
 
@@ -61,16 +61,23 @@ program:
 
 
 .. math::
-   :label: wave:2D3D:impl1:2Du0:ueq:discrete
         
-        u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + C_x^2(
+        u^{n+1} = -u^{n-1}_{i,j} + 2u^n_{i,j} + \nonumber
+        
+
+
+
+.. math::
+   :label: wave:2D3D:impl1:2Du0:ueq:discrete
+          
+        \quad C_x^2(
         u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
         (u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,
         
         
 
-for all interior mesh points :math:`i=0,\ldots,N_x-1` and
-:math:`j=0,\ldots,N_y-1`, and for :math:`n=1,\ldots, N_t`.
+for all interior mesh points :math:`i\in{{\mathcal{I^i}_x}}` and
+:math:`j\in{{\mathcal{I^i}_y}}`, and for :math:`n\in{{\mathcal{I^+}_t}}`.
 The constants :math:`C_x` and :math:`C_y` are defined as
 
 .. math::
@@ -89,15 +96,24 @@ is combined with the discretization of the initial condition :math:`u_t=V`,
 
 
 .. math::
-   :label: wave:2D3D:impl1:2Du0:ueq:discrete
         
-        u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \frac{1}{2}C_x^2(
+        u^{1} = u^0_{i,j} + \Delta t V_{i,j} + \nonumber
+        
+
+
+
+.. math::
+   :label: wave:2D3D:impl1:2Du0:ueq:discrete
+          
+        \quad \frac{1}{2}C_x^2(
         u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
         (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,
         
         
 
 
+
+.. _wave2D3D:impl:scalar:
 
 Scalar computations
 -------------------
@@ -125,34 +141,20 @@ the ``solver`` function is then
 .. code-block:: python
 
         def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
-                   user_action=None, version='scalar',
-                   dt_safety_factor=1):
+                   user_action=None, version='scalar'):
 
 Key parameters used in the calculations are created as
 
 .. code-block:: python
 
-        x = linspace(0, Lx, Nx+1)  # mesh points in x dir
-        y = linspace(0, Ly, Ny+1)  # mesh points in y dir
+        x = linspace(0, Lx, Nx+1)                  # mesh points in x dir
+        y = linspace(0, Ly, Ny+1)                  # mesh points in y dir
         dx = x[1] - x[0]
         dy = y[1] - y[0]
-        N = int(round(T/float(dt)))
-        t = linspace(0, N*dt, N+1)    # mesh points in time
+        Nt = int(round(T/float(dt)))
+        t = linspace(0, N*dt, N+1)                 # mesh points in time
         Cx2 = (c*dt/dx)**2;  Cy2 = (c*dt/dy)**2    # help variables
         dt2 = dt**2
-
-
-Stability limit
-~~~~~~~~~~~~~~~
-
-Specifying a negative ``dt`` parameter makes us use the stability
-limit with a safety factor:
-
-.. code-block:: python
-
-        if dt <= 0:
-            stability_limit = (1/float(c))*(1/sqrt(1/dx**2 + 1/dy**2))
-            dt = dt_safety_factor*stability_limit
 
 
 Solution arrays
@@ -170,57 +172,86 @@ We store :math:`u^{n+1}_{i,j}`, :math:`u^{n}_{i,j}`, and
 
 where :math:`u^{n+1}_{i,j}` corresponds to ``u[i,j]``,
 :math:`u^{n}_{i,j}` to ``u_1[i,j]``, and
-:math:`u^{n-1}_{i,j}` to ``u_1[i,j]``
+:math:`u^{n-1}_{i,j}` to ``u_2[i,j]``
+
+
+.. index:: index set notation
+
+
+Index sets
+~~~~~~~~~~
+
+It is also convenient to introduce the index sets (cf. The section :ref:`wave:indexset`)
+
+
+.. code-block:: python
+
+        Ix = range(0, u.shape[0])
+        Iy = range(0, u.shape[1])
+        It = range(0, t.shape[0])
+
 
 Computing the solution
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Inserting the initial
 condition ``I`` in ``u_1`` and making a callback to the user in terms of
-the ``user_action`` function should be straightforward generalization of
-the 1D code:
+the ``user_action`` function is a straightforward generalization of
+the 1D code from the section :ref:`wave:string:impl`:
 
 
 .. code-block:: python
 
-        for i in range(0, Nx+1):
-            for j in range(0, Ny+1):
+        for i in Ix:
+            for j in Iy:
                 u_1[i,j] = I(x[i], y[j])
         
         if user_action is not None:
             user_action(u_1, x, xv, y, yv, t, 0)
 
-The ``user_action`` function has more arguments which will be commented
-upon in the section on vectorization.
+The ``user_action`` function has additional arguments compared to the
+1D case. The arguments ``xv`` and ``yv`` fact will be commented
+upon in the section :ref:`wave2D3D:impl:vectorized`.
 
-The key finite difference formula for updating the solution at
-a time level is implemented as
-
-
-.. code-block:: python
-
-        for i in range(1, Nx):
-            for j in range(1, Ny):
-                u[i,j] = 2*u_1[i,j] - u_2[i,j] + \ 
-                         Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \ 
-                         Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \ 
-                         dt2*f(x[i], y[j], t[n])
-
-We must thereafter ensure that ``u`` is zero on the four boundaries:
+The key finite difference formula :eq:`wave:2D3D:models:unp1`
+for updating the solution at
+a time level is implemented in a separate function as
 
 
 .. code-block:: python
 
-        j = 0
-        for i in range(0, Nx+1): u[i,j] = 0
-        j = Ny
-        for i in range(0, Nx+1): u[i,j] = 0
-        i = 0
-        for j in range(0, Ny+1): u[i,j] = 0
-        i = Nx
-        for j in range(0, Ny+1): u[i,j] = 0
+        def advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2, D1=2, D2=1):
+            Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+            for i in Ix[1:-1]:
+                for j in Iy[1:-1]:
+                    u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
+                    u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
+                    u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
+                             Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            # Boundary condition u=0
+            j = Iy[0]
+            for i in Ix: u[i,j] = 0
+            j = Iy[-1]
+            for i in Ix: u[i,j] = 0
+            i = Ix[0]
+            for j in Iy: u[i,j] = 0
+            i = Ix[-1]
+            for j in Iy: u[i,j] = 0
+            return u
 
-The special formula for the first step (:math:`u^1_{i,j}`) is implemented
+The constants ``D1`` and ``D2`` in front of ``u_1`` and ``u_2`` have been
+introduced to allow this ``advance`` function to also be used for the
+first step :math:`u^1_{i,j}`:
+
+
+.. code-block:: python
+
+        u = advance(u, u_1, u_2, f, x, y, t, n,
+                    0.5*Cx2, 0.5*Cy2, 0.5*dt2, D1=1, D2=0)
+
+
+The special formula for the first step :math:`u^1_{i,j}`,
+given by :eq:`wave:2D3D:models:u1`, is implemented
 in a very similar manner.
 
 The code segments with the loop over internal points and boundary
@@ -230,11 +261,13 @@ up the code since most of
 the CPU time is spent in this function.
 
 
+.. _wave2D3D:impl:vectorized:
+
 Vectorized computations
 -----------------------
 
 The scalar code above turns out to be extremely slow for large 2D
-meshes, and probably useless beyond initial debugging in 3D.
+meshes, and probably useless in 3D beyond debugging of small test cases.
 Vectorization is therefore a must for multi-dimensional
 finite difference computations in Python. For example,
 with a mesh consisting of :math:`30\times 30` cells, vectorization
@@ -249,6 +282,7 @@ sufficient: these must be extended to vectorized versions,
 
 .. code-block:: python
 
+        from numpy import newaxis
         xv = x[:,newaxis]
         yv = y[newaxis,:]
         # or
@@ -256,8 +290,9 @@ sufficient: these must be extended to vectorized versions,
         yv = y.reshape((1, y.size))
 
 This is a standard required technique when evaluating functions over
-a 2D mesh, say ``sin(xv)*cos(xv)``, which then gives a results with shape
+a 2D mesh, say ``sin(xv)*cos(xv)``, which then gives a result with shape
 ``(Nx+1,Ny+1)``.
+
 With the ``xv`` and ``yv`` arrays for vectorized computing,
 setting the initial condition is just a matter of
 
@@ -283,12 +318,13 @@ evaluation. This is the case with the computational scheme for :math:`u^{n+1}_{i
 
 Array slices in 2D are more complicated to understand than those in
 1D, but the logic from 1D applies to each dimension separately.
-For example, when doing :math:`u^{n}_{i,j} - u^{n}_{i-1,j}` for :math:`i=1,\ldots,N_x`,
+For example, when doing :math:`u^{n}_{i,j} - u^{n}_{i-1,j}` for :math:`i\in{{\mathcal{I^+}_x}}`,
 we just keep ``j`` constant and make a slice in the first index:
 ``u_1[1:,j] - u_1[:-1,j]``, exactly as in 1D. The ``1:`` slice
-specifies all the indices :math:`i=1,\ldots,N_x` for the term :math:`u^n_{i,j}`,
-while ``:-1`` specifies the relevant indices for the second term,
-where :math:`i-1=1,\ldots,N_x` and the indices therefore becomes :math:`0,1,\ldots,N_x-1`.
+specifies all the indices :math:`i=1,2,\ldots,N_x`,
+while ``:-1`` specifies the relevant indices for the second term:
+:math:`0,1,\ldots,N_x-1` (up to, but not including the last index).
+
 In the above code segment, the situation is slightly more complicated,
 because each displaced slice in one direction is
 accompanied by a ``1:-1`` slice in the other direction. The reason is
@@ -1197,7 +1233,7 @@ function in the C file with the interface we want to wrap.
 Using classes to implement a simulator
 --------------------------------------
 
- * class ``Mesh``, ``Function``, ``Problem``, ``Solver``, ``Visualizer``, ``File``
+ * class ``Mesh``, ``MeshFunction``, ``Problem``, ``Solver``, ``Visualizer``, ``File``
 
  * communicate with compiled code by ensuring that
    classes work with arrays
