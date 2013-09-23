@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="Study Guide: Finite difference methods for wave motion">
-<meta name="keywords" content="waves on a string,wave equation 1D,mesh finite differences,stencil 1D wave equation,mesh function,wave equation 1D, implementation,unit testing,software testing nose,vectorization,scalar code,array slices,slice,lambda function (Python),Neumann conditions,Dirichlet conditions,homogeneous Neumann conditions,homogeneous Dirichlet conditions,stencil Neumann boundary,index set notation">
+<meta name="keywords" content="waves on a string,wave equation 1D,mesh finite differences,stencil 1D wave equation,mesh function,wave equation 1D, implementation,unit testing,software testing nose,vectorization,scalar code,array slices,slice,lambda function (Python),Neumann conditions,Dirichlet conditions,homogeneous Neumann conditions,homogeneous Dirichlet conditions,stencil Neumann boundary,index set notation,wave equation 2D, implementation,Cython,C extension module,wrapper code,Fortran subroutine,row-major ordering,column-major ordering,Fortran array storage,C/Python array storage,wave equation 1D, analytical properties,wave equation 1D, exact numerical solution,stability criterion,wave equation 1D, stability">
 
 
 
@@ -265,7 +265,7 @@ $$
 <center>[1] <b style="font-weight: bold">Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b style="font-weight: bold">Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Sep 18, 2013</h4></center> <!-- date -->
+<center><h4>Sep 23, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -294,21 +294,22 @@ $$ \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2} $$
 
 <section class="slide">
 
-<h3>Initial-boundary value problem  <a name="___sec1"></a></h3>
+<h3>The complete initial-boundary value problem  <a name="___sec1"></a></h3>
 
 <p>
 <p>&nbsp;<br>
 $$
 \begin{align}
-u_{tt}&=c^2u_{xx}, \quad x\in (0,L),\ t\in (0,T]
+\frac{\partial^2 u}{\partial t^2} &=
+c^2 \frac{\partial^2 u}{\partial x^2}, \quad &x\in (0,L),\ t\in (0,T]
 \tag{1}\\ 
-u(x,0) &= I(x), \quad x\in [0,L]
+u(x,0) &= I(x), \quad &x\in [0,L]
 \tag{2}\\ 
-u_t(x,0) &= 0, \quad x\in [0,L]
+\frac{\partial}{\partial t}u(x,0) &= 0, \quad &x\in [0,L]
 \tag{3}\\ 
-u(0,t) & = 0, \quad  t\in (0,T],
+u(0,t) & = 0, \quad  &t\in (0,T]
 \tag{4}\\ 
-u(L,t) & = 0, \quad  t\in (0,T]\ts
+u(L,t) & = 0, \quad  &t\in (0,T]
 \tag{5}
 \end{align}
 $$
@@ -335,13 +336,13 @@ $$
 </ul>
 <p>
 
-Rule for no of initial and boundary conditions:
+Rule for number of initial and boundary conditions:
 
 <p>
 
 <ul>
  <p><li> \( u_{tt} \) in the PDE: two initial conditions, on \( u \) and \( u_t \)</li>
- <p><li> \( u_{t} \), not \( u_{tt} \), in the PDE: one initial conditions, on \( u \)</li>
+ <p><li> \( u_{t} \) (and no \( u_{tt} \)) in the PDE: one initial conditions, on \( u \)</li>
  <p><li> \( u_{xx} \) in the PDE: one boundary condition on \( u \) at each boundary point</li>
 </ul>
 <p>
@@ -416,6 +417,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Mesh in space:
 
 <p>
@@ -426,6 +429,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Uniform mesh with constant mesh spacings \( \Delta t \) and \( \Delta x \):
 
 <p>
@@ -507,6 +512,8 @@ $$ \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
 \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}= [D_tD_t u]^n_i$$
 <p>&nbsp;<br>
 
+
+<p>
 and
 
 <p>
@@ -540,6 +547,8 @@ c^2\frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2},
 $$
 <p>&nbsp;<br>
 
+
+<p>
 In operator notation:
 
 <p>
@@ -578,6 +587,8 @@ $$ [D_{2t} u]^n_i = 0,\quad n=0\quad\Rightarrow\quad
 u^{n-1}_i=u^{n+1}_i,\quad i=0,\ldots,N_x$$
 <p>&nbsp;<br>
 
+
+<p>
 The other initial condition \( u(x,0)=I(x) \) can be computed by
 
 <p>
@@ -680,10 +691,14 @@ govern the quality of the numerical solution.
 <p>
 
 Initial condition:
+
+<p>
 <p>&nbsp;<br>
 $$ [D_{2t}u=0]^0_i\quad\Rightarrow\quad u^{-1}_i=u^1_i$$
 <p>&nbsp;<br>
 
+
+<p>
 Insert in stencil \( [D_tD_tu = c^2D_xD_x]^0_i \) to get
 
 <p>
@@ -712,12 +727,12 @@ $$
 
 <ol>
 <p><li> Compute \( u^0_i=I(x_i) \) for \( i=0,\ldots,N_x \)</li>
-<p><li> Compute \( u^1_i \) by \eqref{wave:pde1:step4:1} and set \( u_i^1=0 \)
+<p><li> Compute \( u^1_i \) by <a href="#mjx-eqn-10">(10)</a> and set \( u_i^1=0 \)
    for the boundary points \( i=0 \) and \( i=N_x \), for \( n=1,2,\ldots,N-1 \),</li>
 <p><li> For each time level \( n=1,2,\ldots,N_t-1 \)</li>
 
 <ol>
-  <p><li> apply \eqref{wave:pde1:step4} to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
+  <p><li> apply <a href="#mjx-eqn-9">(9)</a> to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
   <p><li> set \( u^{n+1}_i=0 \) for the boundary points \( i=0 \), \( i=N_x \).</li>
 </ol>
 <p>
@@ -877,13 +892,13 @@ $$
 \begin{align}
 u_{tt} &= c^2 u_{xx} + f(x,t),
 \tag{11}\\ 
-u(x,0) &= I(x), \quad x\in [0,L]
+u(x,0) &= I(x), \quad &x\in [0,L]
 \tag{12}\\ 
-u_t(x,0) &= V(x), \quad x\in [0,L]
+u_t(x,0) &= V(x), \quad &x\in [0,L]
 \tag{13}\\ 
-u(0,t) & = 0, \quad  t>0,
+u(0,t) & = 0, \quad & t>0,
 \tag{14}\\ 
-u(L,t) & = 0, \quad  t>0\ts
+u(L,t) & = 0, \quad  &t>0\ts
 \tag{15}
 \end{align}
 $$
@@ -910,6 +925,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Writing out and solving for the unknown \( u^{n+1}_i \):
 
 <p>
@@ -942,7 +959,9 @@ Centered difference for \( u_t(x,0) = V(x) \):
 $$ [D_{2t}u = V]^0_i\quad\Rightarrow\quad u^{-1}_i = u^{1}_i - 2\Delta t V_i,$$
 <p>&nbsp;<br>
 
-which, when inserted in the stencil \eqref{wave:pde2:step3b} for \( n=0 \), gives
+
+<p>
+Inserting this in the stencil <a href="#mjx-eqn-17">(17)</a> for \( n=0 \) leads to
 
 <p>
 <p>&nbsp;<br>
@@ -1036,6 +1055,8 @@ $$
 $$ \uex(x,t) = x(L-x)\sin t\ts$$
 <p>&nbsp;<br>
 
+
+<p>
 PDE \( u_{tt}=c^2u_{xx}+f \):
 
 <p>
@@ -1043,6 +1064,8 @@ PDE \( u_{tt}=c^2u_{xx}+f \):
 $$ -x(L-x)\sin t = -2\sin t + f\quad\Rightarrow f = (2 - x(L-x))\sin t\ts$$
 <p>&nbsp;<br>
 
+
+<p>
 Initial conditions become
 
 <p>
@@ -1055,6 +1078,8 @@ u_t(x,0) &= V(x) = (2 - x(L-x))\cos t\ts
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Boundary conditions:
 
 <p>
@@ -1098,7 +1123,7 @@ $$ u(x,0) = u(x,L) = 0\ts $$
 
 <ul>
  <p><li> Manufactured solution with computation of
-   convergence rates: significant manual work</li>
+   convergence rates: much manual work</li>
  <p><li> Simpler and more powerful: use an exact solution for \( u^{n}_i \)</li>
  <p><li> A linear or quadratic \( \uex \) in \( x \) and \( t \) is often a good candidate</li>
 </ul>
@@ -1120,14 +1145,17 @@ Here, choose \( \uex \) such that \( \uex(x,0)=\uex(L,0)=0 \):
 $$ \uex (x,t) = x(L-x)(1+\frac{1}{2}t), $$
 <p>&nbsp;<br>
 
+
+<p>
 Insert in the PDE and find \( f \):
 
 <p>
 <p>&nbsp;<br>
-$$ f(x,t)=2(1+t)c^2\ts
-$$
+$$ f(x,t)=2(1+t)c^2\ts$$
 <p>&nbsp;<br>
 
+
+<p>
 Initial conditions:
 
 <p>
@@ -1162,6 +1190,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Hence,
 <p>&nbsp;<br>
 $$ [D_tD_t \uex]^n_i = x_i(L-x_i)[D_tD_t (1+\frac{1}{2}t)]^n =
@@ -1191,6 +1221,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Now, \( f^n_i = 2(1+\frac{1}{2}t_n)c^2 \) and we get
 
 <p>
@@ -1257,12 +1289,12 @@ can be obtained by \( C=1 \) (!)
 
 <ol>
 <p><li> Compute \( u^0_i=I(x_i) \) for \( i=0,\ldots,N_x \)</li>
-<p><li> Compute \( u^1_i \) by \eqref{wave:pde1:step4:1} and set \( u_i^1=0 \)
+<p><li> Compute \( u^1_i \) by <a href="#mjx-eqn-10">(10)</a> and set \( u_i^1=0 \)
    for the boundary points \( i=0 \) and \( i=N_x \), for \( n=1,2,\ldots,N-1 \),</li>
 <p><li> For each time level \( n=1,2,\ldots,N_t-1 \)</li>
 
 <ol>
-  <p><li> apply \eqref{wave:pde1:step4} to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
+  <p><li> apply <a href="#mjx-eqn-9">(9)</a> to find \( u^{n+1}_i \) for \( i=1,\ldots,N_x-1 \)</li>
   <p><li> set \( u^{n+1}_i=0 \) for the boundary points \( i=0 \), \( i=N_x \).</li>
 </ol>
 <p>
@@ -1598,6 +1630,8 @@ Program: <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_u0_s.py"><tt>wave1D_u0_
 
 <div>
 <video  loop controls width='800' height='365' preload='none'>
+<source src='mov-wave/guitar_C0.8/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/guitar_C0.8/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
 </video>
 </div>
 <p><em></em></p>
@@ -1639,12 +1673,13 @@ Insert this in the PDE (\( with f=0 \)) and dropping bars
 
 <p>
 <p>&nbsp;<br>
-$$ u_{tt} = u_{tt}
-$$
+$$ u_{tt} = u_{xx}$$
 <p>&nbsp;<br>
 
+
+<p>
 Initial condition: set \( a=1 \), \( L=1 \), and
-\( x_0\in [0,1] \) in \eqref{wave:pde1:guitar:I}.
+\( x_0\in [0,1] \) in <a href="#mjx-eqn-20">(20)</a>.
 
 <p>
 In the code: set <code>a=c=L=1</code>, <code>x0=0.8</code>, and there is no need to calculate with
@@ -1891,9 +1926,8 @@ Note:
 <p>
 
 <ul>
- <p><li> Run <code>wave1D_u0_sv.py</code> for \( N_x=50,100,200,400,800 \)
-   and measuring the CPU time
-   (cf. <code>run_efficiency_experiments</code> function)</li>
+ <p><li> Run <code>wave1D_u0_sv.py</code> for \( N_x \) as 50,100,200,400,800
+   and measuring the CPU time</li>
  <p><li> Observe substantial speed-up: vectorized version is
    about \( N_x/5 \) times faster</li>
 </ul>
@@ -1915,8 +1949,7 @@ Much bigger improvements for 2D and 3D codes!
 <ul>
  <p><li> Boundary condition \( u=0 \): \( u \) changes sign</li>
  <p><li> Boundary condition \( u_x=0 \): wave is perfectly reflected</li>
- <p><li> How can we implement \( u_x \)?</li>
- <p><li> It is more complicated than \( u=0 \)</li>
+ <p><li> How can we implement \( u_x \)? (more complicated than \( u=0 \))</li>
 </ul>
 <p>
 
@@ -1950,6 +1983,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 For a 1D domain \( [0,L] \):
 
 <p>
@@ -1958,7 +1993,7 @@ $$
 \left.\frac{\partial}{\partial n}\right\vert_{x=L} =
 \frac{\partial}{\partial x},\quad
 \left.\frac{\partial}{\partial n}\right\vert_{x=0} = -
-\frac{\partial}{\partial x}\ts
+\frac{\partial}{\partial x}
 $$
 <p>&nbsp;<br>
 
@@ -2057,6 +2092,8 @@ for computing \( u^3_0 \) in terms of \( u^2_0 \), \( u^1_0 \), and
 
 <div>
 <video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
 </video>
 </div>
 <p><em></em></p>
@@ -2066,17 +2103,6 @@ for computing \( u^3_0 \) in terms of \( u^2_0 \), \( u^1_0 \), and
 Animation
 in a <a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Neumann_stencil_gpl/index.html">web page</a>
 or a <a href="http://tinyurl.com/k3sdbuv/pub/mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.flv">movie file</a>.
-
-<p>
-
-<div>
-<video  loop controls width='500' height='365' preload='none'>
-<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
-<source src='mov-wave/wave1D_PDE_Neumann_stencil_gpl/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
-</video>
-</div>
-<p><em></em></p>
-
 
 <p>
 
@@ -2139,7 +2165,7 @@ Program <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn0.py"><tt>wave1D_dn0.p
  <p><li> Definition: \( \Ix =\{0,\ldots,N_x\} \)</li>
  <p><li> The first index: \( i=\setb{\Ix} \)</li>
  <p><li> The last index: \( i=\sete{\Ix} \)</li>
- <p><li> All interior points: \( i\in\setr{\Ix} \), \( \seti{\Ix}=\{1,\ldots,N_x-1\} \)</li>
+ <p><li> All interior points: \( i\in\seti{\Ix} \), \( \seti{\Ix}=\{1,\ldots,N_x-1\} \)</li>
  <p><li> \( \setl{\Ix} \) means \( \{0,\ldots,N_x-1\} \)</li>
  <p><li> \( \setr{\Ix} \) means \( \{1,\ldots,N_x\} \)</li>
 </ul>
@@ -2184,7 +2210,9 @@ $$
 $$
 <p>&nbsp;<br>
 
-defined in Python as
+
+<p>
+Implemented in Python as
 
 <p>
 
@@ -2219,7 +2247,9 @@ u_i &= 0,
 $$
 <p>&nbsp;<br>
 
-and implemented by code like
+
+<p>
+Corresponding implementation:
 
 <p>
 
@@ -2251,17 +2281,11 @@ Program <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn.py"><tt>wave1D_dn.py<
  <p><li> The extra left and right cell are called <em>ghost cells</em></li>
  <p><li> The extra points are called <em>ghost points</em></li>
  <p><li> The \( u_{-1}^n \) and \( u_{N_x+1}^n \) values are called <em>ghost values</em></li>
+ <p><li> Update ghost values as \( u_{i-1}^n = u_{i+1}^n \) for \( i=0 \) and \( i=N_x \)</li>
+ <p><li> Then the stencil becomes right at the boundary</li>
 </ul>
 <p>
 
-The important idea is to ensure that
-<p>&nbsp;<br>
-$$ u_{-1}^n = u_{1}^n\hbox{ and } u_{N_x-1}^n = u_{N_x+1}^n,$$
-<p>&nbsp;<br>
-
-because then the stencil becomes right at the boundary.
-
-<p>
 
 </section>
 
@@ -2373,6 +2397,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 This equation sampled at a mesh point \( (x_i,t_n) \):
 <p>&nbsp;<br>
 $$
@@ -2399,11 +2425,15 @@ The principal idea is to <em>first discretize the outer derivative</em>.
 Define
 <p>&nbsp;<br>
 $$ \phi = q(x)
-\frac{\partial u}{\partial x},
+\frac{\partial u}{\partial x}\ts
 $$
 <p>&nbsp;<br>
 
-and use a centered derivative around \( x=x_i \) for the derivative of \( \phi \):
+
+<p>
+Then use a centered derivative around \( x=x_i \) for the derivative of \( \phi \):
+
+<p>
 <p>&nbsp;<br>
 $$
 \left[\frac{\partial\phi}{\partial x}\right]^n_i
@@ -2435,6 +2465,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 Similarly,
 <p>&nbsp;<br>
 $$
@@ -2475,6 +2507,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 In operator notation:
 <p>&nbsp;<br>
 $$
@@ -2492,11 +2526,9 @@ $$
 
 <p>
 <div class="alert alert-block alert-warning alert-text-normal"><b style="font-weight: bold">Remark.</b>
-<b style="font-weight: bold">Remark.</b>
 Many are tempted to use the chain rule on the
 term \( \frac{\partial}{\partial x}\left( q(x)
-\frac{\partial u}{\partial x}\right) \), but this is not a good idea
-in this context.
+\frac{\partial u}{\partial x}\right) \), but this is not a good idea!
 </div>
 <p>
 <!-- Needs some better explanation here - maybe the exact solution of a -->
@@ -2525,21 +2557,23 @@ $$
 \begin{align}
 q_{i+\frac{1}{2}} &\approx
 \frac{1}{2}\left( q_{i} + q_{i+1}\right) =
-[\overline{q}^{x}]_i,
+[\overline{q}^{x}]_i
 \quad &\hbox{(arithmetic mean)}
 \tag{26}\\ 
 q_{i+\frac{1}{2}} &\approx
-2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1},
+2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1}
 \quad &\hbox{(harmonic mean)}
 \tag{27}\\ 
 q_{i+\frac{1}{2}} &\approx
-\left(q_{i}q_{i+1}\right)^{1/2},
+\left(q_{i}q_{i+1}\right)^{1/2}
 \quad &\hbox{(geometric mean)}
 \tag{28}
 \end{align}
 $$
 <p>&nbsp;<br>
 
+
+<p>
 The arithmetic mean in <a href="#mjx-eqn-26">(26)</a> is by
 far the most used averaging technique.
 
@@ -2563,6 +2597,8 @@ $$
 $$
 <p>&nbsp;<br>
 
+
+<p>
 We clearly see the type of finite differences and averaging!
 
 <p>
@@ -2584,6 +2620,2300 @@ u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2\ti
 $$
 <p>&nbsp;<br>
 
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Neumann condition and a variable coefficient <a name="wave:pde2:var:c:Neumann"></a></h3>
+
+<p>
+Consider \( \partial u/\partial x=0 \) at \( x=L=N_x\Delta x \):
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{u_{i+1}^{n} - u_{i-1}^n}{2\Delta x} = 0\quad u_{i+1}^n = u_{i-1}^n,
+\quad i=N_x\ts
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Insert \( u_{i+1}^n=u_{i-1}^n \) in the stencil
+<a href="#mjx-eqn-30">(30)</a>
+for \( i=N_x \) and obtain
+
+<p>
+<p>&nbsp;<br>
+$$
+u^{n+1}_i \approx
+- u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2
+2q_{i}(u_{i-1}^n - u_{i}^n) + \Delta t^2 f^n_i
+$$
+<p>&nbsp;<br>
+
+
+<p>
+(We have used \( q_{i+\frac{1}{2}} + q_{i-\frac{1}{2}}\approx 2q_i \).)
+
+<p>
+Alternative: assume \( dq/dx=0 \) (simpler).
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Implementation of variable coefficients <a name="wave:pde2:var:c:impl"></a></h3>
+
+<p>
+Assume <code>c[i]</code> holds \( c_i \) the spatial mesh points
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Nx):
+    u[i] = - u_2[i] + <span style="color: #B452CD">2</span>*u_1[i] + \ 
+           C2*(<span style="color: #B452CD">0.5</span>*(q[i] + q[i+<span style="color: #B452CD">1</span>])*(u_1[i+<span style="color: #B452CD">1</span>] - u_1[i])  - \ 
+               <span style="color: #B452CD">0.5</span>*(q[i] + q[i-<span style="color: #B452CD">1</span>])*(u_1[i] - u_1[i-<span style="color: #B452CD">1</span>])) + \ 
+           dt2*f(x[i], t[n])
+</code></pre></div>
+<p>
+Here: <code>C2=(dt/dx)**2</code>
+
+<p>
+Vectorized version:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">u[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] = - u_2[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + <span style="color: #B452CD">2</span>*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + \ 
+          C2*(<span style="color: #B452CD">0.5</span>*(q[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + q[<span style="color: #B452CD">2</span>:])*(u_1[<span style="color: #B452CD">2</span>:] - u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]) -
+              <span style="color: #B452CD">0.5</span>*(q[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + q[:-<span style="color: #B452CD">2</span>])*(u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] - u_1[:-<span style="color: #B452CD">2</span>])) + \ 
+          dt2*f(x[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>], t[n])
+</code></pre></div>
+<p>
+Neumann condition \( u_x=0 \): same ideas as in 1D (modified stencil
+or ghost cells).
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>A more general model PDE with variable coefficients  <a name="___sec74"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\varrho(x)\frac{\partial^2 u}{\partial t^2} =
+\frac{\partial}{\partial x}\left( q(x)
+\frac{\partial u}{\partial x}\right) + f(x,t)
+\tag{31}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+A natural scheme is
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[\varrho D_tD_t u = D_x\overline{q}^xD_x u + f]^n_i
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Or
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_tD_t u = \varrho^{-1}D_x\overline{q}^xD_x u + f]^n_i
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+No need to average \( \varrho \), just sample at \( i \)
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Generalization: damping  <a name="___sec75"></a></h3>
+
+<p>
+Why do waves die out?
+
+<p>
+
+<ul>
+ <p><li> Damping (non-elastic effects, air resistance)</li>
+ <p><li> 2D/3D: conservation of energy makes an amplitude reduction by
+   \( 1/\sqrt{r} \) (2D) or \( 1/r \) (3D)</li>
+</ul>
+<p>
+
+Simplest damping model:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial t^2} + \color{red}{b\frac{\partial u}{\partial t}}
+= c^2\frac{\partial^2 u}{\partial x^2} + f(x,t),
+\tag{32}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( b \geq 0 \): prescribed damping coefficient.
+
+<p>
+Discretization via centered differences to ensure \( \Oof{\Delta t^2} \) error:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_tD_t u + bD_{2t}u = c^2D_xD_x u + f]^n_i
+\thinspace .
+\tag{33}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Need special formula for \( u^1_i \) + special stencil (or ghost cells)
+for Neumann conditions.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h2>Building a general 1D wave equation solver <a name="wave:pde2:software"></a></h2>
+
+<p>
+The program <a href="http://tinyurl.com/jvzzcfn/wave/wave1D_dn_vc.py"><tt>wave1D_dn_vc.py</tt></a>
+solves a fairly general 1D wave equation:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u_t &= (c^2(x)u_x)_x + f(x,t),\quad &x\in (0,L),\ t\in (0,T]
+\tag{34}\\ 
+u(x,0) &= I(x),\quad &x\in [0,L]
+\tag{35}\\ 
+u_t(x,0) &= V(t),\quad &x\in [0,L]
+\tag{36}\\ 
+u(0,t) &= U_0(t)\hbox{ or } u_x(0,t)=0,\quad &t\in (0,T]
+\tag{37}\\ 
+u(L,t) &= U_L(t)\hbox{ or } u_x(L,t)=0,\quad &t\in (0,T]
+\tag{38}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Can be adapted to many needs.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Collection of initial conditions  <a name="___sec77"></a></h3>
+
+<p>
+The function <code>pulse</code> in <code>wave1D_dn_vc.py</code> offers four
+initial conditions:
+
+<p>
+
+<ol>
+<p><li> a rectangular pulse ("plug")</li>
+<p><li> a Gaussian function (<code>gaussian</code>)</li>
+<p><li> a "cosine hat": one period of \( 1 + \cos (\pi x \), \( x\in [-1,1] \)</li>
+<p><li> half a "cosine hat": half a period of \( \cos \pi x \),
+   \( x\in [-\frac{1}{2},\frac{1}{2}] \)</li>
+</ol>
+<p>
+
+Can locate the initial pulse at \( x=0 \) or in the middle
+
+<p>
+
+<!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; import wave1D_dn_vc as w
+&gt;&gt;&gt; w.pulse(loc=&#39;left&#39;, pulse_tp=&#39;cosinehat&#39;, Nx=50, every_frame=10)
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h2>Finite difference methods for 2D and 3D wave equations <a name="wave:2D3D"></a></h2>
+
+<p>
+Constant wave velocity \( c \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T]
+\tag{39}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Variable wave velocity:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T]
+\tag{40}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Examples on wave equations written out in 2D/3D  <a name="___sec79"></a></h3>
+<a name="wave:2D3D:models"></a>
+
+<p>
+3D, constant \( c \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} \nabla^2 u = \frac{\partial^2 u}{\partial x^2} +
+\frac{\partial^2 u}{\partial y^2} + \frac{\partial^2 u}{\partial z^2}
+\thinspace . \end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+2D, variable \( c \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\varrho(x,y)
+\frac{\partial^2 u}{\partial t^2} =
+\frac{\partial}{\partial x}\left( q(x,y)
+\frac{\partial u}{\partial x}\right)
++
+\frac{\partial}{\partial y}\left( q(x,y)
+\frac{\partial u}{\partial y}\right)
++ f(x,y,t)
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Compact notation:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u_{tt} &= c^2(u_{xx} + u_{yy} + u_{zz}) + f,
+\tag{41}\\ 
+\varrho u_{tt} &= (q u_x)_x + (q u_z)_z + (q u_z)_z + f
+\tag{42}
+\thinspace .
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Boundary and initial conditions  <a name="___sec80"></a></h3>
+
+<p>
+We need <em>one</em> boundary condition at <em>each point</em> on \( \partial\Omega \):
+
+<p>
+
+<ol>
+ <p><li> \( u \) is prescribed (\( u=0 \) or known incoming wave)</li>
+ <p><li> \( \partial u/\partial n = \normalvec\cdot\nabla u \) prescribed
+    (\( =0 \): reflecting boundary)</li>
+ <p><li> open boundary (radiation) condition: \( u_t + \boldsymbol{c}\cdot\nabla u =0 \)
+    (let waves travel undisturbed out of the domain)</li>
+</ol>
+<p>
+
+PDEs with <em>second-order</em> time derivative need <em>two</em> initial conditions:
+
+<p>
+
+<ol>
+ <p><li> \( u=I \),</li>
+ <p><li> \( u_t = V \).</li>
+</ol>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example: 2D propagation of Gaussian function  <a name="___sec81"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+<source src='mov-wave/Gaussian2D/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/Gaussian2D/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Mesh <a name="wave:2D3D:mesh"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Mesh point: \( (x_i,y_j,z_k,t_n) \)</li>
+ <p><li> \( x \) direction: \( x_0 < x_1 <\cdots < x_{N_x} \)</li>
+ <p><li> \( y \) direction: \( y_0 < y_1 <\cdots < y_{N_y} \)</li>
+ <p><li> \( z \) direction: \( z_0 < z_1 <\cdots < z_{N_z} \)</li>
+ <p><li> \( u^{n}_{i,j,k} \approx \uex(x_i,y_j,z_k,t_n) \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Discretization <a name="wave:2D3D:models"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+[D_tD_t u = c^2(D_xD_x u + D_yD_yu) + f]^n_{i,j,k},
+$$
+<p>&nbsp;<br>
+
+Written out in detail:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+\frac{u^{n+1}_{i,j} - 2u^{n}_{i,j} + u^{n-1}_{i,j}}{\Delta t^2}
+&= c^2
+\frac{u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}}{\Delta x^2}
++ \nonumber\\ 
+&\quad c^2\frac{u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}}{\Delta y^2}
++ f^n_{i,j},
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( u^{n-1}_{i,j} \) and \( u^n_{i,j} \) are known, solve for
+\( u^{n+1}_{i,j} \):
+
+<p>
+<p>&nbsp;<br>
+$$ u^{n+1}_{i,j} = 2u^n_{i,j} + u^{n-1}_{i,j} + c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}\ts$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Special stencil for the first time step  <a name="___sec84"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> The stencil for \( u^1_{i,j} \) (\( n=0 \)) involves \( u^{-1}_{i,j} \)
+   which is outside the time mesh</li>
+ <p><li> Remedy: use discretized \( u_t(x,0)=V \) and the stencil for \( n=0 \)
+   to develop a special stencil (as in the 1D case)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$ [D_{2t}u = V]^0_{i,j}\quad\Rightarrow\quad u^{-1}_{i,j} = u^1_{i,j} - 2\Delta t V_{i,j}
+\thinspace .
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ u^{n+1}_{i,j} = u^n_{i,j} -2\Delta V_{i,j} + \frac{1}{2}
+c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}\ts$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Variable coefficients (1)  <a name="___sec85"></a></h3>
+
+<p>
+3D wave equation:
+
+<p>
+<p>&nbsp;<br>
+$$ \varrho u_{tt} = (qu_x)_x + (qu_y)_y + (qu_z)_z + f(x,y,z,t) $$
+<p>&nbsp;<br>
+
+
+<p>
+Just apply the 1D discretization for each term:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[\varrho D_tD_t u = (D_x\overline{q}^x D_x u +
+D_y\overline{q}^y D_yu + D_z\overline{q}^z D_z u) + f]^n_{i,j,k}
+\thinspace .
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Need special formula for \( u^1_{i,j,k} \)
+(use \( [D_{2t}u=V]^0 \) and stencil for \( n=0 \)).
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Variable coefficients (2)  <a name="___sec86"></a></h3>
+
+<p>
+Written out:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+u^{n+1}_{i,j,k} &= - u^{n-1}_{i,j,k}  + 2u^{n}_{i,j,k} + \\ 
+&= \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \frac{1}{2}(q_{i,j,k} + q_{i+1,j,k})(u^{n}_{i+1,j,k} - u^{n}_{i,j,k}) - \\ 
+&\qquad\quad \frac{1}{2}(q_{i-1,j,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i-1,j,k})) + \\ 
+&= \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \frac{1}{2}(q_{i,j,k} + q_{i,j+1,k})(u^{n}_{i,j+1,k} - u^{n}_{i,j,k}) - \\ 
+&\qquad\quad\frac{1}{2}(q_{i,j-1,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j-1,k})) + \\ 
+&= \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \frac{1}{2}(q_{i,j,k} + q_{i,j,k+1})(u^{n}_{i,j,k+1} - u^{n}_{i,j,k}) -\\ 
+&\qquad\quad \frac{1}{2}(q_{i,j,k-1} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j,k-1})) + \\ 
++ &\qquad \Delta t^2 f^n_{i,j,k}
+\thinspace .
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Neumann boundary condition in 2D  <a name="___sec87"></a></h3>
+
+<p>
+Use ideas from 1D! Example: \( \frac{\partial u}{\partial n} \) at \( y=0 \),
+\( \frac{\partial u}{\partial n} = -\frac{\partial u}{\partial y} \)
+
+<p>
+Boundary condition discretization:
+
+<p>
+<p>&nbsp;<br>
+$$ [-D_{2y} u = 0]^n_{i,0}\quad\Rightarrow\quad \frac{u^n_{i,1}-u^n_{i,-1}}{2\Delta y} = 0,\ i\in\Ix\ts
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Insert \( u^n_{i,-1}=u^n_{i,1} \) in the stencil for \( u^{n+1}_{i,j=0} \) to
+obtain a modified stencil on the boundary.
+
+<p>
+Pattern: use interior stencil also on the bundary, but replace
+\( j-1 \) by \( j+1 \)
+
+<p>
+Alternative: use ghost cells and ghost values
+
+<p>
+<!-- Should have fig -->
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h2>Implementation of 2D/3D problems <a name="wave:2D3D:impl"></a></h2>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+u_t &= c^2(u_{xx} + u_{yy}) + f(x,y,t),\quad &(x,y)\in \Omega,\ t\in (0,T],\\ 
+u(x,y,0) &= I(x,y),\quad &(x,y)\in\Omega,\\ 
+u_t(x,y,0) &= V(x,y),\quad &(x,y)\in\Omega,\\ 
+u &= 0,\quad &(x,y)\in\partial\Omega,\ t\in (0,T],
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( \Omega = [0,L_x]\times [0,L_y] \)
+
+<p>
+Discretization:
+
+<p>
+<p>&nbsp;<br>
+$$ [D_t D_t u = c^2(D_xD_x u + D_yD_y u) + f]^n_{i,j},
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Algorithm  <a name="___sec89"></a></h3>
+
+<p>
+
+<ol>
+<p><li> Set initial condition \( u^0_{i,j}=I(x_i,y_j) \)</li>
+<p><li> Compute \( u^1_{i,j} = \cdots \) for \( i\in\seti{\Ix} \) and \( j\in\seti{\Iy} \)</li>
+<p><li> Set \( u^1_{i,j}=0 \) for the boundaries \( i=0,N_x \), \( j=0,N_y \)</li>
+<p><li> For \( n=1,2,\ldots,N_t \):</li>
+
+<ol>
+ <p><li> Find \( u^{n+1}_{i,j} = \cdots \)
+    for \( i\in\seti{\Ix} \) and \( j\in\seti{\Iy} \)</li>
+ <p><li> Set \( u^{n+1}_{i,j}=0 \) for the boundaries \( i=0,N_x \), \( j=0,N_y \)</li>
+</ol>
+<p>
+
+</ol>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Scalar computations: mesh <a name="wave2D3D:impl:scalar"></a></h3>
+
+<p>
+Program: <a href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">solver</span>(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
+           user_action=<span style="color: #658b00">None</span>, version=<span style="color: #CD5555">&#39;scalar&#39;</span>):
+</code></pre></div>
+<p>
+Mesh:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">x = linspace(<span style="color: #B452CD">0</span>, Lx, Nx+<span style="color: #B452CD">1</span>)                  <span style="color: #228B22"># mesh points in x dir</span>
+y = linspace(<span style="color: #B452CD">0</span>, Ly, Ny+<span style="color: #B452CD">1</span>)                  <span style="color: #228B22"># mesh points in y dir</span>
+dx = x[<span style="color: #B452CD">1</span>] - x[<span style="color: #B452CD">0</span>]
+dy = y[<span style="color: #B452CD">1</span>] - y[<span style="color: #B452CD">0</span>]
+Nt = <span style="color: #658b00">int</span>(<span style="color: #658b00">round</span>(T/<span style="color: #658b00">float</span>(dt)))
+t = linspace(<span style="color: #B452CD">0</span>, N*dt, N+<span style="color: #B452CD">1</span>)                 <span style="color: #228B22"># mesh points in time</span>
+Cx2 = (c*dt/dx)**<span style="color: #B452CD">2</span>;  Cy2 = (c*dt/dy)**<span style="color: #B452CD">2</span>    <span style="color: #228B22"># help variables</span>
+dt2 = dt**<span style="color: #B452CD">2</span>
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Scalar computations: arrays  <a name="___sec91"></a></h3>
+
+<p>
+Store \( u^{n+1}_{i,j} \), \( u^{n}_{i,j} \), and
+\( u^{n-1}_{i,j} \) in three two-dimensional arrays:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">u   = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>))   <span style="color: #228B22"># solution array</span>
+u_1 = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>))   <span style="color: #228B22"># solution at t-dt</span>
+u_2 = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>))   <span style="color: #228B22"># solution at t-2*dt</span>
+</code></pre></div>
+<p>
+\( u^{n+1}_{i,j} \) corresponds to <code>u[i,j]</code>, etc.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Scalar computations: initial condition  <a name="___sec92"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Ix = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">0</span>])
+Iy = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">1</span>])
+It = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, t.shape[<span style="color: #B452CD">0</span>])
+
+<span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix:
+    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy:
+        u_1[i,j] = I(x[i], y[j])
+
+<span style="color: #8B008B; font-weight: bold">if</span> user_action <span style="color: #8B008B">is</span> <span style="color: #8B008B">not</span> <span style="color: #658b00">None</span>:
+    user_action(u_1, x, xv, y, yv, t, <span style="color: #B452CD">0</span>)
+</code></pre></div>
+<p>
+Arguments <code>xv</code> and <code>yv</code>: for vectorized computations
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Scalar computations: primary stencil  <a name="___sec93"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t,
+                   n, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+    Ix = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">0</span>]);  Iy = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">1</span>])
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
+        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
+            u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
+            u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
+            u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
+                     Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+    <span style="color: #228B22"># Boundary condition u=0</span>
+    j = Iy[<span style="color: #B452CD">0</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix: u[i,j] = <span style="color: #B452CD">0</span>
+    j = Iy[-<span style="color: #B452CD">1</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix: u[i,j] = <span style="color: #B452CD">0</span>
+    i = Ix[<span style="color: #B452CD">0</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy: u[i,j] = <span style="color: #B452CD">0</span>
+    i = Ix[-<span style="color: #B452CD">1</span>]
+    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy: u[i,j] = <span style="color: #B452CD">0</span>
+    <span style="color: #8B008B; font-weight: bold">return</span> u
+</code></pre></div>
+<p>
+<code>D1</code> and <code>D2</code>: allow <code>advance_scalar</code> to be used also for \( u^1_{i,j} \):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">u = advance_scalar(u, u_1, u_2, f, x, y, t,
+                   n, <span style="color: #B452CD">0.5</span>*Cx2, <span style="color: #B452CD">0.5</span>*Cy2, <span style="color: #B452CD">0.5</span>*dt2, D1=<span style="color: #B452CD">1</span>, D2=<span style="color: #B452CD">0</span>)
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Vectorized computations: mesh coordinates <a name="wave2D3D:impl:vectorized"></a></h3>
+
+<p>
+Mesh with \( 30\times 30 \) cells: vectorization reduces the CPU
+time by a factor of 70 (!).
+
+<p>
+Need special coordinate arrays <code>xv</code> and <code>yv</code> such that \( I(x,y) \)
+and \( f(x,y,t) \) can be vectorized:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">import</span> newaxis
+xv = x[:,newaxis]
+yv = y[newaxis,:]
+
+u_1[:,:] = I(xv, yv)
+f_a[:,:] = f(xv, yv, t)
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Vectorized computations: stencil  <a name="___sec95"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_vectorized</span>(u, u_1, u_2, f_a, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+    u_xx = u_1[:-<span style="color: #B452CD">2</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + u_1[<span style="color: #B452CD">2</span>:,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]
+    u_yy = u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,:-<span style="color: #B452CD">2</span>] - <span style="color: #B452CD">2</span>*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">2</span>:]
+    u[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] = D1*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] - D2*u_2[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + \ 
+                   Cx2*u_xx + Cy2*u_yy + dt2*f_a[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]
+    <span style="color: #228B22"># Boundary condition u=0</span>
+    j = <span style="color: #B452CD">0</span>
+    u[:,j] = <span style="color: #B452CD">0</span>
+    j = u.shape[<span style="color: #B452CD">1</span>]-<span style="color: #B452CD">1</span>
+    u[:,j] = <span style="color: #B452CD">0</span>
+    i = <span style="color: #B452CD">0</span>
+    u[i,:] = <span style="color: #B452CD">0</span>
+    i = u.shape[<span style="color: #B452CD">0</span>]-<span style="color: #B452CD">1</span>
+    u[i,:] = <span style="color: #B452CD">0</span>
+    <span style="color: #8B008B; font-weight: bold">return</span> u
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Verification: quadratic solution (1) <a name="wave2D3D:impl:verify"></a></h3>
+
+<p>
+Manufactured solution:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\uex(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
+\thinspace .
+\tag{43}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Requires \( f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
+x(L_x-x)) \).
+
+<p>
+This \( \uex \) is ideal because it also solves the discrete equations!
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Verification: quadratic solution (2)  <a name="___sec97"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> \( [D_t D_t 1]^n=0 \)</li>
+ <p><li> \( [D_t D_t t]^n=0 \)</li>
+ <p><li> \( [D_t D_t t^2]=2 \)</li>
+ <p><li> \( D_tD_t \) is a linear operator: \( [D_tD_t (au+bv)]^n = a[D_tD_t u]^n +
+   b[D_tD_t v]^n \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{align*}
+[D_xD_x \uex]^n_{i,j} &= [y(L_y-y)(1+\frac{1}{2}t) D_xD_x x(L_x-x)]^n_{i,j}\\ 
+&= y_j(L_y-y_j)(1+\frac{1}{2}t_n)2\ts
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Similar calculations for \( [D_yD_y\uex]^n_{i,j} \) and
+   \( [D_tD_t \uex]^n_{i,j} \) terms</li>
+ <p><li> Must also check the equation for \( u^1_{i,j} \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h2>Migrating loops to Cython <a name="wave2D3D:impl:Cython"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Vectorization: 5-10 times slower than pure C or Fortran code</li>
+ <p><li> Cython: extension of Python for translating functions to C</li>
+ <p><li> Principle: declare variables with type</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Declaring variables and annotating the code  <a name="___sec99"></a></h3>
+
+<p>
+Pure Python code:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t,
+                   n, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+    Ix = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">0</span>]);  Iy = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">1</span>])
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
+        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
+            u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
+            u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
+            u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
+                     Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+</code></pre></div>
+<p>
+
+<ul>
+ <p><li> Copy this function and put it in a file with <code>.pyx</code> extension.</li>
+ <p><li> Add type of variables:</li>
+
+<ul>
+  <p><li> <code>function(a, b)</code> \( \rightarrow \) <code>cpdef function(int a, double b)</code></li>
+  <p><li> <code>v = 1.2</code> \( \rightarrow \) <code>cdef double v = 1.2</code></li>
+  <p><li> Array declaration: <code>np.ndarray[np.float64_t, ndim=2, mode='c'] u</code></li>
+</ul>
+<p>
+
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cython version of the functions  <a name="___sec100"></a></h3>
+
+<p>
+
+<!-- code=cython (from !bc cycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">np</span>
+<span style="color: #8B008B; font-weight: bold">cimport</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">np</span>
+<span style="color: #8B008B; font-weight: bold">cimport</span> <span style="color: #008b45; text-decoration: underline">cython</span>
+<span style="color: #8B008B; font-weight: bold">ctypedef</span> np.float64_t DT    <span style="color: #228B22"># data type</span>
+
+<span style="color: #707a7c">@cython</span>.boundscheck(<span style="color: #658b00">False</span>)  <span style="color: #228B22"># turn off array bounds check</span>
+<span style="color: #707a7c">@cython</span>.wraparound(<span style="color: #658b00">False</span>)   <span style="color: #228B22"># turn off negative indices (u[-1,-1])</span>
+<span style="color: #8B008B; font-weight: bold">cpdef</span> <span style="color: #008b45">advance</span>(
+    np.ndarray[DT, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u,
+    np.ndarray[DT, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u_1,
+    np.ndarray[DT, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u_2,
+    np.ndarray[DT, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] f,
+    double Cx2, double Cy2, double dt2):
+
+    <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">int</span> <span style="color: #008b45">Nx</span>, <span style="color: #008b45">Ny</span>, <span style="color: #008b45">i</span>, <span style="color: #008b45">j</span>
+    <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">double</span> <span style="color: #008b45">u_xx</span>, <span style="color: #008b45">u_yy</span>
+    Nx = u.shape[<span style="color: #B452CD">0</span>]-<span style="color: #B452CD">1</span>
+    Ny = u.shape[<span style="color: #B452CD">1</span>]-<span style="color: #B452CD">1</span>
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">xrange</span>(<span style="color: #B452CD">1</span>, Nx):
+        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">xrange</span>(<span style="color: #B452CD">1</span>, Ny):
+            u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
+            u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
+            u[i,j] = <span style="color: #B452CD">2</span>*u_1[i,j] - u_2[i,j] + \ 
+                     Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
+</code></pre></div>
+<p>
+Note: from now in we skip the code for setting boundary values
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Visual inspection of the C translation  <a name="___sec101"></a></h3>
+
+<p>
+See how effective Cython can translate this code to C:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; cython -a wave2D_u0_loop_cy.pyx
+</code></pre></div>
+<p>
+Load <code>wave2D_u0_loop_cy.html</code> in a browser (white: pure C, yellow: still Python):
+
+<p>
+<center><p><img src="fig-wave/wave2D_u0_loop_cy1.png" align="bottom" width=600,></p></center>
+
+<p>
+Can click on <code>wave2D_u0_loop_cy.c</code> to see the generated C code...
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Building the extension module  <a name="___sec102"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Cython code must be translated to C</li>
+ <p><li> C code must be compiled</li>
+ <p><li> Compiled C code must be linked to Python C libraries</li>
+ <p><li> Result: <em>C extension module</em> (<code>.so</code> file) that can be
+   loaded as a standard Python module</li>
+ <p><li> Use a <code>setup.py</code> script to build the extension module</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">distutils.core</span> <span style="color: #8B008B; font-weight: bold">import</span> setup
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">distutils.extension</span> <span style="color: #8B008B; font-weight: bold">import</span> Extension
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">Cython.Distutils</span> <span style="color: #8B008B; font-weight: bold">import</span> build_ext
+
+cymodule = <span style="color: #CD5555">&#39;wave2D_u0_loop_cy&#39;</span>
+setup(
+  name=cymodule
+  ext_modules=[Extension(cymodule, [cymodule + <span style="color: #CD5555">&#39;.pyx&#39;</span>],)],
+  cmdclass={<span style="color: #CD5555">&#39;build_ext&#39;</span>: build_ext},
+)
+</code></pre></div>
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; python setup.py build_ext --inplace
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Calling the Cython function from Python  <a name="___sec103"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">wave2D_u0_loop_cy</span>
+advance = wave2D_u0_loop_cy.advance
+...
+<span style="color: #8B008B; font-weight: bold">for</span> n <span style="color: #8B008B">in</span> It[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>:                  <span style="color: #228B22"># time loop</span>
+    f_a[:,:] = f(xv, yv, t[n])     <span style="color: #228B22"># precompute, size as u</span>
+    u = advance(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2)
+</code></pre></div>
+<p>
+Efficiency:
+
+<p>
+
+<ul>
+ <p><li> \( 120\times 120 \) cells in space:</li>
+
+<ul>
+    <p><li> Pure Python: 1370 CPU time units</li>
+    <p><li> Vectorized <code>numpy</code>: 5.5</li>
+    <p><li> Cython: 1</li>
+</ul>
+<p>
+
+ <p><li> \( 60\times 60 \) cells in space:</li>
+
+<ul>
+    <p><li> Pure Python: 1000 CPU time units</li>
+    <p><li> Vectorized <code>numpy</code>: 6</li>
+    <p><li> Cython: 1</li>
+</ul>
+<p>
+
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h2>Migrating loops to Fortran  <a name="___sec104"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Write the <code>advance</code> function in pure Fortran</li>
+ <p><li> Use <code>f2py</code> to generate C code for calling Fortran from Python</li>
+ <p><li> Full manual control of the translation to Fortran</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>The Fortran subroutine  <a name="___sec105"></a></h3>
+
+<p>
+
+<!-- code=fortran (from !bc fcod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">      <span style="color: #8B008B; font-weight: bold">subroutine </span><span style="color: #00688B">advance</span>(<span style="color: #00688B">u</span>, <span style="color: #00688B">u_1</span>, <span style="color: #00688B">u_2</span>, <span style="color: #00688B">f</span>, <span style="color: #00688B">Cx2</span>, <span style="color: #00688B">Cy2</span>, <span style="color: #00688B">dt2</span>, <span style="color: #00688B">Nx</span>, <span style="color: #00688B">Ny</span>)
+      <span style="color: #a7a7a7; font-weight: bold">integer </span><span style="color: #00688B">Nx</span>, <span style="color: #00688B">Ny</span>
+      <span style="color: #a7a7a7; font-weight: bold">real</span>*<span style="color: #B452CD">8</span> <span style="color: #00688B">u</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">u_1</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">u_2</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>)
+      <span style="color: #a7a7a7; font-weight: bold">real</span>*<span style="color: #B452CD">8</span> <span style="color: #00688B">f</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>, <span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">Cx2</span>, <span style="color: #00688B">Cy2</span>, <span style="color: #00688B">dt2</span>
+      <span style="color: #a7a7a7; font-weight: bold">integer </span><span style="color: #00688B">i</span>, <span style="color: #00688B">j</span>
+<span style="color: #00688B">Cf2py</span> <span style="color: #8B008B; font-weight: bold">intent</span>(<span style="color: #00688B">in</span>, <span style="color: #00688B">out</span>) <span style="color: #00688B">u</span>
+
+<span style="color: #00688B">C</span>     <span style="color: #00688B">Scheme</span> <span style="color: #00688B">at</span> <span style="color: #00688B">interior</span> <span style="color: #00688B">points</span>
+      <span style="color: #8B008B; font-weight: bold">do </span><span style="color: #00688B">j</span> = <span style="color: #B452CD">1</span>, <span style="color: #00688B">Ny</span>-<span style="color: #B452CD">1</span>
+         <span style="color: #8B008B; font-weight: bold">do </span><span style="color: #00688B">i</span> = <span style="color: #B452CD">1</span>, <span style="color: #00688B">Nx</span>-<span style="color: #B452CD">1</span>
+            <span style="color: #00688B">u</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>) = <span style="color: #B452CD">2</span>*<span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>) - <span style="color: #00688B">u_2</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>) +
+     &amp;      <span style="color: #00688B">Cx2</span>*(<span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>-<span style="color: #B452CD">1</span>,<span style="color: #00688B">j</span>) - <span style="color: #B452CD">2</span>*<span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>) + <span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>+<span style="color: #B452CD">1</span>,<span style="color: #00688B">j</span>)) +
+     &amp;      <span style="color: #00688B">Cy2</span>*(<span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>-<span style="color: #B452CD">1</span>) - <span style="color: #B452CD">2</span>*<span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>) + <span style="color: #00688B">u_1</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>+<span style="color: #B452CD">1</span>)) +
+     &amp;      <span style="color: #00688B">dt2</span>*<span style="color: #00688B">f</span>(<span style="color: #00688B">i</span>,<span style="color: #00688B">j</span>)
+         <span style="color: #8B008B; font-weight: bold">end do</span>
+<span style="color: #8B008B; font-weight: bold">      end do</span>
+</code></pre></div>
+<p>
+Note: <code>Cf2py</code> comment declares <code>u</code> as input argument and return value
+back to Python
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Building the Fortran module with f2py  <a name="___sec106"></a></h3>
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; f2py -m wave2D_u0_loop_f77 -h wave2D_u0_loop_f77.pyf <span style="color: #CD5555">\ </span>
+          --overwrite-signature wave2D_u0_loop_f77.f
+Terminal&gt; f2py -c wave2D_u0_loop_f77.pyf --build-dir build_f77 <span style="color: #CD5555">\ </span>
+          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f
+</code></pre></div>
+<p>
+<code>f2py</code> changes the argument list (!)
+<p>
+
+<!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; import wave2D_u0_loop_f77
+&gt;&gt;&gt; print wave2D_u0_loop_f77.__doc__
+This module &#39;wave2D_u0_loop_f77&#39; is auto-generated with f2py....
+Functions:
+  u = advance(u,u_1,u_2,f,cx2,cy2,dt2,
+      nx=(shape(u,0)-1),ny=(shape(u,1)-1))
+</code></pre></div>
+<p>
+
+<ul>
+ <p><li> Array limits have default values</li>
+ <p><li> Examine doc strings from <code>f2py</code>!</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>How to avoid array copying  <a name="___sec107"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Two-dimensional arrays are stored row by row in Python and C</li>
+ <p><li> Two-dimensional arrays are stored column by column in Fortran</li>
+ <p><li> <code>f2py</code> takes a copy of a <code>numpy</code> (C) array and transposes it
+   when calling Fortran</li>
+ <p><li> Such copies are time and memory consuming</li>
+ <p><li> Remedy: declare <code>numpy</code> arrays with Fortran storage</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">order = <span style="color: #CD5555">&#39;Fortran&#39;</span> <span style="color: #8B008B; font-weight: bold">if</span> version == <span style="color: #CD5555">&#39;f77&#39;</span> <span style="color: #8B008B; font-weight: bold">else</span> <span style="color: #CD5555">&#39;C&#39;</span>
+u   = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>), order=order)
+u_1 = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>), order=order)
+u_2 = zeros((Nx+<span style="color: #B452CD">1</span>,Ny+<span style="color: #B452CD">1</span>), order=order)
+</code></pre></div>
+<p>
+Option <code>-DF2PY_REPORT_ON_ARRAY_COPY=1</code> makes <code>f2py</code> write out
+array copying:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; f2py -c wave2D_u0_loop_f77.pyf --build-dir build_f77 <span style="color: #CD5555">\ </span>
+          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Efficiency of translating to Fortran  <a name="___sec108"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Same efficiency (in this example) as Cython and C</li>
+ <p><li> About 5 times faster than vectorized <code>numpy</code> code</li>
+ <p><li> \( >1000 \) faster than pure Python code</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h2>Migrating loops to C via Cython  <a name="___sec109"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Write the <code>advance</code> function in pure C</li>
+ <p><li> Use Cython to generate C code for calling C from Python</li>
+ <p><li> Full manual control of the translation to C</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>The C code  <a name="___sec110"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> <code>numpy</code> arrays transferred to C are one-dimensional in C</li>
+ <p><li> Need to translate <code>[i,j]</code> indices to single indices</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=c (from !bc ccod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #228B22">/* Translate (i,j) index to single array index */</span>
+<span style="color: #1e889b">#define idx(i,j) (i)*(Ny+1) + j</span>
+
+<span style="color: #a7a7a7; font-weight: bold">void</span> <span style="color: #008b45">advance</span>(<span style="color: #a7a7a7; font-weight: bold">double</span>* u, <span style="color: #a7a7a7; font-weight: bold">double</span>* u_1, <span style="color: #a7a7a7; font-weight: bold">double</span>* u_2, <span style="color: #a7a7a7; font-weight: bold">double</span>* f,
+	     <span style="color: #a7a7a7; font-weight: bold">double</span> Cx2, <span style="color: #a7a7a7; font-weight: bold">double</span> Cy2, <span style="color: #a7a7a7; font-weight: bold">double</span> dt2,
+	     <span style="color: #a7a7a7; font-weight: bold">int</span> Nx, <span style="color: #a7a7a7; font-weight: bold">int</span> Ny)
+{
+  <span style="color: #a7a7a7; font-weight: bold">int</span> i, j;
+  <span style="color: #228B22">/* Scheme at interior points */</span>
+  <span style="color: #8B008B; font-weight: bold">for</span> (i=<span style="color: #B452CD">1</span>; i&lt;=Nx-<span style="color: #B452CD">1</span>; i++) {
+    <span style="color: #8B008B; font-weight: bold">for</span> (j=<span style="color: #B452CD">1</span>; j&lt;=Ny-<span style="color: #B452CD">1</span>; j++) {
+        u[idx(i,j)] = <span style="color: #B452CD">2</span>*u_1[idx(i,j)] - u_2[idx(i,j)] +
+        Cx2*(u_1[idx(i-<span style="color: #B452CD">1</span>,j)] - <span style="color: #B452CD">2</span>*u_1[idx(i,j)] + u_1[idx(i+<span style="color: #B452CD">1</span>,j)]) +
+        Cy2*(u_1[idx(i,j-<span style="color: #B452CD">1</span>)] - <span style="color: #B452CD">2</span>*u_1[idx(i,j)] + u_1[idx(i,j+<span style="color: #B452CD">1</span>)]) +
+        dt2*f[idx(i,j)];
+	}
+    }
+  }
+}
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>The Cython interface file  <a name="___sec111"></a></h3>
+
+<p>
+
+<!-- code=cython (from !bc cycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">np</span>
+<span style="color: #8B008B; font-weight: bold">cimport</span> <span style="color: #008b45; text-decoration: underline">numpy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">np</span>
+<span style="color: #8B008B; font-weight: bold">cimport</span> <span style="color: #008b45; text-decoration: underline">cython</span>
+
+<span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #8B008B; font-weight: bold">extern</span> <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #CD5555">&quot;wave2D_u0_loop_c.h&quot;</span>:
+    void advance(double* u, double* u_1, double* u_2, double* f,
+                 double Cx2, double Cy2, double dt2,
+                 <span style="color: #658b00">int</span> Nx, <span style="color: #658b00">int</span> Ny)
+
+<span style="color: #707a7c">@cython</span>.boundscheck(<span style="color: #658b00">False</span>)
+<span style="color: #707a7c">@cython</span>.wraparound(<span style="color: #658b00">False</span>)
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_cwrap</span>(
+    np.ndarray[double, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u,
+    np.ndarray[double, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u_1,
+    np.ndarray[double, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] u_2,
+    np.ndarray[double, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] f,
+    double Cx2, double Cy2, double dt2):
+    advance(&amp;u[<span style="color: #B452CD">0</span>,<span style="color: #B452CD">0</span>], &amp;u_1[<span style="color: #B452CD">0</span>,<span style="color: #B452CD">0</span>], &amp;u_2[<span style="color: #B452CD">0</span>,<span style="color: #B452CD">0</span>], &amp;f[<span style="color: #B452CD">0</span>,<span style="color: #B452CD">0</span>],
+            Cx2, Cy2, dt2,
+            u.shape[<span style="color: #B452CD">0</span>]-<span style="color: #B452CD">1</span>, u.shape[<span style="color: #B452CD">1</span>]-<span style="color: #B452CD">1</span>)
+    <span style="color: #8B008B; font-weight: bold">return</span> u
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Building the extension module  <a name="___sec112"></a></h3>
+
+<p>
+Compile and link the extension module with a <code>setup.py</code> file:
+
+<p>
+
+<!-- code=python (from !bc pypro) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">distutils.core</span> <span style="color: #8B008B; font-weight: bold">import</span> setup
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">distutils.extension</span> <span style="color: #8B008B; font-weight: bold">import</span> Extension
+<span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">Cython.Distutils</span> <span style="color: #8B008B; font-weight: bold">import</span> build_ext
+
+sources = [<span style="color: #CD5555">&#39;wave2D_u0_loop_c.c&#39;</span>, <span style="color: #CD5555">&#39;wave2D_u0_loop_c_cy.pyx&#39;</span>]
+module = <span style="color: #CD5555">&#39;wave2D_u0_loop_c_cy&#39;</span>
+setup(
+  name=module,
+  ext_modules=[Extension(module, sources,
+                         libraries=[], <span style="color: #228B22"># C libs to link with</span>
+                         )],
+  cmdclass={<span style="color: #CD5555">&#39;build_ext&#39;</span>: build_ext},
+)
+</code></pre></div>
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; python setup.py build_ext --inplace
+</code></pre></div>
+<p>
+In Python:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">wave2D_u0_loop_c_cy</span>
+advance = wave2D_u0_loop_c_cy.advance_cwrap
+...
+f_a[:,:] = f(xv, yv, t[n])
+u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h2>Migrating loops to C via f2py  <a name="___sec113"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Write the <code>advance</code> function in pure C</li>
+ <p><li> Use <code>f2py</code> to generate C code for calling C from Python</li>
+ <p><li> Full manual control of the translation to C</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>The C code and the Fortran interface file  <a name="___sec114"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Write the C function <code>advance</code> as before</li>
+ <p><li> Write a Fortran 90 module defining the signature of
+   the <code>advance</code> function</li>
+ <p><li> Or: write a Fortran 77 function defining the signature and
+   let <code>f2py</code> generate the Fortran 90 module</li>
+</ul>
+<p>
+
+Fortran 77 signature (note <code>intent(c)</code>):
+
+<p>
+
+<!-- code=fortran (from !bc fpro) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">      <span style="color: #8B008B; font-weight: bold">subroutine </span><span style="color: #00688B">advance</span>(<span style="color: #00688B">u</span>, <span style="color: #00688B">u_1</span>, <span style="color: #00688B">u_2</span>, <span style="color: #00688B">f</span>, <span style="color: #00688B">Cx2</span>, <span style="color: #00688B">Cy2</span>, <span style="color: #00688B">dt2</span>, <span style="color: #00688B">Nx</span>, <span style="color: #00688B">Ny</span>)
+<span style="color: #00688B">Cf2py</span> <span style="color: #8B008B; font-weight: bold">intent</span>(<span style="color: #00688B">c</span>) <span style="color: #00688B">advance</span>
+      <span style="color: #a7a7a7; font-weight: bold">integer </span><span style="color: #00688B">Nx</span>, <span style="color: #00688B">Ny</span>, <span style="color: #00688B">N</span>
+      <span style="color: #a7a7a7; font-weight: bold">real</span>*<span style="color: #B452CD">8</span> <span style="color: #00688B">u</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">u_1</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">u_2</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>,<span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>)
+      <span style="color: #a7a7a7; font-weight: bold">real</span>*<span style="color: #B452CD">8</span> <span style="color: #00688B">f</span>(<span style="color: #B452CD">0</span>:<span style="color: #00688B">Nx</span>, <span style="color: #B452CD">0</span>:<span style="color: #00688B">Ny</span>), <span style="color: #00688B">Cx2</span>, <span style="color: #00688B">Cy2</span>, <span style="color: #00688B">dt2</span>
+<span style="color: #00688B">Cf2py</span> <span style="color: #8B008B; font-weight: bold">intent</span>(<span style="color: #00688B">in</span>, <span style="color: #00688B">out</span>) <span style="color: #00688B">u</span>
+<span style="color: #00688B">Cf2py</span> <span style="color: #8B008B; font-weight: bold">intent</span>(<span style="color: #00688B">c</span>) <span style="color: #00688B">u</span>, <span style="color: #00688B">u_1</span>, <span style="color: #00688B">u_2</span>, <span style="color: #00688B">f</span>, <span style="color: #00688B">Cx2</span>, <span style="color: #00688B">Cy2</span>, <span style="color: #00688B">dt2</span>, <span style="color: #00688B">Nx</span>, <span style="color: #00688B">Ny</span>
+      <span style="color: #8B008B; font-weight: bold">return</span>
+<span style="color: #8B008B; font-weight: bold">      end</span>
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Building the extension module  <a name="___sec115"></a></h3>
+
+<p>
+Generate Fortran 90 module (<code>wave2D_u0_loop_c_f2py.pyf</code>):
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; f2py -m wave2D_u0_loop_c_f2py <span style="color: #CD5555">\ </span>
+          -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature <span style="color: #CD5555">\ </span>
+          wave2D_u0_loop_c_f2py_signature.f
+</code></pre></div>
+<p>
+The compile and build step must list the C files:
+
+<p>
+
+<!-- code=bash (from !bc sys) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">Terminal&gt; f2py -c wave2D_u0_loop_c_f2py.pyf <span style="color: #CD5555">\ </span>
+          --build-dir tmp_build_c <span style="color: #CD5555">\ </span>
+          -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_c.c
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Migrating loops to C++ via f2py  <a name="___sec116"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> C++ can be used as an alternative to C</li>
+ <p><li> C++ code often applies sophisticated arrays</li>
+ <p><li> Challenge: translate from <code>numpy</code> C arrays to C++ array classes</li>
+ <p><li> Can use SWIG to make C++ classes available as Python classes</li>
+ <p><li> Easier (and more efficient):</li>
+
+<ul>
+   <p><li> Make C API to the C++ code</li>
+   <p><li> Wrap C API with <code>f2py</code></li>
+   <p><li> Send <code>numpy</code> arrays to C API and let C translate <code>numpy</code> arrays
+     into C++ array classes</li>
+</ul>
+<p>
+
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h2>Analysis of the difference equations  <a name="___sec117"></a></h2>
+<a name="wave:pde1:analysis"></a>
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Properties of the solution of the wave equation <a name="wave:pde1:properties"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} \frac{\partial^2 u}{\partial t^2} =
+c^2 \frac{\partial^2 u}{\partial x^2}
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Solutions:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x,t) = g_R(x-ct) + g_L(x+ct),
+\tag{44}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+If \( u(x,0)=I(x) \) and \( u_t(x,0)=0 \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x,t) = \half I(x-ct) + \half I(x+ct) \thinspace .
+\tag{45}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Two waves: one traveling to the right and one to the left
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Demo of the splitting of \( I(x) \) into two waves  <a name="___sec119"></a></h3>
+
+<p>
+
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+<source src='mov-wave/demo_BC_gaussian/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/demo_BC_gaussian/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Representation of waves as sum of sine/cosine waves  <a name="___sec120"></a></h3>
+
+<p>
+Build \( I(x) \) of wave components \( e^{ikx} = \cos kx + i\sin kx \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation} I(x) \approx \sum_{k\in K} b_k e^{ikx} \thinspace .
+\tag{46}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( k \) is the frequency of a component (\( \lambda = 2\pi/k \) corresponding wave length)</li>
+ <p><li> \( K \) is some set of all \( k \) needed to approximate \( I(x) \) well</li>
+ <p><li> \( b_k \) must be computed (Fourier coefficients)</li>
+</ul>
+<p>
+
+Since \( u(x,t)=\half I(x-ct) + \half I(x+ct) \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
++ \half \sum_{k\in K} b_k e^{ik(x + ct)} \thinspace .
+\tag{47}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Our interest: one component \( e^{i(kx -\omega t)} \), \( \omega = kc \)
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Analysis of the finite difference scheme <a name="wave:pde1:analysis"></a></h3>
+
+<p>
+A similar discrete \( u^n_q = e^{i(kx_q - \tilde\omega t_n)} \) solves
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_tD_t u = c^2 D_xD_x u]^n_q
+\tag{48}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Note: different frequency \( \tilde\omega\neq\omega \)
+
+<p>
+
+<ul>
+ <p><li> How accurate is \( \tilde\omega \) compared to \( \omega \)?</li>
+ <p><li> What about the wave amplitude?</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Preliminary results  <a name="___sec122"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+[D_tD_t e^{i\omega t}]^n = -\frac{4}{\Delta t^2}\sin^2\left(
+\frac{\omega\Delta t}{2}\right)e^{i\omega n\Delta t}
+\thinspace .
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+By \( \omega\rightarrow k \),
+\( t\rightarrow x \), \( n\rightarrow q \)) it follows that
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+[D_xD_x e^{ikx}]_q = -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x} \thinspace .
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical wave propagation (1)  <a name="___sec123"></a></h3>
+
+<p>
+Inserting a basic wave component \( u=e^{i(kx_q-\tilde\omega t_n)} \) in
+the scheme <a href="#mjx-eqn-48">(48)</a> requires computation of
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikq\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
+\frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikq\Delta x}\\ 
+\lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_xD_x e^{ikx}\rbrack_q e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x}e^{-i\tilde\omega n\Delta t} \thinspace . \end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical wave propagation (2)  <a name="___sec124"></a></h3>
+
+<p>
+The complete scheme,
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+leads to an equation for \( \tilde\omega \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C^2\sin^2\left(\frac{k\Delta x}{2}\right),
+\tag{49}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+where \( C = \frac{c\Delta t}{\Delta x} \) is the Courant number
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical wave propagation (3)  <a name="___sec125"></a></h3>
+
+<p>
+Taking the square root of <a href="#mjx-eqn-49">(49)</a>:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\sin\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C\sin\left(\frac{k\Delta x}{2}\right),
+\tag{50}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Exact \( \omega \) is real</li>
+ <p><li> Look for a real solution \( \tilde\omega \) of <a href="#mjx-eqn-50">(50)</a></li>
+ <p><li> Then the sine functions are in \( [-1,1] \)</li>
+ <p><li> Lef-hand side in \( [-1,1] \) requires \( C\leq 1 \)</li>
+</ul>
+<p>
+
+Stability criterion
+<p>&nbsp;<br>
+$$
+\begin{equation}
+C = \frac{c\Delta t}{\Delta x} \leq 1 \thinspace .
+\tag{51}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Why \( C\leq 1 \) is a stability criterion  <a name="___sec126"></a></h3>
+
+<p>
+Assume \( C>1 \). Then
+
+<p>
+<p>&nbsp;<br>
+$$
+\underline{\sin\left(\frac{\tilde\omega\Delta t}{2}\right)}{>1} = C\sin\left(\frac{k\Delta x}{2}\right)
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( |\sin x| >1 \) implies complex \( x \)</li>
+ <p><li> Here: complex \( \tilde\omega = \tilde\omega_r \pm i\tilde\omega_i \)</li>
+ <p><li> One \( \tilde\omega_i < 0 \) gives \( \exp(i\cdot i\tilde\omega_i) =
+   \exp (\tilde\omega_i) \) and exponential growth</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical dispersion relation  <a name="___sec127"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> How close is \( \tilde\omega \) to \( \omega \)</li>
+ <p><li> Can solve for an explicit formula for \( \tilde\omega \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde\omega = \frac{2}{\Delta t}
+\sin^{-1}\left( C\sin\left(\frac{k\Delta x}{2}\right)\right) \thinspace .
+\tag{52}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( \omega = kc \) is the <em>analytical dispersion relation</em></li>
+ <p><li> \( \tilde\omega = \tilde\omega(k, c, \Delta x, \Delta t) \) is the
+   <em>numerical dispersion relation</em></li>
+ <p><li> Speed of waves: \( c=\omega/k \), \( \tilde c = \tilde\omega/k \)</li>
+ <p><li> The numerical wave component has a wrong, mesh-dependent speed</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>The special case \( C=1 \)  <a name="___sec128"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> For \( C=1 \), \( \tilde\omega = \omega \)</li>
+ <p><li> The numerical solution is exact (at the mesh points)!</li>
+ <p><li> The only requirement is constant \( c \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computing the error in wave velocity  <a name="___sec129"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Introduce \( p=k\Delta x/2 \)</li>
+ <p><li> \( p \) measures no of mesh points in space
+   per wave length in space</li>
+ <p><li> Study error in wave velocity through \( \tilde c/c \) as function of \( p \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+r(C, p) = \frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),
+\quad C\in (0,1],\ p\in (0,\pi/2]\ts
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Visualizing the error in wave velocity  <a name="___sec130"></a></h3>
+
+<p>
+
+<!-- code=text (from !bc cod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">def r(C, p):
+    return 2/(C*p)*asin(C*sin(p))
+</code></pre></div>
+<p>
+<center><p><img src="fig-wave/disprel.png" align="bottom" width=600,></p></center>
+
+<p>
+Note: the shortest
+waves have the largest error, and short waves move too
+slowly.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Taylor expanding the error in wave velocity  <a name="___sec131"></a></h3>
+
+<p>
+For small \( p \), Taylor expand \( \tilde\omega \) as polynomial in \( p \):
+
+<p>
+
+<!-- code=python (from !bc py) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; C, p = symbols(<span style="color: #CD5555">&#39;C p&#39;</span>)
+&gt;&gt;&gt; rs = r(C, p).series(p, <span style="color: #B452CD">0</span>, <span style="color: #B452CD">7</span>)
+&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> rs
+<span style="color: #B452CD">1</span> - p**<span style="color: #B452CD">2</span>/<span style="color: #B452CD">6</span> + p**<span style="color: #B452CD">4</span>/<span style="color: #B452CD">120</span> - p**<span style="color: #B452CD">6</span>/<span style="color: #B452CD">5040</span> + C**<span style="color: #B452CD">2</span>*p**<span style="color: #B452CD">2</span>/<span style="color: #B452CD">6</span> -
+C**<span style="color: #B452CD">2</span>*p**<span style="color: #B452CD">4</span>/<span style="color: #B452CD">12</span> + <span style="color: #B452CD">13</span>*C**<span style="color: #B452CD">2</span>*p**<span style="color: #B452CD">6</span>/<span style="color: #B452CD">720</span> + <span style="color: #B452CD">3</span>*C**<span style="color: #B452CD">4</span>*p**<span style="color: #B452CD">4</span>/<span style="color: #B452CD">40</span> -
+C**<span style="color: #B452CD">4</span>*p**<span style="color: #B452CD">6</span>/<span style="color: #B452CD">16</span> + <span style="color: #B452CD">5</span>*C**<span style="color: #B452CD">6</span>*p**<span style="color: #B452CD">6</span>/<span style="color: #B452CD">112</span> + O(p**<span style="color: #B452CD">7</span>)
+
+&gt;&gt;&gt; <span style="color: #228B22"># Factorize each term and drop the remainder O(...) term</span>
+&gt;&gt;&gt; rs_factored = [factor(term) <span style="color: #8B008B; font-weight: bold">for</span> term <span style="color: #8B008B">in</span> rs.lseries(p)]
+&gt;&gt;&gt; rs_factored = <span style="color: #658b00">sum</span>(rs_factored)
+&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> rs_factored
+p**<span style="color: #B452CD">6</span>*(C - <span style="color: #B452CD">1</span>)*(C + <span style="color: #B452CD">1</span>)*(<span style="color: #B452CD">225</span>*C**<span style="color: #B452CD">4</span> - <span style="color: #B452CD">90</span>*C**<span style="color: #B452CD">2</span> + <span style="color: #B452CD">1</span>)/<span style="color: #B452CD">5040</span> +
+p**<span style="color: #B452CD">4</span>*(C - <span style="color: #B452CD">1</span>)*(C + <span style="color: #B452CD">1</span>)*(<span style="color: #B452CD">3</span>*C - <span style="color: #B452CD">1</span>)*(<span style="color: #B452CD">3</span>*C + <span style="color: #B452CD">1</span>)/<span style="color: #B452CD">120</span> +
+p**<span style="color: #B452CD">2</span>*(C - <span style="color: #B452CD">1</span>)*(C + <span style="color: #B452CD">1</span>)/<span style="color: #B452CD">6</span> + <span style="color: #B452CD">1</span>
+</code></pre></div>
+<p>
+Leading error term is \( \frac{1}{6}(C^2-1)p^2 \) or
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{1}{6}\left(\frac{k\Delta x}{2}\right)^2(C^2-1)
+= \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right) =
+\Oof{\Delta t^2, \Delta x^2}\ts
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example on effect of wrong wave velocity (1)  <a name="___sec132"></a></h3>
+
+<p>
+Smooth wave, few short waves (small \( k \)) in \( I(x) \):
+
+<p>
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/pulse1_in_two_media/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/pulse1_in_two_media/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example on effect of wrong wave velocity (1)  <a name="___sec133"></a></h3>
+
+<p>
+Not so smooth wave, significant short waves (small \( k \)) in \( I(x) \):
+
+<p>
+
+<div>
+<video  loop controls width='500' height='365' preload='none'>
+<source src='mov-wave/pulse2_in_two_media/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+<source src='mov-wave/pulse2_in_two_media/movie.ogg'  type='video/ogg; codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em></em></p>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Extending the analysis to 2D (and 3D) <a name="wave:pde1:analysis:2D3D"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ u(x,y,t) = g(k_xx + k_yy - \omega t) $$
+<p>&nbsp;<br>
+
+
+<p>
+is a typically solution of
+
+<p>
+<p>&nbsp;<br>
+$$ u_{tt} = c^2(u_{xx} + u_{yy}) $$
+<p>&nbsp;<br>
+
+
+<p>
+Can build solutions by adding complex Fourier components
+of the form
+
+<p>
+<p>&nbsp;<br>
+$$
+e^{i(k_xx + k_yy - \omega t)}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Discrete wave components in 2D  <a name="___sec135"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{q,r}
+\thinspace .
+\tag{53}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+This equation admits a Fourier component
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^n_{q,r} = e^{i(k_x q\Delta x + k_y r\Delta y
+- \tilde\omega n\Delta t)}\ts
+\tag{54}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Inserting the expression and using formulas from the 1D analysis:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C_x^2\sin^2 p_x
++ C_y^2\sin^2 p_y, \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+where
+
+<p>
+<p>&nbsp;<br>
+$$ C_x = \frac{c^2\Delta t^2}{\Delta x^2},\quad
+C_y = \frac{c^2\Delta t^2}{\Delta y^2}, \quad
+p_x = \frac{k_x\Delta x}{2},\quad
+p_y = \frac{k_y\Delta y}{2}\ts
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Stability criterion in 2D  <a name="___sec136"></a></h3>
+
+<p>
+Rreal-valued \( \tilde\omega \) requires
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+C_x^2 + C_y^2 \leq 1 \thinspace .
+\tag{55}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+or
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\Delta t \leq \frac{1}{c} \left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2}\right)^{-\halfi}
+\tag{56}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Stability criterion in 3D  <a name="___sec137"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\Delta t \leq \frac{1}{c}\left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+For \( c^2=c^2(\xpoint) \) we must use
+the worst-case value \( \bar c = \sqrt{\max_{\xpoint\in\Omega} c^2(\xpoint)} \)
+and a safety factor \( \beta\leq 1 \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\Delta t \leq \beta \frac{1}{\bar c}
+\left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical dispersion relation in 2D (1)  <a name="___sec138"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\tilde\omega = \frac{2}{\Delta t}\sin^{-1}\left(
+\left( C_x^2\sin^2 p_x + C_y^2\sin^ p_y\right)^{\frac{1}{2}}\right)
+$$
+<p>&nbsp;<br>
+
+
+<p>
+For visualization, introduce \( \theta \):
+
+<p>
+<p>&nbsp;<br>
+$$ k_x = k\sin\theta,\quad k_y=k\cos\theta,
+\quad p_x=\frac{1}{2} kh\cos\theta,\quad p_y=\frac{1}{2} kh\sin\theta\ts$$
+<p>&nbsp;<br>
+
+
+<p>
+Also: \( \Delta x=\Delta y=h \). Then \( C_x=C_y=c\Delta t/h\equiv C \).
+
+<p>
+Now \( \tilde\omega \) depends on
+
+<p>
+
+<ul>
+  <p><li> \( C \) reflecting the number cells a wave is displaced during a time step</li>
+  <p><li> \( kh \) reflecting the number of cells per wave length in space</li>
+  <p><li> \( \theta \) expressing the direction of the wave</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical dispersion relation in 2D (2)  <a name="___sec139"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{\tilde c}{c} = \frac{1}{Ckh}
+\sin^{-1}\left(C\left(\sin^2 (\frac{1}{2}kh\cos\theta)
++ \sin^2(\frac{1}{2}kh\sin\theta) \right)^{\frac{1}{2}}\right)\ts
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Can make color contour plots of \( 1-\tilde c/c \) in
+<em>polar coordinates</em> with \( \theta \) as the angular coordinate and
+\( kh \) as the radial coordinate.
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Numerical dispersion relation in 2D (3)  <a name="___sec140"></a></h3>
+
+<p>
+<center><p><img src="fig-wave/disprel2D.png" align="bottom" width=800></p></center>
 
 
 </section>

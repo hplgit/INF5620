@@ -13,14 +13,15 @@ cpdef advance(
     double Cx2, double Cy2, double dt2):
 
     cdef int Nx, Ny, i, j
+    cdef double u_xx, u_yy
     Nx = u.shape[0]-1
     Ny = u.shape[1]-1
-    for i in xrange(1, Nx):
-        for j in xrange(1, Ny):
+    for i in range(1, Nx):
+        for j in range(1, Ny):
+            u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
+            u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
             u[i,j] = 2*u_1[i,j] - u_2[i,j] + \
-            Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \
-            Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \
-            dt2*f[i,j]
+                     Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
     # Boundary condition u=0
     j = 0
     for i in range(0, Nx+1): u[i,j] = 0

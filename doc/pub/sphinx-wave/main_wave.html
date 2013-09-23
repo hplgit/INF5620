@@ -1116,7 +1116,7 @@ in calls:</p>
 <div class="section" id="efficiency-measurements">
 <h2>Efficiency measurements<a class="headerlink" href="#efficiency-measurements" title="Permalink to this headline">¶</a></h2>
 <p>Running the <tt class="docutils literal"><span class="pre">wave1D_u0_sv.py</span></tt> code with the previous string vibration example
-for <span class="math">\(N_x=50,100,200,400,800\)</span> and measuring the CPU time
+for <span class="math">\(N_x=50,100,200,400,800\)</span>, and measuring the CPU time
 (see the <tt class="docutils literal"><span class="pre">run_efficiency_experiments</span></tt> function), shows that the vectorized
 code runs substantially faster: the scalar code uses approximately
 a factor <span class="math">\(N_x/5\)</span> more time!</p>
@@ -2372,8 +2372,10 @@ the discrete Fourier transform appears in the example below.</p>
 <p id="index-31">The scheme</p>
 <div class="math" id="equation-wave:pde1:analysis:scheme">
 <span class="eqno">(49)</span>\[     [D_tD_t u = c^2 D_xD_x u]^n_q\]</div>
-<p>for the wave equation <span class="math">\(u_t = c^2u_{xx}\)</span> allows basic wave components
-<span class="math">\(e^{i(kx - \tilde\omega t)}\)</span> as solution, but it turns out that
+<p>for the wave equation <span class="math">\(u_t = c^2u_{xx}\)</span> allows basic wave components</p>
+<div class="math">
+\[u^n_q=e^{i(kx_q - \tilde\omega t_n)}\]</div>
+<p>as solution, but it turns out that
 the frequency in time, <span class="math">\(\tilde\omega\)</span>, is not equal to
 the exact <span class="math">\(\omega = kc\)</span>.  The idea now is to study how the scheme treats
 an arbitrary wave component with a given <span class="math">\(k\)</span>. We ask two key
@@ -2407,7 +2409,7 @@ wave component:</p>
 </div>
 <div class="section" id="numerical-wave-propagation">
 <h3>Numerical wave propagation<a class="headerlink" href="#numerical-wave-propagation" title="Permalink to this headline">¶</a></h3>
-<p>Inserting a basic wave component <span class="math">\(u=e^{i(kx-\tilde\omega t)}\)</span> in
+<p>Inserting a basic wave component <span class="math">\(u^n_q=e^{i(kx_q-\tilde\omega t_n)}\)</span> in
 <a href="#equation-wave:pde1:analysis:scheme">(49)</a> results in the need to
 evaluate two expressions:</p>
 <div class="math">
@@ -2520,8 +2522,9 @@ It appears that the most convenient expression to work with is <span class="math
 \[\frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),\]</div>
 <p>with <span class="math">\(p=k\Delta x/2\)</span> as a non-dimensional measure of the spatial frequency.
 In essence, <span class="math">\(p\)</span> tells how many spatial mesh points we have per
-spatial period of the wave component with frequency <span class="math">\(k\)</span> (the period is
-<span class="math">\(2\pi/k\)</span>), i.e., how well the spatial variation of the wave component
+wave length in space of the wave component with frequency <span class="math">\(k\)</span> (the wave
+length is <span class="math">\(2\pi/k\)</span>). That is, <span class="math">\(p\)</span> reflects how well the
+spatial variation of the wave component
 is resolved in the mesh. Wave components with wave length
 less than <span class="math">\(2\Delta x\)</span> (<span class="math">\(2\pi/k &lt; 2\Delta x\)</span>) are not visible in the mesh,
 so it does not make sense to have <span class="math">\(p&gt;\pi/2\)</span>.</p>
@@ -2587,7 +2590,7 @@ and <span class="math">\(D_xD_x\)</span>).</p>
 Such a wave can be expressed by</p>
 <div class="math">
 \[u(x,y,t) = g(k_xx + k_yy - kct)\]</div>
-<p>for some twice differentiable function <span class="math">\(g\)</span>, or with <span class="math">\(\omega =kc\)</span>:</p>
+<p>for some twice differentiable function <span class="math">\(g\)</span>, or with <span class="math">\(\omega =kc\)</span>, <span class="math">\(k=|\boldsymbol{k}|\)</span>:</p>
 <div class="math">
 \[u(x,y,t) = g(k_xx + k_yy - \omega t){\thinspace .}\]</div>
 <p>We can in particular build a solution by adding complex Fourier components
@@ -3009,13 +3012,27 @@ is combined with the discretization of the initial condition <span class="math">
 <span class="eqno">(66)</span>\[     \quad \frac{1}{2}C_x^2(
      u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
      (u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) + \frac{1}{2}\Delta t^2f_{i,j}^n,\]</div>
+<p>The algorithm is very similar to the one in 1D:</p>
+<ol class="arabic simple">
+<li>Set initial condition <span class="math">\(u^0_{i,j}=I(x_i,y_j)\)</span></li>
+<li>Compute <span class="math">\(u^1_{i,j}\)</span> from <a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(66)</a></li>
+<li>Set <span class="math">\(u^1_{i,j}=0\)</span> for the boundaries <span class="math">\(i=0,N_x\)</span>, <span class="math">\(j=0,N_y\)</span></li>
+<li>For <span class="math">\(n=1,2,\ldots,N_t\)</span>:</li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Find <span class="math">\(u^{n+1}_{i,j}\)</span> from <a href="#equation-wave:2D3D:impl1:2Du0:ueq:discrete">(66)</a>
+for all internal mesh points, <span class="math">\(i\in{{\mathcal{I^i}_x}}\)</span>, <span class="math">\(j\in{{\mathcal{I^i}_y}}\)</span></li>
+<li>Set <span class="math">\(u^{n+1}_{i,j}=0\)</span> for the boundaries <span class="math">\(i=0,N_x\)</span>, <span class="math">\(j=0,N_y\)</span></li>
+</ol>
+</div></blockquote>
 <div class="section" id="scalar-computations">
 <span id="wave2d3d-impl-scalar"></span><h2>Scalar computations<a class="headerlink" href="#scalar-computations" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">solver</span></tt> function for a 2D case with constant wave velocity and
 <span class="math">\(u=0\)</span> as boundary condition follows the setup from the similar
 function for the 1D case in <tt class="docutils literal"><span class="pre">wave1D_u0_s.py</span></tt>, but there are
 a few necessary extensions. The code is in the program
-<a class="reference external" href="/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>.</p>
+<a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>.</p>
 <div class="section" id="domain-and-mesh">
 <h3>Domain and mesh<a class="headerlink" href="#domain-and-mesh" title="Permalink to this headline">¶</a></h3>
 <p>The spatial domain is now <span class="math">\([0,L_x]\times [0,L_y]\)</span>, specified
@@ -3186,6 +3203,14 @@ because each displaced slice in one direction is
 accompanied by a <tt class="docutils literal"><span class="pre">1:-1</span></tt> slice in the other direction. The reason is
 that we only work with the internal points for the index that is
 kept constant in a difference.</p>
+<p>The boundary conditions along the four sides makes use of
+a slice consisting of all indices along a boundary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">[:</span> <span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">u</span><span class="p">[:,</span><span class="n">Ny</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">u</span><span class="p">[</span><span class="mi">0</span> <span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
 <p>The <tt class="docutils literal"><span class="pre">f</span></tt> function is in the above vectorized update of <tt class="docutils literal"><span class="pre">u</span></tt> first computed
 as an array over all mesh points:</p>
 <div class="highlight-text"><div class="highlight"><pre>f_a = f(xv, yv, t[n])
@@ -3196,15 +3221,6 @@ in the last term of the update statement, but other implementations
 in compiled languages benefit from having <tt class="docutils literal"><span class="pre">f</span></tt> available in an array
 rather than calling our Python function <tt class="docutils literal"><span class="pre">f(x,y,t)</span></tt> for
 every point.</p>
-<p>The boundary conditions along the four sides makes use of
-a slice consisting of all indices along a boundary:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">u</span><span class="p">[:</span> <span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">u</span><span class="p">[:,</span><span class="n">Ny</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">u</span><span class="p">[</span><span class="mi">0</span> <span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">0</span>
-</pre></div>
-</div>
-<p>The shown snippets appear in a function <tt class="docutils literal"><span class="pre">advance_vectorized</span></tt>.</p>
 <p>The callback function now has the arguments
 <tt class="docutils literal"><span class="pre">u,</span> <span class="pre">x,</span> <span class="pre">xv,</span> <span class="pre">y,</span> <span class="pre">yv,</span> <span class="pre">t,</span> <span class="pre">n</span></tt>. The inclusion of <tt class="docutils literal"><span class="pre">xv</span></tt> and <tt class="docutils literal"><span class="pre">yv</span></tt> makes it
 easy to, e.g., compute an exact 2D solution in the callback function
@@ -3227,7 +3243,7 @@ produce. In 2D we use the following generalization of
 <p>This solution fulfills the PDE problem if <span class="math">\(I(x,y)={u_{\small\mbox{e}}}(x,y,0)\)</span>,
 <span class="math">\(V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)\)</span>, and <span class="math">\(f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
 x(L_x-x))\)</span>. To show that <span class="math">\({u_{\small\mbox{e}}}\)</span> also solves the discrete equations,
-we start with the general results <span class="math">\([D_t D_t t]^n=0\)</span>
+we start with the general results <span class="math">\([D_t D_t 1]^n=0\)</span>, <span class="math">\([D_t D_t t]^n=0\)</span>,
 and <span class="math">\([D_t D_t t^2]=2\)</span>, and use these to compute</p>
 <div class="math">
 \[[D_xD_x {u_{\small\mbox{e}}}]^n_{i,j} = [y(L_y-y)(1+\frac{1}{2}t) D_xD_x x(L_x-x)]^n_{i,j}
@@ -3304,14 +3320,15 @@ computing in Cython. Let us first list the complete code in the
     <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">):</span>
 
     <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Nx</span><span class="p">,</span> <span class="nf">Ny</span><span class="p">,</span> <span class="nf">i</span><span class="p">,</span> <span class="nf">j</span>
+    <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">u_xx</span><span class="p">,</span> <span class="nf">u_yy</span>
     <span class="n">Nx</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
     <span class="n">Ny</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Ny</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Ny</span><span class="p">):</span>
+            <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">u_yy</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mf">1</span><span class="p">]</span>
             <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> \
-            <span class="n">Cx2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">+</span> \
-            <span class="n">Cy2</span><span class="o">*</span><span class="p">(</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mf">1</span><span class="p">])</span> <span class="o">+</span> \
-            <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+                     <span class="n">Cx2</span><span class="o">*</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">Cy2</span><span class="o">*</span><span class="n">u_yy</span> <span class="o">+</span> <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
     <span class="c"># Boundary condition u=0</span>
     <span class="n">j</span> <span class="o">=</span> <span class="mf">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
@@ -3356,11 +3373,15 @@ above the function header.</li>
 end), but this feature has a performance penalty and is therefore
 here turned off by writing <tt class="docutils literal"><span class="pre">&#64;cython.wraparound(False)</span></tt> right above
 the function header.</li>
+<li>The use of index sets <tt class="docutils literal"><span class="pre">Ix</span></tt> and <tt class="docutils literal"><span class="pre">Iy</span></tt> in the scalar code cannot be
+successfully translated to C, and constructions like <tt class="docutils literal"><span class="pre">Ix[1:-1]</span></tt>
+involve negative indices, which are now turned off, so loops
+should use <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">xrange</span></tt> or <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range</span></tt>.</li>
 </ol>
 </div>
 <div class="section" id="visual-inspection-of-the-c-translation">
-<span id="index-39"></span><h2>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h2>
-<p>Cython can visually explain how successfully it can translate a code from
+<h2>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h2>
+<p id="index-39">Cython can visually explain how successfully it can translate a code from
 Python to C. The command</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; cython -a wave2D_u0_loop_cy.pyx</span>
 </pre></div>
@@ -3384,9 +3405,10 @@ Deep down in the file we can see in detail how the compute-intensive
 statements are translated some complex C code that is quite different from
 what we a human would write (at least if a direct correspondence to
 the mathematics was in mind).</p>
-<span class="target" id="index-40"></span><span class="target" id="index-41"></span><div class="section" id="building-the-extension-module-1">
-<span id="index-42"></span><h3>Building the extension module  (1)<a class="headerlink" href="#building-the-extension-module-1" title="Permalink to this headline">¶</a></h3>
-<p>Cython code must be translated to C, compiled, and linked to form what
+</div>
+<div class="section" id="building-the-extension-module-1">
+<h2>Building the extension module  (1)<a class="headerlink" href="#building-the-extension-module-1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="index-40"></span><span class="target" id="index-41"></span><p id="index-42">Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a <em>C extension module</em>.
 This is usually done by making a <tt class="docutils literal"><span class="pre">setup.py</span></tt> script, which
 is the standard way of building and installing Python software.
@@ -3404,8 +3426,7 @@ For an extension module arising from Cython code, the following
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>We run the script by
-run</p>
+<p>We run the script by</p>
 <div class="highlight-console"><div class="highlight"><pre><span class="go">Terminal&gt; python setup.py build_ext --inplace</span>
 </pre></div>
 </div>
@@ -3442,17 +3463,16 @@ code we do not use <tt class="docutils literal"><span class="pre">pyximport</spa
 of this and many other modules.</p>
 </div>
 </div>
-</div>
-<div class="section" id="calling-the-cython-function">
-<h2>Calling the Cython function<a class="headerlink" href="#calling-the-cython-function" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="calling-the-cython-function-from-python">
+<h2>Calling the Cython function from Python<a class="headerlink" href="#calling-the-cython-function-from-python" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">wave2D_u0_loop_cy</span></tt>
 module contains our <tt class="docutils literal"><span class="pre">advance</span></tt> function, which we now may call from
 the Python program for the wave equation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">wave2D_u0_loop_cy</span>
 <span class="n">advance</span> <span class="o">=</span> <span class="n">wave2D_u0_loop_cy</span><span class="o">.</span><span class="n">advance</span>
 <span class="o">...</span>
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nt</span><span class="p">):</span>        <span class="c"># time loop</span>
-    <span class="n">f_a</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>     <span class="c"># precompute, size as u</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">It</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>                  <span class="c"># time loop</span>
+    <span class="n">f_a</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>     <span class="c"># precompute, size as u</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">advance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_1</span><span class="p">,</span> <span class="n">u_2</span><span class="p">,</span> <span class="n">f_a</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -3546,8 +3566,9 @@ Fortran subroutine is called from Fortran, reads</p>
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="building-the-fortran-module-with-f2py">
-<h3>Building the Fortran module with f2py<a class="headerlink" href="#building-the-fortran-module-with-f2py" title="Permalink to this headline">¶</a></h3>
+<h2>Building the Fortran module with f2py<a class="headerlink" href="#building-the-fortran-module-with-f2py" title="Permalink to this headline">¶</a></h2>
 <p>The nice feature of writing loops in Fortran is that the tool <tt class="docutils literal"><span class="pre">f2py</span></tt>
 can with very little work produce a C extension module such that
 we can call the Fortran version of <tt class="docutils literal"><span class="pre">advance</span></tt> from Python.
@@ -3581,8 +3602,8 @@ Python module:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">wave2D_u0_loop_f77</span><span class="o">.</span><span class="n">__doc__</span>
 <span class="go">This module &#39;wave2D_u0_loop_f77&#39; is auto-generated with f2py....</span>
 <span class="go">Functions:</span>
-<span class="go">  u = advance(u,u_1,u_2,f,x,y,t,cx2,cy2,dt2,</span>
-<span class="go">      nx=(shape(u,0)-1),ny=(shape(u,1)-1),n=(len(t)-1))</span>
+<span class="go">  u = advance(u,u_1,u_2,f,cx2,cy2,dt2,</span>
+<span class="go">      nx=(shape(u,0)-1),ny=(shape(u,1)-1))</span>
 </pre></div>
 </div>
 <div class="admonition-examine-the-doc-strings admonition">
@@ -3637,7 +3658,6 @@ Fortran are optional arguments that can be omitted when calling
 documentation of <em>every</em> Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.</p>
-</div>
 </div>
 <div class="section" id="how-to-avoid-array-copying">
 <h2>How to avoid array copying<a class="headerlink" href="#how-to-avoid-array-copying" title="Permalink to this headline">¶</a></h2>
@@ -3973,8 +3993,6 @@ which usually gives faster code than if fancy data structures with
 classes are used. The arrays coming from Python, and looking like
 plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.</p>
-<p><em>Remaining.</em> Use some array class. Key issue: <tt class="docutils literal"><span class="pre">extern</span> <span class="pre">&quot;C&quot;</span></tt> declaration of C++
-function in the C file with the interface we want to wrap.</p>
 </div>
 </div>
 <div class="section" id="using-classes-to-implement-a-simulator">
@@ -4035,7 +4053,7 @@ Filename: <tt class="docutils literal"><span class="pre">mesh_calculus_3D.py</sp
 </div>
 <div class="section" id="exercise-12-implement-neumann-conditions-in-2d">
 <span id="wave-app-exer-wave2d-neumann"></span><h2>Exercise 12: Implement Neumann conditions in 2D<a class="headerlink" href="#exercise-12-implement-neumann-conditions-in-2d" title="Permalink to this headline">¶</a></h2>
-<p>Modify the <a class="reference external" href="/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
+<p>Modify the <a class="reference external" href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py">wave2D_u0.py</a>
 program, which solves the 2D wave equation <span class="math">\(u_{tt}=c^2(u_{xx}+u_{yy})\)</span>
 with constant wave velocity <span class="math">\(c\)</span> and <span class="math">\(u=0\)</span> on the boundary, to have
 Neumann boundary conditions: <span class="math">\(\partial u/\partial n=0\)</span>.
@@ -5403,21 +5421,17 @@ is transported with velocity <span class="math">\(c(x)\)</span>.</p>
 </li>
 <li><a class="reference internal" href="#migrating-loops-to-cython">Migrating loops to Cython</a><ul>
 <li><a class="reference internal" href="#declaring-variables-and-annotating-the-code">Declaring variables and annotating the code</a></li>
-<li><a class="reference internal" href="#visual-inspection-of-the-c-translation">Visual inspection of the C translation</a><ul>
+<li><a class="reference internal" href="#visual-inspection-of-the-c-translation">Visual inspection of the C translation</a></li>
 <li><a class="reference internal" href="#building-the-extension-module-1">Building the extension module  (1)</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#calling-the-cython-function">Calling the Cython function</a><ul>
+<li><a class="reference internal" href="#calling-the-cython-function-from-python">Calling the Cython function from Python</a><ul>
 <li><a class="reference internal" href="#efficiency-1">Efficiency  (1)</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a class="reference internal" href="#migrating-loops-to-fortran">Migrating loops to Fortran</a><ul>
-<li><a class="reference internal" href="#the-fortran-subroutine">The Fortran subroutine</a><ul>
+<li><a class="reference internal" href="#the-fortran-subroutine">The Fortran subroutine</a></li>
 <li><a class="reference internal" href="#building-the-fortran-module-with-f2py">Building the Fortran module with f2py</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#how-to-avoid-array-copying">How to avoid array copying</a><ul>
 <li><a class="reference internal" href="#efficiency-2">Efficiency  (2)</a></li>
 </ul>

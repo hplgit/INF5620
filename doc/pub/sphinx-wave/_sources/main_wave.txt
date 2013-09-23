@@ -1632,7 +1632,7 @@ Efficiency measurements
 -----------------------
 
 Running the ``wave1D_u0_sv.py`` code with the previous string vibration example
-for :math:`N_x=50,100,200,400,800` and measuring the CPU time
+for :math:`N_x=50,100,200,400,800`, and measuring the CPU time
 (see the ``run_efficiency_experiments`` function), shows that the vectorized
 code runs substantially faster: the scalar code uses approximately
 a factor :math:`N_x/5` more time!
@@ -3758,7 +3758,12 @@ The scheme
         
 
 for the wave equation :math:`u_t = c^2u_{xx}` allows basic wave components
-:math:`e^{i(kx - \tilde\omega t)}` as solution, but it turns out that
+
+
+.. math::
+         u^n_q=e^{i(kx_q - \tilde\omega t_n)} 
+
+as solution, but it turns out that
 the frequency in time, :math:`\tilde\omega`, is not equal to
 the exact :math:`\omega = kc`.  The idea now is to study how the scheme treats
 an arbitrary wave component with a given :math:`k`. We ask two key
@@ -3809,7 +3814,7 @@ By just changing symbols (:math:`\omega\rightarrow k`,
 Numerical wave propagation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Inserting a basic wave component :math:`u=e^{i(kx-\tilde\omega t)}` in
+Inserting a basic wave component :math:`u^n_q=e^{i(kx_q-\tilde\omega t_n)}` in
 :eq:`wave:pde1:analysis:scheme` results in the need to
 evaluate two expressions:
 
@@ -4015,8 +4020,9 @@ It appears that the most convenient expression to work with is :math:`\tilde c/c
 
 with :math:`p=k\Delta x/2` as a non-dimensional measure of the spatial frequency.
 In essence, :math:`p` tells how many spatial mesh points we have per
-spatial period of the wave component with frequency :math:`k` (the period is
-:math:`2\pi/k`), i.e., how well the spatial variation of the wave component
+wave length in space of the wave component with frequency :math:`k` (the wave
+length is :math:`2\pi/k`). That is, :math:`p` reflects how well the
+spatial variation of the wave component
 is resolved in the mesh. Wave components with wave length
 less than :math:`2\Delta x` (:math:`2\pi/k < 2\Delta x`) are not visible in the mesh,
 so it does not make sense to have :math:`p>\pi/2`.
@@ -4126,7 +4132,7 @@ Such a wave can be expressed by
 .. math::
          u(x,y,t) = g(k_xx + k_yy - kct) 
 
-for some twice differentiable function :math:`g`, or with :math:`\omega =kc`:
+for some twice differentiable function :math:`g`, or with :math:`\omega =kc`, :math:`k=|\boldsymbol{k}|`:
 
 
 .. math::
@@ -4812,6 +4818,7 @@ for all interior mesh points :math:`i\in{{\mathcal{I^i}_x}}` and
 :math:`j\in{{\mathcal{I^i}_y}}`, and for :math:`n\in{{\mathcal{I^+}_t}}`.
 The constants :math:`C_x` and :math:`C_y` are defined as
 
+
 .. math::
          C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
         \thinspace .
@@ -4844,6 +4851,21 @@ is combined with the discretization of the initial condition :math:`u_t=V`,
         
 
 
+The algorithm is very similar to the one in 1D:
+
+1. Set initial condition :math:`u^0_{i,j}=I(x_i,y_j)`
+
+2. Compute :math:`u^1_{i,j}` from :eq:`wave:2D3D:impl1:2Du0:ueq:discrete`
+
+3. Set :math:`u^1_{i,j}=0` for the boundaries :math:`i=0,N_x`, :math:`j=0,N_y`
+
+4. For :math:`n=1,2,\ldots,N_t`:
+
+ 1. Find :math:`u^{n+1}_{i,j}` from :eq:`wave:2D3D:impl1:2Du0:ueq:discrete`
+    for all internal mesh points, :math:`i\in{{\mathcal{I^i}_x}}`, :math:`j\in{{\mathcal{I^i}_y}}`
+
+ 2. Set :math:`u^{n+1}_{i,j}=0` for the boundaries :math:`i=0,N_x`, :math:`j=0,N_y`
+
 
 .. _wave2D3D:impl:scalar:
 
@@ -4854,7 +4876,7 @@ The ``solver`` function for a 2D case with constant wave velocity and
 :math:`u=0` as boundary condition follows the setup from the similar
 function for the 1D case in ``wave1D_u0_s.py``, but there are
 a few necessary extensions. The code is in the program
-`wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_.
+`wave2D_u0.py <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py>`_.
 
 Domain and mesh
 ~~~~~~~~~~~~~~~
@@ -5074,6 +5096,18 @@ accompanied by a ``1:-1`` slice in the other direction. The reason is
 that we only work with the internal points for the index that is
 kept constant in a difference.
 
+The boundary conditions along the four sides makes use of
+a slice consisting of all indices along a boundary:
+
+
+.. code-block:: python
+
+        u[: ,0] = 0
+        u[:,Ny] = 0
+        u[0 ,:] = 0
+        u[Nx,:] = 0
+
+
 The ``f`` function is in the above vectorized update of ``u`` first computed
 as an array over all mesh points:
 
@@ -5087,19 +5121,6 @@ in the last term of the update statement, but other implementations
 in compiled languages benefit from having ``f`` available in an array
 rather than calling our Python function ``f(x,y,t)`` for
 every point.
-
-The boundary conditions along the four sides makes use of
-a slice consisting of all indices along a boundary:
-
-
-.. code-block:: python
-
-        u[: ,0] = 0
-        u[:,Ny] = 0
-        u[0 ,:] = 0
-        u[Nx,:] = 0
-
-The shown snippets appear in a function ``advance_vectorized``.
 
 The callback function now has the arguments
 ``u, x, xv, y, yv, t, n``. The inclusion of ``xv`` and ``yv`` makes it
@@ -5134,7 +5155,7 @@ produce. In 2D we use the following generalization of
 This solution fulfills the PDE problem if :math:`I(x,y)={u_{\small\mbox{e}}}(x,y,0)`,
 :math:`V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)`, and :math:`f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
 x(L_x-x))`. To show that :math:`{u_{\small\mbox{e}}}` also solves the discrete equations,
-we start with the general results :math:`[D_t D_t t]^n=0`
+we start with the general results :math:`[D_t D_t 1]^n=0`, :math:`[D_t D_t t]^n=0`,
 and :math:`[D_t D_t t^2]=2`, and use these to compute
 
 
@@ -5232,14 +5253,15 @@ computing in Cython. Let us first list the complete code in the
             double Cx2, double Cy2, double dt2):
         
             cdef int Nx, Ny, i, j
+            cdef double u_xx, u_yy
             Nx = u.shape[0]-1
             Ny = u.shape[1]-1
-            for i in xrange(1, Nx):
-                for j in xrange(1, Ny):
+            for i in range(1, Nx):
+                for j in range(1, Ny):
+                    u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
+                    u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
                     u[i,j] = 2*u_1[i,j] - u_2[i,j] + \
-                    Cx2*(u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]) + \
-                    Cy2*(u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]) + \
-                    dt2*f[i,j]
+                             Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
             # Boundary condition u=0
             j = 0
             for i in range(0, Nx+1): u[i,j] = 0
@@ -5297,11 +5319,17 @@ code with loops into Cython.
    here turned off by writing ``@cython.wraparound(False)`` right above
    the function header.
 
-.. index:: cython -a (Python-C translation in HTML)
-
+7. The use of index sets ``Ix`` and ``Iy`` in the scalar code cannot be
+   successfully translated to C, and constructions like ``Ix[1:-1]``
+   involve negative indices, which are now turned off, so loops
+   should use ``for i in xrange`` or ``for i in range``.
 
 Visual inspection of the C translation
 --------------------------------------
+
+
+.. index:: cython -a (Python-C translation in HTML)
+
 
 Cython can visually explain how successfully it can translate a code from
 Python to C. The command
@@ -5338,6 +5366,9 @@ what we a human would write (at least if a direct correspondence to
 the mathematics was in mind).
 
 
+Building the extension module  (1)
+----------------------------------
+
 
 .. index:: C extension module
 
@@ -5347,9 +5378,6 @@ the mathematics was in mind).
 
 .. index:: distutils
 
-
-Building the extension module  (1)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cython code must be translated to C, compiled, and linked to form what
 is known in the Python world as a *C extension module*.
@@ -5373,7 +5401,6 @@ For an extension module arising from Cython code, the following
         )
 
 We run the script by
-run
 
 
 .. code-block:: console
@@ -5421,8 +5448,8 @@ a ``setup.py`` script is strongly recommended.
    of this and many other modules.
 
 
-Calling the Cython function
----------------------------
+Calling the Cython function from Python
+---------------------------------------
 
 The ``wave2D_u0_loop_cy``
 module contains our ``advance`` function, which we now may call from
@@ -5434,8 +5461,8 @@ the Python program for the wave equation:
         import wave2D_u0_loop_cy
         advance = wave2D_u0_loop_cy.advance
         ...
-        for n in range(1, Nt):        # time loop
-            f_a = f(xv, yv, t[n])     # precompute, size as u
+        for n in It[1:-1:                  # time loop
+            f_a[:,:] = f(xv, yv, t[n])     # precompute, size as u
             u = advance(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2)
 
 
@@ -5561,7 +5588,7 @@ to the calling Python code.
 
 
 Building the Fortran module with f2py
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 The nice feature of writing loops in Fortran is that the tool ``f2py``
 can with very little work produce a C extension module such that
@@ -5601,8 +5628,8 @@ Python module:
         >>> print wave2D_u0_loop_f77.__doc__
         This module 'wave2D_u0_loop_f77' is auto-generated with f2py....
         Functions:
-          u = advance(u,u_1,u_2,f,x,y,t,cx2,cy2,dt2,
-              nx=(shape(u,0)-1),ny=(shape(u,1)-1),n=(len(t)-1))
+          u = advance(u,u_1,u_2,f,cx2,cy2,dt2,
+              nx=(shape(u,0)-1),ny=(shape(u,1)-1))
 
 
 
@@ -6093,8 +6120,12 @@ classes are used. The arrays coming from Python, and looking like
 plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.
 
-*Remaining.* Use some array class. Key issue: ``extern "C"`` declaration of C++
-function in the C file with the interface we want to wrap.
+.. __Remaining.__
+
+.. Use some array class. Key issue: ``extern "C"`` declaration of C++
+
+.. function in the C file with the interface we want to wrap.
+
 
 Using classes to implement a simulator
 ======================================
@@ -6215,7 +6246,7 @@ Filename: ``mesh_calculus_3D.py``.
 Exercise 12: Implement Neumann conditions in 2D
 -----------------------------------------------
 
-Modify the `wave2D_u0.py </wave2D_u0/wave2D_u0.py>`_
+Modify the `wave2D_u0.py <http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py>`_
 program, which solves the 2D wave equation :math:`u_{tt}=c^2(u_{xx}+u_{yy})`
 with constant wave velocity :math:`c` and :math:`u=0` on the boundary, to have
 Neumann boundary conditions: :math:`\partial u/\partial n=0`.

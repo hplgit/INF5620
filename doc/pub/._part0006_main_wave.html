@@ -325,13 +325,16 @@ Automatically generated HTML file from Doconce source
                2,
                None,
                '___sec87'),
-              (' Building the extension module ', 3, None, '___sec88'),
-              (' Calling the Cython function ', 2, None, '___sec89'),
+              (' Building the extension module ', 2, None, '___sec88'),
+              (' Calling the Cython function from Python ',
+               2,
+               None,
+               '___sec89'),
               (' Efficiency ', 3, None, '___sec90'),
               (' Migrating loops to Fortran ', 1, None, '___sec91'),
               (' The Fortran subroutine ', 2, None, '___sec92'),
               (' Building the Fortran module with f2py ',
-               3,
+               2,
                None,
                '___sec93'),
               (' How to avoid array copying ', 2, None, '___sec94'),
@@ -603,10 +606,10 @@ the complete initial-boundary value problem is defined by
 <p>
 $$
 \begin{align}
-u_t &= c^2(u_{xx} + u_{yy}) + f(x,y,t),\quad (x,y)\in \Omega,\ t\in (0,T],\\ 
-u(x,y,0) &= I(x,y),\quad (x,y)\in\Omega,\\ 
-u_t(x,y,0) &= V(x,y),\quad (x,y)\in\Omega,\\ 
-u &= 0,\quad (x,y)\in\partial\Omega,\ t\in (0,T],
+u_t &= c^2(u_{xx} + u_{yy}) + f(x,y,t),\quad &(x,y)\in \Omega,\ t\in (0,T],\\ 
+u(x,y,0) &= I(x,y),\quad &(x,y)\in\Omega,\\ 
+u_t(x,y,0) &= V(x,y),\quad &(x,y)\in\Omega,\\ 
+u &= 0,\quad &(x,y)\in\partial\Omega,\ t\in (0,T],
 \end{align}
 $$
 
@@ -636,6 +639,8 @@ $$
 for all interior mesh points \( i\in\seti{\Ix} \) and
 \( j\in\seti{\Iy} \), and for \( n\in\setr{\It} \).
 The constants \( C_x \) and \( C_y \) are defined as
+
+<p>
 $$ C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
 \thinspace .
 $$
@@ -661,6 +666,26 @@ u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + \frac{1}{2}C_y^2
 \end{align}
 $$
 
+
+<p>
+The algorithm is very similar to the one in 1D:
+
+<p>
+
+<ol>
+<li> Set initial condition \( u^0_{i,j}=I(x_i,y_j) \)</li>
+<li> Compute \( u^1_{i,j} \) from <a href="#mjx-eqn-66">(66)</a></li>
+<li> Set \( u^1_{i,j}=0 \) for the boundaries \( i=0,N_x \), \( j=0,N_y \)</li>
+<li> For \( n=1,2,\ldots,N_t \):</li>
+
+<ol>
+ <li> Find \( u^{n+1}_{i,j} \) from <a href="#mjx-eqn-66">(66)</a>
+    for all internal mesh points, \( i\in\seti{\Ix} \), \( j\in\seti{\Iy} \)</li>
+ <li> Set \( u^{n+1}_{i,j}=0 \) for the boundaries \( i=0,N_x \), \( j=0,N_y \)</li>
+</ol>
+
+</ol>
+
 <h3>Scalar computations <a name="wave2D3D:impl:scalar"></a></h3>
 
 <p>
@@ -668,7 +693,7 @@ The <code>solver</code> function for a 2D case with constant wave velocity and
 \( u=0 \) as boundary condition follows the setup from the similar
 function for the 1D case in <code>wave1D_u0_s.py</code>, but there are
 a few necessary extensions. The code is in the program
-<a href="/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>.
+<a href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>.
 
 <h4>Domain and mesh  <a name="___sec78"></a></h4>
 
@@ -893,6 +918,18 @@ that we only work with the internal points for the index that is
 kept constant in a difference.
 
 <p>
+The boundary conditions along the four sides makes use of
+a slice consisting of all indices along a boundary:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[: ,<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+u[:,Ny] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+u[<span style="color: #666666">0</span> ,:] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+u[Nx,:] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+</pre></div>
+<p>
 The <code>f</code> function is in the above vectorized update of <code>u</code> first computed
 as an array over all mesh points:
 <p>
@@ -906,21 +943,6 @@ in the last term of the update statement, but other implementations
 in compiled languages benefit from having <code>f</code> available in an array
 rather than calling our Python function <code>f(x,y,t)</code> for
 every point.
-
-<p>
-The boundary conditions along the four sides makes use of
-a slice consisting of all indices along a boundary:
-
-<p>
-
-<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">u[: ,<span style="color: #666666">0</span>] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-u[:,Ny] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-u[<span style="color: #666666">0</span> ,:] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-u[Nx,:] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-</pre></div>
-<p>
-The shown snippets appear in a function <code>advance_vectorized</code>.
 
 <p>
 The callback function now has the arguments
@@ -953,7 +975,7 @@ $$
 This solution fulfills the PDE problem if \( I(x,y)=\uex(x,y,0) \),
 \( V=\frac{1}{2}\uex(x,y,0) \), and \( f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
 x(L_x-x)) \). To show that \( \uex \) also solves the discrete equations,
-we start with the general results \( [D_t D_t t]^n=0 \)
+we start with the general results \( [D_t D_t 1]^n=0 \), \( [D_t D_t t]^n=0 \),
 and \( [D_t D_t t^2]=2 \), and use these to compute
 
 <p>
@@ -1044,14 +1066,15 @@ computing in Cython. Let us first list the complete code in the
     double Cx2, double Cy2, double dt2):
 
     <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Nx</span>, <span style="color: #0000FF">Ny</span>, <span style="color: #0000FF">i</span>, <span style="color: #0000FF">j</span>
+    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">double</span> <span style="color: #0000FF">u_xx</span>, <span style="color: #0000FF">u_yy</span>
     Nx <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">0</span>]<span style="color: #666666">-1</span>
     Ny <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">1</span>]<span style="color: #666666">-1</span>
-    <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">xrange</span>(<span style="color: #666666">1</span>, Nx):
-        <span style="color: #008000; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">xrange</span>(<span style="color: #666666">1</span>, Ny):
+    <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Nx):
+        <span style="color: #008000; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Ny):
+            u_xx <span style="color: #666666">=</span> u_1[i<span style="color: #666666">-1</span>,j] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i<span style="color: #666666">+1</span>,j]
+            u_yy <span style="color: #666666">=</span> u_1[i,j<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i,j<span style="color: #666666">+1</span>]
             u[i,j] <span style="color: #666666">=</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">-</span> u_2[i,j] <span style="color: #666666">+</span> \
-            Cx2<span style="color: #666666">*</span>(u_1[i<span style="color: #666666">-1</span>,j] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i<span style="color: #666666">+1</span>,j]) <span style="color: #666666">+</span> \
-            Cy2<span style="color: #666666">*</span>(u_1[i,j<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i,j<span style="color: #666666">+1</span>]) <span style="color: #666666">+</span> \
-            dt2<span style="color: #666666">*</span>f[i,j]
+                     Cx2<span style="color: #666666">*</span>u_xx <span style="color: #666666">+</span> Cy2<span style="color: #666666">*</span>u_yy <span style="color: #666666">+</span> dt2<span style="color: #666666">*</span>f[i,j]
     <span style="color: #408080; font-style: italic"># Boundary condition u=0</span>
     j <span style="color: #666666">=</span> <span style="color: #666666">0</span>
     <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>, Nx<span style="color: #666666">+1</span>): u[i,j] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
@@ -1101,6 +1124,10 @@ code with loops into Cython.
    end), but this feature has a performance penalty and is therefore
    here turned off by writing <code>@cython.wraparound(False)</code> right above
    the function header.</li>
+<li> The use of index sets <code>Ix</code> and <code>Iy</code> in the scalar code cannot be
+   successfully translated to C, and constructions like <code>Ix[1:-1]</code>
+   involve negative indices, which are now turned off, so loops
+   should use <code>for i in xrange</code> or <code>for i in range</code>.</li>
 </ol>
 
 <h3>Visual inspection of the C translation  <a name="___sec87"></a></h3>
@@ -1140,7 +1167,7 @@ statements are translated some complex C code that is quite different from
 what we a human would write (at least if a direct correspondence to
 the mathematics was in mind).
 
-<h4>Building the extension module  <a name="___sec88"></a></h4>
+<h3>Building the extension module  <a name="___sec88"></a></h3>
 
 <p>
 Cython code must be translated to C, compiled, and linked to form what
@@ -1166,7 +1193,6 @@ setup(
 </pre></div>
 <p>
 We run the script by
-run
 
 <p>
 
@@ -1217,7 +1243,7 @@ This makes the <code>setup.py</code> script redundant. However, in the <code>wav
 code we do not use <code>pyximport</code> and require an explicit build process
 of this and many other modules.
 </div>
-<h3>Calling the Cython function  <a name="___sec89"></a></h3>
+<h3>Calling the Cython function from Python  <a name="___sec89"></a></h3>
 
 <p>
 The <code>wave2D_u0_loop_cy</code>
@@ -1230,8 +1256,8 @@ the Python program for the wave equation:
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">wave2D_u0_loop_cy</span>
 advance <span style="color: #666666">=</span> wave2D_u0_loop_cy<span style="color: #666666">.</span>advance
 <span style="color: #666666">...</span>
-<span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666666">1</span>, Nt):        <span style="color: #408080; font-style: italic"># time loop</span>
-    f_a <span style="color: #666666">=</span> f(xv, yv, t[n])     <span style="color: #408080; font-style: italic"># precompute, size as u</span>
+<span style="color: #008000; font-weight: bold">for</span> n <span style="color: #AA22FF; font-weight: bold">in</span> It[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>:                  <span style="color: #408080; font-style: italic"># time loop</span>
+    f_a[:,:] <span style="color: #666666">=</span> f(xv, yv, t[n])     <span style="color: #408080; font-style: italic"># precompute, size as u</span>
     u <span style="color: #666666">=</span> advance(u, u_1, u_2, f_a, x, y, t, Cx2, Cy2, dt2)
 </pre></div>
 
@@ -1348,7 +1374,7 @@ Fortran subroutine is called from Fortran, reads
 </pre></div>
 <p>
 </div>
-<h4>Building the Fortran module with f2py  <a name="___sec93"></a></h4>
+<h3>Building the Fortran module with f2py  <a name="___sec93"></a></h3>
 
 <p>
 The nice feature of writing loops in Fortran is that the tool <code>f2py</code>
@@ -1392,8 +1418,8 @@ Python module:
 &gt;&gt;&gt; print wave2D_u0_loop_f77.__doc__
 This module &#39;wave2D_u0_loop_f77&#39; is auto-generated with f2py....
 Functions:
-  u = advance(u,u_1,u_2,f,x,y,t,cx2,cy2,dt2,
-      nx=(shape(u,0)-1),ny=(shape(u,1)-1),n=(len(t)-1))
+  u = advance(u,u_1,u_2,f,cx2,cy2,dt2,
+      nx=(shape(u,0)-1),ny=(shape(u,1)-1))
 </pre></div>
 <p>
 <div class="alert alert-block alert-warning alert-text-normal"><b>Examine the doc strings!</b>
@@ -1881,9 +1907,9 @@ plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.
 
 <p>
-<b>Remaining.</b>
-Use some array class. Key issue: <code>extern "C"</code> declaration of C++
-function in the C file with the interface we want to wrap.
+<!-- __Remaining.__ -->
+<!-- Use some array class. Key issue: <code>extern "C"</code> declaration of C++ -->
+<!-- function in the C file with the interface we want to wrap. -->
 
 <h2>Using classes to implement a simulator  <a name="___sec104"></a></h2>
 
@@ -1987,7 +2013,7 @@ Filename: <code>mesh_calculus_3D.py</code>.
 <h3>Exercise 12: Implement Neumann conditions in 2D <a name="wave:app:exer:wave2D:Neumann"></a></h3>
 
 <p>
-Modify the <a href="/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>
+Modify the <a href="http://tinyurl.com/jvzzcfn/wave/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>
 program, which solves the 2D wave equation \( u_{tt}=c^2(u_{xx}+u_{yy}) \)
 with constant wave velocity \( c \) and \( u=0 \) on the boundary, to have
 Neumann boundary conditions: \( \partial u/\partial n=0 \).
