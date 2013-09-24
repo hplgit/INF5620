@@ -112,18 +112,18 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
 
 def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
     """Run solver and visualize u at each time level."""
-    import scitools.std as st, time, glob, os
+    import scitools.std as plt, time, glob, os
 
     def plot_u(u, x, t, n):
         """user_action function for solver."""
-        st.plot(x, u, 'r-',
-                xlabel='x', ylabel='u',
-                axis=[0, L, umin, umax],
-                title='t=%f' % t[n])
+        plt.plot(x, u, 'r-',
+                 xlabel='x', ylabel='u',
+                 axis=[0, L, umin, umax],
+                 title='t=%f' % t[n])
         # Let the initial condition stay on the screen for 2
         # seconds, else insert a pause of 0.2 s between each plot
         time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-        st.savefig('frame_%04d.png' % n)  # for movie making
+        plt.savefig('frame_%04d.png' % n)  # for movie making
 
     # Clean up old movie frames
     for filename in glob.glob('frame_*.png'):
@@ -132,10 +132,8 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True):
     user_action = plot_u if animate else None
     u, x, t, cpu = solver(I, V, f, c, L, Nx, C, T, user_action)
     if animate:
-        st.movie('frame_*.png', encoder='mencoder', fps=4,
-                 output_file='movie.avi')
-        st.movie('frame_*.png', encoder='html', fps=4,
-                 output_file='movie.html')
+        plt.movie('frame_*.png', encoder='html', fps=4,
+                  output_file='movie.html')
     return cpu
 
 import nose.tools as nt

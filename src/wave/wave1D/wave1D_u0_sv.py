@@ -123,7 +123,7 @@ def viz(I, V, f, c, L, Nx, C, T, umin, umax, animate=True,
     codec2ext = dict(flv='.flv', libx64='.mp4', libvpx='.webm',
                      libtheora='.ogg')
     filespec = 'frame_%04d.png'
-    movie_prog = 'avconv'  # or 'ffmpeg'
+    movie_program = 'avconv'  # or 'ffmpeg'
     for codec in codec2ext:
         ext = codec2ext[codec]
         cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
@@ -163,7 +163,7 @@ def test_quadratic():
 
 def guitar():
     """Triangular wave (pulled guitar string)."""
-    L = 0.4
+    L = 0.75
     x0 = 0.8*L
     a = 0.005
     freq = 440
