@@ -812,15 +812,23 @@ a time level is implemented in a separate function as
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t,
-                   n, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt,
+                   V=<span style="color: #658b00">None</span>, step1=<span style="color: #658b00">False</span>):
     Ix = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">0</span>]);  Iy = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">1</span>])
+    dt2 = dt**<span style="color: #B452CD">2</span>
+    <span style="color: #8B008B; font-weight: bold">if</span> step1:
+        Cx2 = <span style="color: #B452CD">0.5</span>*Cx2;  Cy2 = <span style="color: #B452CD">0.5</span>*Cy2; dt2 = <span style="color: #B452CD">0.5</span>*dt2
+        D1 = <span style="color: #B452CD">1</span>;  D2 = <span style="color: #B452CD">0</span>
+    <span style="color: #8B008B; font-weight: bold">else</span>:
+        D1 = <span style="color: #B452CD">2</span>;  D2 = <span style="color: #B452CD">1</span>
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
         <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
             u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
             u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
             u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
                      Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            <span style="color: #8B008B; font-weight: bold">if</span> step1:
+                u[i,j] += dt*V(x[i], y[j])
     <span style="color: #228B22"># Boundary condition u=0</span>
     j = Iy[<span style="color: #B452CD">0</span>]
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix: u[i,j] = <span style="color: #B452CD">0</span>
@@ -833,21 +841,15 @@ a time level is implemented in a separate function as
     <span style="color: #8B008B; font-weight: bold">return</span> u
 </pre></div>
 <p>
-The constants <code>D1</code> and <code>D2</code> in front of <code>u_1</code> and <code>u_2</code> have been
-introduced to allow this <code>advance_scalar</code> function to also be used for the
-first step \( u^1_{i,j} \):
+The <code>step1</code> variable has been introduced to allow the formula to be
+reused for first step \( u^1_{i,j} \):
 
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">u = advance_scalar(u, u_1, u_2, f, x, y, t,
-                   n, <span style="color: #B452CD">0.5</span>*Cx2, <span style="color: #B452CD">0.5</span>*Cy2, <span style="color: #B452CD">0.5</span>*dt2, D1=<span style="color: #B452CD">1</span>, D2=<span style="color: #B452CD">0</span>)
+                   n, Cx2, Cy2, dt, V, step1=<span style="color: #658b00">True</span>)
 </pre></div>
-<p>
-The special formula for the first step \( u^1_{i,j} \),
-given by <a href="._part0005_main_wave-solarized.html#mjx-eqn-64">(64)</a>, is implemented
-in a very similar manner.
-
 <p>
 Below, we will make many alternative implementations of the
 <code>advance_scalar</code> function to speed up the code since most of
@@ -904,11 +906,20 @@ evaluation. This is the case with the computational scheme for \( u^{n+1}_{i,j} 
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_vectorized</span>(u, u_1, u_2, f_a, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_vectorized</span>(u, u_1, u_2, f_a, Cx2, Cy2, dt,
+                       V=<span style="color: #658b00">None</span>, step1=<span style="color: #658b00">False</span>):
+    dt2 = dt**<span style="color: #B452CD">2</span>
+    <span style="color: #8B008B; font-weight: bold">if</span> step1:
+        Cx2 = <span style="color: #B452CD">0.5</span>*Cx2;  Cy2 = <span style="color: #B452CD">0.5</span>*Cy2; dt2 = <span style="color: #B452CD">0.5</span>*dt2
+        D1 = <span style="color: #B452CD">1</span>;  D2 = <span style="color: #B452CD">0</span>
+    <span style="color: #8B008B; font-weight: bold">else</span>:
+        D1 = <span style="color: #B452CD">2</span>;  D2 = <span style="color: #B452CD">1</span>
     u_xx = u_1[:-<span style="color: #B452CD">2</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + u_1[<span style="color: #B452CD">2</span>:,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]
     u_yy = u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,:-<span style="color: #B452CD">2</span>] - <span style="color: #B452CD">2</span>*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">2</span>:]
     u[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] = D1*u_1[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] - D2*u_2[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] + \ 
                    Cx2*u_xx + Cy2*u_yy + dt2*f_a[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]
+    <span style="color: #8B008B; font-weight: bold">if</span> step1:
+        u[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>,<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>] += dt*V[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>, <span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]
     <span style="color: #228B22"># Boundary condition u=0</span>
     j = <span style="color: #B452CD">0</span>
     u[:,j] = <span style="color: #B452CD">0</span>
@@ -964,6 +975,13 @@ in the last term of the update statement, but other implementations
 in compiled languages benefit from having <code>f</code> available in an array
 rather than calling our Python function <code>f(x,y,t)</code> for
 every point.
+
+<p>
+Also in the <code>advance_vectorized</code> function we have introduced a
+boolean <code>step1</code> to reuse the formula for the first time step
+in the same way as we did with <code>advance_scalar</code>.
+We refer to the <code>solver</code> function in <code>wave2D_u0.py</code>
+for the details on how the overall algorithm is implemented.
 
 <p>
 The callback function now has the arguments
@@ -1041,15 +1059,23 @@ implementation of the updating algorithm for new values
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t,
-                   n, Cx2, Cy2, dt2, D1=<span style="color: #B452CD">2</span>, D2=<span style="color: #B452CD">1</span>):
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">advance_scalar</span>(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt,
+                   V=<span style="color: #658b00">None</span>, step1=<span style="color: #658b00">False</span>):
     Ix = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">0</span>]);  Iy = <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, u.shape[<span style="color: #B452CD">1</span>])
+    dt2 = dt**<span style="color: #B452CD">2</span>
+    <span style="color: #8B008B; font-weight: bold">if</span> step1:
+        Cx2 = <span style="color: #B452CD">0.5</span>*Cx2;  Cy2 = <span style="color: #B452CD">0.5</span>*Cy2; dt2 = <span style="color: #B452CD">0.5</span>*dt2
+        D1 = <span style="color: #B452CD">1</span>;  D2 = <span style="color: #B452CD">0</span>
+    <span style="color: #8B008B; font-weight: bold">else</span>:
+        D1 = <span style="color: #B452CD">2</span>;  D2 = <span style="color: #B452CD">1</span>
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
         <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> Iy[<span style="color: #B452CD">1</span>:-<span style="color: #B452CD">1</span>]:
             u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
             u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
             u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \ 
                      Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            <span style="color: #8B008B; font-weight: bold">if</span> step1:
+                u[i,j] += dt*V(x[i], y[j])
     <span style="color: #228B22"># Boundary condition u=0</span>
     j = Iy[<span style="color: #B452CD">0</span>]
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> Ix: u[i,j] = <span style="color: #B452CD">0</span>

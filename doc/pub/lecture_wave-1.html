@@ -551,7 +551,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Sep 24, 2013</h4></center> <!-- date -->
+<center><h4>Sep 25, 2013</h4></center> <!-- date -->
 <p>
 <!-- !split -->
 
@@ -3238,15 +3238,23 @@ Arguments <code>xv</code> and <code>yv</code>: for vectorized computations
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">advance_scalar</span>(u, u_1, u_2, f, x, y, t,
-                   n, Cx2, Cy2, dt2, D1<span style="color: #666666">=2</span>, D2<span style="color: #666666">=1</span>):
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">advance_scalar</span>(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt,
+                   V<span style="color: #666666">=</span><span style="color: #008000">None</span>, step1<span style="color: #666666">=</span><span style="color: #008000">False</span>):
     Ix <span style="color: #666666">=</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>, u<span style="color: #666666">.</span>shape[<span style="color: #666666">0</span>]);  Iy <span style="color: #666666">=</span> <span style="color: #008000">range</span>(<span style="color: #666666">0</span>, u<span style="color: #666666">.</span>shape[<span style="color: #666666">1</span>])
+    dt2 <span style="color: #666666">=</span> dt<span style="color: #666666">**2</span>
+    <span style="color: #008000; font-weight: bold">if</span> step1:
+        Cx2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>Cx2;  Cy2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>Cy2; dt2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>dt2
+        D1 <span style="color: #666666">=</span> <span style="color: #666666">1</span>;  D2 <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #008000; font-weight: bold">else</span>:
+        D1 <span style="color: #666666">=</span> <span style="color: #666666">2</span>;  D2 <span style="color: #666666">=</span> <span style="color: #666666">1</span>
     <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> Ix[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]:
         <span style="color: #008000; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> Iy[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]:
             u_xx <span style="color: #666666">=</span> u_1[i<span style="color: #666666">-1</span>,j] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i<span style="color: #666666">+1</span>,j]
             u_yy <span style="color: #666666">=</span> u_1[i,j<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i,j<span style="color: #666666">+1</span>]
             u[i,j] <span style="color: #666666">=</span> D1<span style="color: #666666">*</span>u_1[i,j] <span style="color: #666666">-</span> D2<span style="color: #666666">*</span>u_2[i,j] <span style="color: #666666">+</span> \ 
                      Cx2<span style="color: #666666">*</span>u_xx <span style="color: #666666">+</span> Cy2<span style="color: #666666">*</span>u_yy <span style="color: #666666">+</span> dt2<span style="color: #666666">*</span>f(x[i], y[j], t[n])
+            <span style="color: #008000; font-weight: bold">if</span> step1:
+                u[i,j] <span style="color: #666666">+=</span> dt<span style="color: #666666">*</span>V(x[i], y[j])
     <span style="color: #408080; font-style: italic"># Boundary condition u=0</span>
     j <span style="color: #666666">=</span> Iy[<span style="color: #666666">0</span>]
     <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> Ix: u[i,j] <span style="color: #666666">=</span> <span style="color: #666666">0</span>
@@ -3298,11 +3306,20 @@ f_a[:,:] <span style="color: #666666">=</span> f(xv, yv, t)
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">advance_vectorized</span>(u, u_1, u_2, f_a, Cx2, Cy2, dt2, D1<span style="color: #666666">=2</span>, D2<span style="color: #666666">=1</span>):
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">advance_vectorized</span>(u, u_1, u_2, f_a, Cx2, Cy2, dt,
+                       V<span style="color: #666666">=</span><span style="color: #008000">None</span>, step1<span style="color: #666666">=</span><span style="color: #008000">False</span>):
+    dt2 <span style="color: #666666">=</span> dt<span style="color: #666666">**2</span>
+    <span style="color: #008000; font-weight: bold">if</span> step1:
+        Cx2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>Cx2;  Cy2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>Cy2; dt2 <span style="color: #666666">=</span> <span style="color: #666666">0.5*</span>dt2
+        D1 <span style="color: #666666">=</span> <span style="color: #666666">1</span>;  D2 <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #008000; font-weight: bold">else</span>:
+        D1 <span style="color: #666666">=</span> <span style="color: #666666">2</span>;  D2 <span style="color: #666666">=</span> <span style="color: #666666">1</span>
     u_xx <span style="color: #666666">=</span> u_1[:<span style="color: #666666">-2</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u_1[<span style="color: #666666">2</span>:,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]
     u_yy <span style="color: #666666">=</span> u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,:<span style="color: #666666">-2</span>] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">2</span>:]
     u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> D1<span style="color: #666666">*</span>u_1[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">-</span> D2<span style="color: #666666">*</span>u_2[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+</span> \ 
                    Cx2<span style="color: #666666">*</span>u_xx <span style="color: #666666">+</span> Cy2<span style="color: #666666">*</span>u_yy <span style="color: #666666">+</span> dt2<span style="color: #666666">*</span>f_a[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]
+    <span style="color: #008000; font-weight: bold">if</span> step1:
+        u[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>,<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>] <span style="color: #666666">+=</span> dt<span style="color: #666666">*</span>V[<span style="color: #666666">1</span>:<span style="color: #666666">-1</span>, <span style="color: #666666">1</span>:<span style="color: #666666">-1</span>]
     <span style="color: #408080; font-style: italic"># Boundary condition u=0</span>
     j <span style="color: #666666">=</span> <span style="color: #666666">0</span>
     u[:,j] <span style="color: #666666">=</span> <span style="color: #666666">0</span>

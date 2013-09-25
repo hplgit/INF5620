@@ -62,6 +62,8 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
             sys.exit(1)
     elif version == 'vectorized':
         advance = advance_vectorized
+    elif version == 'scalar':
+        advance = advance_scalar
 
     x = linspace(0, Lx, Nx+1)  # mesh points in x dir
     y = linspace(0, Ly, Ny+1)  # mesh points in y dir
@@ -81,7 +83,6 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     Nt = int(round(T/float(dt)))
     t = linspace(0, Nt*dt, Nt+1)    # mesh points in time
     Cx2 = (c*dt/dx)**2;  Cy2 = (c*dt/dy)**2    # help variables
-    dt2 = dt**2
 
     # Allow f and V to be None or 0
     if f is None or f == 0:
@@ -118,37 +119,15 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
 
     # Special formula for first time step
     n = 0
+    # Can use advance function with adjusted parameters (note: u_2=0)
     if version == 'scalar':
-        # Can use advance with adjusted parameters (note: u_2=0)
-        #[[[ test, copy old version
-        #u = advance(u, u_1, u_2, f, x, y, t, n,
-        #            0.5*Cx2, 0.5*Cy2, 0.5*dt2, D1=1, D2=0)
-        for i in Ix[1:-1]:
-            for j in Iy[1:-1]:
-                u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
-                u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
-                u[i,j] = u_1[i,j] + dt*V(x[i], y[j]) + \
-                0.5*(Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n]))
-        j = Iy[0]
-        for i in range(0, Nx): u[i,j] = 0
-        j = Iy[-1]
-        for i in range(0, Nx): u[i,j] = 0
-        i = Ix[0]
-        for j in range(0, Ny): u[i,j] = 0
-        i = Ix[-1]
-        for j in range(0, Ny): u[i,j] = 0
+        u = advance(u, u_1, u_2, f, x, y, t, n,
+                    Cx2, Cy2, dt, V, step1=True)
+
     else:  # use vectorized version
         f_a[:,:] = f(xv, yv, t[n])  # precompute, size as u
         V_a = V(xv, yv)
-        u_xx = u_1[:-2,1:-1] - 2*u_1[1:-1,1:-1] + u_1[2:,1:-1]
-        u_yy = u_1[1:-1,:-2] - 2*u_1[1:-1,1:-1] + u_1[1:-1,2:]
-        u[1:-1,1:-1] = u_1[1:-1,1:-1] + dt*V_a[1:-1,1:-1] + \
-               0.5*Cx2*u_xx + 0.5*Cy2*u_yy + 0.5*dt2*f_a[1:-1,1:-1]
-        # Boundary condition u=0
-        i = Ix[0];  u[:,i] = 0
-        i = Ix[-1]; u[:,i] = 0
-        j = Iy[0];  u[j,:] = 0
-        j = Iy[-1]; u[j,:] = 0
+        u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt, V_a, step1=True)
 
     if user_action is not None:
         user_action(u, x, xv, y, yv, t, 1)
@@ -158,10 +137,10 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     for n in It[1:-1]:
         if version == 'scalar':
             # use f(x,y,t) function
-            u = advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2)
+            u = advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt)
         else:
             f_a[:,:] = f(xv, yv, t[n])  # precompute, size as u
-            u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt2)
+            u = advance(u, u_1, u_2, f_a, Cx2, Cy2, dt)
 
         if version == 'f77':
             for a in 'u', 'u_1', 'u_2', 'f_a':
@@ -178,14 +157,23 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     # dt might be computed in this function so return the value
     return dt, t1 - t0
 
-def advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2, D1=2, D2=1):
+def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt,
+                   V=None, step1=False):
     Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+    dt2 = dt**2
+    if step1:
+        Cx2 = 0.5*Cx2;  Cy2 = 0.5*Cy2; dt2 = 0.5*dt2
+        D1 = 1;  D2 = 0
+    else:
+        D1 = 2;  D2 = 1
     for i in Ix[1:-1]:
         for j in Iy[1:-1]:
             u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
             u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
             u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \
                      Cx2*u_xx + Cy2*u_yy + dt2*f(x[i], y[j], t[n])
+            if step1:
+                u[i,j] += dt*V(x[i], y[j])
     # Boundary condition u=0
     j = Iy[0]
     for i in Ix: u[i,j] = 0
@@ -197,11 +185,20 @@ def advance(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2, D1=2, D2=1):
     for j in Iy: u[i,j] = 0
     return u
 
-def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt2, D1=2, D2=1):
+def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt,
+                       V=None, step1=False):
+    dt2 = dt**2
+    if step1:
+        Cx2 = 0.5*Cx2;  Cy2 = 0.5*Cy2; dt2 = 0.5*dt2
+        D1 = 1;  D2 = 0
+    else:
+        D1 = 2;  D2 = 1
     u_xx = u_1[:-2,1:-1] - 2*u_1[1:-1,1:-1] + u_1[2:,1:-1]
     u_yy = u_1[1:-1,:-2] - 2*u_1[1:-1,1:-1] + u_1[1:-1,2:]
     u[1:-1,1:-1] = D1*u_1[1:-1,1:-1] - D2*u_2[1:-1,1:-1] + \
                    Cx2*u_xx + Cy2*u_yy + dt2*f_a[1:-1,1:-1]
+    if step1:
+        u[1:-1,1:-1] += dt*V[1:-1, 1:-1]
     # Boundary condition u=0
     j = 0
     u[:,j] = 0
@@ -272,7 +269,7 @@ def run_efficiency_tests(nrefinements=4):
             print '%-15s' % '%dx%d' % (Nx, Nx),
             print ''.join(['%13.1f' % cpu[version] for version in versions])
 
-def run_Gaussian(plot_method=2, version='vectorized'):
+def run_Gaussian(plot_method=2, version='vectorized', save_plot=True):
     """
     Initial Gaussian bell in the middle of the domain.
     plot_method=1 applies mesh function, =2 means surf, =0 means no plot.
@@ -301,8 +298,9 @@ def run_Gaussian(plot_method=2, version='vectorized'):
                   shading='flat')
         if plot_method > 0:
             time.sleep(0) # pause between frames
-            filename = 'tmp_%04d.png' % n
-            savefig(filename)  # time consuming!
+            if save_plot:
+                filename = 'tmp_%04d.png' % n
+                savefig(filename)  # time consuming!
 
     Nx = 40; Ny = 40; T = 20
     dt, cpu = solver(I, None, None, c, Lx, Ly, Nx, Ny, -1, T,
