@@ -8,14 +8,14 @@ from scitools.std import plot, hold, legend, savefig, linspace, \
      title, xlabel, axis
 
 
-def solve(integrand_lhs, integrand_rhs, phi, Omega,
+def solve(integrand_lhs, integrand_rhs, psi, Omega,
           boundary_lhs=None, boundary_rhs=None,
           numint=False, verbose=False):
     """
-    phi: dictionary of lists, phi[0] holdes the basis functions,
-    phi[1] holdes the first-order derivatives, and phi[2] the
+    psi: dictionary of lists, psi[0] holdes the basis functions,
+    psi[1] holdes the first-order derivatives, and psi[2] the
     second-order derivatives (and so on).
-    integrand_lhs and integrand_rhs are functions of phi
+    integrand_lhs and integrand_rhs are functions of psi
     defining the integrands in integrals over Omega in the variational
     formulation. boundary_lhs/rhs are similar functions defining
     contributions from the boundary (boundary integrals, which are point
@@ -26,14 +26,14 @@ def solve(integrand_lhs, integrand_rhs, phi, Omega,
     if verbose is True, integrations and linear system A*c=b are printed
     during the computations.
     """
-    N = len(phi[0]) - 1
+    N = len(psi[0]) - 1
     A = sm.zeros((N+1, N+1))
     b = sm.zeros((N+1, 1))
     x = sm.Symbol('x')
     print '...evaluating matrix...',
     for i in range(N+1):
         for j in range(i, N+1):
-            integrand = integrand_lhs(phi, i, j)
+            integrand = integrand_lhs(psi, i, j)
             if verbose:
                 print '(%d,%d):' % (i, j), integrand
             if not numint:
@@ -49,9 +49,9 @@ def solve(integrand_lhs, integrand_rhs, phi, Omega,
                     raise NameError('Numerical integration of\n%s\nrequires symbol %s to be given a value' %
                                     (integrand, str(e).split()[2]))
             if boundary_lhs is not None:
-                I += boundary_lhs(phi, i, j)
+                I += boundary_lhs(psi, i, j)
             A[i,j] = A[j,i] = I
-        integrand = integrand_rhs(phi, i)
+        integrand = integrand_rhs(psi, i)
         if verbose:
             print 'rhs:', integrand
         if not numint:
@@ -67,7 +67,7 @@ def solve(integrand_lhs, integrand_rhs, phi, Omega,
                 raise NameError('Numerical integration of\n%s\nrequires symbol %s to be given a value' %
                                 (integrand, str(e).split()[2]))
         if boundary_rhs is not None:
-            I += boundary_rhs(phi, i)
+            I += boundary_rhs(psi, i)
         b[i,0] = I
     print
     if verbose: print 'A:\n', A, '\nb:\n', b
@@ -75,46 +75,46 @@ def solve(integrand_lhs, integrand_rhs, phi, Omega,
     #c = sm.mpmath.lu_solve(A, b)
     if verbose: print 'coeff:', c
     u = 0
-    for i in range(len(phi[0])):
-        u += c[i,0]*phi[0][i]
+    for i in range(len(psi[0])):
+        u += c[i,0]*psi[0][i]
     if verbose: print 'approximation:', u
     return u
 
-def collocation(term_lhs, term_rhs, phi, points):
+def collocation(term_lhs, term_rhs, psi, points):
     """
     Solve a differential equation by collocation. term_lhs is
-    a function of phi (dict of basis functions and their derivatives)
+    a function of psi (dict of basis functions and their derivatives)
     and points (the collocation points throughout the domain)
     as well as i and j (the matrix index) returning elements in the
-    coefficient matrix, while term_rhs is a function of phi, i and
+    coefficient matrix, while term_rhs is a function of psi, i and
     points returning the element i in the right-hand side vector.
-    Note that the given phi is transformed to Python functions through
+    Note that the given psi is transformed to Python functions through
     sm.lambdify such that term_lhs and term_rhs can simply evaluate
-    phi[0][i], ... at a point.
+    psi[0][i], ... at a point.
     """
-    N = len(phi[0]) - 1
+    N = len(psi[0]) - 1
     A = sm.zeros((N+1, N+1))
     b = sm.zeros((N+1, 1))
-    # Wrap phi in Python functions (phi_) rather than expressions
-    # so that we can evaluate phi_ at points[i] (alternative to subs?)
+    # Wrap psi in Python functions (psi_) rather than expressions
+    # so that we can evaluate psi_ at points[i] (alternative to subs?)
     x = sm.Symbol('x')
-    phi_ = {}
+    psi_ = {}
     module = "numpy" if N > 2 else "sympy"
-    for derivative in phi:
-        phi_[derivative] = [sm.lambdify([x], phi[derivative][i],
+    for derivative in psi:
+        psi_[derivative] = [sm.lambdify([x], psi[derivative][i],
                                         modules="sympy")
                             for i in range(N+1)]
     print '...evaluating matrix...',
     for i in range(N+1):
         for j in range(N+1):
             print '(%d,%d)' % (i, j)
-            A[i,j] = term_lhs(phi_, points, i, j)
-        b[i,0] = term_rhs(phi_, points, i)
+            A[i,j] = term_lhs(psi_, points, i, j)
+        b[i,0] = term_rhs(psi_, points, i)
     print
 
     # Drop symbolic expressions (and symbolic solve) for
     # all but the smallest problems (troubles maybe caused by
-    # derivatives of phi that trigger full symbolic expressions
+    # derivatives of psi that trigger full symbolic expressions
     # in A; this problem is not evident in interpolation in approx1D.py)
     if N > 2:
         A = A.evalf()
@@ -123,8 +123,8 @@ def collocation(term_lhs, term_rhs, phi, points):
     c = A.LUsolve(b)
     print 'coeff:', c
     u = 0
-    for i in range(len(phi_[0])):
-        u += c[i,0]*phi_[0][i](x)
+    for i in range(len(psi_[0])):
+        u += c[i,0]*psi_[0][i](x)
     print 'approximation:', u
     return u
 

@@ -122,13 +122,13 @@ def u_sines():
     """
     import matplotlib.pyplot as plt
     x = np.linspace(0, 4, 1001)
-    phi0 = np.sin(2*np.pi/4*x)
-    phi1 = np.sin(2*np.pi*x)
-    phi2 = np.sin(2*np.pi*4*x)
-    u = 4*phi0 - 0.5*phi1 - 0*phi2
-    plt.plot(x, phi0, 'r-', label=r"$\varphi_0$")
-    plt.plot(x, phi1, 'g-', label=r"$\varphi_1$")
-    #plt.plot(x, phi2, label=r"$\varphi_2$")
+    psi0 = np.sin(2*np.pi/4*x)
+    psi1 = np.sin(2*np.pi*x)
+    psi2 = np.sin(2*np.pi*4*x)
+    u = 4*psi0 - 0.5*psi1 - 0*psi2
+    plt.plot(x, psi0, 'r-', label=r"$\psi_0$")
+    plt.plot(x, psi1, 'g-', label=r"$\psi_1$")
+    #plt.plot(x, psi2, label=r"$\psi_2$")
     plt.plot(x, u, 'b-', label=r"u")
     plt.legend()
     plt.savefig('tmp_u_sines.pdf')

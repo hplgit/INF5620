@@ -20,14 +20,14 @@ def taylor(x, y, Nx, Ny):
 
 def run_linear():
     f = (1+x**2)*(1+2*y**2)
-    phi = taylor(x, y, 1, 1)
-    print phi
+    psi = taylor(x, y, 1, 1)
+    print psi
     Omega = [[0, 2], [0, 2]]
-    u = least_squares(f, phi, Omega)
+    u = least_squares(f, psi, Omega)
     comparison_plot(f, u, Omega, plotfile='approx2D_bilinear')
     print '\n\n**** Include second order terms:'
-    phi = taylor(x, y, 2, 2)
-    u = least_squares(f, phi, Omega)
+    psi = taylor(x, y, 2, 2)
+    u = least_squares(f, psi, Omega)
 
 
 if __name__ == '__main__':

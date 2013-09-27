@@ -8,14 +8,14 @@ from scitools.std import surfc, savefig, linspace, title, figure, \
      hot, axis, ndgrid, subplot
 
 
-def least_squares(f, phi, Omega):
+def least_squares(f, psi, Omega):
     """
     Given a function f(x,y) on a rectangular domain
     Omega=[[xmin,xmax],[ymin,ymax]],
     return the best approximation to f(x,y) in the space V
-    spanned by the functions in the list phi.
+    spanned by the functions in the list psi.
     """
-    N = len(phi) - 1
+    N = len(psi) - 1
     A = sm.zeros((N+1, N+1))
     b = sm.zeros((N+1, 1))
     x, y = sm.symbols('x y')
@@ -24,7 +24,7 @@ def least_squares(f, phi, Omega):
         for j in range(i, N+1):
             print '(%d,%d)' % (i, j)
 
-            integrand = phi[i]*phi[j]
+            integrand = psi[i]*psi[j]
             I = sm.integrate(integrand,
                              (x, Omega[0][0], Omega[0][1]),
                              (y, Omega[1][0], Omega[1][1]))
@@ -36,7 +36,7 @@ def least_squares(f, phi, Omega):
                                    [Omega[0][0], Omega[0][1]],
                                    [Omega[1][0], Omega[1][1]])
             A[i,j] = A[j,i] = I
-        integrand = phi[i]*f
+        integrand = psi[i]*f
         I = sm.integrate(integrand,
                          (x, Omega[0][0], Omega[0][1]),
                          (y, Omega[1][0], Omega[1][1]))
@@ -53,12 +53,12 @@ def least_squares(f, phi, Omega):
     c = A.LUsolve(b)
     print 'coeff:', c
     # Alternative:
-    u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
     print 'f:', sm.expand(f)
     print sm.latex(A, mode='plain')
     print sm.latex(b, mode='plain')
-    print sm.latex([c[i,0] for i in range(len(phi))], mode='plain')
+    print sm.latex([c[i,0] for i in range(len(psi))], mode='plain')
     return u
 
 

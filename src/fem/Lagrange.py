@@ -31,8 +31,8 @@ def Lagrange_polynomials_01(x, N):
     else:
         h = 1.0/(N-1)
     points = [i*h for i in range(N+1)]
-    phi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
-    return phi, points
+    psi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
+    return psi, points
 
 def Chebyshev_nodes(a, b, N):
     """Return N+1 Chebyshev nodes (for interpolation) on [a, b]."""
@@ -64,5 +64,5 @@ def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
     else:
         raise ValueError('point_distribution="%s": illegal value' %
                          point_distribution)
-    phi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
-    return phi, points
+    psi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
+    return psi, points

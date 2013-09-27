@@ -7,13 +7,13 @@ import sympy as sm
 from scitools.std import plot, hold, legend, savefig, linspace, \
      title, xlabel, axis
 
-def least_squares(f, phi, Omega):
+def least_squares(f, psi, Omega):
     """
     Given a function f(x) on an interval Omega (2-list)
     return the best approximation to f(x) in the space V
-    spanned by the functions in the list phi.
+    spanned by the functions in the list psi.
     """
-    N = len(phi) - 1
+    N = len(psi) - 1
     A = sm.zeros((N+1, N+1))
     b = sm.zeros((N+1, 1))
     x = sm.Symbol('x')
@@ -22,7 +22,7 @@ def least_squares(f, phi, Omega):
         for j in range(i, N+1):
             print '(%d,%d)' % (i, j)
 
-            integrand = phi[i]*phi[j]
+            integrand = psi[i]*psi[j]
             I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
             if isinstance(I, sm.Integral):
                 # Could not integrate symbolically, use numerical int.
@@ -30,7 +30,7 @@ def least_squares(f, phi, Omega):
                 integrand = sm.lambdify([x], integrand)
                 I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
             A[i,j] = A[j,i] = I
-        integrand = phi[i]*f
+        integrand = psi[i]*f
         I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
         if isinstance(I, sm.Integral):
             # Could not integrate symbolically, use numerical int.
@@ -44,7 +44,7 @@ def least_squares(f, phi, Omega):
     print 'coeff:', c
 
     # c is a sympy Matrix object, numbers are in c[i,0]
-    u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
     return u
 
@@ -78,24 +78,24 @@ def numerical_linsys_solve(A, b, floating_point_calc='sumpy'):
         print 'numpy.linalg.solve, %s:' % floating_point_calc, c
 
 
-def least_squares_orth(f, phi, Omega):
+def least_squares_orth(f, psi, Omega):
     """
     Same as least_squares, but for orthogonal
     basis such that one avoids calling up standard
     Gaussian elimination.
     """
-    N = len(phi) - 1
+    N = len(psi) - 1
     A = [0]*(N+1)       # plain list to hold symbolic expressions
     b = [0]*(N+1)
     x = sm.Symbol('x')
     print '...evaluating matrix...',
     for i in range(N+1):
         print '(%d,%d)' % (i, i)
-        A[i] = sm.integrate(phi[i]**2, (x, Omega[0], Omega[1]))
+        A[i] = sm.integrate(psi[i]**2, (x, Omega[0], Omega[1]))
 
-        # Fallback on numerical integration if f*phi is too difficult
+        # Fallback on numerical integration if f*psi is too difficult
         # to integrate
-        integrand = phi[i]*f
+        integrand = psi[i]*f
         I = sm.integrate(integrand,  (x, Omega[0], Omega[1]))
         if isinstance(I, sm.Integral):
             print 'numerical integration of', integrand
@@ -106,42 +106,42 @@ def least_squares_orth(f, phi, Omega):
     c = [b[i]/A[i] for i in range(len(b))]
     print 'coeff:', c
     u = 0
-    for i in range(len(phi)):
-        u += c[i]*phi[i]
+    for i in range(len(psi)):
+        u += c[i]*psi[i]
     # Alternative:
-    # u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    # u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
     return u
 
-def interpolation(f, phi, points):
+def interpolation(f, psi, points):
     """
     Given a function f(x), return the approximation to
-    f(x) in the space V, spanned by phi, that interpolates
-    f at the given points. Must have len(points) = len(phi)
+    f(x) in the space V, spanned by psi, that interpolates
+    f at the given points. Must have len(points) = len(psi)
     """
-    N = len(phi) - 1
+    N = len(psi) - 1
     A = sm.zeros((N+1, N+1))
     b = sm.zeros((N+1, 1))
-    # Wrap phi and f in Python functions rather than expressions
-    # so that we can evaluate phi at points[i] (alternative to subs?)
+    # Wrap psi and f in Python functions rather than expressions
+    # so that we can evaluate psi at points[i] (alternative to subs?)
     x = sm.Symbol('x')
-    phi = [sm.lambdify([x], phi[i]) for i in range(N+1)]
+    psi = [sm.lambdify([x], psi[i]) for i in range(N+1)]
     f = sm.lambdify([x], f)
     print '...evaluating matrix...'
     for i in range(N+1):
         for j in range(N+1):
             print '(%d,%d)' % (i, j)
-            A[i,j] = phi[j](points[i])
+            A[i,j] = psi[j](points[i])
         b[i,0] = f(points[i])
     print
     print 'A:\n', A, '\nb:\n', b
     c = A.LUsolve(b)
     print 'coeff:', c
     u = 0
-    for i in range(len(phi)):
-        u += c[i,0]*phi[i](x)
+    for i in range(len(psi)):
+        u += c[i,0]*psi[i](x)
     # Alternative:
-    # u = sum(c[i,0]*phi[i] for i in range(len(phi)))
+    # u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
     return u
 

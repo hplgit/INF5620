@@ -4,7 +4,7 @@ from approx1D import *
 
 x = sm.Symbol('x')
 f = 10*(x-1)**2-1
-u = least_squares(f=f, phi=[1, x, x**2], Omega=[1, 2])
+u = least_squares(f=f, psi=[1, x, x**2], Omega=[1, 2])
 print u
 print sm.expand(f)
 

@@ -12,14 +12,18 @@ All rights reserved.
 import numpy as np
 
 def GaussLegendre(num_points):
-    """Return points and weights for Gauss-Legendre rules on [-1,1]."""
+    """
+    Return points and weights for Gauss-Legendre rules on [-1,1].
+    The no of points implemented are 1-20, 32, 64, 96, 100, 128, 256,
+    512, 1024.
+    """
     n = num_points
     points  = np.zeros(n)
     weights = np.zeros(n)
 
     if n > 1:
         try:
-            x[n]
+            x[n]  # x is defined below (global variable)
         except KeyError:
             raise ValueError(
                 'Gauss-Legendre rule with %d points not available' % n)
