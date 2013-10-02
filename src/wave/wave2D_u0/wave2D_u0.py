@@ -286,6 +286,14 @@ def run_Gaussian(plot_method=2, version='vectorized', save_plot=True):
         """Gaussian peak at (Lx/2, Ly/2)."""
         return exp(-0.5*(x-Lx/2.0)**2 - 0.5*(y-Ly/2.0)**2)
 
+    if plot_method == 3:
+        from mpl_toolkits.mplot3d import axes3d
+        import matplotlib.pyplot as plt
+        from matplotlib import cm
+        plt.ion()
+        fig = plt.figure()
+        u_surf = None
+
     def plot_u(u, x, xv, y, yv, t, n):
         if t[n] == 0:
             time.sleep(2)
@@ -296,6 +304,18 @@ def run_Gaussian(plot_method=2, version='vectorized', save_plot=True):
             surfc(xv, yv, u, title='t=%g' % t[n], zlim=[-1, 1],
                   colorbar=True, colormap=hot(), caxis=[-1,1],
                   shading='flat')
+        elif plot_method == 3:
+            print 'Experimental 3D matplotlib...under development...'
+            #plt.clf()
+            ax = fig.add_subplot(111, projection='3d')
+            u_surf = ax.plot_surface(xv, yv, u, alpha=0.3)
+            #ax.contourf(xv, yv, u, zdir='z', offset=-100, cmap=cm.coolwarm)
+            #ax.set_zlim(-1, 1)
+            # Remove old surface before drawing
+            if u_surf is not None:
+                ax.collections.remove(u_surf)
+            plt.draw()
+            time.sleep(1)
         if plot_method > 0:
             time.sleep(0) # pause between frames
             if save_plot:
