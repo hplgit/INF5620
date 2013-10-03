@@ -292,21 +292,82 @@ formulas. See how many of them that lead to a wrong non-constant solution.
 <h2>Verification: cubic solution  <a name="___sec5"></a></h2>
 
 <p>
-<em>NOTE: This part is non-trivial. It requires, as it stands,
-\( \partial u/\partial n \neq 0 \) on the boundary. We are investigating
-the most feasible way of testing the solver with exact discrete
-solutions. Wait with this point until we have more guiding text
-on how to proceed.</em>
-
-<p>
 Assume an exact solution on the form \( \uex(x,y,t)=X(x)Y(y)T(t) \) where
 \( X \), \( Y \), and \( T \) are polynomials of degree three or less.
 Construct \( X \) and \( Y \) such that the normal derivative vanishes at the
 four boundaries. Fit a corresponding source term \( f(x,y,t) \) in the wave
-equation. Prove that this solution can also be an exact solution of the
-discretized wave equation if \( b=0 \) and \( q \) is constant
-(you need to check all the stencils involved). Implement a corresponding
-nose test.
+equation.
+
+<p>
+It would be great if this exact solution also were an exact solution
+of the discrete equations when \( q \) is constant and \( b=0 \),
+which is often the case with lower-order
+polynomials because the truncation errors involve higher-order derivatives.
+The exact cubic solution fits the discrete equations at all inner
+mesh points, but not on the boundary. Add a term in the boundary
+equation for testing such that the exact solution also fulfills the
+boundary equation. Implement a corresponding nose test.
+
+<p>
+<b>Hint.</b>
+We outline some ideas in 1D.
+For constant \( q \) and \( b=0 \) we have the scheme
+\( [D_tD_t u - qD_xD_x = f]^n_{i} \) at inner points.
+Because \( [D_xD_x x^3]_i = 6x_i \),
+\( [D_xD_x x^2]_i = 2 \), \( [D_xD_x x]_i = 0 \) all are exact, the suggested
+\( u \) also fits the discrete equation. On the boundary we get a modified
+scheme, which in operator notation can be written as
+
+<p>
+$$ [D_tD_t u= qD_xD_x u + q\frac{2}{\Delta x}D_{2x} u + f]^n_i,\quad i=0,$$
+
+and
+
+<p>
+$$ [D_tD_t u= qD_xD_x - q\frac{2}{\Delta x}D_{2x} u + f]^n_i,\quad i=N_x\ts$$
+
+We have the results
+\( [D_{2x} x^3]_i =  3x_i^2 + \Delta x^2 \),
+and \( [D_{2x} x^2]_i = 2x_i \), \( [D_{2x} x]_i=1 \).
+Consider now
+\( [D_tD_t u= qD_xD_x u - q\frac{2}{\Delta x}D_{2x}u + f]^n_i \).
+Inserting \( u=X(x)T(t) \) requires the same \( f \) as for the PDE, but with
+an additional term \( T(t)2q\Delta x \) because of the \( D_{2x} \) operator acting
+on a cubic polynomial in \( x \).
+
+<p>
+This test requires the \( f \) that fits the PDE to be modified on the
+boundary. A possible implementation is to modify the array of
+\( f \) values at the boundary mesh points directly, or perform
+tests on the coordinates if a pointwise
+evaluation of \( f \) is requested:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">f</span>(x, y, t):
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">isinstance</span>(x, np<span style="color: #666666">.</span>ndarray) <span style="color: #AA22FF; font-weight: bold">and</span> <span style="color: #008000">isinstance</span>(y, np<span style="color: #666666">.</span>ndarray):
+        <span style="color: #408080; font-style: italic"># Array evaluation</span>
+        f_a <span style="color: #666666">=</span> <span style="color: #666666">....</span> <span style="color: #408080; font-style: italic"># evaluate the f that fits the PDE</span>
+        <span style="color: #408080; font-style: italic"># Modify boundary values</span>
+        f_a[<span style="color: #666666">0</span>,:]  <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=0</span>
+        f_a[<span style="color: #666666">-1</span>,:] <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=Lx</span>
+        f_a[:,<span style="color: #666666">0</span>]  <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># y=0</span>
+        f_a[:,<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=Ly</span>
+    <span style="color: #008000; font-weight: bold">else</span>:
+        <span style="color: #408080; font-style: italic"># Assume pointwise evaluation</span>
+        tol <span style="color: #666666">=</span> <span style="color: #666666">1E-14</span>  <span style="color: #408080; font-style: italic"># tolerance for float comparison</span>
+        f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># evaluate the f that fits the PDE</span>
+        <span style="color: #408080; font-style: italic"># Modify boundary values</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(x) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># x=0</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(x<span style="color: #666666">-</span>Lx) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># x=Lx</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(y) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># y=0</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(y<span style="color: #666666">-</span>Ly) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># y=Ly</span>
+</pre></div>
 
 <h2>Exact 1D plug-wave solution in 2D  <a name="___sec6"></a></h2>
 
@@ -338,7 +399,8 @@ a standing wave solution:
 <p>
 $$
 \begin{equation}
-\uex(x,y,t)=A\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t)
+\uex(x,y,t)=A\cos(k_xx)\cos(k_yy)\cos (\omega t),\quad
+k_x = \frac{m_x\pi}{L_x}, \ k_y = \frac{m_y\pi}{L_y},
 \label{wave:app:exer:standing:waves}
 \end{equation}
 $$
@@ -386,19 +448,21 @@ $$
 
 That is, find \( A \), \( B \), and \( \omega \) such that
 \eqref{wave:app:exer:standing:waves:damped} solves the PDE with
-constant \( q \) and no
-source term. Make a corresponding convergence test.
+constant \( q \), no
+source term, and initial condition \( u_t(x,y,0)=0 \) (as for the
+undamped standing waves). Make a corresponding convergence test.
 
 <p>
 <b>Hint.</b>
 The algebra can quickly be quite involved. Getting an
 overview of the algebra in a 1D version of this problem might be
 helpful.  Start with relating \( A \) and \( B \) through the initial
-conditions and eliminate \( B \).  After having inserted \( u \) in the PDE,
-two equations for \( \omega \) and \( c \) arise from factoring the sine and
-cosine terms in time. One equation can be solved for \( \omega =
-\sqrt{k_x^2q + k_y^2q - c^2} \), while the other can be solved for
-\( c=b/2 \) by inserting the found \( \omega \) expression.
+conditions (\( u=A\cos k_xx\cos k_yy \) and \( u_t=0 \) as implied by
+\eqref{wave:app:exer:standing:waves}) and eliminate \( B \).  After having
+inserted \( u \) in the PDE, two equations for \( \omega \) and \( c \) arise from
+factoring the sine and cosine terms in time. One equation can be
+solved for \( \omega = \sqrt{k_x^2q + k_y^2q - c^2} \), while the other
+can be solved for \( c=b/2 \) by inserting the found \( \omega \) expression.
 
 <h2>Verification: manufactured solution  <a name="___sec9"></a></h2>
 
