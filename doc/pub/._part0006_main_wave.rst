@@ -15,7 +15,7 @@ for solving a standard 2D, linear wave equation with constant
 wave velocity and :math:`u=0` on the
 boundary. The wave equation is to be solved
 in the space-time domain :math:`\Omega\times (0,T]`,
-where :math:`\Omega = [0,L_x]\times [0,L_y]` is a rectangular spatial
+where :math:`\Omega = (0,L_x)\times (0,L_y)` is a rectangular spatial
 domain. More precisely,
 the complete initial-boundary value problem is defined by
 
@@ -87,7 +87,7 @@ The constants :math:`C_x` and :math:`C_y` are defined as
 
 .. math::
          C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
-        \thinspace .
+        {\thinspace .}
         
 
 
@@ -437,7 +437,7 @@ produce. In 2D we use the following generalization of
    :label: wave2D3D:impl:verify:quadratic
         
         {u_{\small\mbox{e}}}(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
-        \thinspace .
+        {\thinspace .}
         
         
 
@@ -549,25 +549,26 @@ computing in Cython. Let us first list the complete code in the
             np.ndarray[DT, ndim=2, mode='c'] f,
             double Cx2, double Cy2, double dt2):
         
-            cdef int Nx, Ny, i, j
+            cdef int i, j
+            cdef int Ix_start, Ix_end, Iy_start, Iy_end
             cdef double u_xx, u_yy
-            Nx = u.shape[0]-1
-            Ny = u.shape[1]-1
-            for i in range(1, Nx):
-                for j in range(1, Ny):
+            Ix_start = Iy_start = 0
+            Ix_end = u.shape[0]-1; Iy_end = u.shape[1]-1
+            for i in range(Ix_start+1, Ix_end):
+                for j in range(Iy_start+1, Iy_end):
                     u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
                     u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
                     u[i,j] = 2*u_1[i,j] - u_2[i,j] + \
                              Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
             # Boundary condition u=0
-            j = 0
-            for i in range(0, Nx+1): u[i,j] = 0
-            j = Ny
-            for i in range(0, Nx+1): u[i,j] = 0
-            i = 0
-            for j in range(0, Ny+1): u[i,j] = 0
-            i = Nx
-            for j in range(0, Ny+1): u[i,j] = 0
+            j = Iy_start
+            for i in range(Ix_start, Ix_end+1): u[i,j] = 0
+            j = Iy_end
+            for i in range(Ix_start, Ix_end+1): u[i,j] = 0
+            i = Ix_start
+            for j in range(Iy_start, Iy_end+1): u[i,j] = 0
+            i = Iy_end
+            for j in range(Iy_start, Iy_end+1): u[i,j] = 0
             return u
 
 
@@ -617,9 +618,24 @@ code with loops into Cython.
    the function header.
 
 7. The use of index sets ``Ix`` and ``Iy`` in the scalar code cannot be
-   successfully translated to C, and constructions like ``Ix[1:-1]``
-   involve negative indices, which are now turned off, so loops
-   must use ``for i in xrange`` or ``for i in range``.
+   successfully translated to C. One reason is that constructions like
+   ``Ix[1:-1]`` involve negative indices, and these are now turned
+   off. Another reason is that Cython loops must take the form ``for i
+   in xrange`` or ``for i in range`` for being translated into efficient
+   C loops. We have therefore introduced ``Ix_start`` and ``Ix_end`` to
+   represent the start and end of the values of index :math:`i` with
+   similar variables for the :math:`j` index.
+
+
+.. admonition:: Array declaration syntax in Cython
+
+   We have used the syntax ``np.ndarray[DT, ndim=2, mode='c']`` to declare
+   ``numpy`` arrays in Cython. There is a simpler, alternative syntax, employing
+   `typed memory views <http://docs.cython.org/src/userguide/memoryviews.html>`_,
+   where the declaration looks like ``double [:,:]``.
+   However, the full support for this functionality is not yet ready, and
+   in this text we use the full array declaration syntax.
+
 
 Visual inspection of the C translation
 --------------------------------------

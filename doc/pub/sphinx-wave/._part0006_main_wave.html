@@ -59,7 +59,7 @@ for solving a standard 2D, linear wave equation with constant
 wave velocity and <span class="math">\(u=0\)</span> on the
 boundary. The wave equation is to be solved
 in the space-time domain <span class="math">\(\Omega\times (0,T]\)</span>,
-where <span class="math">\(\Omega = [0,L_x]\times [0,L_y]\)</span> is a rectangular spatial
+where <span class="math">\(\Omega = (0,L_x)\times (0,L_y)\)</span> is a rectangular spatial
 domain. More precisely,
 the complete initial-boundary value problem is defined by</p>
 <div class="math">
@@ -89,7 +89,7 @@ program:</p>
 The constants <span class="math">\(C_x\)</span> and <span class="math">\(C_y\)</span> are defined as</p>
 <div class="math">
 \[C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
-\thinspace .\]</div>
+{\thinspace .}\]</div>
 <p>At the boundary we simply set <span class="math">\(u^{n+1}_{i,j}=0\)</span> for
 <span class="math">\(i=0\)</span>, <span class="math">\(j=0,\ldots,N_y\)</span>; <span class="math">\(i=N_x\)</span>, <span class="math">\(j=0,\ldots,N_y\)</span>;
 <span class="math">\(j=0\)</span>, <span class="math">\(i=0,\ldots,N_x\)</span>; and <span class="math">\(j=N_y\)</span>, <span class="math">\(i=0,\ldots,N_x\)</span>.
@@ -348,7 +348,7 @@ produce. In 2D we use the following generalization of
 <a class="reference internal" href="._part0001_main_wave.html#eq-wave-pde2-fd-verify-quadratic-uex"><em>(2.21)</em></a>:</p>
 <div class="math" id="equation-wave2D3D:impl:verify:quadratic">
 <span id="eq-wave2d3d-impl-verify-quadratic"></span><span class="eqno">(3)</span>\[     {u_{\small\mbox{e}}}(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
-     \thinspace .\]</div>
+     {\thinspace .}\]</div>
 <p>This solution fulfills the PDE problem if <span class="math">\(I(x,y)={u_{\small\mbox{e}}}(x,y,0)\)</span>,
 <span class="math">\(V=\frac{1}{2}{u_{\small\mbox{e}}}(x,y,0)\)</span>, and <span class="math">\(f=2c^2(1+\frac{1}{2}t)(y(L_y-y) +
 x(L_x-x))\)</span>. To show that <span class="math">\({u_{\small\mbox{e}}}\)</span> also solves the discrete equations,
@@ -436,25 +436,26 @@ computing in Cython. Let us first list the complete code in the
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">f</span><span class="p">,</span>
     <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">):</span>
 
-    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Nx</span><span class="p">,</span> <span class="nf">Ny</span><span class="p">,</span> <span class="nf">i</span><span class="p">,</span> <span class="nf">j</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">i</span><span class="p">,</span> <span class="nf">j</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Ix_start</span><span class="p">,</span> <span class="nf">Ix_end</span><span class="p">,</span> <span class="nf">Iy_start</span><span class="p">,</span> <span class="nf">Iy_end</span>
     <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">u_xx</span><span class="p">,</span> <span class="nf">u_yy</span>
-    <span class="n">Nx</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
-    <span class="n">Ny</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="n">Ny</span><span class="p">):</span>
+    <span class="n">Ix_start</span> <span class="o">=</span> <span class="n">Iy_start</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">Ix_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">;</span> <span class="n">Iy_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ix_start</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="n">Ix_end</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Iy_start</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="n">Iy_end</span><span class="p">):</span>
             <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
             <span class="n">u_yy</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mf">1</span><span class="p">]</span>
             <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> \
                      <span class="n">Cx2</span><span class="o">*</span><span class="n">u_xx</span> <span class="o">+</span> <span class="n">Cy2</span><span class="o">*</span><span class="n">u_yy</span> <span class="o">+</span> <span class="n">dt2</span><span class="o">*</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
     <span class="c"># Boundary condition u=0</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="n">Ny</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="n">Nx</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy_start</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ix_start</span><span class="p">,</span> <span class="n">Ix_end</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Iy_end</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ix_start</span><span class="p">,</span> <span class="n">Ix_end</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Ix_start</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Iy_start</span><span class="p">,</span> <span class="n">Iy_end</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">Iy_end</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Iy_start</span><span class="p">,</span> <span class="n">Iy_end</span><span class="o">+</span><span class="mf">1</span><span class="p">):</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0</span>
     <span class="k">return</span> <span class="n">u</span>
 </pre></div>
 </div>
@@ -491,10 +492,23 @@ end), but this feature has a performance penalty and is therefore
 here turned off by writing <tt class="docutils literal"><span class="pre">&#64;cython.wraparound(False)</span></tt> right above
 the function header.</li>
 <li>The use of index sets <tt class="docutils literal"><span class="pre">Ix</span></tt> and <tt class="docutils literal"><span class="pre">Iy</span></tt> in the scalar code cannot be
-successfully translated to C, and constructions like <tt class="docutils literal"><span class="pre">Ix[1:-1]</span></tt>
-involve negative indices, which are now turned off, so loops
-must use <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">xrange</span></tt> or <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range</span></tt>.</li>
+successfully translated to C. One reason is that constructions like
+<tt class="docutils literal"><span class="pre">Ix[1:-1]</span></tt> involve negative indices, and these are now turned
+off. Another reason is that Cython loops must take the form <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span>
+<span class="pre">in</span> <span class="pre">xrange</span></tt> or <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range</span></tt> for being translated into efficient
+C loops. We have therefore introduced <tt class="docutils literal"><span class="pre">Ix_start</span></tt> and <tt class="docutils literal"><span class="pre">Ix_end</span></tt> to
+represent the start and end of the values of index <span class="math">\(i\)</span> with
+similar variables for the <span class="math">\(j\)</span> index.</li>
 </ol>
+<div class="admonition-array-declaration-syntax-in-cython admonition">
+<p class="first admonition-title">Array declaration syntax in Cython</p>
+<p class="last">We have used the syntax <tt class="docutils literal"><span class="pre">np.ndarray[DT,</span> <span class="pre">ndim=2,</span> <span class="pre">mode='c']</span></tt> to declare
+<tt class="docutils literal"><span class="pre">numpy</span></tt> arrays in Cython. There is a simpler, alternative syntax, employing
+<a class="reference external" href="http://docs.cython.org/src/userguide/memoryviews.html">typed memory views</a>,
+where the declaration looks like <tt class="docutils literal"><span class="pre">double</span> <span class="pre">[:,:]</span></tt>.
+However, the full support for this functionality is not yet ready, and
+in this text we use the full array declaration syntax.</p>
+</div>
 </div>
 <div class="section" id="visual-inspection-of-the-c-translation">
 <h2>Visual inspection of the C translation<a class="headerlink" href="#visual-inspection-of-the-c-translation" title="Permalink to this headline">¶</a></h2>

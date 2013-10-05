@@ -16,7 +16,8 @@ preprocess -DFORMAT=pdflatex ../newcommands_keep.p.tex > newcommands_keep.tex
 doconce format pdflatex $filename --device=paper -DWITH_TOC
 if [ $? -ne 0 ]; then echo "doconce could not compile document $filename.do.txt - abort"; exit; fi
 
-ptex2tex $filename
+# Use A4 paper to make output more compact
+ptex2tex -DA4PAPER $filename
 pdflatex $filename
 makeindex $filename
 pdflatex $filename

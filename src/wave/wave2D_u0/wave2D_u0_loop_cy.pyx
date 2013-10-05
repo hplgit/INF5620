@@ -12,23 +12,24 @@ cpdef advance(
     np.ndarray[DT, ndim=2, mode='c'] f,
     double Cx2, double Cy2, double dt2):
 
-    cdef int Nx, Ny, i, j
+    cdef int i, j
+    cdef int Ix_start, Ix_end, Iy_start, Iy_end
     cdef double u_xx, u_yy
-    Nx = u.shape[0]-1
-    Ny = u.shape[1]-1
-    for i in range(1, Nx):
-        for j in range(1, Ny):
+    Ix_start = Iy_start = 0
+    Ix_end = u.shape[0]-1; Iy_end = u.shape[1]-1
+    for i in range(Ix_start+1, Ix_end):
+        for j in range(Iy_start+1, Iy_end):
             u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
             u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
             u[i,j] = 2*u_1[i,j] - u_2[i,j] + \
                      Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
     # Boundary condition u=0
-    j = 0
-    for i in range(0, Nx+1): u[i,j] = 0
-    j = Ny
-    for i in range(0, Nx+1): u[i,j] = 0
-    i = 0
-    for j in range(0, Ny+1): u[i,j] = 0
-    i = Nx
-    for j in range(0, Ny+1): u[i,j] = 0
+    j = Iy_start
+    for i in range(Ix_start, Ix_end+1): u[i,j] = 0
+    j = Iy_end
+    for i in range(Ix_start, Ix_end+1): u[i,j] = 0
+    i = Ix_start
+    for j in range(Iy_start, Iy_end+1): u[i,j] = 0
+    i = Iy_end
+    for j in range(Iy_start, Iy_end+1): u[i,j] = 0
     return u

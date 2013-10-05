@@ -289,6 +289,8 @@ cd archived-reports
 # not to be archived:
 rm -rf rootdir  style* latex_figs html_images publish_config.py report.do.txt
 cd ..
+rm -rf ../../../archive/decay-reports
+mv archived-reports ../../../archive/decay-reports
 #cp -r archived-reports/* ~/vc/INF5620/doc/writing_reports/
 
 #sh clean.sh

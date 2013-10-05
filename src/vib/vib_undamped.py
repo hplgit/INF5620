@@ -1,5 +1,6 @@
 from numpy import *
 from matplotlib.pyplot import *
+from vib_empirical_analysis import minmax, periods, amplitudes
 
 def solver(I, w, dt, T):
     """
@@ -163,40 +164,6 @@ def visualize_front_ascii(u, t, I, w, fps=10):
         print p.plot(t[n], u[n], I*cos(w*t[n])), \
               '%.1f' % (t[n]/P)
         time.sleep(1/float(fps))
-
-def minmax(t, u):
-    """
-    Compute all local minima and maxima of the function u(t),
-    represented by discrete points in the arrays u and t.
-    Return lists minima and maxima of (t[i],u[i]) extreme points.
-    """
-    minima = []; maxima = []
-    for n in range(1, len(u)-1, 1):
-        if u[n-1] > u[n] < u[n+1]:
-            minima.append((t[n], u[n]))
-        if u[n-1] < u[n] > u[n+1]:
-            maxima.append((t[n], u[n]))
-    return minima, maxima
-
-def periods(extrema):
-    """
-    Given a list of (t,u) points of the maxima or minima,
-    return an array of the corresponding local periods.
-    """
-    p = [extrema[n][0] - extrema[n-1][0]
-         for n in range(1, len(extrema))]
-    return array(p)
-
-def amplitudes(minima, maxima):
-    """
-    Given a list of (t,u) points of the minima and maxima of
-    u, return an array of the corresponding local amplitudes.
-    """
-    # Compare first maxima with first minima and so on
-    a = [(abs(maxima[n][1] - minima[n][1]))/2.0
-         for n in range(min(len(minima),len(maxima)))]
-    return array(a)
-
 
 if __name__ == '__main__':
     main()

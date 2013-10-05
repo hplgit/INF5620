@@ -42,7 +42,7 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
             else:
                 plt.plot(t, u[:,0], '-2')       # no markers
             plt.hold('on')
-            legends.append(solver.__class__.__name__)
+            legends.append(solver_name)
             plt.figure(2)
             if len(t_mesh) <= 50:
                 plt.plot(u[:,0], u[:,1])        # markers by default

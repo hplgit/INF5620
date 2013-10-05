@@ -496,7 +496,15 @@ Automatically generated HTML file from Doconce source
               (' Project 28: Solve a 1D transport equation ',
                2,
                'wave:app:exer:advec1D',
-               'wave:app:exer:advec1D')]}
+               'wave:app:exer:advec1D'),
+              (' Problem 29: General analytical solution of a 1D damped wave equation ',
+               2,
+               'wave:app:exer:anal:damped:wave1D',
+               'wave:app:exer:anal:damped:wave1D'),
+              (' Problem 30: General analytical solution of a 2D damped wave equation ',
+               2,
+               'wave:app:exer:anal:damped:wave2D',
+               'wave:app:exer:anal:damped:wave2D')]}
 end of tocinfo -->
 
 <body>
@@ -527,7 +535,7 @@ $$
 \newcommand{\Aex}{{A_{\small\mbox{e}}}}
 \newcommand{\half}{\frac{1}{2}}
 \newcommand{\halfi}{{1/2}}
-\newcommand{\ts}{\thinspace .}
+\newcommand{\tp}{\thinspace .}
 
 \newcommand{\Ddt}[1]{\frac{D #1}{dt}}
 \newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
@@ -622,7 +630,7 @@ for solving a standard 2D, linear wave equation with constant
 wave velocity and \( u=0 \) on the
 boundary. The wave equation is to be solved
 in the space-time domain \( \Omega\times (0,T] \),
-where \( \Omega = [0,L_x]\times [0,L_y] \) is a rectangular spatial
+where \( \Omega = (0,L_x)\times (0,L_y) \) is a rectangular spatial
 domain. More precisely,
 the complete initial-boundary value problem is defined by
 
@@ -665,7 +673,7 @@ The constants \( C_x \) and \( C_y \) are defined as
 
 <p>
 $$ C_x = c\frac{\Delta t}{\Delta x},\quad C_x = c\frac{\Delta t}{\Delta y}
-\thinspace .
+\tp
 $$
 
 
@@ -1008,7 +1016,7 @@ produce. In 2D we use the following generalization of
 $$
 \begin{equation}
 \uex(x,y,t) = x(L_x-x)y(L_y-y)(1+\frac{1}{2}t)
-\thinspace .
+\tp
 \tag{67}
 \end{equation}
 $$
@@ -1021,7 +1029,7 @@ and \( [D_t D_t t^2]=2 \), and use these to compute
 
 <p>
 $$ [D_xD_x \uex]^n_{i,j} = [y(L_y-y)(1+\frac{1}{2}t) D_xD_x x(L_x-x)]^n_{i,j}
-= y_j(L_y-y_j)(1+\frac{1}{2}t_n)2\ts
+= y_j(L_y-y_j)(1+\frac{1}{2}t_n)2\tp
 $$
 
 A similar calculation must be carried out for the \( [D_yD_y
@@ -1114,25 +1122,26 @@ computing in Cython. Let us first list the complete code in the
     np.ndarray[DT, ndim=<span style="color: #B452CD">2</span>, mode=<span style="color: #CD5555">&#39;c&#39;</span>] f,
     double Cx2, double Cy2, double dt2):
 
-    <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">int</span> <span style="color: #008b45">Nx</span>, <span style="color: #008b45">Ny</span>, <span style="color: #008b45">i</span>, <span style="color: #008b45">j</span>
+    <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">int</span> <span style="color: #008b45">i</span>, <span style="color: #008b45">j</span>
+    <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">int</span> <span style="color: #008b45">Ix_start</span>, <span style="color: #008b45">Ix_end</span>, <span style="color: #008b45">Iy_start</span>, <span style="color: #008b45">Iy_end</span>
     <span style="color: #8B008B; font-weight: bold">cdef</span> <span style="color: #a7a7a7; font-weight: bold">double</span> <span style="color: #008b45">u_xx</span>, <span style="color: #008b45">u_yy</span>
-    Nx = u.shape[<span style="color: #B452CD">0</span>]-<span style="color: #B452CD">1</span>
-    Ny = u.shape[<span style="color: #B452CD">1</span>]-<span style="color: #B452CD">1</span>
-    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Nx):
-        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">1</span>, Ny):
+    Ix_start = Iy_start = <span style="color: #B452CD">0</span>
+    Ix_end = u.shape[<span style="color: #B452CD">0</span>]-<span style="color: #B452CD">1</span>; Iy_end = u.shape[<span style="color: #B452CD">1</span>]-<span style="color: #B452CD">1</span>
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ix_start+<span style="color: #B452CD">1</span>, Ix_end):
+        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Iy_start+<span style="color: #B452CD">1</span>, Iy_end):
             u_xx = u_1[i-<span style="color: #B452CD">1</span>,j] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i+<span style="color: #B452CD">1</span>,j]
             u_yy = u_1[i,j-<span style="color: #B452CD">1</span>] - <span style="color: #B452CD">2</span>*u_1[i,j] + u_1[i,j+<span style="color: #B452CD">1</span>]
             u[i,j] = <span style="color: #B452CD">2</span>*u_1[i,j] - u_2[i,j] + \
                      Cx2*u_xx + Cy2*u_yy + dt2*f[i,j]
     <span style="color: #228B22"># Boundary condition u=0</span>
-    j = <span style="color: #B452CD">0</span>
-    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, Nx+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
-    j = Ny
-    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, Nx+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
-    i = <span style="color: #B452CD">0</span>
-    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, Ny+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
-    i = Nx
-    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #B452CD">0</span>, Ny+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
+    j = Iy_start
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ix_start, Ix_end+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
+    j = Iy_end
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ix_start, Ix_end+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
+    i = Ix_start
+    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Iy_start, Iy_end+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
+    i = Iy_end
+    <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Iy_start, Iy_end+<span style="color: #B452CD">1</span>): u[i,j] = <span style="color: #B452CD">0</span>
     <span style="color: #8B008B; font-weight: bold">return</span> u
 </pre></div>
 <p>
@@ -1174,11 +1183,23 @@ code with loops into Cython.
    here turned off by writing <code>@cython.wraparound(False)</code> right above
    the function header.</li>
 <li> The use of index sets <code>Ix</code> and <code>Iy</code> in the scalar code cannot be
-   successfully translated to C, and constructions like <code>Ix[1:-1]</code>
-   involve negative indices, which are now turned off, so loops
-   must use <code>for i in xrange</code> or <code>for i in range</code>.</li>
+   successfully translated to C. One reason is that constructions like
+   <code>Ix[1:-1]</code> involve negative indices, and these are now turned
+   off. Another reason is that Cython loops must take the form <code>for i
+   in xrange</code> or <code>for i in range</code> for being translated into efficient
+   C loops. We have therefore introduced <code>Ix_start</code> and <code>Ix_end</code> to
+   represent the start and end of the values of index \( i \) with
+   similar variables for the \( j \) index.</li>
 </ol>
 
+<div class="alert alert-block alert-notice alert-text-normal"><b>Array declaration syntax in Cython.</b>
+We have used the syntax <code>np.ndarray[DT, ndim=2, mode='c']</code> to declare
+<code>numpy</code> arrays in Cython. There is a simpler, alternative syntax, employing
+<a href="http://docs.cython.org/src/userguide/memoryviews.html">typed memory views</a>,
+where the declaration looks like <code>double [:,:]</code>.
+However, the full support for this functionality is not yet ready, and
+in this text we use the full array declaration syntax.
+</div>
 <h3>Visual inspection of the C translation  <a name="___sec88"></a></h3>
 
 <p>

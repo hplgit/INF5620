@@ -62,11 +62,11 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     # Load initial condition into u_1
     for i in Ix:
         u_1[i] = I(x[i-Ix[0]])  # Note the index transformation in x
-    # Ghost values set according to du_1/dx=0
+    # Ghost values set according to du/dx=0
     i = Ix[0]
     u_1[i-1] = u_1[i+1]
     i = Ix[-1]
-    u_1[i-1] = u_1[i+1]
+    u_1[i+1] = u_1[i-1]
 
     if user_action is not None:
         user_action(u_1, x, t, 0)
@@ -80,7 +80,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
     i = Ix[0]
     u[i-1] = u[i+1]
     i = Ix[-1]
-    u[i-1] = u[i+1]
+    u[i+1] = u[i-1]
 
     if user_action is not None:
         user_action(u, x, t, 1)
@@ -97,7 +97,7 @@ def solver(I, V, f, c, L, Nx, C, T, user_action=None):
         i = Ix[0]
         u[i-1] = u[i+1]
         i = Ix[-1]
-        u[i-1] = u[i+1]
+        u[i+1] = u[i-1]
 
         if user_action is not None:
             if user_action(u, x, t, n+1):

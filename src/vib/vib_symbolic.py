@@ -20,6 +20,29 @@ Q = simplify(Q)
 print Q
 """
 
-dt, w = symbols('dt w')
-w_tilde = asin(w*dt/2).series(dt, 0, 4)*2/dt
-print w_tilde
+# Taylor series expansion of the numerical frequency
+dt, w, t, T = symbols('dt w t T')
+w_tilde_e = 2/dt*asin(w*dt/2)
+w_tilde_series = w_tilde_e.series(dt, 0, 4)
+print 'w_tilde series expansion:', w_tilde_series
+print 'Error in frequency, leading order term:', \
+      (w-w_tilde_series).as_leading_term(dt)
+# Get rid of O() term
+w_tilde_series = sum(w_tilde_series.as_ordered_terms()[:-1])
+print 'w_tilde series without O() term:', w_tilde_series
+
+# The error mesh function (I=1)
+#u_e = cos(w*t) - cos(w_tilde_e*t)  # problems with /dt around dt=0
+error = cos(w*t) - cos(w_tilde_series*t)
+print 'The global error:', error
+print 'Series expansion of the global error:', error.series(dt, 0, 6)
+print 'Series expansion of the global error:', error
+error = error.series(dt, 0, 6).as_leading_term(dt)
+print 'Leading order of the global error:', error
+error_L2 = sqrt(integrate(error**2, (t, 0, T)))
+print error_L2
+#print error_L2.series(dt, 0, 2)  # break down
+"""
+error_L2 = simplify(error_L2.series(dt, 0, 4).as_leading_term(dt))
+print 'L2 error:', error_L2
+"""
