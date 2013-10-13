@@ -60,7 +60,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 5, 2013</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 8, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -3364,11 +3364,13 @@ computing in Cython. Let us first list the complete code in the
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">DT</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mf">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">]</span> <span class="n">f</span><span class="p">,</span>
     <span class="n">double</span> <span class="n">Cx2</span><span class="p">,</span> <span class="n">double</span> <span class="n">Cy2</span><span class="p">,</span> <span class="n">double</span> <span class="n">dt2</span><span class="p">):</span>
 
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Ix_start</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Iy_start</span> <span class="o">=</span> <span class="mf">0</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Ix_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
+    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Iy_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
     <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">i</span><span class="p">,</span> <span class="nf">j</span>
-    <span class="k">cdef</span> <span class="kt">int</span> <span class="nf">Ix_start</span><span class="p">,</span> <span class="nf">Ix_end</span><span class="p">,</span> <span class="nf">Iy_start</span><span class="p">,</span> <span class="nf">Iy_end</span>
     <span class="k">cdef</span> <span class="kt">double</span> <span class="nf">u_xx</span><span class="p">,</span> <span class="nf">u_yy</span>
-    <span class="n">Ix_start</span> <span class="o">=</span> <span class="n">Iy_start</span> <span class="o">=</span> <span class="mf">0</span>
-    <span class="n">Ix_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span><span class="p">;</span> <span class="n">Iy_end</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="o">-</span><span class="mf">1</span>
+
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ix_start</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="n">Ix_end</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Iy_start</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span> <span class="n">Iy_end</span><span class="p">):</span>
             <span class="n">u_xx</span> <span class="o">=</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2</span><span class="o">*</span><span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_1</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mf">1</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
@@ -3424,9 +3426,11 @@ successfully translated to C. One reason is that constructions like
 <tt class="docutils literal"><span class="pre">Ix[1:-1]</span></tt> involve negative indices, and these are now turned
 off. Another reason is that Cython loops must take the form <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span>
 <span class="pre">in</span> <span class="pre">xrange</span></tt> or <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range</span></tt> for being translated into efficient
-C loops. We have therefore introduced <tt class="docutils literal"><span class="pre">Ix_start</span></tt> and <tt class="docutils literal"><span class="pre">Ix_end</span></tt> to
-represent the start and end of the values of index <span class="math">\(i\)</span> with
-similar variables for the <span class="math">\(j\)</span> index.</li>
+C loops. We have therefore introduced <tt class="docutils literal"><span class="pre">Ix_start</span></tt> as <tt class="docutils literal"><span class="pre">Ix[0]</span></tt>
+and <tt class="docutils literal"><span class="pre">Ix_end</span></tt> as <tt class="docutils literal"><span class="pre">Ix[-1]</span></tt> to hold the start and end of the values
+of index <span class="math">\(i\)</span>. Similar variables are introduced for the <span class="math">\(j\)</span> index.
+A loop <tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">Ix</span></tt> is with these new variables written as
+<tt class="docutils literal"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range(Ix_start,</span> <span class="pre">Ix_end+1)</span></tt>.</li>
 </ol>
 <div class="admonition-array-declaration-syntax-in-cython admonition">
 <p class="first admonition-title">Array declaration syntax in Cython</p>
@@ -4906,7 +4910,7 @@ has not yet reached the right boundary.</p>
 <p>A corresponding open boundary condition for a left-going wave
 through <span class="math">\(x=0\)</span> is</p>
 <div class="math" id="equation-wave:app:exer:radiationBC:eq:opL">
-<span class="eqno">(103)</span>\[     \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}\]</div>
+<span class="eqno">(103)</span>\[     \frac{\partial u}{\partial t} - c\frac{\partial u}{\partial x} = 0{\thinspace .}\]</div>
 <p>Implement a solver that incorporates the conditions
 <a href="#equation-wave:app:exer:radiationBC:eq:op">(102)</a> and
 <a href="#equation-wave:app:exer:radiationBC:eq:opL">(103)</a>.  Start with some

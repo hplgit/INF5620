@@ -558,8 +558,10 @@ $$
 \newcommand{\Iy}{\mathcal{I}_y}
 \newcommand{\Iz}{\mathcal{I}_z}
 \newcommand{\It}{\mathcal{I}_t}
-\newcommand{\If}{\mathcal{I}}     % for FEM
-\newcommand{\Ifd}{\mathcal{I}_d}  % for FEM
+%\newcommand{\If}{\mathcal{I}}     % for FEM
+\newcommand{\If}{I}     % for FEM
+%\newcommand{\Ifd}{\mathcal{I}_d}  % for FEM
+\newcommand{\Ifd}{I_d}  % for FEM
 \newcommand{\setb}[1]{#1^0}    % set begin
 \newcommand{\sete}[1]{#1^{-1}} % set end
 %\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
@@ -568,6 +570,7 @@ $$
 \newcommand{\setl}[1]{#1^-}
 \newcommand{\setr}[1]{#1^+}
 \newcommand{\seti}[1]{#1^i}
+\newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
 
 % Finite elements
 \newcommand{\basphi}{\varphi}
@@ -1105,11 +1108,13 @@ computing in Cython. Let us first list the complete code in the
     np<span style="color: #666666">.</span>ndarray[DT, ndim<span style="color: #666666">=2</span>, mode<span style="color: #666666">=</span><span style="color: #BA2121">&#39;c&#39;</span>] f,
     double Cx2, double Cy2, double dt2):
 
+    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Ix_start</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Iy_start</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Ix_end</span> <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">0</span>]<span style="color: #666666">-1</span>
+    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Iy_end</span> <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">1</span>]<span style="color: #666666">-1</span>
     <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">i</span>, <span style="color: #0000FF">j</span>
-    <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">Ix_start</span>, <span style="color: #0000FF">Ix_end</span>, <span style="color: #0000FF">Iy_start</span>, <span style="color: #0000FF">Iy_end</span>
     <span style="color: #008000; font-weight: bold">cdef</span> <span style="color: #B00040">double</span> <span style="color: #0000FF">u_xx</span>, <span style="color: #0000FF">u_yy</span>
-    Ix_start <span style="color: #666666">=</span> Iy_start <span style="color: #666666">=</span> <span style="color: #666666">0</span>
-    Ix_end <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">0</span>]<span style="color: #666666">-1</span>; Iy_end <span style="color: #666666">=</span> u<span style="color: #666666">.</span>shape[<span style="color: #666666">1</span>]<span style="color: #666666">-1</span>
+
     <span style="color: #008000; font-weight: bold">for</span> i <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(Ix_start<span style="color: #666666">+1</span>, Ix_end):
         <span style="color: #008000; font-weight: bold">for</span> j <span style="color: #AA22FF; font-weight: bold">in</span> <span style="color: #008000">range</span>(Iy_start<span style="color: #666666">+1</span>, Iy_end):
             u_xx <span style="color: #666666">=</span> u_1[i<span style="color: #666666">-1</span>,j] <span style="color: #666666">-</span> <span style="color: #666666">2*</span>u_1[i,j] <span style="color: #666666">+</span> u_1[i<span style="color: #666666">+1</span>,j]
@@ -1170,9 +1175,11 @@ code with loops into Cython.
    <code>Ix[1:-1]</code> involve negative indices, and these are now turned
    off. Another reason is that Cython loops must take the form <code>for i
    in xrange</code> or <code>for i in range</code> for being translated into efficient
-   C loops. We have therefore introduced <code>Ix_start</code> and <code>Ix_end</code> to
-   represent the start and end of the values of index \( i \) with
-   similar variables for the \( j \) index.</li>
+   C loops. We have therefore introduced <code>Ix_start</code> as <code>Ix[0]</code>
+   and <code>Ix_end</code> as <code>Ix[-1]</code> to hold the start and end of the values
+   of index \( i \). Similar variables are introduced for the \( j \) index.
+   A loop <code>for i in Ix</code> is with these new variables written as
+   <code>for i in range(Ix_start, Ix_end+1)</code>.</li>
 </ol>
 
 <div class="alert alert-block alert-notice alert-text-normal"><b>Array declaration syntax in Cython.</b>

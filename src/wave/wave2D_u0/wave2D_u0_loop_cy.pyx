@@ -12,11 +12,13 @@ cpdef advance(
     np.ndarray[DT, ndim=2, mode='c'] f,
     double Cx2, double Cy2, double dt2):
 
+    cdef int Ix_start = 0
+    cdef int Iy_start = 0
+    cdef int Ix_end = u.shape[0]-1
+    cdef int Iy_end = u.shape[1]-1
     cdef int i, j
-    cdef int Ix_start, Ix_end, Iy_start, Iy_end
     cdef double u_xx, u_yy
-    Ix_start = Iy_start = 0
-    Ix_end = u.shape[0]-1; Iy_end = u.shape[1]-1
+
     for i in range(Ix_start+1, Ix_end):
         for j in range(Iy_start+1, Iy_end):
             u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]

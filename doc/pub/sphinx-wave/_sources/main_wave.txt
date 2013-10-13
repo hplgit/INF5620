@@ -5,7 +5,7 @@ Finite difference methods for wave motion
 =========================================
 
 :Author: Hans Petter Langtangen
-:Date: Oct 5, 2013
+:Date: Oct 8, 2013
 
 This is still a **preliminary version**.
 
@@ -5317,11 +5317,13 @@ computing in Cython. Let us first list the complete code in the
             np.ndarray[DT, ndim=2, mode='c'] f,
             double Cx2, double Cy2, double dt2):
         
+            cdef int Ix_start = 0
+            cdef int Iy_start = 0
+            cdef int Ix_end = u.shape[0]-1
+            cdef int Iy_end = u.shape[1]-1
             cdef int i, j
-            cdef int Ix_start, Ix_end, Iy_start, Iy_end
             cdef double u_xx, u_yy
-            Ix_start = Iy_start = 0
-            Ix_end = u.shape[0]-1; Iy_end = u.shape[1]-1
+        
             for i in range(Ix_start+1, Ix_end):
                 for j in range(Iy_start+1, Iy_end):
                     u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
@@ -5390,9 +5392,11 @@ code with loops into Cython.
    ``Ix[1:-1]`` involve negative indices, and these are now turned
    off. Another reason is that Cython loops must take the form ``for i
    in xrange`` or ``for i in range`` for being translated into efficient
-   C loops. We have therefore introduced ``Ix_start`` and ``Ix_end`` to
-   represent the start and end of the values of index :math:`i` with
-   similar variables for the :math:`j` index.
+   C loops. We have therefore introduced ``Ix_start`` as ``Ix[0]``
+   and ``Ix_end`` as ``Ix[-1]`` to hold the start and end of the values
+   of index :math:`i`. Similar variables are introduced for the :math:`j` index.
+   A loop ``for i in Ix`` is with these new variables written as
+   ``for i in range(Ix_start, Ix_end+1)``.
 
 
 .. admonition:: Array declaration syntax in Cython
@@ -7734,7 +7738,7 @@ corresponding to :math:`x=x_R`:
         
         [D_{2t}u + cD_{2x}u =0]^n_{N_x}
         
-        {\thinspace .} 
+        {\thinspace .}
         
 
 Eliminate the fictitious value :math:`u_{N_x+1}^n` by using
@@ -7750,7 +7754,7 @@ through :math:`x=0` is
 .. math::
    :label: wave:app:exer:radiationBC:eq:opL
         
-        \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0{\thinspace .}
+        \frac{\partial u}{\partial t} - c\frac{\partial u}{\partial x} = 0{\thinspace .}
         
         
 
@@ -8110,7 +8114,7 @@ for simulating such 2D waves. Test it on a case with 3 layers where
 
 .. math::
          c_{z,0}=c_{z,1}=c_{z,2},\quad c_{h,0}=c_{h,2},\quad c_{h,1} \ll c_{h,0}
-        {\thinspace .} 
+        {\thinspace .}
         
 
 Let :math:`s` be a localized point source at the middle of the Earth's surface
@@ -8247,7 +8251,7 @@ and *one* periodic boundary condition
 .. math::
         
         u(0,t) = u(L,t)
-        {\thinspace .} 
+        {\thinspace .}
         
 
 This boundary condition means that what goes out of the domain at :math:`x=L`
@@ -8276,7 +8280,7 @@ space when :math:`c>0`:
         
         [D_t^+ u + cD_x^-u = 0]_i^n
         
-        {\thinspace .} 
+        {\thinspace .}
         
 
 For :math:`c<0` we use a forward difference in space: :math:`[cD_x^+u]_i^n`.
@@ -8386,7 +8390,7 @@ and
 .. math::
    :label: wave:app:exer:advec1D:I:gauss
         
-        I(x) = \exp{\left( -\frac{(x-L/2)^2}{2\sigma2}\right)} {\thinspace .} 
+        I(x) = \exp{\left( -\frac{(x-L/2)^2}{2\sigma2}\right)} {\thinspace .}
         
         
 
