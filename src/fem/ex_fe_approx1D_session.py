@@ -6,10 +6,10 @@ import sys
 x, x_m, h, X = sm.symbols('x x_m h X')
 
 from fe_approx1D_numint import *
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Trapezoidal',
+c = approximate(sm.sin(x), symbolic=True, d=1, N_e=4, numint='Trapezoidal',
                 Omega=[0,sm.pi])
 print c
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Simpson',
+c = approximate(sm.sin(x), symbolic=True, d=1, N_e=4, numint='Simpson',
                 Omega=[0,sm.pi])
 print c
 sys.exit(0)
@@ -65,26 +65,26 @@ b
 c = A.LUsolve(b)
 c
 
-d=1; n_e=8; Omega=[0,1]  # 8 linear elements on [0,1]
+d=1; N_e=8; Omega=[0,1]  # 8 linear elements on [0,1]
 phi = basis(d)
 f = x*(1-x)
-nodes, elements = mesh_symbolic(n_e, d, Omega)
+nodes, elements = mesh_symbolic(N_e, d, Omega)
 A, b = assemble(nodes, elements, phi, f, symbolic=True)
 A
 
 from fe_approx1D_numint import *
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Trapezoidal',
+c = approximate(sm.sin(x), symbolic=True, d=1, N_e=4, numint='Trapezoidal',
                 Omega=[0,sm.pi])
 print c
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=4, numint='Simpson',
+c = approximate(sm.sin(x), symbolic=True, d=1, N_e=4, numint='Simpson',
                 Omega=[0,sm.pi])
 print c
 
 # The integration does not work with sin(pi*x), but works fine with
 # sin(x) on [0,pi] instead.
-#approximate(sm.sin(sm.pi*x), symbolic=True, d=1, n_e=3, numint=None,
+#approximate(sm.sin(sm.pi*x), symbolic=True, d=1, N_e=3, numint=None,
 #            Omega=[0,1])
-c = approximate(sm.sin(x), symbolic=True, d=1, n_e=2, numint=None,
+c = approximate(sm.sin(x), symbolic=True, d=1, N_e=2, numint=None,
                 Omega=[0,sm.pi])
 print sm.simplify(c[1,0].subs('h', sm.pi/2))
 

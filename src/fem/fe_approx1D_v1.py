@@ -2,20 +2,20 @@ from scitools.std import plot, savefig, hold, axis, legend
 import numpy as np
 import sympy as sm
 
-def mesh(n_e, d, Omega=[0,1]):
+def mesh(N_e, d, Omega=[0,1]):
     """
-    Return a 1D finite element mesh on Omega with n_e elements of
+    Return a 1D finite element mesh on Omega with N_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
     Return nodes (coordinates) and elements (connectivity) lists.
     """
-    nodes = np.linspace(Omega[0], Omega[1], n_e*d + 1).tolist()
+    nodes = np.linspace(Omega[0], Omega[1], N_e*d + 1).tolist()
     elements = [[e*d + i for i in range(d+1)] \
-                for e in range(n_e)]
+                for e in range(N_e)]
     return nodes, elements
 
-def mesh_symbolic(n_e, d, Omega=[0,1]):
+def mesh_symbolic(N_e, d, Omega=[0,1]):
     """
-    Return a 1D finite element mesh on Omega with n_e elements of
+    Return a 1D finite element mesh on Omega with N_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
     Return nodes (coordinates) and elements (connectivity)
     lists, using symbols for the coordinates (rational expressions
@@ -23,22 +23,22 @@ def mesh_symbolic(n_e, d, Omega=[0,1]):
     """
     h = sm.Symbol('h')  # element length
     dx = h*sm.Rational(1, d)  # node spacing
-    nodes = [Omega[0] + i*dx for i in range(n_e*d + 1)]
+    nodes = [Omega[0] + i*dx for i in range(N_e*d + 1)]
     elements = [[e*d + i for i in range(d+1)] \
-                for e in range(n_e)]
+                for e in range(N_e)]
     return nodes, elements
 
-def mesh2(n_e, d, Omega=[0,1]):
+def mesh2(N_e, d, Omega=[0,1]):
     """
-    Return a 1D finite element mesh on Omega with n_e elements of
+    Return a 1D finite element mesh on Omega with N_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
     Return vertices (vertices), local vertex to global
     vertex mapping (cells), and local to global degree of freedom
     mapping (dof_map).
     """
-    vertices = np.linspace(Omega[0], Omega[1], n_e + 1).tolist()
-    doc_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
-    cells = [[e, e+1] for e in range(n_e)]
+    vertices = np.linspace(Omega[0], Omega[1], N_e + 1).tolist()
+    doc_map = [[e*d + i for i in range(d+1)] for e in range(N_e)]
+    cells = [[e, e+1] for e in range(N_e)]
     return vertices, cells, dof_map
     # Not yet used
 
@@ -199,10 +199,10 @@ def element_vector(f, phi, Omega_e, symbolic=True):
 
 
 def assemble(nodes, elements, phi, f, symbolic=True):
-    n_n, n_e = len(nodes), len(elements)
-    A = sm.zeros((n_n, n_n))
-    b = sm.zeros((n_n, 1))
-    for e in range(n_e):
+    N_n, N_e = len(nodes), len(elements)
+    A = sm.zeros((N_n, N_n))
+    b = sm.zeros((N_n, 1))
+    for e in range(N_e):
         Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
         A_e = element_matrix(phi, Omega_e, symbolic)
         b_e = element_vector(f, phi, Omega_e, symbolic)
@@ -215,7 +215,7 @@ def assemble(nodes, elements, phi, f, symbolic=True):
     return A, b
 
 
-def approximate(f, symbolic=False, d=1, n_e=4,
+def approximate(f, symbolic=False, d=1, N_e=4,
                 Omega=[0, 1], filename='tmp.eps'):
     phi = basis(d)
     print 'phi basis (reference element):\n', phi
@@ -232,9 +232,9 @@ def approximate(f, symbolic=False, d=1, n_e=4,
     print 'Element vector:\n', b_e
 
     if symbolic:
-        nodes, elements = mesh_symbolic(n_e, d, Omega)
+        nodes, elements = mesh_symbolic(N_e, d, Omega)
     else:
-        nodes, elements = mesh(n_e, d, Omega)
+        nodes, elements = mesh(N_e, d, Omega)
     A, b = assemble(nodes, elements, phi, f, symbolic=symbolic)
 
     print 'nodes:', nodes
@@ -331,10 +331,10 @@ def element_vector(f, phi, Omega_e, symbolic=True, numint=None):
     return b_e
 
 def assemble(nodes, elements, phi, f, symbolic=True, numint=None):
-    n_n, n_e = len(nodes), len(elements)
-    A = sm.zeros((n_n, n_n))
-    b = sm.zeros((n_n, 1))
-    for e in range(n_e):
+    N_n, N_e = len(nodes), len(elements)
+    A = sm.zeros((N_n, N_n))
+    b = sm.zeros((N_n, 1))
+    for e in range(N_e):
         Omega_e = [nodes[elements[e][0]], nodes[elements[e][-1]]]
         A_e = element_matrix(phi, Omega_e, symbolic, numint)
         b_e = element_vector(f, phi, Omega_e, symbolic, numint)
@@ -346,7 +346,7 @@ def assemble(nodes, elements, phi, f, symbolic=True, numint=None):
             b[elements[e][r]] += b_e[r]
     return A, b
 
-def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
+def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
                 Omega=[0, 1], filename='tmp.eps'):
     if symbolic:
         if numint == 'Trapezoidal':
@@ -391,11 +391,11 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
 
     if symbolic:
         try:
-            nodes, elements = mesh_symbolic(n_e, d, Omega)
+            nodes, elements = mesh_symbolic(N_e, d, Omega)
         except NameError as e:
             raise NameError(integration_msg % e)
     else:
-        nodes, elements = mesh(n_e, d, Omega)
+        nodes, elements = mesh(N_e, d, Omega)
 
     A, b = assemble(nodes, elements, phi, f,
                     symbolic=symbolic, numint=numint)

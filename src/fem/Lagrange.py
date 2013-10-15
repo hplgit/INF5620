@@ -38,8 +38,9 @@ def Chebyshev_nodes(a, b, N):
     """Return N+1 Chebyshev nodes (for interpolation) on [a, b]."""
     from math import cos, pi
     half = 0.5
-    return [half*(a+b) + half*(b-a)*cos(float(2*i+1)/(2*(N+1))*pi) \
-            for i in range(N+1)]
+    nodes = [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*N+1))*pi)
+             for i in range(N+1)]
+    return nodes
 
 def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
     """
@@ -60,7 +61,7 @@ def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
             h = (Omega[1] - Omega[0])/float(N)  # float value
         points = [Omega[0] + i*h for i in range(N+1)]
     elif point_distribution == 'Chebyshev':
-        points = Chebyshev_nodes(Omega[0], Omega[1], N+1)
+        points = Chebyshev_nodes(Omega[0], Omega[1], N)
     else:
         raise ValueError('point_distribution="%s": illegal value' %
                          point_distribution)

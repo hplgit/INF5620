@@ -38,7 +38,7 @@ def Chebyshev_nodes(a, b, N):
     """Return N+1 Chebyshev nodes (for interpolation) on [a, b]."""
     from math import cos, pi
     half = 0.5
-    nodes = [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*N+1))*pi)
+    nodes = [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*(N+1))*pi)
              for i in range(N+1)]
     return nodes
 
