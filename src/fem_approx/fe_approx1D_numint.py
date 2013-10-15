@@ -1,31 +1,38 @@
 from fe_approx1D import *
 import sys
+"""
+This module extends and replaces functions in the module fe_approx1D.
+Two major changes are implemented:
 
-# Extended versions with numerical integration (Midpoint, Trap., Simpson)
-# (note that these functions overwrite those imported above!)
+ * an element is defined in terms of a reference cell,
+   a set of vertices, a set of degrees of freedom,
+   with a dof map and a geometric mapping onto the physical
+   space
+ * numerical integration (Midpoint, Trapezoidal, Simpson
+   rules) can be used in the reference cell
+"""
+import scitools.std as plt
 
-def mesh_uniform(N_e, d, Omega=[0,1]):
+def mesh_uniform(N_e, d, Omega=[0,1], symbolic=False):
     """
     Return a 1D finite element mesh on Omega with N_e elements of
-    the polynomial degree d. The nodes are uniformly spaced.
+    the polynomial degree d. The elements have uniform length.
     Return vertices (vertices), local vertex to global
     vertex mapping (cells), and local to global degree of freedom
     mapping (dof_map).
+    If symbolic is True, the vertices are expressed as rational
+    sympy expressions with the symbol h as element length.
     """
-    vertices = np.linspace(Omega[0], Omega[1], N_e + 1).tolist()
-    dof_map = [[e*d + i for i in range(d+1)] for e in range(N_e)]
-    cells = [[e, e+1] for e in range(N_e)]
-    return vertices, cells, dof_map
-
-def mesh_uniform_symbolic(N_e, d, Omega=[0,1]):
-    """
-    As mesh, but use using symbols for the coordinates
-    (rational expressions with h as the uniform element length).
-    """
-    h = sm.Symbol('h')  # element length
-    dx = h*sm.Rational(1, d)  # node spacing
-    vertices = [Omega[0] + i*dx for i in range(N_e + 1)]
-    dof_map = [[e*d + i for i in range(d+1)] for e in range(N_e)]
+    if symbolic:
+        h = sm.Symbol('h')  # element length
+        dx = h*sm.Rational(1, d)  # node spacing
+        vertices = [Omega[0] + i*dx for i in range(N_e + 1)]
+    else:
+        vertices = np.linspace(Omega[0], Omega[1], N_e + 1).tolist()
+    if d == 0:
+        dof_map = [[e] for e in range(N_e)]
+    else:
+        dof_map = [[e*d + i for i in range(d+1)] for e in range(N_e)]
     cells = [[e, e+1] for e in range(N_e)]
     return vertices, cells, dof_map
 
@@ -144,7 +151,7 @@ def assemble(vertices, cells, dof_map, phi, f,
     return A, b
 
 def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
-                Omega=[0, 1], filename='tmp.pdf'):
+                Omega=[0, 1], filename='tmp'):
     if symbolic:
         if numint == 'Trapezoidal':
             numint = [[sm.S(-1), sm.S(1)], [sm.S(1), sm.S(1)]]  # sympy integers
@@ -160,7 +167,7 @@ def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
                        sm.sqrt(sm.Rational(3,5))],
                       [sm.Rational(5,9), sm.Rational(8,9),
                        sm.Rational(5,9)]]
-        else:
+        elif numint is not None:
             print 'Numerical rule %s is not supported' % numint
             numint = None
     else:
@@ -175,15 +182,12 @@ def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
         elif numint == 'GaussLegendre3':
             numint = [[-sqrt(3./5), 0, sqrt(3./5)],
                       [5./9, 8./9, 5./9]]
-        else:
+        elif numint is not None:
             print 'Numerical rule %s is not supported' % numint
             numint = None
 
 
-    if symbolic:
-        vertices, cells, dof_map = mesh_uniform_symbolic(N_e, d, Omega)
-    else:
-        vertices, cells, dof_map = mesh_uniform(N_e, d, Omega)
+    vertices, cells, dof_map = mesh_uniform(N_e, d, Omega, symbolic)
 
     # phi is a list where phi[e] holds the basis in cell no e
     # (this is required by assemble, which can work with
@@ -230,16 +234,15 @@ def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
             title += ', exact integration'
         else:
             title += ', integration: %s' % numint
-        xf = np.linspace(Omega[0], Omega[1], 10001)
-        U = np.asarray(c)
-        xu, u = u_glob(U, vertices, cells, dof_map, 51)
-        from scitools.std import plot
-        plot(xu, u, 'r-',
-             xf, f(xf), 'b-',
-             legend=('u', 'f'),
-             title=title)
-        savefig(filename + '.pdf')
-        savefig(filename + '.png')
+        x_u, u = u_glob(np.asarray(c), vertices, cells, dof_map,
+                        resolution_per_element=51)
+        x_f = np.linspace(Omega[0], Omega[1], 10001) # mesh for f
+        plt.plot(x_u, u, 'r-',
+                 x_f, f(x_f), 'b-')
+        plt.legend(['u', 'f'])
+        plt.title(title)
+        plt.savefig(filename + '.pdf')
+        plt.savefig(filename + '.png')
     return c
 
 def u_glob(U, vertices, cells, dof_map,

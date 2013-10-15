@@ -1,29 +1,22 @@
 import numpy as np
 import sympy as sm
 import sys
+import scitools.std as plt
 
-def mesh_uniform(N_e, d, Omega=[0,1]):
+def mesh_uniform(N_e, d, Omega=[0,1], symbolic=False):
     """
     Return a 1D finite element mesh on Omega with N_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
     Return nodes (coordinates) and elements (connectivity) lists.
+    If symbolic is True, the nodes are expressed as rational
+    sympy expressions with the symbol h as element length.
     """
-    nodes = np.linspace(Omega[0], Omega[1], N_e*d + 1).tolist()
-    elements = [[e*d + i for i in range(d+1)] \
-                for e in range(N_e)]
-    return nodes, elements
-
-def mesh_uniform_symbolic(N_e, d, Omega=[0,1]):
-    """
-    Return a 1D finite element mesh on Omega with N_e elements of
-    the polynomial degree d. The nodes are uniformly spaced.
-    Return nodes (coordinates) and elements (connectivity)
-    lists, using symbols for the coordinates (rational expressions
-    with h as the uniform element length).
-    """
-    h = sm.Symbol('h')  # element length
-    dx = h*sm.Rational(1, d)  # node spacing
-    nodes = [Omega[0] + i*dx for i in range(N_e*d + 1)]
+    if symbolic:
+        h = sm.Symbol('h')  # element length
+        dx = h*sm.Rational(1, d)  # node spacing
+        nodes = [Omega[0] + i*dx for i in range(N_e*d + 1)]
+    else:
+        nodes = np.linspace(Omega[0], Omega[1], N_e*d + 1).tolist()
     elements = [[e*d + i for i in range(d+1)] \
                 for e in range(N_e)]
     return nodes, elements
@@ -36,6 +29,9 @@ def phi_r(r, X, d):
     Return local basis function phi_r at local point X in
     a 1D element with d+1 nodes.
     """
+    if d == 0:
+        return np.ones_like(X)
+
     if isinstance(X, sm.Symbol):
         # Use sm.Rational and integers for nodes
         # (to maximize nice-looking output)
@@ -52,6 +48,9 @@ def phi_r(r, X, d, point_distribution='uniform'):
     a 1D element with d+1 nodes.
     point_distribution can be 'uniform' or 'Chebyshev'.
     """
+    if d == 0:
+        return np.ones_like(X)
+
     if point_distribution == 'uniform':
         if isinstance(X, sm.Symbol):
             # Use sm.Rational and integers for nodes
@@ -257,10 +256,7 @@ def approximate(f, symbolic=False, d=1, N_e=4,
     phi = basis(d)
     print 'phi basis (reference element):\n', phi
 
-    if symbolic:
-        nodes, elements = mesh_uniform_symbolic(N_e, d, Omega)
-    else:
-        nodes, elements = mesh_uniform(N_e, d, Omega)
+    nodes, elements = mesh_uniform(N_e, d, Omega, symbolic)
     A, b = assemble(nodes, elements, phi, f, symbolic=symbolic)
 
     print 'nodes:', nodes
@@ -290,11 +286,10 @@ def approximate(f, symbolic=False, d=1, N_e=4,
         xf = np.linspace(Omega[0], Omega[1], 10001)
         U = np.asarray(c)
         xu, u = u_glob(U, elements, nodes)
-        from scitools.std import plot
-        plot(xu, u, 'r-',
-             xf, f(xf), 'b-',
-             legend=('u', 'f'),
-             savefig=filename)
+        plt.plot(xu, u, 'r-',
+                 xf, f(xf), 'b-')
+        plt.legend(['u', 'f'])
+        plt.savefig(filename)
 
 if __name__ == '__main__':
     import sys

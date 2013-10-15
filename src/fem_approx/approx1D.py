@@ -5,8 +5,8 @@ for determining the coefficients.
 """
 import sympy as sm
 import numpy as np
-#import scitools.std as plt
 import matplotlib.pyplot as plt
+#import scitools.std as plt
 
 def least_squares(f, psi, Omega):
     """
@@ -143,7 +143,7 @@ def interpolation(f, psi, points):
         u += c[i,0]*psi[i](x)
     # Alternative:
     # u = sum(c[i,0]*psi[i] for i in range(len(psi)))
-    print 'approximation:', u
+    print 'approximation:', sm.simplify(u)
     return u
 
 collocation = interpolation  # synonym in this module
@@ -168,7 +168,7 @@ def comparison_plot(f, u, Omega, filename='tmp.pdf',
     if not isinstance(Omega[1], (int,float)):
         Omega[1] = float(Omega[1].evalf())
 
-    resolution = 401  # no of points in plot
+    resolution = 601  # no of points in plot
     xcoor = np.linspace(Omega[0], Omega[1], resolution)
     # Vectorized functions expressions does not work with
     # lambdify'ed functions without the modules="numpy"
@@ -176,13 +176,14 @@ def comparison_plot(f, u, Omega, filename='tmp.pdf',
     approx = u(xcoor)
     plt.plot(xcoor, approx, '-')
     plt.hold('on')
-    plt.plot(xcoor, exact, '-')
+    plt.plot(xcoor, exact, '--')
     plt.legend([u_legend, 'exact'])
     plt.title(plot_title)
     plt.xlabel('x')
     if ymin is not None and ymax is not None:
         plt.axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig(filename)
+    plt.show()
 
 if __name__ == '__main__':
     print 'Module file not meant for execution.'

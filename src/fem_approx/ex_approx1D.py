@@ -4,8 +4,8 @@ using the approx1D.py module.
 """
 from approx1D import *
 from Lagrange import *
-#import scitools.std as plt
 import matplotlib.pyplot as plt
+#import scitools.std as plt
 import sympy as sm
 import sys
 x = sm.Symbol('x')
@@ -122,7 +122,7 @@ def run_linear_interp2_parabola():
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega, 'parabola_interp2_linear.pdf')
 
-def run_quadratic_interpolation():
+def run_quadratic__interp_parabola():
     f = 10*(x-1)**2 - 1
     psi = [1, x, x**2]
     Omega = [1, 2]
@@ -176,7 +176,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
         fn = sm.lambdify([x], psi[i])
         ycoor = fn(xcoor)
         plt.plot(xcoor, ycoor)
-        legends.append(r'\psi_%d' % i)
+        legends.append(r'$\psi_%d$' % i)
         plt.hold('on')
         plt.plot(points, [fn(xc) for xc in points], 'ro')
     plt.legend(legends)
@@ -185,7 +185,8 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     plt.savefig('Lagrange_basis_%d.pdf' % (N+1))
 
 def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
-    f = abs(1-2*x)
+    f = sm.Abs(1-2*x)
+    fn = sm.lambdify([x], f)
     psi, points= Lagrange_polynomials(x, N, [0, 1],
                                       point_distribution='Chebyshev')
     u = interpolation(f, psi, points)
@@ -193,6 +194,8 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
                     filename='Lagrange_interp_abs_Cheb_%d.pdf' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
+    print 'Interpolation points:', points
+
     # Make figures of Lagrange polynomials (psi)
     plt.figure()
     xcoor = np.linspace(0, 1, 1001)
@@ -201,7 +204,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
         fn = sm.lambdify([x], psi[i])
         ycoor = fn(xcoor)
         plt.plot(xcoor, ycoor)
-        legends.append(r'\psi_%d' % i)
+        legends.append(r'$\psi_%d$' % i)
         plt.hold('on')
         plt.plot(points, [fn(xc) for xc in points], 'ro')
     plt.legend(legends)

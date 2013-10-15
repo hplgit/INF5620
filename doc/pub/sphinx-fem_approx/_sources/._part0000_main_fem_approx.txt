@@ -5,7 +5,7 @@ Approximation of functions with finite elements
 ===============================================
 
 :Author: Hans Petter Langtangen
-:Date: Oct 8, 2013
+:Date: Oct 15, 2013
 
 **PRELIMINARY VERSION**
 
@@ -1066,7 +1066,7 @@ The output from ``least_squares`` gives :math:`c_i=0` for :math:`i>2`, which
 means that the method finds the perfect approximation.
 
 In fact, we have a general result that
-if :math:`f\in V`, the least squares and Galerkin/projection methods compute
+if :math:`f\in V`, the least squares and projection/Galerkin methods compute
 the exact solution :math:`u=f`.
 The proof is straightforward: if :math:`f\in V`, :math:`f` can be expanded in
 terms of the basis functions, :math:`f=\sum_{j\inI} d_j{\psi}_j`, for
@@ -1581,12 +1581,17 @@ We see from :eq:`fem:approx:global:Lagrange:poly` that all the :math:`{\psi}_i`
 functions are polynomials of degree :math:`N` which have the property
 
 
+.. index:: Kronecker delta
+
+
+
 .. _Eq:fem:inter:prop:
 
 .. math::
    :label: fem:inter:prop
         
-        {\psi}_i(x_s) = \left\lbrace\begin{array}{ll}
+        {\psi}_i(x_s) = \delta_{is},\quad \delta_{is} =
+        \left\lbrace\begin{array}{ll}
         1, & i=s,\\ 
         0, & i\neq s,
         \end{array}\right.
@@ -1594,6 +1599,7 @@ functions are polynomials of degree :math:`N` which have the property
         
 
 when :math:`x_s` is an interpolation/collocation point.
+Here we have used the *Kronecker delta* symbol :math:`\delta_{is}`.
 This property implies that :math:`A_{i,j}=0` for :math:`i\neq j` and
 :math:`A_{i,j}=1` when :math:`i=j`. The solution of the linear system is
 them simply
@@ -1672,6 +1678,29 @@ and numerical computing of the basis functions and points:
 
 The Lagrange polynomials are very much used in finite element methods
 because of their property :eq:`fem:inter:prop`.
+
+Approximation of a polynomial
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Galerkin or least squares method lead to an exact approximation
+if :math:`f` lies in the space spanned by the basis functions. It could be
+interest to see how the interpolation method with Lagrange
+polynomials as basis is able to approximate a polynomial, e.g.,
+a parabola. Running
+
+
+.. code-block:: python
+
+        for N in 2, 4, 5, 6, 8, 10, 12:
+            f = x**2
+            psi, points = Lagrange_polynomials_01(x, N)
+            u = interpolation(f, psi, points)
+
+shows the result that up to ``N=4`` we achieve an exact approximation,
+and then round-off errors start to grow, such that
+``N=15`` leads to a 15-degree polynomial for :math:`u` where
+the coefficients in front of :math:`x^r` for :math:`r>2` are
+of size :math:`10^{-5}` and smaller.
 
 Successful example
 ~~~~~~~~~~~~~~~~~~
@@ -1767,13 +1796,16 @@ both uniformly distributed points and Chebyshev nodes:
         
         def Chebyshev_nodes(a, b, N):
             from math import cos, pi
-            return [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*(N+1))*pi) \ 
+            return [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*N+1))*pi) \ 
                     for i in range(N+1)]
 
 All the functions computing Lagrange polynomials listed
 above are found in the module file ``Lagrange.py``.
 Figure :ref:`fem:approx:global:Lagrange:fig:abs:Lag:Cheb:7:14` shows the improvement of
-using Chebyshev nodes (compared with Figure :ref:`fem:approx:global:Lagrange:fig:abs:Lag:unif:7:14`).
+using Chebyshev nodes (compared with Figure :ref:`fem:approx:global:Lagrange:fig:abs:Lag:unif:7:14`). The reason is that the corresponding Lagrange
+polynomials have much smaller oscillations as seen in
+Figure :ref:`fem:approx:global:Lagrange:fig:abs:Lag:Cheb:osc`
+(compare with Figure :ref:`fem:approx:global:Lagrange:fig:abs:Lag:unif:osc`).
 
 Another cure for undesired oscillation of higher-degree interpolating
 polynomials is to use lower-degree Lagrange
@@ -1808,6 +1840,15 @@ since :math:`f` is piecewise linear.
    :width: 800
 
    *Interpolation of an absolute value function by Lagrange polynomials and Chebyshev nodes as interpolation points: degree 7 (left) and 14 (right)*
+
+
+
+.. _fem:approx:global:Lagrange:fig:abs:Lag:Cheb:osc:
+
+.. figure:: fig-fem/Lagrange_basis_12.png
+   :width: 400
+
+   *Illustration of the less oscillatory behavior of two Lagrange polynomials based on 12 Chebyshev points (marked by circles)*
 
 
 How does the least squares or projection methods work with Lagrange
@@ -1859,7 +1900,6 @@ Here is the code:
 
 
 
-.. Marius B: gratis github
 
 
 .. _fem:approx:fe:
@@ -2070,12 +2110,16 @@ The construction of basis functions according to the principles above
 lead to two important properties of :math:`{\varphi}_i(x)`. First,
 
 
+.. index:: Kronecker delta
+
+
+
 .. _Eq:fem:approx:fe:phi:prop1:
 
 .. math::
    :label: fem:approx:fe:phi:prop1
         
-        {\varphi}_i(x_{j}) =
+        {\varphi}_i(x_{j}) =\delta_{ij},\quad \delta_{ij} =
         \left\lbrace\begin{array}{ll}
         1, & i=j,\\ 
         0, & i\neq j,
@@ -2083,8 +2127,9 @@ lead to two important properties of :math:`{\varphi}_i(x)`. First,
         
         
 
-when :math:`x_{j}` is a node in the mesh with global node number :math:`j`. This
-result arises
+when :math:`x_{j}` is a node in the mesh with global node number :math:`j`.
+The
+result :math:`{\varphi}_i(x_{j}) =\delta_{ij}` arises
 because the Lagrange polynomials are constructed to have
 exactly this property.
 The property also implies a convenient interpretation of :math:`c_i`
@@ -2347,6 +2392,7 @@ Alternative names, frequently used later, are P1 elements for linear
 elements, P2 for quadratic elements, and so forth: P$d$ signifies
 degree :math:`d` of the polynomial basis functions.
 
+
 .. _fem:approx:global:linearsystem:
 
 Calculating the linear system
@@ -2426,7 +2472,7 @@ We can now easily integrate,
 .. math::
         
         A_{2,3} = \int_\Omega {\varphi}_2{\varphi}_{3}{\, \mathrm{d}x} =
-        = \int_{x_{2}}^{x_{3}}
+        \int_{x_{2}}^{x_{3}}
         \left(1 - \frac{x - x_{2}}{h}\right) \frac{x - x_{2}}{h}
          {\, \mathrm{d}x} = \frac{h}{6}{\thinspace .}
         
@@ -2449,6 +2495,7 @@ the integral that is geometrically similar to the situation in
 Figure :ref:`fem:approx:fe:fig:phi:2:3`, so we get
 :math:`A_{2,1}=h/6`.
 
+
 Calculating a general row in the matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2465,7 +2512,8 @@ too:
 
 .. math::
         
-        A_{i,i-1} &= \int_\Omega {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} =
+        A_{i,i-1} &= \int_\Omega {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}\\ 
+        &=
         \underbrace{\int_{x_{i-2}}^{x_{i-1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_i=0} +
         \int_{x_{i}}^{x_{i}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} +
         \underbrace{\int_{x_{i}}^{x_{i+1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_{i-1}=0}\\ 
@@ -2495,9 +2543,6 @@ and the integral might be confusing, as we speak about two different
 
    *Illustration of two neighboring linear (hat) functions with general node numbers*
 
-
-
-.. [[[ GJOR DETTE I SLIDES OGSAA!!!!!
 
 
 The first and last row of the coefficient matrix lead to slightly
@@ -2579,10 +2624,9 @@ approximation in the right part of Figure :ref:`fem:approx:fe:fig:ls:P1:2:4`.
 .. figure:: fig-fem/fe_p1_x2_2e_4e.png
    :width: 800
 
-   *Least squares approximation using 2 (left) and 4 (right) P1 elements*
+   *Least squares approximation of a parabola using 2 (left) and 4 (right) P1 elements*
 
 
-.. The general case?
 
 
 .. _fem:approx:fe:elementwise:
@@ -2590,7 +2634,7 @@ approximation in the right part of Figure :ref:`fem:approx:fe:fig:ls:P1:2:4`.
 Assembly of elementwise computations
 ------------------------------------
 
-The integrals are naturally split into integrals over individual elements
+The integrals above are naturally split into integrals over individual elements
 since the formulas change with the elements. This idea of splitting the
 integral is fundamental in all practical implementations of the finite
 element method.
@@ -2632,14 +2676,15 @@ indices corresponding to the global node numbers in element number :math:`e`:
         
 
 These contributions can be collected in a :math:`(d+1)\times (d+1)` matrix known as
-the *element matrix*.
+the *element matrix*. Let :math:`{I_d}=\{0,\ldots,d\}` be the valid indices
+of :math:`r` and :math:`s`.
 We introduce the notation
 
 
 .. math::
         
         \tilde A^{(e)} = \{ \tilde A^{(e)}_{r,s}\},\quad
-        r,s\in{I_d} =\{ 0,1,\ldots,d \},
+        r,s\in{I_d},
         
 
 for the element matrix. For the case :math:`d=2` we have
@@ -2671,20 +2716,67 @@ add the contributions to the global coefficient matrix by
 
 This process of adding in elementwise contributions to the global matrix
 is called *finite element assembly* or simply *assembly*.
-Figure :ref:`fem:approx:fe:fig:assembly` illustrates how element matrices
+Figure :ref:`fem:approx:fe:fig:assembly:2x2` illustrates how element matrices
 for elements with two nodes are added into the global matrix.
 More specifically, the figure shows how the element matrix associated with
-elements 2 and 3 assembled, assuming that global nodes are numbered
-from left to right in the domain.
+elements 1 and 2 assembled, assuming that global nodes are numbered
+from left to right in the domain. With regularly numbered P3 elements, where
+the element matrices have size :math:`4\times 4`, the assembly of elements 1 and 2
+are sketched in Figure :ref:`fem:approx:fe:fig:assembly:4x4`.
+
+
+.. _fem:approx:fe:fig:assembly:2x2:
+
+.. figure:: mov-fem/fe_assembly_regular_2x2/fe_assembly_regular_2x2.png
+   :width: 700
+
+   *Illustration of matrix assembly: regularly numbered P1 elements*
 
 
 
-.. _fem:approx:fe:fig:assembly:
+.. _fem:approx:fe:fig:assembly:4x4:
 
-.. figure:: fig-fem/matrix-assembly.png
-   :width: 600
+.. figure:: mov-fem/fe_assembly_regular_4x4/fe_assembly_regular_4x4.png
+   :width: 700
 
-   *Illustration of matrix assembly*
+   *Illustration of matrix assembly: regularly numbered P3 elements*
+
+
+After assembly of element matrices corresponding to regularly numbered elements
+and nodes are understood, it is wise to study the assembly process for
+irregularly numbered elements and nodes. Figure :ref:`fem:approx:fe:def:elements:nodes:fig:P1:irregular` shows a mesh where the ``elements`` array, or :math:`q(e,r)`
+mapping in mathematical notation, is given as
+
+
+.. code-block:: python
+
+        elements = [[2, 1], [4, 5], [0, 4], [3, 0], [5, 2]]
+
+The associated assembly of element matrices 1 and 2 is sketched in
+Figure :ref:`fem:approx:fe:fig:assembly:irr2x2`.
+
+These three assembly processes can also be `animated <http://tinyurl.com/k3sdbuv/pub/mov-fem/fe_assembly.html>`_.
+
+.. `P1 assembly movie <http://tinyurl.com/k3sdbuv/pub/mov-fem/fe_assembly_regular_2x2/index.html>`_.
+
+.. `P3 assembly movie <http://tinyurl.com/k3sdbuv/pub/mov-fem/fe_assembly_regular_4x4/index.html>`_.
+
+.. `P1 irregular numbering <http://tinyurl.com/k3sdbuv/pub/mov-fem/fe_assembly_irregular/index.html>`_.
+
+
+
+
+.. _fem:approx:fe:fig:assembly:irr2x2:
+
+.. figure:: mov-fem/fe_assembly_irregular/fe_assembly_irregular.png
+   :width: 700
+
+   *Illustration of matrix assembly: irregularly numbered P1 elements*
+
+
+.. old:
+
+.. FIGURE: [fig-fem/matrix-assembly, width=600]  Illustration of matrix assembly.
 
 
 The right-hand side of the linear system is also computed elementwise:
@@ -2715,7 +2807,7 @@ element matrices:
 .. math::
         
         b_{q(e,r)} := b_{q(e,r)} + \tilde b^{(e)}_{r},\quad
-        r,s\in{I_d}{\thinspace .}  
+        r\in{I_d}{\thinspace .}  
 
 
 
@@ -2743,9 +2835,10 @@ it is convenient to map the element domain :math:`[x_L, x_R]`
 to a standardized reference element domain :math:`[-1,1]`.
 (We have now introduced
 :math:`x_L` and :math:`x_R` as the left and right boundary points of an arbitrary element.
-With a natural numbering of nodes and elements from left to right
-through the domain, :math:`x_L=x_{e}` and :math:`x_R=x_{e+1}`.)
-Let :math:`X` be the coordinate
+With a natural, regular numbering of nodes and elements from left to right
+through the domain, we have :math:`x_L=x_{e}` and :math:`x_R=x_{e+1}` for P1 elements.)
+
+Let :math:`X\in [-1,1]` be the coordinate
 in the reference element. A linear or *affine mapping* from :math:`X` to :math:`x` reads
 
 
@@ -2887,7 +2980,7 @@ In general,
 
 .. math::
         
-        {\tilde{\varphi}}_r(x) = \prod_{s=0,s\neq r}^d \frac{X-X_{(s)}}{X_{(r)}-X_{(s)}},
+        {\tilde{\varphi}}_r(X) = \prod_{s=0,s\neq r}^d \frac{X-X_{(s)}}{X_{(r)}-X_{(s)}},
         
 
 where :math:`X_{(0)},\ldots,X_{(d)}` are the coordinates of the local nodes in
@@ -2895,21 +2988,35 @@ the reference element.
 These are normally uniformly spaced: :math:`X_{(r)} = -1 + 2r/d`,
 :math:`r\in{I_d}`.
 
+
+
+.. admonition:: Why reference elements
+
+   The great advantage of using reference elements is that
+   the formulas for the basis functions, :math:`{\tilde{\varphi}}_r(X)`, are the
+   same for all elements and independent of the element geometry
+   (length and location in the mesh). The geometric information
+   is "factored out" in the simple mapping formula and the associated
+   :math:`\det J` quantity, but this information is (here taken as) the same for
+   element types. Also, the integration domain is the same for
+   all elements.
+
+
 .. _fem:approx:fe:intg:ref:
 
-Integration over a reference element
-------------------------------------
+Example: Integration over a reference element
+---------------------------------------------
 
 To illustrate the concepts from the previous section in a specific
 example, we now
 consider calculation of the element matrix and vector for a specific choice of
-:math:`d` and :math:`f(x)`. A simple choice is :math:`d=1` and :math:`f(x)=x(1-x)`
+:math:`d` and :math:`f(x)`. A simple choice is :math:`d=1` (P1 elements) and :math:`f(x)=x(1-x)`
 on :math:`\Omega =[0,1]`. We have the general expressions
 :eq:`fem:approx:fe:mapping:Ae` and :eq:`fem:approx:fe:mapping:be`
 for :math:`\tilde A^{(e)}_{r,s}` and :math:`\tilde b^{(e)}_{r}`.
 Writing these out for the choices :eq:`fem:approx:fe:mapping:P1:phi0`
 and :eq:`fem:approx:fe:mapping:P1:phi1`, and using that :math:`\det J = h/2`,
-we get
+we can do the following calculations of the element matrix entries:
 
 
 .. math::
@@ -2920,10 +3027,14 @@ we get
 
 
 
+.. _Eq:fem:approx:fe:intg:ref:Ae00:
+
 .. math::
+   :label: fem:approx:fe:intg:ref:Ae00
           
         =\int_{-1}^1 \frac{1}{2}(1-X)\frac{1}{2}(1-X) \frac{h}{2} dX =
         \frac{h}{8}\int_{-1}^1 (1-X)^2 dX = \frac{h}{3},
+        
         
 
 
@@ -2944,9 +3055,13 @@ we get
 
 
 
+.. _Eq:fem:approx:fe:intg:ref:Ae10:
+
 .. math::
+   :label: fem:approx:fe:intg:ref:Ae10
           
         \tilde A^{(e)}_{0,1} = \tilde A^{(e)}_{1,0},
+        
         
 
 
@@ -2959,13 +3074,19 @@ we get
 
 
 
+.. _Eq:fem:approx:fe:intg:ref:Ae11:
+
 .. math::
+   :label: fem:approx:fe:intg:ref:Ae11
           
         =\int_{-1}^1 \frac{1}{2}(1+X)\frac{1}{2}(1+X) \frac{h}{2} dX =
         \frac{h}{8}\int_{-1}^1 (1+X)^2 dX = \frac{h}{3}
+        
         {\thinspace .}
         
 
+
+The corresponding entries in the element vector becomes
 
 
 .. math::
@@ -2984,9 +3105,13 @@ we get
 
 
 
+.. _Eq:fem:approx:fe:intg:ref:be0:
+
 .. math::
+   :label: fem:approx:fe:intg:ref:be0
           
         = - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m} - \frac{1}{12} h^{2} - \frac{1}{2} h x_{m}^{2} + \frac{1}{2} h x_{m}
+        
         
 
 
@@ -3017,8 +3142,11 @@ we get
 In the last two expressions we have used the element midpoint :math:`x_m`.
 
 Integration of lower-degree polynomials above is tedious,
-and higher-degree polynomials that very much more algebra, but ``sympy``
-may help. For example,
+and higher-degree polynomials involve very much more algebra, but ``sympy``
+may help. For example, we can easily calculate
+:eq:`fem:approx:fe:intg:ref:Ae00`,
+:eq:`fem:approx:fe:intg:ref:Ae00`, and
+:eq:`fem:approx:fe:intg:ref:be0` by
 
 
         >>> import sympy as sm
@@ -3048,13 +3176,15 @@ Implementation  (1)
 ===================
 
 Based on the experience from the previous example, it makes
-sense to write some code to automate the integration process
+sense to write some code to automate the analytical integration process
 for any choice of finite element basis functions. In addition,
 we can automate the assembly process and linear system
 solution. Appropriate
 functions for this purpose document all details of all
 steps in the finite element computations and can found in the module file
-`fe_approx1D.py <http://tinyurl.com/jvzzcfn/fem/fe_approx1D.py>`_. Some of the functions are explained below.
+`fe_approx1D.py <http://tinyurl.com/jvzzcfn/fem/fe_approx1D.py>`_.
+The key steps in the computational machinery are now explained in
+detail in terms of code and text.
 
 .. _fem:approx:fe:impl:intg:
 
@@ -3091,14 +3221,15 @@ Observe how we construct the ``phi_r`` function to be
 a symbolic expression for :math:`{\tilde{\varphi}}_r(X)` if ``X`` is a
 ``Symbol`` object from ``sympy``. Otherwise, we assume that ``X``
 is a ``float`` object and compute the corresponding
-floating-point value of :math:`{\tilde{\varphi}}_r(X)`. The
-``Lagrange_polynomial`` function, copied here
+floating-point value of :math:`{\tilde{\varphi}}_r(X)`. Recall that the
+``Lagrange_polynomial`` function, here simply copied
 from the section :ref:`fem:approx:global:Fourier`,
 works with both symbolic and
-numeric ``x`` and ``points`` variables.
+numeric variables.
 
 The complete basis :math:`{\tilde{\varphi}}_0(X),\ldots,{\tilde{\varphi}}_d(X)`
-on the reference element is constructed by
+on the reference element, represented as a list of
+symbolic expressions, is constructed by
 
 
 .. code-block:: python
@@ -3173,16 +3304,19 @@ procedure:
             return b_e
 
 Here we need to replace the symbol ``x`` in the expression for ``f``
-by the mapping formula such that ``f`` contains the variable ``X``.
+by the mapping formula such that ``f`` can be integrated
+in terms of :math:`X`, cf. the formula
+:math:`\tilde b^{(e)}_{r} = \int_{-1}^1 f(x(X)){\tilde{\varphi}}_r(X)\frac{h}{2}dX`.
 
 The integration in the element matrix function involves only products
 of polynomials, which ``sympy`` can easily deal with, but for the
 right-hand side ``sympy`` may face difficulties with certain types of
 expressions ``f``. The result of the integral is then an ``Integral``
-object and not a number as when symbolic integration is successful.
+object and not a number or expression
+as when symbolic integration is successful.
 It may therefore be wise to introduce a fallback on numerical
 integration. The symbolic integration can also take much time
-before an unsuccessful conclusion so we may introduce a parameter
+before an unsuccessful conclusion so we may also introduce a parameter
 ``symbolic`` and set it to ``False`` to avoid symbolic integration:
 
 
@@ -3200,10 +3334,11 @@ before an unsuccessful conclusion so we may introduce a parameter
                 b_e[r] = I
                 ...
 
-Successful numerical integration requires that the symbolic
+Numerical integration requires that the symbolic
 integrand is converted
 to a plain Python function (``integrand``) and that
 the element length ``h`` is a real number.
+
 
 .. _fem:approx:fe:impl:linsys:
 
@@ -3254,18 +3389,18 @@ system:
             c = np.linalg.solve(A, b)
 
 When ``A`` and ``b`` are ``sympy`` arrays,
-solution procedure implied by ``A.LUsolve`` is symbolic,
-otherwise, when ``A`` and ``b`` are ``numpy`` arrays, a standard
+the solution procedure implied by ``A.LUsolve`` is symbolic.
+Otherwise, ``A`` and ``b`` are ``numpy`` arrays and a standard
 numerical solver is called.
 The symbolic version is suited for small problems only
 (small :math:`N` values) since the calculation time becomes prohibitively large
-otherwise. Normally, the symbolic integration will be more time
-consuming in small problems than the symbolic solution of the linear system.
+otherwise. Normally, the symbolic *integration* will be more time
+consuming in small problems than the symbolic *solution* of the linear system.
 
-.. _fem:approx:fe:impl:ex1:
+.. _fem:approx:fe:impl:ex1:symbolic:
 
-Example on computing approximations
------------------------------------
+Example on computing symbolic approximations
+--------------------------------------------
 
 We can exemplify the use of ``assemble`` on the computational
 case from the section :ref:`fem:approx:global:linearsystem` with
@@ -3293,9 +3428,27 @@ Let us first work with a symbolic element length:
         [12*(7*h**2/12 - 35*h**3/72)/(7*h)]
         [  7*(4*h**2/7 - 23*h**3/21)/(2*h)]
 
-We may, for comparison, compute the ``c`` vector for an interpolation/collocation
-method, taking the nodes as collocation points.
-This is carried out by evaluating ``f`` numerically at the nodes:
+
+.. _fem:approx:fe:impl:ex1:collocation:
+
+Comparison with finite elements and interpolation/collocation
+-------------------------------------------------------------
+
+We may, for comparison, compute the ``c`` vector corresponding to
+an interpolation/collocation method with finite element basis functions.
+Choosing the nodes as points, the principle is
+
+
+.. math::
+         u(x_{i}) = \sum_{j\inI} c_j{\varphi}_j(x_{i}) = f(x_{i}),\quad
+        i\inI{\thinspace .}
+
+The coefficient matrix :math:`A_{i,j}={\varphi}_j(x_{i})` becomes
+the identity matrix because basis function number :math:`j` vanishes
+at all nodes, except node :math:`j`: :math:`{\varphi}_j(x_{i}=\delta_{ij}`.
+Therefore, :math:`c_i = f(x_{i}`.
+
+The associated ``sympy`` calculations are
 
 
         >>> fn = sm.lambdify([x], f)
@@ -3303,9 +3456,17 @@ This is carried out by evaluating ``f`` numerically at the nodes:
         >>> c
         [0, h*(1 - h), 2*h*(1 - 2*h)]
 
+These expressions are much simpler than those based on least squares
+or projection in combination with finite element basis functions.
 
-The corresponding numerical computations, as done by ``sympy`` and
-still based on symbolic integration, goes as follows:
+.. _fem:approx:fe:impl:ex1:numeric:
+
+Example on computing numerical approximations
+---------------------------------------------
+
+The numerical computations corresponding to the
+symbolic ones in the section :ref:`fem:approx:fe:impl:ex1:symbolic`,
+and still done by ``sympy`` and the ``assemble`` function, go as follows:
 
 
         >>> nodes = [0, 0.5, 1]
@@ -3333,7 +3494,15 @@ The ``fe_approx1D`` module contains functions for generating the
 ``nodes`` and ``elements`` lists for equal-sized elements with
 any number of nodes per element. The coordinates in ``nodes``
 can be expressed either through the element length symbol ``h``
-or by real numbers. There is also a function
+(``symbolic=True``) or by real numbers (``symbolic=False``):
+
+
+.. code-block:: python
+
+        nodes, elements = mesh_uniform(N_e=10, d=3, Omega=[0,1],
+                                       symbolic=True)
+
+There is also a function
 
 
 .. code-block:: python
@@ -3343,15 +3512,16 @@ or by real numbers. There is also a function
 which computes a mesh with ``N_e`` elements, basis functions of
 degree ``d``, and approximates a given symbolic expression
 ``f`` by a finite element expansion :math:`u(x) = \sum_jc_j{\varphi}_j(x)`.
-When ``symbolic`` is ``False``, :math:`u(x)` can be computed at a (large)
+When ``symbolic`` is ``False``, :math:`u(x) = \sum_jc_j{\varphi}_j(x)`
+can be computed at a (large)
 number of points and plotted together with :math:`f(x)`. The construction
 of :math:`u` points from the solution vector ``c`` is done
 elementwise by evaluating :math:`\sum_rc_r{\tilde{\varphi}}_r(X)` at a (large)
-number of points in each element, and the discrete :math:`(x,u)` values on
-each elements are stored in arrays that are finally
-concatenated to form global arrays
-with the :math:`x` and :math:`u` coordinates for plotting. The details are
-found in the ``u_glob`` function in
+number of points in each element in the local coordinate system,
+and the discrete :math:`(x,u)` values on
+each element are stored in separate arrays that are finally
+concatenated to form a global array for :math:`x` and for :math:`u`.
+The details are found in the ``u_glob`` function in
 ``fe_approx1D.py``.
 
 .. _fem:approx:fe:A:structure:
@@ -3380,9 +3550,9 @@ several elements:
         [  0,     0,     0,     0,     0,     0,   h/6, 2*h/3, h/6]
         [  0,     0,     0,     0,     0,     0,     0,   h/6, h/3]
 
-(The reader is encouraged to assemble the element matrices by hand and verify
+The reader is encouraged to assemble the element matrices by hand and verify
 this result, as this exercise will give a hands-on understanding of
-what the assembly is about.) In general we have a coefficient matrix that is
+what the assembly is about. In general we have a coefficient matrix that is
 tridiagonal:
 
 
@@ -3413,18 +3583,19 @@ The structure of the right-hand side is more difficult to reveal since
 it involves an assembly of elementwise integrals of
 :math:`f(x(X)){\tilde{\varphi}}_r(X)h/2`, which obviously depend on the
 particular choice of :math:`f(x)`.
-It is easier to look at the integration in :math:`x` coordinates, which
+Numerical integration can give some insight into the nature of
+the right-hand side. For this purpose it
+is easier to look at the integration in :math:`x` coordinates, which
 gives the general formula :eq:`fem:approx:fe:bi:formula1`.
 For equal-sized elements of length :math:`h`, we can apply the
-Trapezoidal rule at the global node points to arrive at a somewhat more specific
-expression than :eq:`fem:approx:fe:bi:formula1`:
+Trapezoidal rule at the global node points to arrive at
 
 
 .. math::
         
         b_i = h\left( \frac{1}{2} {\varphi}_i(x_{0})f(x_{0}) +
         \frac{1}{2} {\varphi}_i(x_{N})f(x_{N}) + \sum_{j=1}^{N-1}
-        {\varphi}_i(x_{i})f(x_{i})\right)
+        {\varphi}_i(x_{j})f(x_{j})\right)
         
 
 
@@ -3560,30 +3731,31 @@ compute, even on small meshes consisting of up to eight elements.
 The main explanation for slow computations is unsuccessful
 symbolic integration: ``sympy`` may use a lot of energy on
 integrals like :math:`\int f(x(X)){\tilde{\varphi}}_r(X)h/2 dx` before
-giving up, and the program resorts to numerical integration.
+giving up, and the program then resorts to numerical integration.
 Codes that can deal with a large number of basis functions and
 accept flexible choices of :math:`f(x)` should compute all integrals
 numerically and replace the matrix objects from ``sympy`` by
 the far more efficient array objects from ``numpy``.
 
-A matrix whose majority of entries are zeros, are known as a *sparse*
-matrix. We know beforehand that matrices from finite element
-approximations are sparse.  The sparsity should be utilized in
-software as it dramatically decreases the storage demands and the
-CPU-time needed to compute the solution of the linear system. This
-optimization is not critical in 1D problems where modern computers can
-afford computing with all the zeros in the complete square matrix, but
-in 2D and especially in 3D, sparse matrices are fundamental for
-feasible finite element computations.
+Another reason for slow code is related to the fact that most of the
+matrix entries :math:`A_{i,j}` are zero, because :math:`({\varphi}_i,{\varphi}_j)=0`
+unless :math:`i` and :math:`j` are nodes in the same element.  A matrix whose
+majority of entries are zeros, is known as a *sparse* matrix.  The
+sparsity should be utilized in software as it dramatically decreases
+the storage demands and the CPU-time needed to compute the solution of
+the linear system. This optimization is not critical in 1D problems
+where modern computers can afford computing with all the zeros in the
+complete square matrix, but in 2D and especially in 3D, sparse
+matrices are fundamental for feasible finite element computations.
 
-For one-dimensional finite element approximation problems, using a
+In 1D problems, using a
 numbering of nodes and elements from left to right over the domain,
 the assembled coefficient matrix has only a few diagonals different
 from zero. More precisely, :math:`2d+1` diagonals are different from
 zero. With a different numbering of global nodes, say a random
 ordering, the diagonal structure is lost, but the number of
 nonzero elements is unaltered. Figures :ref:`fem:approx:fe:sparsity:P1`
-and :ref:`fem:approx:fe:sparsity:P3` exemplifies sparsity patterns.
+and :ref:`fem:approx:fe:sparsity:P3` exemplify sparsity patterns.
 
 
 .. _fem:approx:fe:sparsity:P1:
@@ -3613,17 +3785,14 @@ and linear system solution.
 
  * ``scipy.sparse.diags`` for matrix defined via diagonals
 
- * ``scipy.sparse.lil_matrix`` for creation via setting elements
+ * ``scipy.sparse.lil_matrix`` for creation via setting matrix entries
 
- * ``scipy.sparse.dok_matrix`` for creation via setting elements
+ * ``scipy.sparse.dok_matrix`` for creation via setting matrix entries
 .. 2DO
 
-
-Examples to come....
+.. Examples to come....
 
 .. Exercise: introduce a random numbering of global nodes; need arbitrary, sparse matrix.
-
-
 
 
 .. _fem:approx:fe:fd:
@@ -3634,50 +3803,11 @@ Comparison of finite element and finite difference approximation
 The previous sections on approximating :math:`f` by a finite element function :math:`u`
 utilize the projection/Galerkin or
 least squares approaches to minimize the approximation
-error. We may, alternatively, use the collocation/interpolation method.
+error. We may, alternatively, use the collocation/interpolation method
+as described in the section :ref:`fem:approx:fe:impl:ex1:collocation`.
 Here we shall compare these three approaches with what one does in
 the finite difference method when representing a given function on a mesh.
 
-.. _fem:approx:fe:fd:colloc:
-
-Collocation or interpolation
-----------------------------
-
-Let :math:`x_{i}`, :math:`i\inI`, be the nodes in the mesh.
-Collocation means
-
-
-.. math::
-        
-        u(x_{i})=f(x_{i}),\quad i\inI{\thinspace .}
-        
-
-With :math:`u(x)\approx\sum_{j\inI}c_j{\psi}_j(x)` and :math:`{\psi}_j`
-chosen as :math:`{\varphi}_j`, we get
-
-
-.. math::
-         \sum_{j\inI} c_j {\varphi}_j(x_{i}) = f(x_{i}),
-
-but :math:`{\varphi}_j(x_{i})=0` if :math:`i\neq j` so the sum collapses to one
-term :math:`c_i{\varphi}_i(x_{i}) = c_i`, and we have the result
-
-
-.. math::
-        
-        c_i = f(x_{i})
-        {\thinspace .}
-        
-
-That is, :math:`u` *interpolates* :math:`f` at the node points (the values coincide
-at these points, but the variation between the points is dictated by
-the type of polynomials used in the expansion for :math:`u`).
-The collocation/interpolation approach is obviously much simpler and
-faster to use than the least squares  or projection/Galerkin approach.
-
-*Remark.* When dealing with approximation of functions via finite elements,
-all the three methods are in use, while the least squares and collocation
-methods are used to only a small extend when solving differential equations.
 
 .. _fem:approx:fe:fd:fdproj:
 
@@ -3685,24 +3815,30 @@ Finite difference approximation of given functions
 --------------------------------------------------
 
 Approximating a given function :math:`f(x)` on a mesh in a finite difference
-context will typically just sample :math:`f` at the grid points. That is,
-the discrete version of :math:`f(x)` is the set of point values
-:math:`f(x_i)`, :math:`i\inI`, where :math:`x_i` denotes a mesh point.
-The collocation/interpolation method above gives exactly the same
-representation.
+context will typically just sample :math:`f` at the mesh points. If :math:`u_i`
+is the value of the approximate :math:`u` at the mesh point :math:`x_{i}`, we have
+:math:`u_i = f(x_{i})`.
+The collocation/interpolation method using finite element basis
+functions gives exactly the same representation,
+as shown the section :ref:`fem:approx:fe:impl:ex1:collocation`,
+
+
+.. math::
+         u(x_{i}) = c_i = f(x_{i}){\thinspace .}
+
 
 How does a finite element Galerkin or least squares approximation differ
 from this straightforward interpolation of :math:`f`? This is the question
 to be addressed next.
+We now limit the scope to P1 elements since this is the element type
+that gives formulas closest to those arising in the finite difference
+method.
 
 .. _fem:approx:fe:fd:feproj:
 
 Finite difference interpretation of a finite element approximation
 ------------------------------------------------------------------
 
-We now limit the scope to P1 elements since this is the element type
-that gives formulas closest to what one gets from the finite difference
-method.
 
 The linear system arising from a Galerkin or least squares approximation
 reads in general
@@ -3729,17 +3865,21 @@ element length :math:`h` we have in the section :ref:`fem:approx:global:linearsy
         
         
 
-The finite difference counterpart of this equation is just :math:`u_i=f_i`.
-(The first and last equation, corresponding to :math:`i=0` and :math:`i=N` are slightly
-different, see the section :ref:`fem:approx:fe:A:structure`.)
+The first and last equation, corresponding to :math:`i=0` and :math:`i=N` are slightly
+different, see the section :ref:`fem:approx:fe:A:structure`.
 
-The left-hand side of :eq:`fem:deq:1D:approx:deq:massmat:diffeq2` can
-be manipulated to equal
+The finite difference counterpart to
+:eq:`fem:deq:1D:approx:deq:massmat:diffeq2` is just :math:`u_i=f_i`
+as explained in the section :ref:`fem:approx:fe:fd:fdproj`.
+To easier compare this result to
+the finite element approach to approximating functions, we can rewrite
+the left-hand side of :eq:`fem:deq:1D:approx:deq:massmat:diffeq2`
+as
 
 
 .. math::
         
-        h(u_i - \frac{1}{6}(-u_{i-1} + 2u_i - u_{i+1}))
+        h(u_i + \frac{1}{6}(u_{i-1} - 2u_i + u_{i+1}))
         {\thinspace .}
         
 
@@ -3748,13 +3888,13 @@ using finite difference operator notation:
 
 
 .. math::
-         [h(u - \frac{h^2}{6}D_x D_x u)]_i,
+         [h(u + \frac{h^2}{6}D_x D_x u)]_i,
 
 which is nothing but the standard discretization of
 
 
 .. math::
-         h(u - \frac{h^2}{6}u''){\thinspace .}
+         h(u + \frac{h^2}{6}u''){\thinspace .}
 
 
 Before interpreting the approximation procedure as solving a
@@ -3762,7 +3902,7 @@ differential equation, we need to work out what the right-hand side is
 in the context of P1 elements.
 Since :math:`{\varphi}_i` is the linear function that is 1 at
 :math:`x_{i}` and zero at all other nodes, only the interval :math:`[x_{i-1},x_{i+1}]`
-contributes to the integral on the right-hand side. This integral is
+contribute to the integral on the right-hand side. This integral is
 naturally split into two parts according to
 :eq:`fem:approx:fe:phi:1:formula2`:
 
@@ -3779,9 +3919,11 @@ It is clear that many values of
 the single point value :math:`f(x_{i})`
 as in the finite difference method.
 
-To proceed with the right-hand side, we turn to numerical integration schemes.
-Let us say we use the Trapezoidal method for :math:`(f,{\varphi}_i)`, based on
-the node points :math:`x_{i}=i h`:
+To proceed with the right-hand side, we can
+turn to numerical integration schemes.
+The Trapezoidal method for :math:`(f,{\varphi}_i)`, based on
+sampling the integrand :math:`f{\varphi}_i` at the node points :math:`x_{i}=i h`
+gives
 
 
 .. math::
@@ -3813,43 +3955,41 @@ For :math:`i=0` and :math:`i=N` we get contribution from only one element so
         
 
 
-Turning to Simpson's rule with sample points also in the middle of
-the elements, :math:`x_i=i h/2`, :math:`i=0,\ldots,2N`, it reads in general
+Simpson's rule with sample points also in the middle of
+the elements, at :math:`x_{i+\frac{1}{2}}=(x_{i} + x_{i+1})/2`,
+can be written as
 
 
 .. math::
-         \int_\Omega f(x)dx \approx \frac{\tilde h}{3}\left( f(x_0) +
-        2\sum_{j=2,4,6,\ldots} f(x_j)
-        + 4\sum_{j=1,3,5,\ldots} f(x_j) + f(x_{2N})\right),
+         \int_\Omega g(x)dx \approx \frac{\tilde h}{3}\left( g(x_{0}) +
+        2\sum_{j=1}^{N-1} g(x_{j})
+        + 4\sum_{j=0}^{N-1} g(x_{j+\frac{1}{2}}) + f(x_{2N})\right),
         
 
-where :math:`\tilde h = x_i - x_{i-1}= h/2` is the spacing between the sample points.
-We see that the midpoints with odd numbers have
-the weight :math:`2h/3` while the node points with even numbers have the
-weight :math:`h/3`. Since :math:`{\varphi}_i=0` at the even numbers, except
-for :math:`x_{2i}=x_{i}`, and :math:`{\varphi}_i=0` at all the midpoints,
-on the midpoints and :math:`4h/3` on the node points. Since :math:`{\varphi}_i`
-vanishes at all the node points, except :math:`\xi{i}`, and
-except :math:`x_{2i-1}=\xi{i}-h/2` and
-:math:`x_{2i+1}=\xi{i}+h/2`, where :math:`{\varphi}_i=1/2`, we get
+where :math:`\tilde h= h/2` is the spacing between the sample points.
+Our integrand is :math:`g=f{\varphi}_i`. For all the node points,
+:math:`{\varphi}_i(x_{j})=\delta_{ij}`, and therefore
+:math:`\sum_{j=1}^{N-1} f(x_{j}){\varphi}_i(x_{j})=f(x_{i})`.
+At the midpoints, :math:`{\varphi}_i(x_{i\pm\frac{1}{2}})=1/2` and
+:math:`{\varphi}_i(x_{j+\frac{1}{2}})=0` for :math:`j>1` and :math:`j<i-1`.
+Consequently,
+
+
+.. math::
+         \sum_{j=0}^{N-1} f(x_{j+\frac{1}{2}}){\varphi}_i(x_{j+\frac{1}{2}})
+        = \frac{1}{2}(fx_{j-\frac{1}{2}} + x_{j+\frac{1}{2}}){\thinspace .}
+
+When :math:`1\leq i\leq N-1` we then get
 
 
 .. math::
         
-        (f,{\varphi}_i) \approx \frac{h}{3}(f(x_{i}-\frac{1}{2}h)
-        + f(x_{i}) + f(x_{i}+\frac{1}{2}h)
+        (f,{\varphi}_i) \approx
+        \frac{h}{3}(f_{i-\frac{1}{2}} + f_i + f_{i+\frac{1}{2}})
         {\thinspace .}
         
 
-In a finite difference context we would typically express this formula as
-
-
-.. math::
-         \frac{h}{3}(f_{i-\frac{1}{2}} + f_i + f_{i+\frac{1}{2}})
-        {\thinspace .}
-        
-
-This shows that, with Simpson's rule, the finite element method
+This result shows that, with Simpson's rule, the finite element method
 operates with the average of :math:`f` over three points, while the finite difference
 method just applies :math:`f` at one point. We may interpret this as
 a "smearing" or smoothing of :math:`f` by the finite element method.
@@ -3885,40 +4025,46 @@ With the Simpson's rule, we may say that we solve
 
 where :math:`\bar f_i` means the average :math:`\frac{1}{3}(f_{i-1/2} + f_i + f_{i+1/2})`.
 
-The extra term :math:`\frac{h^2}{6} u''` represents a smoothing: with just this
-term, we would find u by integrating :math:`f` twice and thereby smooth :math:`f`
-considerably. In addition, the finite element representation of :math:`f`
-involves an average, or a smoothing, of :math:`f` on the right-hand side of
-the equation system. If :math:`f` is a noisy function, direct interpolation
-:math:`u_i=f_i` may result in a noisy :math:`u` too, but with a Galerkin or least
-squares formulation and P1 elements, we should expect that :math:`u` is
-smoother than :math:`f` unless :math:`h` is very small.
+The extra term :math:`\frac{h^2}{6} u''` represents a smoothing effect: with
+just this term, we would find :math:`u` by integrating :math:`f` twice and thereby
+smooth :math:`f` considerably. In addition, the finite element
+representation of :math:`f` involves an average, or a smoothing, of :math:`f` on
+the right-hand side of the equation system. If :math:`f` is a noisy
+function, direct interpolation :math:`u_i=f_i` may result in a noisy :math:`u`
+too, but with a Galerkin or least squares formulation and P1 elements,
+we should expect that :math:`u` is smoother than :math:`f` unless :math:`h` is very
+small.
 
 The interpretation that finite elements tend to smooth the solution
-is valid in applications far beyond approximation of 1D function.
+is valid in applications far beyond approximation of 1D functions.
+
 
 Making finite elements behave as finite differences
 ---------------------------------------------------
 
 With a simple trick, using numerical integration, we can easily produce
-the same result :math:`u_i=f_i` with the Galerkin or least square formulation
+the result :math:`u_i=f_i` with the Galerkin or least square formulation
 with P1 elements. This is useful in many occasions when we deal
 with more difficult differential equations and want the finite element
 method to have properties like the finite difference method (solving
 standard linear wave equations is one primary example).
 
+Computations in physical space
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 We have already seen that applying the Trapezoidal rule to the
 right-hand side :math:`(f,{\varphi}_i)` simply gives :math:`f` sampled at :math:`x_{i}`.
 Using the Trapezoidal rule on the  matrix entries
-:math:`({\varphi}_i,{\varphi}_j)` involves a sum
+:math:`A_{i,j}=({\varphi}_i,{\varphi}_j)` involves a sum
 
 .. math::
          \sum_k {\varphi}_i(x_{k}){\varphi}_j(x_{k}),
 
-but :math:`{\varphi}_i(x_{k})=0` for all :math:`k`, except :math:`k=i`, and
-:math:`{\varphi}_j(x_{k})=0` for all :math:`k`, except :math:`k=j`.
+but :math:`{\varphi}_i(x_{k})=\delta_{ik}` and
+:math:`{\varphi}_j(x_{k})=\delta_{jk}`.
 The product :math:`{\varphi}_i{\varphi}_j` is then different from zero only
-when sampled at :math:`x_{i}` and :math:`i=j`. The approximation to the integral
+when sampled at :math:`x_{i}` and :math:`i=j`. The Trapezoidal
+approximation to the integral
 is then
 
 
@@ -3931,11 +4077,11 @@ The first and last diagonal elements, :math:`({\varphi}_0,{\varphi}_0)` and
 element, respectively, resulting in the approximate integral value :math:`h/2`.
 The corresponding right-hand side also has a factor :math:`1/2` for :math:`i=0` and :math:`i=N`.
 Therefore, the least squares or Galerkin approach with P1 elements and
-*Trapezoidal* integration results in
+Trapezoidal integration results in
 
 
 .. math::
-         c_i = f_i{\thinspace .}  
+         c_i = f_i,\quad i\inI{\thinspace .}  
 
 
 Simpsons's rule can be used to achieve a similar result for P2 elements, i.e,
@@ -3965,16 +4111,17 @@ details.
 Terminology
 ~~~~~~~~~~~
 
-The matrix with entries :math:`({\varphi}_i,{\varphi}_j)` typically arises
-from terms proportional to :math:`u` in a differential equation where :math:`u`
-is the unknown function. This matrix is often called the *mass matrix*,
+The matrix with entries :math:`({\varphi}_i,{\varphi}_j)` typically arises from
+terms proportional to :math:`u` in a differential equation where :math:`u` is the
+unknown function. This matrix is often called the *mass matrix*,
 because in the early days of the finite element method, the matrix
 arose from the mass times acceleration term in Newton's second law of
-motion. Making the mass matrix diagonal by, e.g., numerical integration,
-as demonstrated above, is a widely used technique and is called
-*mass lumping*. In time-dependent problems it can enhance the numerical
-accuracy and computational efficiency of the finite element method.
-However, there are also examples where mass lumping destroys accuracy.
+motion. Making the mass matrix diagonal by, e.g., numerical
+integration, as demonstrated above, is a widely used technique and is
+called *mass lumping*. In time-dependent problems it can sometimes
+enhance the numerical accuracy and computational efficiency of the
+finite element method.  However, there are also examples where mass
+lumping destroys accuracy.
 
 
 
@@ -3989,7 +4136,9 @@ So far, finite element computing has employed the ``nodes`` and
 ``element`` lists together with the definition of the basis functions
 in the reference element. Suppose we want to introduce a piecewise
 constant approximation with one basis function :math:`{\tilde{\varphi}}_0(x)=1` in
-the reference element. Although we could associate the function value
+the reference element, corresponding to a :math:`{\varphi}_i(x)` function that
+is 1 on element number :math:`i` and zero on all other elements.
+Although we could associate the function value
 with a node in the middle of the elements, there are no nodes at the
 ends, and the previous code snippets will not work because we
 cannot find the element boundaries from the ``nodes`` list.
@@ -4012,24 +4161,25 @@ Cells, vertices, and degrees of freedom
 We now introduce *cells* as the subdomains :math:`\Omega^{(e)}` previously
 referred as elements. The cell boundaries are denoted as *vertices*.
 The reason for this name is that cells are recognized by their vertices
-in 2D and 3D. Then we define a set of *degrees of freedom*, which are
+in 2D and 3D. We also define a set of *degrees of freedom*, which are
 the quantities we aim to compute. The most common type of degree
 of freedom is the value of the unknown function :math:`u` at some point.
-For example, we can introduce nodes as before and say the degrees of
-freedom are the values of :math:`u` at the nodes. The basis functions are
+(For example, we can introduce nodes as before and say the degrees of
+freedom are the values of :math:`u` at the nodes.) The basis functions are
 constructed so that they equal unity for one particular degree of
 freedom and zero for the rest. This property ensures that when
 we evaluate :math:`u=\sum_j c_j{\varphi}_j` for degree of freedom number :math:`i`,
 we get :math:`u=c_i`. Integrals are performed over cells, usually by
 mapping the cell of interest to a *reference cell*.
 
-With the concepts of cells, vertices, and degrees of freedom we increase
-the decoupling the geometry (cell, vertices) from the space of
-basis functions. We can associate different sets of basis functions
-with a cell. In 1D, all cells are intervals, while in 2D we can have
-cells that are triangles with straight sides, or any polygon, or in fact
-any two-dimensional geometry. Triangles and quadrilaterals are most
-common, though. The popular cell types in 3D are tetrahedra and hexahedra.
+With the concepts of cells, vertices, and degrees of freedom we
+increase the decoupling of the geometry (cell, vertices) from the
+space of basis functions. We will associate different
+sets of basis functions with a cell. In 1D, all cells are intervals,
+while in 2D we can have cells that are triangles with straight sides,
+or any polygon, or in fact any two-dimensional geometry. Triangles and
+quadrilaterals are most common, though. The popular cell types in 3D
+are tetrahedra and hexahedra.
 
 .. _fem:approx:fe:element:def:
 
@@ -4040,6 +4190,8 @@ Extended finite element concept
 .. index::
    single: finite element, definition
 
+.. index:: dof map
+
 
 The concept of a *finite element* is now
 
@@ -4047,13 +4199,14 @@ The concept of a *finite element* is now
 
   * a set of *basis functions* :math:`{\tilde{\varphi}}_i` defined on the cell;
 
-  * a set of *degrees of freedom* that uniquely determine
+  * a set of *degrees of freedom* that uniquely determines
     the basis functions such that :math:`{\tilde{\varphi}}_i=1` for degree of freedom
     number :math:`i` and :math:`{\tilde{\varphi}}_i=0` for all other degrees of freedom;
 
-  * a mapping between local and global degree of freedom numbers;
+  * a mapping between local and global degree of freedom numbers,
+    here called the *dof map*;
 
-  * a *mapping* of the reference cell onto to cell in the physical
+  * a geometric *mapping* of the reference cell onto to cell in the physical
     domain.
 
 There must be a geometric description of a cell. This is trivial in 1D
@@ -4061,6 +4214,23 @@ since the cell is an interval and is described by the interval limits,
 here called vertices. If the cell is :math:`\Omega^{(e)}=[x_L,x_R]`,
 vertex 0 is :math:`x_L` and vertex 1 is :math:`x_R`. The reference cell in 1D
 is :math:`[-1,1]` in the reference coordinate system :math:`X`.
+
+
+.. index::
+   single: finite element expansion; reference element
+
+
+The expansion of :math:`u` over one cell is often used:
+
+
+.. math::
+        
+        u(x) = \tilde u(X) = \sum_{r} c_r{\tilde{\varphi}}_r(X),\quad x\in\Omega^{(e)},\ 
+        X\in [-1,1],
+        
+
+where the sum is taken over the numbers of the degrees of freedom and
+:math:`c_r` is the value of :math:`u` for degree of freedom number :math:`r`.
 
 Our previous P1, P2, etc., elements are defined by introducing :math:`d+1`
 equally spaced nodes in the reference cell and saying that the degrees
@@ -4073,22 +4243,6 @@ was previously represented by the ``elements`` lists.  The cell mapping
 is the same affine mapping :eq:`fem:approx:fe:affine:mapping` as
 before.
 
-
-.. index::
-   single: finite element expansion; reference element
-
-
-The expansion of :math:`u` over one cell is often used. In terms of reference
-coordinates we have
-
-
-.. math::
-        
-        u(x) = \sum_{r} c_r{\tilde{\varphi}}_r(X),
-        
-
-where the sum is taken over the numbers of the degrees of freedom and
-:math:`c_r` is the value of :math:`u` for degree of freedom number :math:`r`.
 
 
 .. _fem:approx:fe:element:impl:
@@ -4112,7 +4266,8 @@ Implementationwise,
     from local vertex ``r`` in cell ``e`` to the global vertex number
     in ``vertices``;
 
-  * we replace ``elements`` by ``dof_map`` (the contents are the same).
+  * we replace ``elements`` by ``dof_map`` (the contents are the same
+    for P$d$ elements).
 
 Consider the example from the section :ref:`fem:approx:fe:def:elements:nodes`
 where :math:`\Omega =[0,1]` is divided into two cells,
@@ -4131,9 +4286,13 @@ cell. The data structures become
         dof_map = [[0, 1, 2], [1, 2, 3]]
 
 
-If we would approximate :math:`f` by piecewise constants, we simply
+If we would approximate :math:`f` by piecewise constants, known as
+P0 elements, we simply
 introduce one point or node in an element, preferably :math:`X=0`,
-and choose :math:`{\tilde{\varphi}}_0(X)=1`. Only the ``dof_map`` is altered:
+and define one degree of freedom, which is the function value
+at this node. Moreover, we set :math:`{\tilde{\varphi}}_0(X)=1`.
+The ``cells`` and ``vertices`` arrays remain the same, but
+``dof_map`` is altered:
 
 
 .. code-block:: python
@@ -4142,7 +4301,8 @@ and choose :math:`{\tilde{\varphi}}_0(X)=1`. Only the ``dof_map`` is altered:
 
 
 We use the ``cells`` and ``vertices`` lists to retrieve information
-on the geometry of a cell, while ``dof_map`` is used in the
+on the geometry of a cell, while ``dof_map`` is the
+:math:`q(e,r)` mapping introduced earlier in the
 assembly of element matrices and vectors.
 For example, the ``Omega_e`` variable (representing the cell interval)
 in previous code snippets must now be computed as
@@ -4161,28 +4321,155 @@ The assembly is done by
         b[dof_map[e][r]] += b_e[r]
 
 
-We will hereafter work with ``cells``, ``vertices``, and ``dof_map``.
+We will hereafter drop the ``nodes`` and ``elements`` arrays
+and work exculsively with ``cells``, ``vertices``, and ``dof_map``.
+The module ``fe_approx1D_numint.py`` now replaces the module
+``fe_approx1D`` and offers similar functions that work with
+the new concepts:
 
-.. fe_approx1D_numint.py can be reworked to dof_map
 
-.. augment with P0
+.. code-block:: python
+
+        from fe_approx1D_numint import *
+        x = sm.Symbol('x')
+        f = x*(1 - x)
+        N_e = 10
+        vertices, cells, dof_map = mesh_uniform(N_e, d=3, Omega=[0,1])
+        phi = [basis(len(dof_map[e])-1) for e in range(N_e)]
+        A, b = assemble(vertices, cells, dof_map, phi, f)
+        c = np.linalg.solve(A, b)
+        # Make very fine mesh and sample u(x) on this mesh for plotting
+        x_u, u = u_glob(c, vertices, cells, dof_map,
+                        resolution_per_element=51)
+        plot(x_u, u)
+
+These steps are offered in the ``approximate`` function, which we here
+apply to see how well four P0 elements (piecewise constants)
+can approximate a parabola:
 
 
-Cubic Hermite polynomials
--------------------------
+.. code-block:: python
+
+        from fe_approx1D_numint import *
+        x=sm.Symbol("x")
+        for N_e in 4, 8:
+            approximate(x*(1-x), d=0, N_e=N_e, Omega=[0,1])
+
+Figure :ref:`fem:approx:fe:element:impl:fig:P0:x2` shows the result.
+
+
+.. _fem:approx:fe:element:impl:fig:P0:x2:
+
+.. figure:: fig-fem/fe_p0_x2_4e_8e.png
+   :width: 600
+
+   *Approximation of a parabola by 4 (left) and 8 (right) P0 elements*
+
+
+
+.. _fem:approx:fe:element:impl:error:
+
+Computing the error of the approximation
+----------------------------------------
+
+So far we have focused on computing the coefficients :math:`c_j` in the
+approximation :math:`u(x)=\sum_jc_j{\varphi}_j` as well as on plotting :math:`u` and
+:math:`f` for visual comparison. A more quantitative comparison needs to
+investigate the error :math:`e(x)=f(x)-u(x)`. We mostly want a single number to
+reflect the error and use a norm for this purpose, usually the :math:`L^2` norm
+
+
+.. math::
+         ||e||_{L^2} = \left(\int_{\Omega} e^2 dx\right)^{\frac{1}{2}}{\thinspace .}
+
+Since the finite element approximation is defined for all :math:`x\in\Omega`,
+and we are interested in how :math:`u(x)` deviates from :math:`f(x)` through all
+the elements,
+we can either integrate analytically or use an accurate numerical
+approximation. The latter is more convenient as it is a generally
+feasible and simple approach. The idea is to sample :math:`e(x)`
+at a large number of points in each element. The function ``u_glob``
+in the ``fe_approx1D_numint`` module does this for :math:`u(x)` and returns
+an array ``x`` with coordinates and an array ``u`` with the :math:`u` values:
+
+
+.. code-block:: python
+
+        x, u = u_glob(c, vertices, cells, dof_map,
+                      resolution_per_element=101)
+        e = f(x) - u
+
+Let us use the Trapezoidal method to approximate the integral. Because
+different elements may have different lengths, the ``x`` array has
+a non-uniformly distributed set of coordinates. Also, the ``u_glob``
+function works in an element by element fashion such that coordinates
+at the boundaries between elements appear twice. We therefore need
+to use a "raw" version of the Trapezoidal rule where we just add up
+all the trapezoids:
+
+
+.. math::
+         \int_\Omega g(x) dx \approx \sum_{j=0}^{n-1} \frac{1}{2}(g(x_j) +
+        g(x_{j+1}))(x_{j+1}-x_j),
+
+if :math:`x_0,\ldots,x_n` are all the coordinates in ``x``. In
+vectorized Python code,
+
+
+.. code-block:: python
+
+        g_x = g(x)
+        integral = 0.5*np.sum((g_x[:-1] + g_x[1:])*(x[1:] - x[:-1]))
+
+Computing the :math:`L^2` norm of the error, here named ``E``, is now achieved by
+
+
+.. code-block:: python
+
+        e2 = e**2
+        E = np.sqrt(0.5*np.sum((e2[:-1] + e2[1:])*(x[1:] - x[:-1]))
+
+
+
+
+.. admonition:: How does the error depend on :math:`h` and :math:`d`
+
+   Theory and experiments show that the least squares or projection/Galerkin
+   method in combination with P$d$ elements of equal length :math:`h` has an error
+   
+   
+   .. _Eq:fem:approx:fe:error:theorem:
+
+.. math::
+   :label: fem:approx:fe:error:theorem
+           
+           ||e||_{L^2} = Ch^{d+1},
+           
+           
+   
+   where :math:`C` is a constant depending on :math:`f`, but not on :math:`h` or :math:`d`.
+
+
+.. _fem:approx:fe:element:impl:Hermite:
+
+Example: Cubic Hermite polynomials
+----------------------------------
+
+
+.. index:: Hermite polynomials
+
 
 The finite elements considered so far represent :math:`u` as piecewise
 polynomials with discontinuous derivatives at the cell boundaries.
-Sometimes it is desired to have continuous derivatives. A primary
+Sometimes it is desirable to have continuous derivatives. A primary
 examples is the solution of differential equations with fourth-order
 derivatives where standard finite element formulations lead to
 a need for basis functions with continuous first-order derivatives.
 The most common type of such basis functions in 1D is the
-cubic Hermite polynomials.
+so-called cubic Hermite polynomials.
+The construction of such polynomials, as explained next, will further
+exemplify the concepts of a cell, vertex, degree of freedom, and dof map.
 
-There are ready-made formulas for the cubic Hermite polynomials, but
-it is instructive to apply the principles for constructing basis
-functions in detail.
 Given a reference cell :math:`[-1,1]`, we seek cubic polynomials
 with the values of the *function* and its *first-order derivative* at
 :math:`X=-1` and :math:`X=1` as the four degrees of freedom. Let us number
@@ -4221,7 +4508,8 @@ detail,
         {\thinspace .}
         
 
-These four :math:`4\times 4` linear equations can be solved, yielding these formulas
+These four :math:`4\times 4` linear equations can be solved, yielding the
+following formulas
 for the cubic basis functions:
 
 
@@ -4258,16 +4546,13 @@ for the cubic basis functions:
         
 
 
-.. 2DO
+The construction of the dof map needs a scheme for numbering the
+global degrees of freedom. A natural left-to-right numbering
+has the function value at vertex :math:`x_{i}`
+as degree of freedom number :math:`2i` and the value of the derivative
+at :math:`x_{i}` as degree of freedom number :math:`2i+1`, :math:`i=0,\ldots,N_e+1`.
 
 
-Remaining tasks:
-
- * Global numbering of the dofs
-
- * ``dof_map``
-
- * 4x4 element matrix
 
 Numerical integration
 =====================
@@ -4331,8 +4616,8 @@ Newton-Cotes rules
 
 
 The `Newton-Cotes <http://en.wikipedia.org/wiki/Newton%E2%80%93Cotes_formulas>`_
-rules are based on a fixed uniform distribution of the points.
-The first two formulas in this family is the well-known
+rules are based on a fixed uniform distribution of the integration points.
+The first two formulas in this family are the well-known
 *Trapezoidal rule*,
 
 
@@ -4361,7 +4646,6 @@ where
         
         \bar X_0=-1,\ \bar X_1=0,\ \bar X_2=1,\ w_0=w_2=\frac{1}{3},\ w_1=\frac{4}{3}{\thinspace .}  
 
-
 Newton-Cotes rules up to five points is supported in the
 module file `numint.py <http://tinyurl.com/jvzzcfn/fem/numint.py>`_.
 
@@ -4377,9 +4661,9 @@ Gauss-Legendre rules with optimized points
 .. index:: Gauss-Legendre quadrature
 
 
-All these rules apply equally spaced points. More accurate rules, for
-a given :math:`M`, arise if the location of the points are optimized for
-polynomial integrands.  The `Gauss-Legendre rules <http://en.wikipedia.org/wiki/Gaussian_quadrature>`_ (also known as
+More accurate rules, for a given :math:`M`, arise if the location of the
+integration points are optimized for polynomial integrands.  The
+`Gauss-Legendre rules <http://en.wikipedia.org/wiki/Gaussian_quadrature>`_ (also known as
 Gauss-Legendre quadrature or Gaussian quadrature) constitute one such
 class of integration methods. Two widely applied Gauss-Legendre rules
 in this family have the choice
@@ -4401,7 +4685,7 @@ in this family have the choice
 These rules integrate 3rd and 5th degree polynomials exactly.
 In general, an :math:`M`-point Gauss-Legendre rule integrates a polynomial
 of degree :math:`2M+1` exactly.
-The code `numint.py <http://tinyurl.com/jvzzcfn/fem/numint.py>`_ contains a large collection of Gauss-Legendre rules.
+The code ``numint.py`` contains a large collection of Gauss-Legendre rules.
 
 .. 2DO
 
@@ -4430,7 +4714,7 @@ Approximation of functions in 2D
 All the concepts and algorithms developed for approximation of 1D functions
 :math:`f(x)` can readily be extended to 2D functions :math:`f(x,y)` and 3D functions
 :math:`f(x,y,z)`. Basically, the extensions consists of defining basis functions
-:math:`{\varphi}_i(x,y)` or :math:`{\varphi}_i(x,y,z)` over some domain :math:`\Omega`, and
+:math:`{\psi}_i(x,y)` or :math:`{\psi}_i(x,y,z)` over some domain :math:`\Omega`, and
 for the least squares and Galerkin methods, the integration is done over
 :math:`\Omega`.
 
@@ -4440,7 +4724,7 @@ Global basis functions
 ----------------------
 
 An example will demonstrate the necessary extensions to use global
-basis functions and the least squares, Galerkin/projection,
+basis functions and the least squares, projection/Galerkin,
 or interpolation/collocation
 methods in 2D. The former two lead to linear systems
 
@@ -4448,8 +4732,8 @@ methods in 2D. The former two lead to linear systems
 .. math::
         
         \sum_{j\inI} A_{i,j}c_j &= b_i,\quad i\inI,\\ 
-        A_{i,j} &= ({\varphi}_i,{\varphi}_j),\\ 
-        b_i &= (f,{\varphi}_i),
+        A_{i,j} &= ({\psi}_i,{\psi}_j),\\ 
+        b_i &= (f,{\psi}_i),
         
 
 where the inner product of two functions :math:`f(x,y)` and :math:`g(x,y)` is defined
@@ -4471,31 +4755,31 @@ way to construct a basis in 2D is to combine
 
 
 .. math::
-         \{ \hat{\varphi}_0(x),\ldots,\hat{\varphi}_{N_x}(x)\}
+         \{ \hat{\psi}_0(x),\ldots,\hat{\psi}_{N_x}(x)\}
         {\thinspace .}
         
 
 We can now form 2D basis functions as products of 1D basis functions:
-:math:`\hat{\varphi}_p(x)\hat{\varphi}_q(y)` for :math:`p\in{\mathcal{I}_x}=\{0,\ldots,N_x\}`
+:math:`\hat{\psi}_p(x)\hat{\psi}_q(y)` for :math:`p\in{\mathcal{I}_x}=\{0,\ldots,N_x\}`
 and :math:`q\in{\mathcal{I}_y}=\{0,\ldots,N_y\}`.
 We can either work with double indices,
-:math:`{\varphi}_{p,q}(x,y) = \hat{\varphi}_p(x)\hat{\varphi}_q(y)`, and write
+:math:`{\psi}_{p,q}(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y)`, and write
 
 
 .. math::
-         u = \sum_{p\in{\mathcal{I}_x}}\sum_{q\in{\mathcal{I}_y}} c_{p,q}{\varphi}_{p,q}(x,y),
+         u = \sum_{p\in{\mathcal{I}_x}}\sum_{q\in{\mathcal{I}_y}} c_{p,q}{\psi}_{p,q}(x,y),
         
 
 or we may transform the double index :math:`(p,q)` to a single index :math:`i`,
 using :math:`i=p N_y + q` or :math:`i=q N_x + p`.
 
-Suppose we choose :math:`\hat{\varphi}_p(x)=x^p`, and try an approximation with
+Suppose we choose :math:`\hat{\psi}_p(x)=x^p`, and try an approximation with
 :math:`N_x=N_y=1`:
 
 
 .. math::
-         {\varphi}_{0,0}=1,\quad {\varphi}_{1,0}=x, \quad {\varphi}_{0,1}=y,
-        \quad {\varphi}_{1,1}=xy
+         {\psi}_{0,0}=1,\quad {\psi}_{1,0}=x, \quad {\psi}_{0,1}=y,
+        \quad {\psi}_{1,1}=xy
         {\thinspace .}
         
 
@@ -4503,7 +4787,7 @@ Using a mapping to one index like :math:`i=q N_x + p`, we get
 
 
 .. math::
-         {\varphi}_0=1,\quad {\varphi}_1=x, \quad {\varphi}_2=y,\quad{\varphi}_3 =xy
+         {\psi}_0=1,\quad {\psi}_1=x, \quad {\psi}_2=y,\quad{\psi}_3 =xy
         {\thinspace .}
         
 
@@ -4517,13 +4801,13 @@ With the specific choice :math:`f(x,y) = (1+x^2)(1+2y^2)` on
 
 .. math::
         
-        A_{0,0} &= ({\varphi}_0,{\varphi}_0) = \int_0^{L_y}\int_{0}^{L_x}
-        {\varphi}_0(x,y)^2 dx dy = \int_0^{L_y}\int_{0}^{L_x}dx dy = L_xL_y,\\ 
-        A_{1,0} &= ({\varphi}_1,{\varphi}_0) = \int_0^{L_y}\int_{0}^{L_x} x dxdy =
+        A_{0,0} &= ({\psi}_0,{\psi}_0) = \int_0^{L_y}\int_{0}^{L_x}
+        {\psi}_0(x,y)^2 dx dy = \int_0^{L_y}\int_{0}^{L_x}dx dy = L_xL_y,\\ 
+        A_{1,0} &= ({\psi}_1,{\psi}_0) = \int_0^{L_y}\int_{0}^{L_x} x dxdy =
         \frac{1}{2}L_x^2L_y,\\ 
-        A_{0,1} &= ({\varphi}_0,{\varphi}_1) = \int_0^{L_y}\int_{0}^{L_x} y dxdy =
+        A_{0,1} &= ({\psi}_0,{\psi}_1) = \int_0^{L_y}\int_{0}^{L_x} y dxdy =
         \frac{1}{2}L_y^2L_x,\\ 
-        A_{0,1} &= ({\varphi}_0,{\varphi}_1) = \int_0^{L_y}\int_{0}^{L_x} xy dxdy =
+        A_{0,1} &= ({\psi}_0,{\psi}_1) = \int_0^{L_y}\int_{0}^{L_x} xy dxdy =
         \int_0^{L_y}ydy \int_{0}^{L_x} xdx =
         \frac{1}{4}L_y^2L_x^2
         {\thinspace .}
@@ -4534,16 +4818,16 @@ The right-hand side vector has the entries
 
 .. math::
         
-        b_{0} &= ({\varphi}_0,f) = \int_0^{L_y}\int_{0}^{L_x}1\cdot (1+x^2)(1+2y^2) dxdy\\ 
+        b_{0} &= ({\psi}_0,f) = \int_0^{L_y}\int_{0}^{L_x}1\cdot (1+x^2)(1+2y^2) dxdy\\ 
         &= \int_0^{L_y}(1+2y^2)dy \int_{0}^{L_x} (1+x^2)dx
         = (L_y + \frac{2}{3}L_y^3)(L_x + \frac{1}{3}L_x^3)\\ 
-        b_{1} &= ({\varphi}_1,f) = \int_0^{L_y}\int_{0}^{L_x} x(1+x^2)(1+2y^2) dxdy\\ 
+        b_{1} &= ({\psi}_1,f) = \int_0^{L_y}\int_{0}^{L_x} x(1+x^2)(1+2y^2) dxdy\\ 
         &=\int_0^{L_y}(1+2y^2)dy \int_{0}^{L_x} x(1+x^2)dx
         = (L_y + \frac{2}{3}L_y^3)(\frac{1}{2}L_x^2 + \frac{1}{4}L_x^4)\\ 
-        b_{2} &= ({\varphi}_2,f) = \int_0^{L_y}\int_{0}^{L_x} y(1+x^2)(1+2y^2) dxdy\\ 
+        b_{2} &= ({\psi}_2,f) = \int_0^{L_y}\int_{0}^{L_x} y(1+x^2)(1+2y^2) dxdy\\ 
         &= \int_0^{L_y}y(1+2y^2)dy \int_{0}^{L_x} (1+x^2)dx
         = (\frac{1}{2}L_y + \frac{1}{2}L_y^4)(L_x + \frac{1}{3}L_x^3)\\ 
-        b_{3} &= ({\varphi}_2,f) = \int_0^{L_y}\int_{0}^{L_x} xy(1+x^2)(1+2y^2) dxdy\\ 
+        b_{3} &= ({\psi}_2,f) = \int_0^{L_y}\int_{0}^{L_x} xy(1+x^2)(1+2y^2) dxdy\\ 
         &= \int_0^{L_y}y(1+2y^2)dy \int_{0}^{L_x} x(1+x^2)dx
         = (\frac{1}{2}L_y^2 + \frac{1}{2}L_y^4)(\frac{1}{2}L_x^2 + \frac{1}{4}L_x^4)
         {\thinspace .}
@@ -4556,14 +4840,14 @@ An arbitrary matrix entry has the formula
 
 .. math::
         
-        A_{i,j} &= ({\varphi}_i,{\varphi}_j) = \int_0^{L_y}\int_{0}^{L_x}
-        {\varphi}_i{\varphi}_j dx dy \\ 
+        A_{i,j} &= ({\psi}_i,{\psi}_j) = \int_0^{L_y}\int_{0}^{L_x}
+        {\psi}_i{\psi}_j dx dy \\ 
         &= \int_0^{L_y}\int_{0}^{L_x}
-        {\varphi}_{p,q}{\varphi}_{r,s} dx dy
+        {\psi}_{p,q}{\psi}_{r,s} dx dy
         = \int_0^{L_y}\int_{0}^{L_x}
-        \hat{\varphi}_p(x)\hat{\varphi}_q(y)\hat{\varphi}_r(x)\hat{\varphi}_s(y) dx dy\\ 
-        &= \int_0^{L_y} \hat{\varphi}_q(y)\hat{\varphi}_s(y)dy
-        \int_{0}^{L_x} \hat{\varphi}_p(x) \hat{\varphi}_r(x) dx\\ 
+        \hat{\psi}_p(x)\hat{\psi}_q(y)\hat{\psi}_r(x)\hat{\psi}_s(y) dx dy\\ 
+        &= \int_0^{L_y} \hat{\psi}_q(y)\hat{\psi}_s(y)dy
+        \int_{0}^{L_x} \hat{\psi}_p(x) \hat{\psi}_r(x) dx\\ 
         &= \hat A^{(x)}_{p,r}\hat A^{(y)}_{q,s},
         
 
@@ -4571,15 +4855,15 @@ where
 
 
 .. math::
-         \hat A^{(x)}_{p,r} = \int_{0}^{L_x} \hat{\varphi}_p(x) \hat{\varphi}_r(x) dx,
+         \hat A^{(x)}_{p,r} = \int_{0}^{L_x} \hat{\psi}_p(x) \hat{\psi}_r(x) dx,
         \quad
-        \hat A^{(y)}_{q,s} = \int_0^{L_y} \hat{\varphi}_q(y)\hat{\varphi}_s(y)dy,
+        \hat A^{(y)}_{q,s} = \int_0^{L_y} \hat{\psi}_q(y)\hat{\psi}_s(y)dy,
         
 
 are matrix entries for one-dimensional approximations. Moreover,
 :math:`i=q N_y+q` and :math:`j=s N_y+r`.
 
-With :math:`\hat{\varphi}_p(x)=x^p` we have
+With :math:`\hat{\psi}_p(x)=x^p` we have
 
 
 .. math::
@@ -4601,10 +4885,10 @@ Corresponding reasoning for the right-hand side leads to
 
 .. math::
         
-        b_i &= ({\varphi}_i,f) = \int_0^{L_y}\int_{0}^{L_x}{\varphi}_i f\,dxdx\\ 
-        &= \int_0^{L_y}\int_{0}^{L_x}\hat{\varphi}_p(x)\hat{\varphi}_q(y) f\,dxdx\\ 
-        &= \int_0^{L_y}\hat{\varphi}_q(y) (1+2y^2)dy
-        \int_0^{L_y}\hat{\varphi}_p(x) x^p (1+x^2)dx\\ 
+        b_i &= ({\psi}_i,f) = \int_0^{L_y}\int_{0}^{L_x}{\psi}_i f\,dxdx\\ 
+        &= \int_0^{L_y}\int_{0}^{L_x}\hat{\psi}_p(x)\hat{\psi}_q(y) f\,dxdx\\ 
+        &= \int_0^{L_y}\hat{\psi}_q(y) (1+2y^2)dy
+        \int_0^{L_y}\hat{\psi}_p(x) x^p (1+x^2)dx\\ 
         &= \int_0^{L_y} y^q (1+2y^2)dy
         \int_0^{L_y}x^p (1+x^2)dx\\ 
         &= (\frac{1}{q+1} L_y^{q+1} + \frac{2}{q+3}L_y^{q+3})
@@ -4628,9 +4912,9 @@ Choosing :math:`L_x=L_y=2`, we have
         \frac{308}{9}\\\frac{140}{3}\\44\\60\end{array}\right],
         \quad c = \left[
         \begin{array}{r}
-        -\frac{1}{9}, \\ 
-        \frac{4}{3}, \\ 
-         - \frac{2}{3}, \\ 
+        -\frac{1}{9} \\ 
+        \frac{4}{3} \\ 
+         - \frac{2}{3} \\ 
          8
         \end{array}\right]
         {\thinspace .}
@@ -4708,6 +4992,7 @@ The previous hand calculation where a quadratic :math:`f` was approximated by
 a bilinear function can be computed symbolically by
 
 
+        >>> from approx2D import *
         >>> f = (1+x**2)*(1+2*y**2)
         >>> phi = taylor(x, y, 1, 1)
         >>> Omega = [[0, 2], [0, 2]]
@@ -4717,8 +5002,7 @@ a bilinear function can be computed symbolically by
         >>> print sm.expand(f)
         2*x**2*y**2 + x**2 + 2*y**2 + 1
 
-We may continue with adding higher powers to the basis and check that
-with :math:`N_x\geq 2` and :math:`N_y\geq 2` we recover the exact function :math:`f`:
+We may continue with adding higher powers to the basis:
 
 
         >>> phi = taylor(x, y, 2, 2)
@@ -4728,6 +5012,9 @@ with :math:`N_x\geq 2` and :math:`N_y\geq 2` we recover the exact function :math
         >>> print u-f
         0
 
+For :math:`N_x\geq 2` and :math:`N_y\geq 2` we recover the exact function :math:`f`, as
+expected, since in that case :math:`f\in V` (see
+the section :ref:`fem:approx:global:exact`).
 
 Finite elements in 2D and 3D
 ============================
@@ -4735,7 +5022,7 @@ Finite elements in 2D and 3D
 Finite element approximation is particularly powerful in 2D and 3D because
 the method can handle a geometrically complex domain :math:`\Omega` with ease.
 The principal idea is, as in 1D, to divide the domain into cells
-use polynomials for approximating a function over a cell.
+and use polynomials for approximating a function over a cell.
 Two popular cell shapes are triangles and the quadrilaterals.
 Figures :ref:`fem:approx:fe:2D:fig:rectP1`, :ref:`fem:approx:fe:2D:fig:circP1`,
 and :ref:`fem:approx:fe:2D:fig:rectQ1` provide examples. P1 elements
@@ -4774,9 +5061,9 @@ Basis functions over triangles in the physical domain
 -----------------------------------------------------
 
 Cells with triangular shape will be in main focus here.  With the P1
-triangular element, :math:`u` is a linear function over each cell, with
-discontinuous derivatives at the cell boundaries, as depicted in
-Figure :ref:`fem:approx:fe:2D:fig:femfunc`.
+triangular element, :math:`u` is a linear function over each cell, as
+depicted in Figure :ref:`fem:approx:fe:2D:fig:femfunc`, with
+discontinuous derivatives at the cell boundaries.
 
 
 .. _fem:approx:fe:2D:fig:femfunc:
@@ -5001,9 +5288,12 @@ then defined by
         
 
 where :math:`r` runs over the local vertex numbers in the cell.
-The affine mapping maps the straight or planar faces of the reference cell onto
+The affine mapping essentially stretches, translates, and rotates
+the triangle. Straight or planar faces of the reference cell are
+therefore mapped onto
 straight or planar faces in the physical coordinate system. The mapping can
-be used for both P1 and higher-order elements.
+be used for both P1 and higher-order elements, but note that the
+mapping itself always applies the P1 basis functions.
 
 
 .. _fem:approx:fe:map:fig:2DP1:
@@ -5028,7 +5318,7 @@ Isoparametric mapping of the reference cell
 
 Instead of using the P1 basis functions in the mapping
 :eq:`fem:approx:fe:affine:map`,
-we may use the basis functions of the actual element:
+we may use the basis functions of the actual P$d$ element:
 
 
 .. _Eq:fem:approx:fe:isop:map:
@@ -5078,21 +5368,22 @@ the integral from the physical to the reference coordinate system reads
 
 .. math::
         
-        \int_{\Omega^{(e)}}{\varphi}_i (\boldsymbol{x}) {\varphi}_j (\boldsymbol{x}) d\boldsymbol{x} =
+        \int_{\Omega^{(e)}}{\varphi}_i (\boldsymbol{x}) {\varphi}_j (\boldsymbol{x}) {\, \mathrm{d}x} =
         \int_{\tilde\Omega^r} {\tilde{\varphi}}_i (\boldsymbol{X}) {\tilde{\varphi}}_j (\boldsymbol{X})
-        \det J\, d\boldsymbol{X},
+        \det J\, {\, \mathrm{d}X},
         
 
 
 
 .. math::
           
-        \int_{\Omega^{(e)}}{\varphi}_i (\boldsymbol{x}) f(\boldsymbol{x}) d\boldsymbol{x} =
-        \int_{\tilde\Omega^r} {\tilde{\varphi}}_i (\boldsymbol{X}) f(\boldsymbol{x}(\boldsymbol{X})) \det J\, d\boldsymbol{X},
+        \int_{\Omega^{(e)}}{\varphi}_i (\boldsymbol{x}) f(\boldsymbol{x}) {\, \mathrm{d}x} =
+        \int_{\tilde\Omega^r} {\tilde{\varphi}}_i (\boldsymbol{X}) f(\boldsymbol{x}(\boldsymbol{X})) \det J\, {\, \mathrm{d}X},
         
 
-where :math:`d\boldsymbol{x} = dx dy` in 2D and :math:`d\boldsymbol{x} = dx dy dz` in 3D, with a similar
-definition of :math:`d\boldsymbol{X}`. The quantity :math:`\det J` is the determinant of the
+where :math:`{\, \mathrm{d}x}` means the infinitesimal area element :math:`dx dy` in 2D and
+:math:`dx dy dz` in 3D, with a similar
+definition of :math:`{\, \mathrm{d}X}`. The quantity :math:`\det J` is the determinant of the
 Jacobian of the mapping :math:`\boldsymbol{x}(\boldsymbol{X})`. In 2D,
 
 
@@ -5116,10 +5407,46 @@ With the affine mapping
 the area or volume of the cell in the physical coordinate system.
 
 *Remark.* Observe that finite elements in 2D and 3D builds on the same
-*ideas* and *concepts* as in 1D, but there is simply more to compute because the
-specific mathematical formulas in 2D and 3D are more complicated.
+*ideas* and *concepts* as in 1D, but there is simply much
+more to compute because the
+specific mathematical formulas in 2D and 3D are more complicated
+and the book keeping with dof maps also gets more complicated.
+The manual work is tedious, lengthy, and error-prone
+so automation by the computer is a must.
+
 
 .. 2DO
+
+.. First: two triangles
+
+.. vertices = [(0,0), (1,0), (0,1), (1,1)]
+
+.. cells = [[0, 1, 3], [0, 3, 2]]
+
+.. dof_map = cells
+
+.. write up affine mapping
+
+.. D is the area that sympy.Triangle can compute :-) No, do that directly! 0.5...
+
+.. rhs: choose simple f=x*y, try hand-calculation or two-step
+
+.. sympy: first integrate in y with (0,1-x) as limits, then
+
+.. integrate the result in x
+
+.. a = integrate(x*y*(1-x-y), (y, 0, 1-x))
+
+.. b = integrate(a, (x,0,1))
+
+.. use the same for local element matrix
+
+.. show assembly
+
+.. should have pysketcher prog for drawing 2D mesh, mark and number nodes
+
+.. and elements
+
 
 .. Should have example with x**8*(1-x)*y**8*(1-y) worked out, but
 
@@ -5153,7 +5480,7 @@ prove that all linear functions of the form :math:`ax+b` constitute a vector spa
 On the contrary,
 show that all quadratic functions of the form :math:`1 + ax^2 + bx` *do not*
 constitute a vector space.
-Filename: ``linalg1``.
+Filename: ``linalg1.pdf``.
 
 .. --- end exercise ---
 
@@ -5174,7 +5501,7 @@ the topic of *inner product spaces*. Suggest a possible inner product
 for the space of all linear functions of the form :math:`ax+b`, :math:`a,b\in\mathbb{R}`.
 Show that this inner product satisfies the
 general requirements of an inner product in a vector space.
-Filename: ``linalg2``.
+Filename: ``linalg2.pdf``.
 
 .. --- end exercise ---
 
@@ -5193,7 +5520,28 @@ Exercise 3: Approximate a three-dimensional vector in a plane
 Given :math:`\boldsymbol{f} = (1,1,1)` in :math:`\mathbb{R}^3`, find the best approximation vector
 :math:`\boldsymbol{u}` in the plane spanned by the unit vectors :math:`(1,0)` and :math:`(0,1)`.
 Repeat the calculations using the vectors :math:`(2,1)` and :math:`(1,2)`.
-Filename: ``vec111_approx``.
+Filename: ``vec111_approx.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _fem:approx:exer:exp:powers:
+
+Exercise 4: Approximate the exponential function by power functions
+-------------------------------------------------------------------
+
+Let :math:`V` be a function space with basis functions
+:math:`x^{2i+1}`, :math:`i=0,1,\ldots,N`.
+Find the best approximation to :math:`f(x)=\exp(-x)` on :math:`\Omega =[0,4]`
+among all functions in :math:`V`
+for :math:`N=2,3,4`. Illustrate the three approximations in three separate plots.
+Filename: ``exp_powers.py``.
 
 .. --- end exercise ---
 
@@ -5206,7 +5554,7 @@ Filename: ``vec111_approx``.
 
 .. _fem:approx:exer:sin:powers:
 
-Exercise 4: Approximate the sine function by power functions
+Exercise 5: Approximate the sine function by power functions
 ------------------------------------------------------------
 
 Let :math:`V` be a function space with basis functions
@@ -5220,7 +5568,7 @@ behave for the largest domain?
 .. --- begin hint in exercise ---
 
 
-*Hint.* One can make a loop over :math:`k` and call the ``least_squares`` and
+*Hint.* One can make a loop over :math:`k` and call the functions ``least_squares`` and
 ``comparison_plot`` from the ``approx1D`` module.
 
 .. --- end hint in exercise ---
@@ -5238,12 +5586,12 @@ Filename: ``sin_powers.py``.
 
 .. _fem:approx:exer:tanh:sine1:
 
-Exercise 5: Approximate a steep function by sines
+Exercise 6: Approximate a steep function by sines
 -------------------------------------------------
 
 Find the best approximation of :math:`f(x) = \tanh (s(x-\pi))` on
 :math:`[0, 2\pi]` in the space :math:`V` with basis
-:math:`{\varphi}_i(x) = sin((2i+1)x)`, :math:`i\inI`.
+:math:`{\varphi}_i(x) = \sin((2i+1)x)`, :math:`i\inI`.
 Make a movie showing how :math:`u=\sum_{j\inI}c_j{\varphi}_j(x)`
 approximates :math:`f(x)` as :math:`N` grows. Choose :math:`s` such that :math:`f` is
 steep (:math:`s=20` may be appropriate).
@@ -5274,11 +5622,11 @@ Filename: ``tanh_sines_approx1.py``.
 
 .. _fem:approx:exer:Fourier:
 
-Exercise 6: Fourier series as a least squares approximation
+Exercise 7: Fourier series as a least squares approximation
 -----------------------------------------------------------
 
-Given a function :math:`f(x)` on an interval :math:`[0,L]`, find the formula
-for the coefficients of the Fourier series of :math:`f`:
+Given a function :math:`f(x)` on an interval :math:`[0,L]`, look up the formula
+for the coefficients :math:`a_j` and :math:`b_j` in the Fourier series of :math:`f`:
 
 
 .. math::
@@ -5322,7 +5670,7 @@ Filename: ``Fourier_approx.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 7: Approximate a steep function by Lagrange polynomials
+Exercise 8: Approximate a steep function by Lagrange polynomials
 ----------------------------------------------------------------
 
 Use interpolation/collocation with uniformly distributed
@@ -5330,7 +5678,7 @@ points and Chebychev nodes to approximate
 
 
 .. math::
-         f(x) = -\tanh(s(x-\frac{1}{2}))
+         f(x) = -\tanh(s(x-\frac{1}{2})),\quad x\in [0,1],
 
 by Lagrange polynomials for :math:`s=10,100` and :math:`N=3,6,9,11`.
 Make separate plots of the approximation for each combination of
@@ -5346,13 +5694,10 @@ Filename: ``tanh_Lagrange.py``.
 .. --- begin exercise ---
 
 
-.. _fem:approx:fe:exer:defmesh:
+.. _fem:approx:fe:exer:mesh1:
 
-Exercise 8: Define finite element meshes
-----------------------------------------
-
-.. This exercise applies element/node terminology!
-
+Exercise 9: Define nodes and elements
+-------------------------------------
 
 Consider a domain :math:`\Omega =[0,2]` divided into the three elements
 :math:`[0,1]`, :math:`[1,1.2]`, and :math:`[1.2,2]`, with two nodes in each element
@@ -5365,7 +5710,26 @@ nodes and elements numbered from right to left.
 Thereafter, subdivide the element :math:`[1.2,2]` into two new equal-sized elements.
 Add the new node and the two new elements to the data structures created above,
 and try to minimize the modifications.
-Filename: ``fe_numberings.py.``.
+Filename: ``fe_numberings1.py.``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _fem:approx:fe:exer:mesh2:
+
+Exercise 10: Define vertices, cells, and dof maps
+-------------------------------------------------
+
+Repeat :ref:`fem:approx:fe:exer:mesh2`, but define the
+data structures ``vertices``, ``cells``, and ``dof_map`` instead of
+``nodes`` and ``elements``.
+Filename: ``fe_numberings2.py.``.
 
 .. --- end exercise ---
 
@@ -5378,8 +5742,8 @@ Filename: ``fe_numberings.py.``.
 
 .. _fem:approx:fe:exer:defmesh:sparsity:
 
-Exercise 9: Construct matrix sparsity patterns
-----------------------------------------------
+Exercise 11: Construct matrix sparsity patterns
+-----------------------------------------------
 
 :ref:`fem:approx:fe:exer:defmesh` describes a element mesh
 with a total of five elements, but with two different element and
@@ -5407,7 +5771,7 @@ Filename: ``fe_sparsity_pattern.pdf``.
 
 .. _fem:approx:fe:exer:Asinwt:symbolic:
 
-Exercise 10: Perform symbolic finite element computations
+Exercise 12: Perform symbolic finite element computations
 ---------------------------------------------------------
 
 Find formulas for the coefficient matrix and right-hand side
@@ -5446,7 +5810,7 @@ Filename: ``sin_approx_P1.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 11: Approximate a steep function by P1 and P2 elements
+Exercise 13: Approximate a steep function by P1 and P2 elements
 ---------------------------------------------------------------
 
 Given
@@ -5473,7 +5837,7 @@ Filename: ``tanh_fe_P1P2_approx.py``.
 
 .. _fem:approx:exer:tanh2:
 
-Exercise 12: Approximate a :math:`\tanh` function by P3 and P4 elements
+Exercise 14: Approximate a :math:`\tanh` function by P3 and P4 elements
 -----------------------------------------------------------------------
 
 Solve :ref:`fem:approx:exer:tanh` using :math:`N_e=1,2,4` P3 and P4
@@ -5492,17 +5856,36 @@ Filename: ``tanh_fe_P3P4_approx.py``.
 
 .. _fem:approx:fe:exer:Asinwt:interpol:error:
 
-Exercise 13: Investigate the approximation errors in finite elements
---------------------------------------------------------------------
+Exercise 15: Investigate the approximation error in finite elements
+-------------------------------------------------------------------
 
-A fundamental question is how accurate the finite element approximation
-is in terms of the cell length :math:`h` and the degree :math:`d` of the basis
-functions. We can investigate this empirically by choosing an :math:`f`
-function, say :math:`f(x) = A\sin (\omega x)` on
-:math:`\Omega=[0, 2\pi/\omega]`, and compute the approximation error
-for a series of :math:`h` and :math:`d` values. The theory predicts that the
-error should behave as :math:`h^{d+1}`. Use experiments to verify this
+The theory :eq:`fem:approx:fe:error:theorem` from
+the section :ref:`fem:approx:fe:error` predicts that the
+error in the P$d$ approximation of a function
+should behave as :math:`h^{d+1}`. Use experiments to verify this
 asymptotic behavior (i.e., for small enough :math:`h`).
+Choose two examples: :math:`f(x)=Ae^{-\omega x}` on :math:`[0,3/\omega]`
+and :math:`f(x) = A\sin (\omega x)` on :math:`\Omega=[0, 2\pi/\omega]` for
+constants :math:`A` and :math:`\omega`. What happens if you try
+:math:`f(x)=\sqrt{x}` on :math:`[0,1]`?
+
+.. --- begin hint in exercise ---
+
+
+*Hint.* Run a series of experiments: :math:`(h_i,E_)`, :math:`i=0,\ldots,m`, where :math:`E_i`
+is the :math:`L^2` norm of the error corresponding to element length :math:`h_i`.
+Assume an error model :math:`E=Ch^r` and compute :math:`r` from two successive
+experiments:
+
+
+.. math::
+         r_i = \ln (E_{i+1}/E_i)/\ln (h_{i+1}/h_i),\quad i=0,\ldots,m-1{\thinspace .}
+
+Hopefully, the sequence :math:`r_0,\ldots,r_{m-1}` converges to the true
+:math:`r`, and :math:`r_{m-1}` can be taken as an approximation to :math:`r`.
+
+.. --- end hint in exercise ---
+
 Filename: ``Asinwt_interpolation_error.py``.
 
 .. --- end exercise ---
@@ -5516,7 +5899,7 @@ Filename: ``Asinwt_interpolation_error.py``.
 
 .. _fem:approx:fe:exer:Heaviside:
 
-Exercise 14: Approximate a step function by finite elements
+Exercise 16: Approximate a step function by finite elements
 -----------------------------------------------------------
 
 Approximate the step function
@@ -5568,7 +5951,7 @@ Filename: ``Heaviside_approx_P1P2.py.``.
 
 .. _fem:approx:fe:exer:2Dsines:symbolic:
 
-Exercise 15: 2D approximation with orthogonal functions
+Exercise 17: 2D approximation with orthogonal functions
 -------------------------------------------------------
 
 Assume we have basis functions :math:`{\varphi}_i(x,y)` in 2D that are
@@ -5616,7 +5999,7 @@ Filename: ``approx2D_lsorth_sin.py``.
 
 .. _fem:approx:fe:exer:1D:trapez:
 
-Exercise 16: Use the Trapezoidal rule and P1 elements
+Exercise 18: Use the Trapezoidal rule and P1 elements
 -----------------------------------------------------
 
 Consider approximation of some :math:`f(x)` on an interval :math:`\Omega` using
@@ -5627,6 +6010,60 @@ integrals on the reference element. Assemble the contributions, assuming
 a uniform cell partitioning, and show that the resulting linear system
 has the form :math:`c_i=f(x_{i})` for :math:`i\inI`.
 Filename: ``fe_trapez.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _fem:approx:fe:exer:1D:P1:vs:interp:
+
+Problem 19: Compare P1 elements and interpolation
+-------------------------------------------------
+
+We shall approximate the function
+
+
+.. math::
+         f(x) = 1 + \epsilon\sin (2\pi nx),\quad x\in \Omega = [0,1],
+
+where :math:`n\in\mathbb{Z}` and :math:`\epsilon \geq 0`.
+
+
+*a)* Sketch :math:`f(x)` and find the wave length of the function.
+
+*b)* We want to use :math:`N_P` elements per wave length. Show that the number
+of elements is then :math:`nN_P`.
+
+*c)* The critical quantity for accuracy is the number of elements per
+wave length, not the element size in itself. It therefore suffices
+to study an :math:`f` with just one wave length in :math:`\Omega = [0,1]`.
+Set :math:`\epsilon = 0.5`.
+
+Run the least squares or projection/Galerkin method for
+:math:`N_P=2,4,8,16,32`. Compute the error :math:`E=||u-f||_{L^2}`.
+
+.. --- begin hint in exercise ---
+
+
+*Hint.* Use the ``fe_approx1D_numint`` module to compute :math:`u` and use
+the technique from the section :ref:`fem:approx:fe:element:impl:error` to
+compute the norm of the error.
+
+.. --- end hint in exercise ---
+
+
+*d)* Repeat the set of experiments in the above point, but
+use interpolation/collocation based on the node points to
+compute :math:`u(x)` (recall that :math:`c_i` is now simply :math:`f(x_{i})`).
+Compute the error :math:`E=||u-f||_{L^2}`.
+Which method seems to be most accurate?
+
+Filename: ``P1_vs_interp.py``.
 
 .. --- end exercise ---
 
