@@ -28,6 +28,7 @@ preprocess -DFORMAT=html ../newcommands_keep.p.tex > newcommands_keep.tex
 doconce format html $filename --html_style=solarized --html_output=${filename}-solarized --pygments_html_style=perldoc --pygments_html_linenos  -DWITH_TOC
 if [ $? -ne 0 ]; then echo "doconce could not compile document $filename.do.txt - abort"; exit; fi
 doconce replace "<li>" "<p><li>" ${filename}-solarized.html
+doconce replace '<!-- !split -->' '<!-- !split --><br><br><br><br><br><br><br><br>' ${filename}-solarized.html
 
 # reveal.js HTML5 slides
 doconce format html $filename --pygments_html_style=native --keep_pygments_html_bg --html_output=${filename}-reveal
@@ -40,6 +41,7 @@ doconce slides_html ${filename}-deck deck --html_slide_theme=sandstone.default
 # Plain HTML with everything in one file
 doconce format html $filename --html_style=bloodish --html_output=${filename}-1 -DWITH_TOC
 doconce replace "<li>" "<p><li>" ${filename}-1.html
+doconce replace '<!-- !split -->' '<!-- !split --><br><br><br><br><br><br><br><br>' ${filename}-1.html
 
 # Plain HTML with one page per slide
 doconce format html $filename --html_style=bloodish -DWITH_TOC
