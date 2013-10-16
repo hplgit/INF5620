@@ -178,8 +178,8 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
         plt.plot(xcoor, ycoor)
         legends.append(r'$\psi_%d$' % i)
         plt.hold('on')
-        plt.plot(points, [fn(xc) for xc in points], 'ro')
     plt.legend(legends)
+    plt.plot(points, [0]*len(points), 'ro')
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_%d.pdf' % (N+1))
@@ -206,8 +206,8 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
         plt.plot(xcoor, ycoor)
         legends.append(r'$\psi_%d$' % i)
         plt.hold('on')
-        plt.plot(points, [fn(xc) for xc in points], 'ro')
     plt.legend(legends)
+    plt.plot(points, [0]*len(points), 'ro')
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_Cheb_%d.pdf' % (N+1))

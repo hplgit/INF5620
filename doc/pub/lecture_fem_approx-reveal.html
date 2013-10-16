@@ -1,0 +1,3197 @@
+<!DOCTYPE html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
+<meta name="description" content="Study Guide: Approximation of functions with finite elements">
+<meta name="keywords" content="approximation of general vectors,Galerkin method,projection,approximation of functions,approximation by sines,collocation method (approximation),approximation collocation,Lagrange (interpolating) polynomial,sparse matrices">
+
+
+
+
+
+
+
+<!-- reveal.js: http://lab.hakim.se/reveal-js/ -->
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<link rel="stylesheet" href="reveal.js/css/reveal.css">
+<link rel="stylesheet" href="reveal.js/css/theme/darkgray.css" id="theme">
+<!--
+<link rel="stylesheet" href="reveal.js/css/reveal.css">
+<link rel="stylesheet" href="reveal.js/css/reveal.min.css">
+<link rel="stylesheet" href="reveal.js/css/theme/beige.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/beigesmall.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/night.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/simple.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/sky.css" id="theme">
+<link rel="stylesheet" href="reveal.js/css/theme/darkgray.css" id="theme">
+-->
+
+<script>
+document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+</script>
+
+<style type="text/css">
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    p.caption { width: 80%; font-size: 60%; font-style: italic; text-align: left; }
+    hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .reveal .alert-text-small   { font-size: 80%;  }
+    .reveal .alert-text-large   { font-size: 130%; }
+    .reveal .alert-text-normal  { font-size: 90%;  }
+    .reveal .alert {
+             padding:8px 35px 8px 14px; margin-bottom:18px;
+             text-shadow:0 1px 0 rgba(255,255,255,0.5);
+             border:5px solid #bababa;
+             -webkit-border-radius: 14px; -moz-border-radius: 14px;
+             border-radius:14px
+             background-position: 10px 10px;
+             background-repeat: no-repeat;
+             background-size: 38px;
+             padding-left: 30px; /* 55px; if icon */
+     }
+     .reveal .alert-block {padding-top:14px; padding-bottom:14px}
+     .reveal .alert-block > p, .alert-block > ul {margin-bottom:1em}
+     /*.reveal .alert li {margin-top: 1em}*/
+     .reveal .alert-block p+p {margin-top:5px}
+     /*.reveal .alert-notice { background-image: url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_notice.png); }
+     .reveal .alert-summary  { background-image:url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_summary.png); }
+     .reveal .alert-warning { background-image: url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_warning.png); }
+     .reveal .alert-question {background-image:url(http://hplgit.github.io/doconce/bundled/html_images/small_gray_question.png); } */
+
+</style>
+
+
+
+<!-- Styles for table layout of slides -->
+<style type="text/css">
+td.padding {
+  padding-top:20px;
+  padding-bottom:20px;
+  padding-right:50px;
+  padding-left:50px;
+}
+</style>
+
+</head>
+
+<body>
+<div class="reveal">
+
+<!-- Any section element inside the <div class="slides"> container
+     is displayed as a slide -->
+
+<div class="slides">
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "none"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
+  }
+});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- Fix slow MathJax rendering in IE8 -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+
+
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\tp}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+% Unit vectors
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+% Index sets
+\newcommand{\Ix}{\mathcal{I}_x}
+\newcommand{\Iy}{\mathcal{I}_y}
+\newcommand{\Iz}{\mathcal{I}_z}
+\newcommand{\It}{\mathcal{I}_t}
+%\newcommand{\If}{\mathcal{I}}     % for FEM
+\newcommand{\If}{I}     % for FEM
+%\newcommand{\Ifd}{\mathcal{I}_d}  % for FEM
+\newcommand{\Ifd}{I_d}  % for FEM
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
+%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
+%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+\newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
+
+% Finite elements
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+%\newcommand{\xno}[1]{x^{(#1)}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+% FEniCS commands
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
+    
+
+
+
+<section>
+<!-- ------------------- main content ---------------------- -->
+
+
+<title>Study Guide: Approximation of functions with finite elements</title>
+
+<center><h1>Study Guide: Approximation of functions with finite elements</h1></center>  <!-- document title -->
+
+<p>
+<!-- author(s): Hans Petter Langtangen -->
+
+<center>
+<b>Hans Petter Langtangen</b> [1, 2]
+</center>
+
+
+<p>&nbsp;<br>
+<!-- institution(s) -->
+
+<center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
+<center>[2] <b>Department of Informatics, University of Oslo</b></center>
+<p>&nbsp;<br>
+<center><h4>Oct 16, 2013</h4></center> <!-- date -->
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Why finite elements?  <a name="___sec0"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Can with ease solve PDEs in domains with <em>complex geometry</em></li>
+ <p><li> Can with ease provide higher-order approximations</li>
+ <p><li> Has (in simpler stationary problems) a rigorus mathematical
+   analysis framework (not much considered here)
+<!-- The theoretical framework is not powerful enough to uncover the -->
+<!-- serious limitations of the method in time-dependent problems -->
+<!-- and the necessary adjustments) --></li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Domain for flow around a dolphin  <a name="___sec1"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/dolfin_mesh.png" align="bottom" width=400,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The flow  <a name="___sec2"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/dolfin_flow.gif" align="bottom" width=400,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Basic ingredients of the finite element method  <a name="___sec3"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Transform the PDE problem to a <em>variational form</em></li>
+ <p><li> Define function approximation over <em>finite elements</em></li>
+ <p><li> Use a machinery to derive <em>linear systems</em></li>
+ <p><li> Solve linear systems</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Our learning strategy  <a name="___sec4"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Start with approximation of functions, not PDEs</li>
+ <p><li> Introduce finite element <em>approximations</em></li>
+ <p><li> See later how this is applied to PDEs</li>
+</ul>
+<p>
+
+Reason: the finite element method has many concepts and a jungle of details.
+This strategy minimizes the mixing of ideas, concepts, and technical details.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Approximation set-up  <a name="___sec5"></a></h3>
+
+<p>
+General idea:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+ u(x) = \sum_{i=0}^N c_i\baspsi_i(x),
+\tag{1}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+where
+
+<p>
+
+<ul>
+ <p><li> \( \baspsi_i(x) \) are prescribed functions</li>
+ <p><li> \( c_i \), \( i=0,\ldots,N \) are unknown coefficients to be determined</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>How to determine the coefficients?  <a name="___sec6"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> least squares method</li>
+ <p><li> projection or Galerkin method</li>
+ <p><li> interpolation (or collocation) method</li>
+</ul>
+<p>
+
+<div class="alert alert-block alert-block alert-text-normal"><b>Underlying motivation for our notation.</b>
+Our mathematical framework for doing this is phrased in a way such
+that it becomes easy to understand and use the <a href="http://fenicsproject.org">FEniCS</a> software package for finite element computing.
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Approximation of planar vectors; problem <a name="fem:approx:vec:plane"></a></h3>
+
+<p>
+Given a vector \( \f = (3,5) \), find an approximation
+to \( \f \) directed along a given line.
+
+<p>
+<center><p><img src="fig-fem/vecapprox_plane.png" align="bottom" width=200></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Approximation of planar vectors; vector space terminology  <a name="___sec8"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+V = \mbox{span}\,\{ \psib_0\}\tp  \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( \psib_0 \) is a basis vector in the space \( V \)</li>
+ <p><li> Seek \( \u = c_0\psib_0\in V \)</li>
+ <p><li> Determine \( c_0 \) such that \( \u \) is the "best" approximation to \( \f \)</li>
+ <p><li> Visually, "best" is obvious</li>
+</ul>
+<p>
+
+Define
+
+<p>
+
+<ul>
+ <p><li> the error \( \e = \f - \u \)</li>
+ <p><li> the (Eucledian) scalar product of two vectors: \( (\u,\v) \)</li>
+ <p><li> the norm of \( \e \): \( ||\e|| = \sqrt{(\e, \e)} \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>The least squares method; principle  <a name="___sec9"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Idea: find \( c_0 \) such that \( ||\e|| \) is minimized</li>
+ <p><li> Actually, we always minimize \( E=||\e||^2 \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\frac{\partial E}{\partial c_0} = 0
+\tp  \end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The least squares method; calculations  <a name="___sec10"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+E(c_0) = (\e,\e) = (\f,\f) - 2c_0(\f,\psib_0) + c_0^2(\psib_0,\psib_0)
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{\partial E}{\partial c_0} = -2(\f,\psib_0) + 2c_0 (\psib_0,\psib_0) = 0
+\tag{2}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+c_0 = \frac{(\f,\psib_0)}{(\psib_0,\psib_0)}
+\tag{3}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+c_0 = \frac{3a + 5b}{a^2 + b^2}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Observation for later: the vanishing derivative <a href="#mjx-eqn-2">(2)</a>
+can be alternatively written as
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(\e, \psib_0) = 0
+\tp
+\tag{4}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The projection (or Galerkin) method  <a name="___sec11"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Backgrund: minimizing \( ||\e||^2 \) implies that \( \e \) is
+   orthogonal to <em>any</em> vector \( \v \) in the space \( V \)
+   (visually clear, but can easily be computed too)</li>
+ <p><li> Alternative idea: demand \( (\e, \v) = 0,\quad\forall\v\in V \)</li>
+ <p><li> Equivalent statement: \( (\e, \psib_0)=0 \) (see notes for why)</li>
+ <p><li> Insert \( \e = \f - c_0\psib_0 \) and solve for \( c_0 \)</li>
+ <p><li> Same equation for \( c_0 \) and hence same solution as in the least squares
+   method</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Approximation of general vectors <a name="fem:approx:vec:Np1dim"></a></h3>
+
+<p>
+Given a vector \( \f \), find an approximation \( \u\in V \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+V = \hbox{span}\,\{\psib_0,\ldots,\psib_N\}
+\tp
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> We have a set of linearly independent basis vectors
+   \( \psib_0,\ldots,\psib_N \)</li>
+ <p><li> Any \( \u\in V \) can then be written as \( \u = \sum_{j=0}^Nc_j\psib_j \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>The least squares method  <a name="___sec13"></a></h3>
+
+<p>
+Idea: find \( c_0,\ldots,c_N \) such that \( E= ||\e||^2 \) is minimized, \( \e=\f-\u \).
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+E(c_0,\ldots,c_N) &= (\e,\e) = (\f -\sum_jc_j\psib_j,\f -\sum_jc_j\psib_j)
+\nonumber\\ 
+&= (\f,\f) - 2\sum_{j=0}^Nc_j(\f,\psib_j) +
+\sum_{p=0}^N\sum_{q=0}^N c_pc_q(\psib_p,\psib_q)\tp
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\frac{\partial E}{\partial c_i} = 0,\quad i=0,\ldots,N
+\tp
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+After some work we end up with a <em>linear system</em>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\sum_{j=0}^N A_{i,j}c_j &= b_i,\quad i=0,\ldots,N\\ 
+A_{i,j} &= (\psib_i,\psib_j)\\ 
+b_i &= (\psib_i, \f)
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The projection (or Galerkin) method  <a name="___sec14"></a></h3>
+
+<p>
+Can be shown that minimizing \( ||\e|| \) implies that
+\( \e \) is orthogonal to all \( \v\in V \):
+
+<p>
+<p>&nbsp;<br>
+$$
+(\e,\v)=0,\quad \forall\v\in V,
+$$
+<p>&nbsp;<br>
+
+which implies that \( \e \) most be orthogonal to each basis vector:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(\e,\psib_i)=0,\quad i=0,\ldots,N\tp
+\tag{5}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+This orthogonality condition is the principle of the projection
+(or Galerkin) method. Leads to
+the same linear system as in the least squares method.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Approximation of functions <a name="fem:approx:global"></a></h2>
+
+<p>
+Let \( V \) be a <em>function space</em> spanned by a set of <em>basis functions</em>
+\( \baspsi_0,\ldots,\baspsi_N \),
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+V = \hbox{span}\,\{\baspsi_0,\ldots,\baspsi_N\},\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Find \( u\in V \) as a linear
+combination of the basis functions:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u = \sum_{j\in\If} c_j\baspsi_j,\quad\If = \{0,1,\ldots,N\}
+\tag{6}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The least squares method <a name="fem:approx:LS"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Extend the ideas from the vector case: minimize the (square) norm
+   of the error.</li>
+ <p><li> What norm? \( (f,g) = \int_\Omega f(x)g(x)\, dx \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+E = (e,e) = (f-u,f-u) = (f(x)-\sum_{j\in\If} c_j\baspsi_j(x), f(x)-\sum_{j\in\If} c_j\baspsi_j(x))
+\tag{7}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+E(c_0,\ldots,c_N) = (f,f) -2\sum_{j\in\If} c_j(f,\baspsi_i)
++ \sum_{p\in\If}\sum_{q\in\If} c_pc_q(\baspsi_p,\baspsi_q)
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\frac{\partial E}{\partial c_i} = 0,\quad i=\in\If
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+After computations <em>identical to the vector case</em>, we get a linear system
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\sum_{j\in\If}^N A_{i,j}c_j &= b_i,\quad i\in\If
+\tag{8}\\ 
+A_{i,j} &= (\baspsi_i,\baspsi_j)
+\tag{9}\\ 
+b_i &= (f,\baspsi_i)
+\tag{10}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The projection (or Galerkin) method  <a name="___sec17"></a></h3>
+
+<p>
+As before, minimizing \( (e,e) \) is equivalent to the projection (or Galerkin)
+method
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(e,v)=0,\quad\forall v\in V,
+\tag{11}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+which means, as before,
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(e,\baspsi_i)=0,\quad i\in\If\tp
+\tag{12}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+With the same algebra as in the multi-dimensional vector case,
+we get the same linear system as arose from the least squares method.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example: linear approximation; problem <a name="fem:approx:global:linear"></a></h3>
+
+<p>
+<div class="alert alert-block alert-block alert-text-normal"><b>Problem.</b>
+Approximate a parabola \( f(x) = 10(x-1)^2 - 1 \) by a straight line.
+</div>
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} V = \hbox{span}\,\{1, x\}\tp  \end{equation*}
+$$
+<p>&nbsp;<br>
+
+That is, \( \baspsi_0(x)=1 \), \( \baspsi_1(x)=x \), and \( N=1 \).
+We seek
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+u=c_0\baspsi_0(x) + c_1\baspsi_1(x) = c_0 + c_1x,\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example: linear approximation; solution  <a name="___sec19"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+A_{0,0} &= (\baspsi_0,\baspsi_0) = \int_1^21\cdot 1\, dx = 1\\ 
+A_{0,1} &= (\baspsi_0,\baspsi_1) = \int_1^2 1\cdot x\, dx = 3/2\\ 
+A_{1,0} &= A_{0,1} = 3/2,\\ 
+A_{1,1} &= (\baspsi_1,\baspsi_1) = \int_1^2 x\cdot x\,dx = 7/3
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+b_1 &= (f,\baspsi_0) = \int_1^2 (10(x-1)^2 - 1)\cdot 1 \, dx = 7/3\\ 
+b_2 &= (f,\baspsi_1) = \int_1^2 (10(x-1)^2 - 1)\cdot x\, dx = 13/3
+\end{align}
+$$
+<p>&nbsp;<br>
+
+Solution of 2x2 linear system:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+c_0 = -38/3,\quad c_1 = 10,\quad u(x) = 10x - \frac{38}{3}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example: linear approximation; plot  <a name="___sec20"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/parabola_ls_linear.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of the least squares method; ideas <a name="fem:approx:global:LS:code"></a></h3>
+
+<p>
+Consider symbolic computation of the linear system,
+where
+
+<p>
+
+<ul>
+ <p><li> \( f(x) \) is given as a <code>sympy</code> expression <code>f</code> (involving
+   the symbol <code>x</code>),</li>
+ <p><li> <code>phi</code> is a list of \( \sequencei{\baspsi} \),</li>
+ <p><li> <code>Omega</code> is a 2-tuple/list holding the domain \( \Omega \)</li>
+</ul>
+<p>
+
+Carry out the integrations, solve the linear system, and
+return \( u(x)=\sum_jc_j\baspsi_j(x) \)
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of the least squares method; code  <a name="___sec22"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">least_squares</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega):</span>
+    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
+    <span style="color: #d0d0d0">A</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+        <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">j</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(i,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(phi[i]*phi[j],</span>
+                                  <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
+            <span style="color: #d0d0d0">A[j,i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A[i,j]</span>
+        <span style="color: #d0d0d0">b[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(phi[i]*f,</span> <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
+    <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)):</span>
+        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*phi[i]</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u</span>
+</pre></div>
+<p>
+Observe: symmetric coefficient matrix so we can halve the integrations.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of the least squares method; plotting  <a name="___sec23"></a></h3>
+
+<p>
+Compare \( f \) and \( u \) visually:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">comparison_plot</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">Omega,</span> <span style="color: #d0d0d0">filename=</span><span style="color: #ed9d13">&#39;tmp.pdf&#39;</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #999999; font-style: italic"># Turn f and u to ordinary Python functions</span>
+    <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.lambdify([x],</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">modules=</span><span style="color: #ed9d13">&quot;numpy&quot;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.lambdify([x],</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">modules=</span><span style="color: #ed9d13">&quot;numpy&quot;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">resolution</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">401</span>  <span style="color: #999999; font-style: italic"># no of points in plot</span>
+    <span style="color: #d0d0d0">xcoor</span>  <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">linspace(Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">resolution)</span>
+    <span style="color: #d0d0d0">exact</span>  <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">f(xcoor)</span>
+    <span style="color: #d0d0d0">approx</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">u(xcoor)</span>
+    <span style="color: #d0d0d0">plot(xcoor,</span> <span style="color: #d0d0d0">approx)</span>
+    <span style="color: #d0d0d0">hold(</span><span style="color: #ed9d13">&#39;on&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">plot(xcoor,</span> <span style="color: #d0d0d0">exact)</span>
+    <span style="color: #d0d0d0">legend([</span><span style="color: #ed9d13">&#39;approximation&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #ed9d13">&#39;exact&#39;</span><span style="color: #d0d0d0">])</span>
+    <span style="color: #d0d0d0">savefig(filename)</span>
+</pre></div>
+<p>
+All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>approx1D.py</tt></a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Implementation of the least squares method; application  <a name="___sec24"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">phi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">comparison_plot(f,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
+</pre></div>
+<p>
+<center><p><img src="fig-fem/parabola_ls_linear.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Perfect approximation; parabola approximating parabola <a name="fem:approx:global:exact"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> What if we add \( \baspsi_2=x^2 \) to the space \( V \)?</li>
+ <p><li> That is, approximating a parabola by any parabola?</li>
+ <p><li> (Hopefully we get the exact parabola!)</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">phi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">x**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">u</span>
+<span style="color: #3677a9">10</span><span style="color: #d0d0d0">*x**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">20</span><span style="color: #d0d0d0">*x</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">9</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">sm.expand(f)</span>
+<span style="color: #3677a9">10</span><span style="color: #d0d0d0">*x**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">20</span><span style="color: #d0d0d0">*x</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">9</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Perfect approximation; the general result  <a name="___sec26"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> What if we use \( \phi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?</li>
+ <p><li> The output from <code>least_squares</code> is \( c_i=0 \) for \( i>2 \)</li>
+</ul>
+<p>
+
+<div class="alert alert-block alert-block alert-text-normal"><b>General result.</b>
+If \( f\in V \), least squares and projection/Galerkin give \( u=f \).
+</div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Perfect approximation; proof of the general result  <a name="___sec27"></a></h3>
+
+<p>
+If \( f\in V \), \( f=\sum_{j\in\If}d_j\baspsi_j \), for
+some  \( \sequencei{d} \). Then
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+b_i = (f,\baspsi_i) = \sum_{j\in\If}d_j(\baspsi_j, \baspsi_i)
+= \sum_{j\in\If} d_jA_{i,j}\tp
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+The linear system \( \sum_j A_{i,j}c_j = b_i \), \( i\in\If \), is then
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\sum_{j\in\If}c_jA_{i,j} = \sum_{j\in\If}d_jA_{i,j},\quad i\in\If,
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+which implies that \( c_i=d_i \) for \( i\in\If \) and \( u \) is identical to \( f \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Finite-precision/numerical computations <a name="fem:approx:global:illconditioning"></a></h3>
+
+<p>
+The previous computations were symbolic. What if we solve the
+linear system numerically with standard arrays?
+
+<p>
+<table border="1">
+<tr><td align="center"><b>        exact         </b></td> <td align="center"><b>  <code>sympy</code>  </b></td> <td align="center"><b> <code>numpy32</code> </b></td> <td align="center"><b> <code>numpy64</code> </b></td> </tr>
+<tr><td align="right">   9                       </td> <td align="right">   9.62                    </td> <td align="right">   5.57                    </td> <td align="right">   8.98                    </td> </tr>
+<tr><td align="right">   -20                     </td> <td align="right">   -23.39                  </td> <td align="right">   -7.65                   </td> <td align="right">   -19.93                  </td> </tr>
+<tr><td align="right">   10                      </td> <td align="right">   17.74                   </td> <td align="right">   -4.50                   </td> <td align="right">   9.96                    </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   -9.19                   </td> <td align="right">   4.13                    </td> <td align="right">   -0.26                   </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   5.25                    </td> <td align="right">   2.99                    </td> <td align="right">   0.72                    </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   0.18                    </td> <td align="right">   -1.21                   </td> <td align="right">   -0.93                   </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   -2.48                   </td> <td align="right">   -0.41                   </td> <td align="right">   0.73                    </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   1.81                    </td> <td align="right">   -0.013                  </td> <td align="right">   -0.36                   </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   -0.66                   </td> <td align="right">   0.08                    </td> <td align="right">   0.11                    </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   0.12                    </td> <td align="right">   0.04                    </td> <td align="right">   -0.02                   </td> </tr>
+<tr><td align="right">   0                       </td> <td align="right">   -0.001                  </td> <td align="right">   -0.02                   </td> <td align="right">   0.002                   </td> </tr>
+</table>
+<p>
+
+<ul>
+  <p><li> Column 2: <code>sympy.mpmath.fp.matrix</code> and <code>sympy.mpmath.fp.lu_solve</code></li>
+  <p><li> Column 3: <code>numpy</code> arrays with <code>numpy.float32</code> entries</li>
+  <p><li> Column 4: <code>numpy</code> arrays with <code>numpy.float64</code> entries</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Ill-conditioning (1)  <a name="___sec29"></a></h3>
+
+<p>
+Observations:
+
+<p>
+
+<ul>
+ <p><li> Significant round-off errors in the numerical computations (!)</li>
+ <p><li> But if we plot the approximations they look good (!)</li>
+</ul>
+<p>
+
+Problem: The basis functions \( x^i \) become almost linearly dependent for
+large \( N \).
+
+<p>
+<center><p><img src="fig-fem/ill_conditioning.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Ill-conditioning (2)  <a name="___sec30"></a></h3>
+
+<p>
+
+<ul>
+  <p><li> Almost linearly dependent basis functions give almost singular matrices</li>
+  <p><li> Such matrices are said to be <em>ill conditioned</em>, and Gaussian elimination
+    is severely affected by round-off errors</li>
+  <p><li> The basis \( 1, x, x^2, x^3, x^4, \ldots \) is a bad basis</li>
+  <p><li> Polynomials are fine as basis, but the more orthogonal they are,
+    \( (\baspsi_i,\baspsi_j)\approx 0 \), the better</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Fourier series approximation; problem and code <a name="fem:approx:global:Fourier"></a></h3>
+
+<p>
+Consider
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+V = \hbox{span}\,\{ \sin \pi x, \sin 2\pi x,\ldots,\sin (N+1)\pi x\}
+\tp  \end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">3</span>
+<span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">sin,</span> <span style="color: #d0d0d0">pi</span>
+<span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sin(pi*(i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)*x)</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+<span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
+<span style="color: #d0d0d0">Omega</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega)</span>
+<span style="color: #d0d0d0">comparison_plot(f,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">Omega)</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Fourier series approximation; plot  <a name="___sec32"></a></h3>
+
+<p>
+\( N=3 \) vs \( N=11 \):
+
+<p>
+<center><p><img src="fig-fem/parabola_ls_sines4_12.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Fourier series approximation; improvements  <a name="___sec33"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Considerably improvement by \( N=11 \)</li>
+ <p><li> But always discrepancy of \( f(0)-u(0)=9 \) at \( x=0 \), because all the
+   \( \baspsi_i(0)=0 \) and hence \( u(0)=0 \)</li>
+ <p><li> Possible remedy: add a term that leads to correct boundary values</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x) = f(0)(1-x) + xf(1) + \sum_{j\in\If} c_j\baspsi_j(x)
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+The extra term ensures \( u(0)=f(0) \) and \( u(1)=f(1) \) and
+is a strikingly good help to get a good
+approximation!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Fourier series approximation; final results  <a name="___sec34"></a></h3>
+
+<p>
+\( N=3 \) vs \( N=11 \):
+
+<p>
+<center><p><img src="fig-fem/parabola_ls_sines4_12_wfterm.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Orthogonal basis functions  <a name="___sec35"></a></h3>
+
+<p>
+This choice of sine functions as basis functions is popular because
+
+<p>
+
+<ul>
+ <p><li> the basis functions are orthogonal: \( (\baspsi_i,\baspsi_j)=0 \)</li>
+ <p><li> implying that \( A_{i,j} \) is a diagonal matrix</li>
+ <p><li> implying that we can solve for \( c_i = 2\int_0^1 f(x)\sin ((i+1)\pi x) dx \)</li>
+</ul>
+<p>
+
+In general for an orthogonal basis, \( A_{i,j} \) is diagonal and we can
+easily solve for \( c_i \):
+
+<p>
+<p>&nbsp;<br>
+$$
+c_i = \frac{b_i}{A_{i,i}} = \frac{(f,\baspsi_i)}{(\baspsi_i,\baspsi_i)}
+\tp
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The collocation or interpolation method; ideas and math <a name="fem:approx:global:interp"></a></h3>
+
+<p>
+Here is another idea for approximating \( f(x) \) by \( u(x)=\sum_jc_j\baspsi_j \):
+
+<p>
+
+<ul>
+ <p><li> Force \( u(\xno{i}) = f(\xno{i}) \) at some selected <em>collocation</em> points
+   \( \sequencei{x} \)</li>
+ <p><li> Then \( u \) interpolates \( f \)</li>
+ <p><li> The method is known as <em>interpolation</em> or <em>collocation</em></li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(\xno{i}) = \sum_{j\in\If} c_j \baspsi_j(\xno{i}) = f(\xno{i}),
+\quad i\in\If,N\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+This is a linear system with no need for integration:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\sum_{j\in\If} A_{i,j}c_j &= b_i,\quad i\in\If\\ 
+A_{i,j} &= \baspsi_j(\xno{i})\\ 
+b_i &= f(\xno{i})
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+No symmetric matrix: \( \baspsi_j(\xno{i})\neq \baspsi_i(\xno{j}) \) in general
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The collocation or interpolation method; implementation  <a name="___sec37"></a></h3>
+
+<p>
+<code>points</code> holds the interpolation/collocation points
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">interpolation</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">points):</span>
+    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
+    <span style="color: #d0d0d0">A</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #999999; font-style: italic"># Turn phi and f into Python functions</span>
+    <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sm.lambdify([x],</span> <span style="color: #d0d0d0">phi[i])</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+    <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.lambdify([x],</span> <span style="color: #d0d0d0">f)</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+        <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">j</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">phi[j](points[i])</span>
+        <span style="color: #d0d0d0">b[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">f(points[i])</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
+    <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)):</span>
+        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*phi[i](x)</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The collocation or interpolation method; approximating a parabola by linear functions  <a name="___sec38"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Potential difficulty: how to choose \( \xno{i} \)?</li>
+ <p><li> The results are sensitive to the points!</li>
+</ul>
+<p>
+
+\( (4/3,5/3) \) vs \( (1,2) \):
+
+<p>
+<center><p><img src="fig-fem/parabola_inter.png" align="bottom" width=700,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; motivation and ideas <a name="fem:approx:global:Lagrange"></a></h3>
+
+<p>
+Motivation:
+
+<p>
+
+<ul>
+ <p><li> The interpolation/collocation method avoids integration</li>
+ <p><li> With a diagonal matrix \( A_{i,j} = \baspsi_j(\xno{i}) \) we
+   can solve the linear system by hand</li>
+</ul>
+<p>
+
+The <em>Lagrange interpolating polynomials</em> \( \baspsi_j \) have the property that
+
+<p>
+<p>&nbsp;<br>
+$$ \basphi_i(\xno{j}) =\delta_{ij},\quad \delta_{ij} =
+\left\lbrace\begin{array}{ll}
+1, & i=j,\\ 
+0, & i\neq j,
+\end{array}\right.
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Hence, \( c_i = f(x_i) \) and
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x) = \sum_{j\in\If} f(\xno{i})\baspsi_i(x)
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Lagrange polynomials and interpolation/collocation look convenient</li>
+ <p><li> Lagrange polynomials are very much used in the finite element method</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; formula and code  <a name="___sec40"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\baspsi_i(x) =
+\prod_{j=0,j\neq i}^N
+\frac{x-\xno{j}}{\xno{i}-\xno{j}}
+= \frac{x-x_0}{\xno{i}-x_0}\cdots\frac{x-\xno{i-1}}{\xno{i}-\xno{i-1}}\frac{x-\xno{i+1}}{\xno{i}-\xno{i+1}}
+\cdots\frac{x-x_N}{\xno{i}-x_N},
+\tag{13}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">Lagrange_polynomial</span><span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">i,</span> <span style="color: #d0d0d0">points):</span>
+    <span style="color: #d0d0d0">p</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">k</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(points)):</span>
+        <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">k</span> <span style="color: #d0d0d0">!=</span> <span style="color: #d0d0d0">i:</span>
+            <span style="color: #d0d0d0">p</span> <span style="color: #d0d0d0">*=</span> <span style="color: #d0d0d0">(x</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">points[k])/(points[i]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">points[k])</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">p</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; successful example  <a name="___sec41"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/Lagrange_ls_interp_sin_4.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; a less successful example  <a name="___sec42"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/Lagrange_interp_abs_8_15.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; oscillatory behavior  <a name="___sec43"></a></h3>
+
+<p>
+12 points, degree 11, plot of two of the Lagrange polynomials - note that
+they are zero at all points except one.
+
+<p>
+<center><p><img src="fig-fem/Lagrange_basis_12.png" align="bottom" width=500></p></center>
+
+<p>
+Problem: strong oscillations near the boundaries for larger \( N \) values.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; remedy for strong oscillations  <a name="___sec44"></a></h3>
+
+<p>
+The oscillations can be reduced by a more clever choice of
+interpolation points, called the <em>Chebyshev nodes</em>:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\xno{i} = \half (a+b) + \half(b-a)\cos\left( \frac{2i+1}{2(N+1)}pi\right),\quad i=0\ldots,N,
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+on an interval \( [a,b] \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; recalculation with Chebyshev nodes  <a name="___sec45"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/Lagrange_interp_abs_Cheb_8_15.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Lagrange polynomials; less oscillations with Chebyshev nodes  <a name="___sec46"></a></h3>
+
+<p>
+12 points, degree 11, plot of two of the Lagrange polynomials - note that
+they are zero at all points except one.
+
+<p>
+<center><p><img src="fig-fem/Lagrange_basis_Cheb_12.png" align="bottom" width=500></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Finite element basis functions <a name="fem:approx:fe"></a></h2>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>So far: basis functions have been global  <a name="___sec48"></a></h3>
+
+<p>
+\( \baspsi_i(x) \neq 0 \) for most \( x\in\Omega \)
+
+<p>
+<center><p><img src="fig-fem/u_example_sin.png" align="bottom" width=600></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>In the finite element method we use basis functions with local support  <a name="___sec49"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> <em>Local support</em>: \( \baspsi_i(x) \neq 0 \) for \( x \) in a
+   small subdomain of \( \Omega \)</li>
+ <p><li> Typically hat-shaped</li>
+ <p><li> \( u(x) \) based on these \( \baspsi_i \) is a piecewise polynomial
+   defined over many (small) subdomains</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>The linear combination of hat functions is a piecewise linear function  <a name="___sec50"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/u_example_fe2.png" align="bottom" width=600></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Elements and nodes <a name="fem:approx:fe:def:elements:nodes"></a></h3>
+
+<p>
+Split \( \Omega \) into non-overlapping subdomains called <em>elements</em>:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\Omega = \Omega^{(0)}\cup \cdots \cup \Omega^{(N_e)}\tp  \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+On each element, introduce points called <em>nodes</em>: \( \xno{0},\ldots,\xno{N_n} \)
+
+<p>
+
+<ul>
+ <p><li> The finite element basis functions are named \( \basphi_i(x) \)</li>
+ <p><li> \( \basphi_i=1 \) at node \( i \) and 0 at all other nodes</li>
+ <p><li> \( \basphi_i \) is a Lagrange polynomial on each element</li>
+ <p><li> For nodes at the boundary between two elements, \( \basphi_i \) is made
+   up of a Lagrange polynomial over each element</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Example on elements with two nodes (P1 elements)  <a name="___sec52"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D.png" align="bottom" width=500></p></center>
+
+<p>
+Data structure: <code>nodes</code> holds coordinates or nodes, <code>elements</code> holds the
+node numbers in each element
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1.2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2.4</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">3.6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">4.8</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">5</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">3</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">4</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">5</span><span style="color: #d0d0d0">]]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Illustration of two basis functions on the mesh  <a name="___sec53"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=500></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example on elements with three nodes (P2 elements)  <a name="___sec54"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_P2.png" align="bottom" width=500></p></center>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.125</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.25</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.375</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.625</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.75</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.875</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1.0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">4</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">6</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">7</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">8</span><span style="color: #d0d0d0">]]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Some corresponding basis functions (P2 elements)  <a name="___sec55"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/phi/mpl_fe_basis_p2_4e.png" align="bottom" width=600></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Examples on elements with four nodes per element (P3 elements)  <a name="___sec56"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_d4_stretched.png" align="bottom" width=500></p></center>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">d</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">3</span>  <span style="color: #999999; font-style: italic"># d+1 nodes per element</span>
+<span style="color: #d0d0d0">num_elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">4</span>
+<span style="color: #d0d0d0">num_nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">num_elements*d</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">1</span>
+<span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[i*</span><span style="color: #3677a9">0.5</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(num_nodes)]</span>
+<span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[i*d+j</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">j</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(d+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(num_elements)]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Some corresponding basis functions (P3 elements)  <a name="___sec57"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/phi/mpl_fe_basis_p3_4e.png" align="bottom" width=600></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The numbering does not need to be regular from left to right  <a name="___sec58"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_random_numbering.png" align="bottom" width=500></p></center>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">1.5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">5.5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">4.2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.3</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2.2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">3.1</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">5</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">4</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">]]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Interpretation of the coefficients \( c_i \)  <a name="___sec59"></a></h3>
+
+<p>
+Important property: \( c_i \)
+is the value of \( u \) at node \( i \), \( \xno{i} \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(\xno{i}) = \sum_{j\in\If} c_j\basphi_j(\xno{i}) =
+c_i\basphi_i(\xno{i}) = c_i
+\tag{14}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Properties of the basis functions  <a name="___sec60"></a></h3>
+
+<p>
+\( \basphi_i(x) \) is mostly zero throughout the domain:
+
+<p>
+
+<ul>
+ <p><li> \( \basphi_i(x) \neq 0 \) only on those elements that contain global node \( i \),</li>
+ <p><li> \( \basphi_i(x)\basphi_j(x) \neq 0 \) if and only if \( i \) and \( j \) are global node
+   numbers in the same element.</li>
+</ul>
+<p>
+
+Since \( A_{i,j} \) is the integral of
+\( \basphi_i\basphi_j \) it means that
+<em>most of the elements in the coefficient matrix will be zero</em>
+(important for implementation!).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>How to construct quadratic \( \basphi_i \) (P2 elements)  <a name="___sec61"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/phi/mpl_fe_basis_p2_4e.png" align="bottom" width=600></p></center>
+
+<p>
+
+<ol>
+<p><li> Associate Lagrange polynomials with the nodes in an element</li>
+<p><li> When the polynomial is 1 on the element boundary, combine it
+   with the polynomial in the neighboring element</li>
+</ol>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Example on linear \( \basphi_i \) (P1 elements)  <a name="___sec62"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/phi/mpl_fe_basis_p1_4e.png" align="bottom" width=600></p></center>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\basphi_i(x) = \left\lbrace\begin{array}{ll}
+0, & x < \xno{i-1},\\ 
+(x - \xno{i-1})/h,
+& \xno{i-1} \leq x < \xno{i},\\ 
+1 -
+(x - x_{i})/h,
+& \xno{i} \leq x < \xno{i+1},\\ 
+0, & x\geq \xno{i+1}
+\end{array}
+\right.
+\tag{15}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example on cubic \( \basphi_i \) (P3 elements)  <a name="___sec63"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/phi/mpl_fe_basis_p3_4e.png" align="bottom" width=600,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Calculating the linear system for \( c_i \) <a name="fem:approx:global:linearsystem"></a></h2>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Computing a specific matrix entry (1)  <a name="___sec65"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=500></p></center>
+
+<p>
+\( A_{2,3}=\int_\Omega\basphi_2\basphi_3 dx \): \( \basphi_2\basphi_3\neq 0 \)
+only over element 2. There,
+
+<p>
+<p>&nbsp;<br>
+$$ \basphi_3(x) = (x-x_2)/h,\quad \basphi_2(x) = 1- (x-x_2)/h$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+A_{2,3} = \int_\Omega \basphi_2\basphi_{3}\dx =
+\int_{\xno{2}}^{\xno{3}}
+\left(1 - \frac{x - \xno{2}}{h}\right) \frac{x - x_{2}}{h}
+ \dx = \frac{h}{6}\tp
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Computing a specific matrix entry (2)  <a name="___sec66"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=500></p></center>
+
+<p>
+<p>&nbsp;<br>
+$$ A_{2,2} =
+\int_{\xno{1}}^{\xno{2}}
+\left(\frac{x - \xno{1}}{h}\right)^2\dx +
+\int_{\xno{2}}^{\xno{3}}
+\left(1 - \frac{x - \xno{2}}{h}\right)^2\dx
+= \frac{h}{3}\tp
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Calculating a general row in the matrix; figure  <a name="___sec67"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_phi_i_im1.png" align="bottom" width=500></p></center>
+
+<p>
+<p>&nbsp;<br>
+$$ A_{i,i-1} = \int_\Omega \basphi_i\basphi_{i-1}\dx = \hbox{?}$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Calculating a general row in the matrix; details  <a name="___sec68"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+A_{i,i-1} &= \int_\Omega \basphi_i\basphi_{i-1}\dx\\ 
+&=
+\underbrace{\int_{\xno{i-2}}^{\xno{i-1}} \basphi_i\basphi_{i-1}\dx}_{\basphi_i=0} +
+\int_{\xno{i}}^{\xno{i}} \basphi_i\basphi_{i-1}\dx +
+\underbrace{\int_{\xno{i}}^{\xno{i+1}} \basphi_i\basphi_{i-1}\dx}_{\basphi_{i-1}=0}\\ 
+&= \int_{\xno{i-1}}^{\xno{i}}
+\underbrace{\frac{x - x_{i}}{h}}_{\basphi_i(x)}
+\underbrace{\left(1 - \frac{x - \xno{i-1}}{h}\right)}_{\basphi_{i-1}(x)} \dx =
+\frac{h}{6}
+\tp
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( A_{i,i+1}=A_{i,i-1} \) due to symmetry</li>
+ <p><li> \( A_{i,i}=h/3 \) (same calculation as for \( A_{2,2} \))</li>
+ <p><li> \( A_{0,0}=A_{N,N}=h/3 \) (only one element)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Calculation of the right-hand side  <a name="___sec69"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_phi_i_f.png" align="bottom" width=500></p></center>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+b_i = \int_\Omega\basphi_i(x)f(x)\dx
+= \int_{\xno{i-1}}^{\xno{i}} \frac{x - \xno{i-1}}{h} f(x)\dx
++ \int_{x_{i}}^{\xno{i+1}} \left(1 - \frac{x - x_{i}}{h}\right) f(x)
+\dx\tp
+\tag{16}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Need a specific \( f(x) \) to do more...
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Specific example: two elements; linear system and solution  <a name="___sec70"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> \( f(x)=x(1-x) \) on \( \Omega=[0,1] \)</li>
+ <p><li> Two equal-sized elements \( [0,0.5] \) and \( [0.5,1] \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+A = \frac{h}{6}\left(\begin{array}{ccc}
+2 & 1 & 0\\ 
+1 & 4 & 1\\ 
+0 & 1 & 2
+\end{array}\right),\quad
+b = \frac{h^2}{12}\left(\begin{array}{c}
+2 - 3h\\ 
+12 - 14h\\ 
+10 -17h
+\end{array}\right)\tp
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} c_0 = \frac{h^2}{6},\quad c_1 = h - \frac{5}{6}h^2,\quad
+c_2 = 2h - \frac{23}{6}h^2\tp  \end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Specific example: two elements; plot  <a name="___sec71"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} u(x)=c_0\basphi_0(x) + c_1\basphi_1(x) + c_2\basphi_2(x)\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<center><p><img src="fig-fem/fe_p1_x2_2e.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Specific example: what about four elements?  <a name="___sec72"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_p1_x2_2e_4e.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Assembly of elementwise computations <a name="fem:approx:fe:elementwise"></a></h2>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Split the integrals into elementwise integrals  <a name="___sec74"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+A_{i,j} = \int_\Omega\basphi_i\basphi_jdx = \sum_{e} A^{(e)}_{i,j},\quad
+A^{(e)}_{i,j}=\int_{\Omega^{(e)}} \basphi_i\basphi_jdx\tp
+\tag{17}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Important:
+
+<p>
+
+<ul>
+ <p><li> \( A^{(e)}_{i,j}\neq 0 \) if and only if \( i \) and \( j \) are nodes in element
+   \( e \) (otherwise no overlap between the basis functions)</li>
+ <p><li> all the nonzero elements in \( A^{(e)}_{i,j} \) are collected in an
+   <em>element matrix</em></li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>The element matrix  <a name="___sec75"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\tilde A^{(e)} = \{ \tilde A^{(e)}_{r,s}\},\quad r,s\in\Ifd=\{0,\ldots,d\},
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\tilde A^{(e)}_{r,s} =
+\int_{\Omega^{(e)}}\basphi_{q(e,r)}\basphi_{q(e,s)}dx,\quad r,s\in\Ifd\tp
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( r,s \) run over <em>local node numbers</em> within an element, while \( i,j \) run
+   over <em>global node numbers</em>.</li>
+ <p><li> \( i=q(e,r) \): mapping of local node number \( r \) in element
+   \( e \) to the global node number \( i \). Math equivalent to <code>i=elements[e][r]</code>.</li>
+ <p><li> Add contribution from an element into the global coefficient matrix
+   (<em>assembly</em>)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+ A_{q(e,r),q(e,s)} := A_{q(e,r),q(e,s)} + \tilde A^{(e)}_{r,s},\quad
+r,s\in\Ifd\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Illustration of the matrix assembly: regularly numbered P1 elements  <a name="___sec76"></a></h3>
+
+<p>
+<center><p><img src="mov-fem/fe_assembly_regular_2x2/fe_assembly_regular_2x2.png" align="bottom" width=400></p></center>
+
+<p>
+<a href="mov-fem/fe_assembly.html">Animation</a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Illustration of the matrix assembly: regularly numbered P3 elements  <a name="___sec77"></a></h3>
+
+<p>
+<center><p><img src="mov-fem/fe_assembly_regular_4x4/fe_assembly_regular_4x4.png" align="bottom" width=400></p></center>
+
+<p>
+<a href="mov-fem/fe_assembly.html">Animation</a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Illustration of the matrix assembly: irregularly numbered P1 elements  <a name="___sec78"></a></h3>
+
+<p>
+<center><p><img src="mov-fem/fe_assembly_irregular/fe_assembly_irregular.png" align="bottom" width=400></p></center>
+
+<p>
+<a href="mov-fem/fe_assembly.html">Animation</a>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Assembly of the right-hand side  <a name="___sec79"></a></h3>
+
+<p>
+Split in elementwise contributions:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+b_i = \int_\Omega\basphi_i\basphi_jdx = \sum_{e} b^{(e)}_{i},\quad
+b^{(e)}_{i}=\int_{\Omega^{(e)}} f(x)\basphi_i(x)dx\tp  \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Important:
+
+<p>
+
+<ul>
+  <p><li> \( b_i^{(e)}\neq 0 \) if and only if global node \( i \) is a node in element \( e \)
+    (otherwise \( \basphi_i=0 \))</li>
+  <p><li> The \( d+1 \) nonzero \( b_i^{(e)} \) can be collected in an <em>element vector</em></li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\tilde b_r^{(e)}=\{ \tilde b_r^{(e)}\},\quad r\in\Ifd\tp
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Assembly:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+b_{q(e,r)} := b_{q(e,r)} + \tilde b^{(e)}_{r},\quad
+r,s\in\Ifd\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Mapping to a reference element <a name="fem:approx:fe:mapping"></a></h2>
+
+<p>
+Instead of computing
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*} \tilde A^{(e)}_{r,s} = \int_{\Omega^{(e)}}\basphi_{q(e,r)}(x)\basphi_{q(e,s)}(x)dx\end{equation*}
+$$
+<p>&nbsp;<br>
+
+over some element
+\( \Omega^{(e)} = [x_L, x_R] \),
+we now map \( [x_L, x_R] \) to
+a standardized reference element domain \( [-1,1] \) with local coordinate \( X \).
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Affine mapping  <a name="___sec81"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+x = \half (x_L + x_R) + \half (x_R - x_L)X\tp
+\tag{18}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+or rewritten as
+<p>&nbsp;<br>
+$$
+\begin{equation}
+x = x_m + \frac{1}{2}hX, \qquad x_m=(x_L+x_R)/2
+\tag{19}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Integral transformation  <a name="___sec82"></a></h3>
+
+<p>
+Integrating on
+the reference element is a matter of just changing the integration
+variable from \( x \) to \( X \). Introduce local basis function
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\refphi_r(X) = \basphi_{q(e,r)}(x(X))
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+The integral transformation reads
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(e)}_{r,s} = \int_{\Omega^{(e)}}\basphi_{q(e,r)}(x)\basphi_{q(e,s)}(x)dx
+= \int_{-1}^1 \refphi_r(X)\refphi_s(X)\frac{dx}{dX}dX\tp  \end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Introduce the notation
+\( \det J = dx/dX = h/2 \) (2D/3D must use \( \det J \))
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(e)}_{r,s}
+= \int_{-1}^1 \refphi_r(X)\refphi_s(X)\det J\,dX
+\tag{20}
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde b^{(e)}_{r} = \int_{\Omega^{(e)}}f(x)\basphi_{q(e,r)}(x)dx
+= \int_{-1}^1 f(x(X))\refphi_r(X)\det J\,dX
+\tag{21}
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Advantages of the reference element  <a name="___sec83"></a></h3>
+
+<p>
+
+<ul>
+  <p><li> Always the same domain for integration: \( [-1,1] \)</li>
+  <p><li> We only need formulas for \( \refphi_r(X) \) on the reference elements
+    (no need for piecewise polynomial definition)</li>
+  <p><li> All geometric information (length and location) is "factored out"
+    in the mapping and \( \det J \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Standardized basis functions for P1 elements  <a name="___sec84"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\refphi_0(X) &= \half (1 - X)
+\tag{22}\\ 
+\refphi_1(X) &= \half (1 + X)
+\tag{23}
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Standardized basis functions for P2 elements  <a name="___sec85"></a></h3>
+
+<p>
+P2 elements:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\refphi_0(X) &= \half (X-1)X\\ 
+\refphi_1(X) &= 1 - X^2\\ 
+\refphi_2(X) &= \half (X+1)X
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Easy to generalize to arbitrary order!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Integration over a reference element; element matrix <a name="fem:approx:fe:intg:ref"></a></h3>
+
+<p>
+P1 elements and \( f(x)=x(1-x) \).
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\tilde A^{(e)}_{0,0}
+&= \int_{-1}^1 \refphi_0(X)\refphi_0(X)\frac{h}{2} dX\nonumber\\ 
+&=\int_{-1}^1 \frac{1}{2}(1-X)\frac{1}{2}(1-X) \frac{h}{2} dX =
+\frac{h}{8}\int_{-1}^1 (1-X)^2 dX = \frac{h}{3},
+\tag{24}\\ 
+\tilde A^{(e)}_{1,0}
+&= \int_{-1}^1 \refphi_1(X)\refphi_0(X)\frac{h}{2} dX\nonumber\\ 
+&=\int_{-1}^1 \frac{1}{2}(1+X)\frac{1}{2}(1-X) \frac{h}{2} dX =
+\frac{h}{8}\int_{-1}^1 (1-X^2) dX = \frac{h}{6},\\ 
+\tilde A^{(e)}_{0,1} &= \tilde A^{(e)}_{1,0},
+\tag{25}\\ 
+\tilde A^{(e)}_{1,1}
+&= \int_{-1}^1 \refphi_1(X)\refphi_1(X)\frac{h}{2} dX\nonumber\\ 
+&=\int_{-1}^1 \frac{1}{2}(1+X)\frac{1}{2}(1+X) \frac{h}{2} dX =
+\frac{h}{8}\int_{-1}^1 (1+X)^2 dX = \frac{h}{3}
+\tag{26}
+\tp
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Integration over a reference element; element vector  <a name="___sec87"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align}
+\tilde b^{(e)}_{0}
+&= \int_{-1}^1 f(x(X))\refphi_0(X)\frac{h}{2} dX\nonumber\\ 
+&= \int_{-1}^1 (x_m + \half hX)(1-(x_m + \half hX))
+\frac{1}{2}(1-X)\frac{h}{2} dX \nonumber\\ 
+&= - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m} - \frac{1}{12} h^{2} - \frac{1}{2} h x_{m}^{2} + \frac{1}{2} h x_{m}
+\tag{27}\\ 
+\tilde b^{(e)}_{1}
+&= \int_{-1}^1 f(x(X))\refphi_1(X)\frac{h}{2} dX\nonumber\\ 
+&= \int_{-1}^1 (x_m + \half hX)(1-(x_m + \half hX))
+\frac{1}{2}(1+X)\frac{h}{2} dX \nonumber\\ 
+&= - \frac{1}{24} h^{3} - \frac{1}{6} h^{2} x_{m} + \frac{1}{12} h^{2} -
+\frac{1}{2} h x_{m}^{2} + \frac{1}{2} h x_{m}
+\tp
+\end{align}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( x_m \): element midpoint.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Tedious calculations! Let's use symbolic software  <a name="___sec88"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">x_m,</span> <span style="color: #d0d0d0">h,</span> <span style="color: #d0d0d0">X</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.symbols(</span><span style="color: #ed9d13">&#39;x x_m h X&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">sm.integrate(h/</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-X)**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+<span style="color: #d0d0d0">h/</span><span style="color: #3677a9">3</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">sm.integrate(h/</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">+X)*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-X),</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+<span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x_m</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*X</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">b_0</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(h/</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">*x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-X),</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">b_0</span>
+<span style="color: #d0d0d0">-h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">24</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*x_m/</span><span style="color: #3677a9">6</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">12</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">h*x_m**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">h*x_m/</span><span style="color: #3677a9">2</span>
+</pre></div>
+<p>
+Can printe out in LaTeX too (convenient for copying into reports):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">sm.latex(b_0,</span> <span style="color: #d0d0d0">mode=</span><span style="color: #ed9d13">&#39;plain&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">-</span> \<span style="color: #d0d0d0">frac{</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">}{</span><span style="color: #3677a9">24</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">h^{</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">+</span> \<span style="color: #d0d0d0">frac{</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">}{</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">h^{</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">x_{m}</span>
+<span style="color: #d0d0d0">-</span> \<span style="color: #d0d0d0">frac{</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">}{</span><span style="color: #3677a9">12</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">h^{</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">-</span> \<span style="color: #d0d0d0">frac{</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">}{</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">x_{m}^{</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">}</span>
+<span style="color: #d0d0d0">+</span> \<span style="color: #d0d0d0">frac{</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">}{</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">}</span> <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">x_{m}</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Implementation  <a name="___sec89"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Coming functions appear in <a href="http://tinyurl.com/jvzzcfn/fem/fe_approx1D.py"><tt>fe_approx1D.py</tt></a></li>
+ <p><li> Functions can operate in symbolic or numeric mode</li>
+ <p><li> The code documents all steps in finite element calculations!</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Compute finite element basis functions  <a name="___sec90"></a></h3>
+
+<p>
+Let \( \refphi_r(X) \) be a Lagrange polynomial of degree <code>d</code>:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
+<span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">numpy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">np</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">phi_r</span><span style="color: #d0d0d0">(r,</span> <span style="color: #d0d0d0">X,</span> <span style="color: #d0d0d0">d):</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #24909d">isinstance</span><span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">sm.Symbol):</span>
+        <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Rational(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d)</span>  <span style="color: #999999; font-style: italic"># node spacing</span>
+        <span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*i*h</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(d+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+    <span style="color: #6ab825; font-weight: bold">else</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #999999; font-style: italic"># assume X is numeric: use floats for nodes</span>
+        <span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">np.linspace(-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">Lagrange_polynomial(X,</span> <span style="color: #d0d0d0">r,</span> <span style="color: #d0d0d0">nodes)</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">Lagrange_polynomial</span><span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">i,</span> <span style="color: #d0d0d0">points):</span>
+    <span style="color: #d0d0d0">p</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">1</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">k</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(points)):</span>
+        <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">k</span> <span style="color: #d0d0d0">!=</span> <span style="color: #d0d0d0">i:</span>
+            <span style="color: #d0d0d0">p</span> <span style="color: #d0d0d0">*=</span> <span style="color: #d0d0d0">(x</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">points[k])/(points[i]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">points[k])</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">p</span>
+
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">basis</span><span style="color: #d0d0d0">(d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #ed9d13">&quot;&quot;&quot;Return the complete basis.&quot;&quot;&quot;</span>
+    <span style="color: #d0d0d0">X</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;X&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[phi_r(r,</span> <span style="color: #d0d0d0">X,</span> <span style="color: #d0d0d0">d)</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">r</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(d+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">phi</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Compute the element matrix  <a name="___sec91"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">element_matrix</span><span style="color: #d0d0d0">(phi,</span> <span style="color: #d0d0d0">Omega_e,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">n</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span>
+    <span style="color: #d0d0d0">A_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((n,</span> <span style="color: #d0d0d0">n))</span>
+    <span style="color: #d0d0d0">X</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;X&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">symbolic:</span>
+        <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;h&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">else</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+    <span style="color: #d0d0d0">detJ</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">2</span>  <span style="color: #999999; font-style: italic"># dx/dX</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">r</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(n):</span>
+        <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">s</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(r,</span> <span style="color: #d0d0d0">n):</span>
+            <span style="color: #d0d0d0">A_e[r,s]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(phi[r]*phi[s]*detJ,</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+            <span style="color: #d0d0d0">A_e[s,r]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A_e[r,s]</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">A_e</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example on symbolic and numeric element matrix  <a name="___sec92"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">fe_approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">basis(d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">phi</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">X/</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">X/</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">element_matrix(phi,</span> <span style="color: #d0d0d0">Omega_e=[</span><span style="color: #3677a9">0.1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">element_matrix(phi,</span> <span style="color: #d0d0d0">Omega_e=[</span><span style="color: #3677a9">0.1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.0333333333333333</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.0166666666666667</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.0166666666666667</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.0333333333333333</span><span style="color: #d0d0d0">]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Compute the element vector  <a name="___sec93"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">element_vector</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega_e,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">n</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span>
+    <span style="color: #d0d0d0">b_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((n,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #999999; font-style: italic"># Make f a function of X</span>
+    <span style="color: #d0d0d0">X</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;X&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">symbolic:</span>
+        <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;h&#39;</span><span style="color: #d0d0d0">)</span>
+    <span style="color: #6ab825; font-weight: bold">else</span><span style="color: #d0d0d0">:</span>
+        <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+    <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">(Omega_e[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">])/</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">+</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*X</span>  <span style="color: #999999; font-style: italic"># mapping</span>
+    <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">f.subs(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x)</span>  <span style="color: #999999; font-style: italic"># substitute mapping formula for x</span>
+    <span style="color: #d0d0d0">detJ</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">2</span>  <span style="color: #999999; font-style: italic"># dx/dX</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">r</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(n):</span>
+        <span style="color: #d0d0d0">b_e[r]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(f*phi[r]*detJ,</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">b_e</span>
+</pre></div>
+<p>
+Note <code>f.subs('x', x)</code>: replace <code>x</code> by \( x(X) \) such that <code>f</code> contains <code>X</code>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Fallback on numerical integration if symbolic integration fails  <a name="___sec94"></a></h3>
+
+<p>
+
+<ul>
+  <p><li> Element matrix: only polynomials and <code>sympy</code> always succeeds</li>
+  <p><li> Element vector: \( \int f\refphi \dx \) can fail
+    (<code>sympy</code> then returns an <code>Integral</code> object instead of a number)</li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">element_vector</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega_e,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">):</span>
+        <span style="color: #d0d0d0">...</span>
+        <span style="color: #d0d0d0">I</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(f*phi[r]*detJ,</span> <span style="color: #d0d0d0">(X,</span> <span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>  <span style="color: #999999; font-style: italic"># try...</span>
+        <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #24909d">isinstance</span><span style="color: #d0d0d0">(I,</span> <span style="color: #d0d0d0">sm.Integral):</span>
+            <span style="color: #d0d0d0">h</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">Omega_e[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>  <span style="color: #999999; font-style: italic"># Ensure h is numerical</span>
+            <span style="color: #d0d0d0">detJ</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">2</span>
+            <span style="color: #d0d0d0">integrand</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.lambdify([X],</span> <span style="color: #d0d0d0">f*phi[r]*detJ)</span>
+            <span style="color: #d0d0d0">I</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.mpmath.quad(integrand,</span> <span style="color: #d0d0d0">[-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">])</span>
+        <span style="color: #d0d0d0">b_e[r]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">I</span>
+        <span style="color: #d0d0d0">...</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Linear system assembly and solution  <a name="___sec95"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">assemble</span><span style="color: #d0d0d0">(nodes,</span> <span style="color: #d0d0d0">elements,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">):</span>
+    <span style="color: #d0d0d0">N_n,</span> <span style="color: #d0d0d0">N_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(nodes),</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(elements)</span>
+    <span style="color: #d0d0d0">zeros</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros</span> <span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">symbolic</span> <span style="color: #6ab825; font-weight: bold">else</span> <span style="color: #d0d0d0">np.zeros</span>
+    <span style="color: #d0d0d0">A</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros((N_n,</span> <span style="color: #d0d0d0">N_n))</span>
+    <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">zeros((N_n,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">e</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N_e):</span>
+        <span style="color: #d0d0d0">Omega_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[nodes[elements[e][</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]],</span> <span style="color: #d0d0d0">nodes[elements[e][-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]]]</span>
+
+        <span style="color: #d0d0d0">A_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">element_matrix(phi,</span> <span style="color: #d0d0d0">Omega_e,</span> <span style="color: #d0d0d0">symbolic)</span>
+        <span style="color: #d0d0d0">b_e</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">element_vector(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega_e,</span> <span style="color: #d0d0d0">symbolic)</span>
+
+        <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">r</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(elements[e])):</span>
+            <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">s</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(elements[e])):</span>
+                <span style="color: #d0d0d0">A[elements[e][r],elements[e][s]]</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">A_e[r,s]</span>
+            <span style="color: #d0d0d0">b[elements[e][r]]</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">b_e[r]</span>
+    <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">A,</span> <span style="color: #d0d0d0">b</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Linear system solution  <a name="___sec96"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">if</span> <span style="color: #d0d0d0">symbolic:</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>           <span style="color: #999999; font-style: italic"># sympy arrays, symbolic Gaussian elim.</span>
+<span style="color: #6ab825; font-weight: bold">else</span><span style="color: #d0d0d0">:</span>
+    <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">np.linalg.solve(A,</span> <span style="color: #d0d0d0">b)</span>  <span style="color: #999999; font-style: italic"># numpy arrays, numerical solve</span>
+</pre></div>
+<p>
+Note: the symbolic computation of <code>A</code> and <code>b</code> and the symbolic
+solution can be very tedious.
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Example on computing approximations  <a name="___sec97"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">h,</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.symbols(</span><span style="color: #ed9d13">&#39;h x&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">]]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">basis(d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A,</span> <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">assemble(nodes,</span> <span style="color: #d0d0d0">elements,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">b</span>
+<span style="color: #d0d0d0">[</span>     <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">6</span> <span style="color: #d0d0d0">-</span> <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">12</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>      <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">7</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">5</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">6</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">17</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">12</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">c</span>
+<span style="color: #d0d0d0">[</span>                           <span style="color: #d0d0d0">h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">12</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">7</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">12</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">35</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">72</span><span style="color: #d0d0d0">)/(</span><span style="color: #3677a9">7</span><span style="color: #d0d0d0">*h)]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">7</span><span style="color: #d0d0d0">*(</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">7</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">23</span><span style="color: #d0d0d0">*h**</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">/</span><span style="color: #3677a9">21</span><span style="color: #d0d0d0">)/(</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h)]</span>
+</pre></div>
+<p>
+Numerical computations:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">nodes</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.5</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">]]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">basis(d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A,</span> <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">assemble(nodes,</span> <span style="color: #d0d0d0">elements,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A</span>
+<span style="color: #d0d0d0">[</span> <span style="color: #3677a9">0.166666666666667</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.0833333333333333</span><span style="color: #d0d0d0">,</span>                  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.0833333333333333</span><span style="color: #d0d0d0">,</span>  <span style="color: #3677a9">0.333333333333333</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.0833333333333333</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>                 <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">0.0833333333333333</span><span style="color: #d0d0d0">,</span>  <span style="color: #3677a9">0.166666666666667</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">b</span>
+<span style="color: #d0d0d0">[</span>          <span style="color: #3677a9">0.03125</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.104166666666667</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>          <span style="color: #3677a9">0.03125</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">c</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.0416666666666666</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span> <span style="color: #3677a9">0.291666666666667</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span><span style="color: #3677a9">0.0416666666666666</span><span style="color: #d0d0d0">]</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The structure of the coefficient matrix <a name="fem:approx:fe:A:structure"></a></h3>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">;</span> <span style="color: #d0d0d0">N_e=</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">;</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>  <span style="color: #999999; font-style: italic"># 8 linear elements on [0,1]</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">basis(d)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">nodes,</span> <span style="color: #d0d0d0">elements</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">mesh_symbolic(N_e,</span> <span style="color: #d0d0d0">d,</span> <span style="color: #d0d0d0">Omega)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A,</span> <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">assemble(nodes,</span> <span style="color: #d0d0d0">elements,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">f,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">True</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">A</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span>   <span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">*h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">]</span>
+<span style="color: #d0d0d0">[</span>  <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>     <span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span>   <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">6</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">h/</span><span style="color: #3677a9">3</span><span style="color: #d0d0d0">]</span>
+</pre></div>
+<p>
+Note: do this by hand to understand what is going on!
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>General result: the coefficient matrix is sparse  <a name="___sec99"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Sparse = most of the entries are zeros</li>
+ <p><li> Below: P1 elements</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+A = \frac{h}{6}
+\left(
+\begin{array}{cccccccccc}
+2 & 1 & 0
+&\cdots & \cdots & \cdots & \cdots & \cdots & 0 \\ 
+1 & 4 & 1 & \ddots &   & &  & &  \vdots \\ 
+0 & 1 & 4 & 1 &
+\ddots & &  &  & \vdots \\ 
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\ 
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\ 
+\vdots & &  & 0 & 1 & 4 & 1 & \ddots & \vdots \\ 
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
+\vdots & & & &  &\ddots  & 1  & 4  & 1 \\ 
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 1 & 2
+\end{array}
+\right)
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Exemplifying the sparsity for P2 elements  <a name="___sec100"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+A = \frac{h}{30}
+\left(
+\begin{array}{ccccccccc}
+4 & 2 & - 1 & 0
+  & 0 & 0 & 0 & 0 & 0\\ 
+  2 & 16 & 2
+  & 0 & 0 & 0 & 0 & 0 & 0\\- 1 & 2 &
+  8 & 2 & - 1 & 0 & 0 & 0 &
+  0\\0 & 0 & 2 & 16 & 2 & 0 & 0
+  & 0 & 0\\0 & 0 & - 1 & 2 & 8
+  & 2 & - 1 & 0 & 0\\0 & 0 & 0 & 0 &
+  2 & 16 & 2 & 0 & 0\\0 & 0 & 0
+  & 0 & - 1 & 2 & 8 &
+  2 & - 1\\0 & 0 & 0 & 0 & 0 & 0 &
+  2 & 16 & 2\\0 & 0 & 0 & 0 & 0
+  & 0 & - 1 & 2 & 4
+\end{array}
+\right)
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Matrix sparsity pattern for regular/random numbering of P1 elements  <a name="___sec101"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Left: number nodes and elements from left to right</li>
+ <p><li> Right: number nodes and elements arbitrarily</li>
+</ul>
+<p>
+
+<center><p><img src="fig-fem/sparsity_pattern_1D_30.png" align="bottom" width=800></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Matrix sparsity pattern for regular/random numbering of P3 elements  <a name="___sec102"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Left: number nodes and elements from left to right</li>
+ <p><li> Right: number nodes and elements arbitrarily</li>
+</ul>
+<p>
+
+<center><p><img src="fig-fem/sparsity_pattern_1DP3_30.png" align="bottom" width=800></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Sparse matrix storage and solution <a name="fem:approx:fe:impl:sparse"></a></h3>
+
+<p>
+The minimum storage requirements for the coefficient matrix \( A_{i,j} \):
+
+<p>
+
+<ul>
+ <p><li> P1 elements: only 3 nonzero entires per row</li>
+ <p><li> P2 elements: only 5 nonzero entires per row</li>
+ <p><li> P2 elements: only 7 nonzero entires per row</li>
+ <p><li> It is important to utilize sparse storage and sparse solvers</li>
+ <p><li> In Python: <code>scipy.sparse</code> package</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Approximate \( f\sim x^9 \) by various elements; code  <a name="___sec104"></a></h3>
+
+<p>
+Compute a mesh with <code>N_e</code> elements, basis functions of
+degree <code>d</code>, and approximate a given symbolic expression
+<code>f</code> by a finite element expansion \( u(x) = \sum_jc_j\basphi_j(x) \):
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
+<span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">fe_approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">approximate</span>
+<span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
+
+<span style="color: #d0d0d0">approximate(f=x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)**</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N_e=</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">approximate(f=x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)**</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d=</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N_e=</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">approximate(f=x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)**</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d=</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N_e=</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">)</span>
+<span style="color: #d0d0d0">approximate(f=x*(</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">-x)**</span><span style="color: #3677a9">8</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">symbolic=</span><span style="color: #24909d">False</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">d=</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N_e=</span><span style="color: #3677a9">4</span><span style="color: #d0d0d0">)</span>
+</pre></div>
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Approximate \( f\sim x^9 \) by various elements; plot  <a name="___sec105"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_p1_p2_x9_248e.png" align="bottom" width=800,></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h2>Comparison of finite element and finite difference approximation <a name="fem:approx:fe:fd"></a></h2>
+
+<p>
+
+<ul>
+ <p><li> Finite difference approximation of a function \( f(x) \): simply
+   choose \( u_i = f(x_i) \) (interpolation)</li>
+ <p><li> Galerkin/projection and least squares method:
+   must derive and solve a linear system</li>
+ <p><li> What is really the difference?</li>
+</ul>
+<p>
+
+<h3>Interpolation/collocation with finite elements  <a name="___sec107"></a></h3>
+
+<p>
+Let \( \xno{i} \), \( i\in\If \), be the nodes in the mesh.
+Collocation means
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(\xno{i})=f(\xno{i}),\quad i\in\If,
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+which translates to
+
+<p>
+<p>&nbsp;<br>
+$$ \sum_{j\in\If} c_j \basphi_j(\xno{i}) = f(\xno{i}),$$
+<p>&nbsp;<br>
+
+but \( \basphi_j(\xno{i})=0 \) if \( i\neq j \) so the sum collapses to one
+term \( c_i\basphi_i(\xno{i}) = c_i \), and we have the result
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+c_i = f(\xno{i})
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Same result as the standard finite difference approach</li>
+ <p><li> \( u \) <em>interpolates</em> \( f \) at the node points</li>
+ <p><li> \( u \) has a variation between the node points dictated by the \( \basphi_i \)
+   functions</li>
+</ul>
+<p>
+
+
+
+</section>
+
+
+
+</div> <!-- class="slides" -->
+</div> <!-- class="reveal" -->
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.min.js"></script>
+
+<script>
+
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+controls: true,
+progress: true,
+history: true,
+center: true,
+theme: Reveal.getQueryHash().theme, // available themes are in reveal.js/css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/none
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+{ src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+{ src: 'reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+{ src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+{ src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+{ src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+{ src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+// { src: 'reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+]
+});
+</script>
+
+
+</body>
+</html>
