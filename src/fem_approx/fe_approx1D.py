@@ -2,6 +2,7 @@ import numpy as np
 import sympy as sm
 import sys
 import scitools.std as plt
+#import matplotlib.pyplot as plt
 
 def mesh_uniform(N_e, d, Omega=[0,1], symbolic=False):
     """
@@ -252,7 +253,7 @@ def assemble(nodes, elements, phi, f, symbolic=True):
     return A, b
 
 def approximate(f, symbolic=False, d=1, N_e=4,
-                Omega=[0, 1], filename='tmp.pdf'):
+                Omega=[0, 1], filename='tmp'):
     phi = basis(d)
     print 'phi basis (reference element):\n', phi
 
@@ -286,10 +287,11 @@ def approximate(f, symbolic=False, d=1, N_e=4,
         xf = np.linspace(Omega[0], Omega[1], 10001)
         U = np.asarray(c)
         xu, u = u_glob(U, elements, nodes)
-        plt.plot(xu, u, 'r-',
-                 xf, f(xf), 'b-')
+        plt.plot(xu, u, '-',
+                 xf, f(xf), '--')
         plt.legend(['u', 'f'])
-        plt.savefig(filename)
+        plt.savefig(filename + '.pdf')
+        plt.savefig(filename + '.png')
 
 if __name__ == '__main__':
     import sys

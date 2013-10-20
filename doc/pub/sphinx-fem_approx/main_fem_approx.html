@@ -60,7 +60,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 16, 2013</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Oct 20, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -876,7 +876,7 @@ by hand:</p>
 the Fourier sine series of <span class="math">\(f(x)\)</span> on <span class="math">\([0,1]\)</span>. In fact, when
 <span class="math">\(V\)</span> contains the basic functions used in a Fourier series expansion,
 the approximation method derived in the section <a class="reference internal" href="#fem-approx-global"><em>Approximation of functions</em></a>
-results in the classical Fourier series for <span class="math">\(f(x)\)</span> (see <a class="reference internal" href="#fem-approx-exer-fourier"><em>Exercise 7: Fourier series as a least squares approximation</em></a>
+results in the classical Fourier series for <span class="math">\(f(x)\)</span> (see <a class="reference internal" href="#fem-approx-exer-fourier"><em>Exercise 8: Fourier series as a least squares approximation</em></a>
 for details).</p>
 <p>With orthogonal basis functions we can make the
 <tt class="docutils literal"><span class="pre">least_squares</span></tt> function (much) more efficient since we know that
@@ -1578,7 +1578,7 @@ piecewise linear basis functions. Similarly, <em>quadratic elements</em> and
 <em>cubic elements</em> refer to piecewise quadratic or cubic functions
 over elements with three or four local nodes, respectively.
 Alternative names, frequently used later, are P1 elements for linear
-elements, P2 for quadratic elements, and so forth: P$d$ signifies
+elements, P2 for quadratic elements, and so forth: Pd signifies
 degree <span class="math">\(d\)</span> of the polynomial basis functions.</p>
 </div>
 <div class="section" id="calculating-the-linear-system">
@@ -1664,10 +1664,10 @@ too:</p>
 \[\begin{split}A_{i,i-1} &amp;= \int_\Omega {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}\\
 &amp;=
 \underbrace{\int_{x_{i-2}}^{x_{i-1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_i=0} +
-\int_{x_{i}}^{x_{i}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} +
+\int_{x_{i-1}}^{x_{i}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} +
 \underbrace{\int_{x_{i}}^{x_{i+1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_{i-1}=0}\\
 &amp;= \int_{x_{i-1}}^{x_{i}}
-\underbrace{\frac{x - x_{i}}{h}}_{{\varphi}_i(x)}
+\underbrace{\left(\frac{x - x_{i}}{h}\right)}_{{\varphi}_i(x)}
 \underbrace{\left(1 - \frac{x - x_{i-1}}{h}\right)}_{{\varphi}_{i-1}(x)} {\, \mathrm{d}x} =
 \frac{h}{6}
 {\thinspace .}\end{split}\]</div>
@@ -1810,7 +1810,7 @@ Figure <a class="reference internal" href="#fem-approx-fe-fig-assembly-irr2x2"><
 </div>
 <p>The right-hand side of the linear system is also computed elementwise:</p>
 <div class="math">
-\[b_i = \int_\Omega{\varphi}_i{\varphi}_j {\, \mathrm{d}x} = \sum_{e} b^{(e)}_{i},\quad
+\[b_i = \int_\Omega f(x){\varphi}_i(x) {\, \mathrm{d}x} = \sum_{e} b^{(e)}_{i},\quad
 b^{(e)}_{i}=\int_{\Omega^{(e)}} f(x){\varphi}_i(x){\, \mathrm{d}x}
 {\thinspace .}\]</div>
 <p>We observe that
@@ -2664,7 +2664,7 @@ average of <span class="math">\(f\)</span> on the right-hand side.</p>
 <p>Identical results to those above will arise if we perform elementwise
 computations. The idea is to use the Trapezoidal rule on the reference
 element for computing the element matrix and vector. When assembled,
-the same equations <span class="math">\(c_i=f(x_{i})\)</span> arise. <a class="reference internal" href="#fem-approx-fe-exer-1d-trapez"><em>Exercise 18: Use the Trapezoidal rule and P1 elements</em></a> encourages you to carry out the
+the same equations <span class="math">\(c_i=f(x_{i})\)</span> arise. <a class="reference internal" href="#fem-approx-fe-exer-1d-trapez"><em>Exercise 19: Use the Trapezoidal rule and P1 elements</em></a> encourages you to carry out the
 details.</p>
 <span class="target" id="index-34"></span><span class="target" id="index-35"></span></div>
 <div class="section" id="terminology">
@@ -2767,17 +2767,18 @@ before.</p>
 from local vertex <tt class="docutils literal"><span class="pre">r</span></tt> in cell <tt class="docutils literal"><span class="pre">e</span></tt> to the global vertex number
 in <tt class="docutils literal"><span class="pre">vertices</span></tt>;</li>
 <li>we replace <tt class="docutils literal"><span class="pre">elements</span></tt> by <tt class="docutils literal"><span class="pre">dof_map</span></tt> (the contents are the same
-for P$d$ elements).</li>
+for Pd elements).</li>
 </ul>
 </div></blockquote>
 <p>Consider the example from the section <a class="reference internal" href="#fem-approx-fe-def-elements-nodes"><em>Elements and nodes</em></a>
 where <span class="math">\(\Omega =[0,1]\)</span> is divided into two cells,
-<span class="math">\(\Omega^{(0)}=[0,0.4]\)</span> and <span class="math">\(\Omega^{(1)}=[0.4,1]\)</span>.
+<span class="math">\(\Omega^{(0)}=[0,0.4]\)</span> and <span class="math">\(\Omega^{(1)}=[0.4,1]\)</span>, as
+depicted in Figure <a class="reference internal" href="#fem-approx-fe-def-elements-nodes-fig-p2"><em>Finite element mesh with 2 elements and 5 nodes</em></a>.
 The vertices are <span class="math">\([0,0.4,1]\)</span>. Local vertex 0 and 1 are
 <span class="math">\(0\)</span> and <span class="math">\(0.4\)</span> in cell 0 and <span class="math">\(0.4\)</span> and <span class="math">\(1\)</span> in cell 1.
 A P2 element means that the degrees of freedom are
 the value of <span class="math">\(u\)</span> at three equally spaced points (nodes) in each
-cell. The data structures become</p>
+cell. The data structures become[[[</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 <span class="n">cells</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
 <span class="n">dof_map</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>
@@ -2849,7 +2850,7 @@ approximation <span class="math">\(u(x)=\sum_jc_j{\varphi}_j\)</span> as well as
 investigate the error <span class="math">\(e(x)=f(x)-u(x)\)</span>. We mostly want a single number to
 reflect the error and use a norm for this purpose, usually the <span class="math">\(L^2\)</span> norm</p>
 <div class="math">
-\[||e||_{L^2} = \left(\int_{\Omega} e^2 dx\right)^{\frac{1}{2}}{\thinspace .}\]</div>
+\[||e||_{L^2} = \left(\int_{\Omega} e^2 dx\right)^{1/2}{\thinspace .}\]</div>
 <p>Since the finite element approximation is defined for all <span class="math">\(x\in\Omega\)</span>,
 and we are interested in how <span class="math">\(u(x)\)</span> deviates from <span class="math">\(f(x)\)</span> through all
 the elements,
@@ -2888,7 +2889,7 @@ vectorized Python code,</p>
 <div class="admonition-how-does-the-error-depend-on-math-h-and-math-d admonition">
 <p class="first admonition-title">How does the error depend on <span class="math">\(h\)</span> and <span class="math">\(d\)</span></p>
 <p>Theory and experiments show that the least squares or projection/Galerkin
-method in combination with P$d$ elements of equal length <span class="math">\(h\)</span> has an error</p>
+method in combination with Pd elements of equal length <span class="math">\(h\)</span> has an error</p>
 <div class="math" id="equation-fem:approx:fe:error:theorem">
 <span class="eqno">(39)</span>\[     ||e||_{L^2} = Ch^{d+1},\]</div>
 <p class="last">where <span class="math">\(C\)</span> is a constant depending on <span class="math">\(f\)</span>, but not on <span class="math">\(h\)</span> or <span class="math">\(d\)</span>.</p>
@@ -3022,12 +3023,8 @@ The code <tt class="docutils literal"><span class="pre">numint.py</span></tt> co
 <span class="math">\({\psi}_i(x,y)\)</span> or <span class="math">\({\psi}_i(x,y,z)\)</span> over some domain <span class="math">\(\Omega\)</span>, and
 for the least squares and Galerkin methods, the integration is done over
 <span class="math">\(\Omega\)</span>.</p>
-<div class="section" id="global-basis-functions">
-<span id="fem-approx-2d-global"></span><h2>Global basis functions<a class="headerlink" href="#global-basis-functions" title="Permalink to this headline">¶</a></h2>
-<p>An example will demonstrate the necessary extensions to use global
-basis functions and the least squares, projection/Galerkin,
-or interpolation/collocation
-methods in 2D. The former two lead to linear systems</p>
+<p>As in 1D, the least squares and projection/Galerkin methods
+two lead to linear systems</p>
 <div class="math">
 \[\begin{split}\sum_{j\inI} A_{i,j}c_j &amp;= b_i,\quad i\inI,\\
 A_{i,j} &amp;= ({\psi}_i,{\psi}_j),\\
@@ -3036,23 +3033,68 @@ b_i &amp;= (f,{\psi}_i),\end{split}\]</div>
 completely analogously to the 1D case <a href="#equation-fem:approx:LS:innerprod">(15)</a>:</p>
 <div class="math">
 \[(f,g) = \int_\Omega f(x,y)g(x,y) dx dy\]</div>
-<div class="section" id="constructing-2d-basis-functions-from-1d-functions">
-<h3>Constructing 2D basis functions from 1D functions<a class="headerlink" href="#constructing-2d-basis-functions-from-1d-functions" title="Permalink to this headline">¶</a></h3>
-<p>One straightforward
+<div class="section" id="d-basis-functions-as-tensor-products-of-1d-functions">
+<span id="fem-approx-2d-global"></span><h2>2D basis functions as tensor products of 1D functions<a class="headerlink" href="#d-basis-functions-as-tensor-products-of-1d-functions" title="Permalink to this headline">¶</a></h2>
+<p id="index-57">One straightforward
 way to construct a basis in 2D is to combine
-1D basis functions. Say we have the 1D basis</p>
+1D basis functions. Say we have the 1D vector space</p>
+<div class="math" id="equation-fem:approx:2D:Vx">
+<span class="eqno">(41)</span>\[     V_x = \mbox{span}\{ \hat{\psi}_0(x),\ldots,\hat{\psi}_{N_x}(x)\}\]\[     {\thinspace .}\]</div>
+<p>A similar space for variation in <span class="math">\(y\)</span> can be defined,</p>
+<div class="math" id="equation-fem:approx:2D:Vy">
+<span class="eqno">(42)</span>\[     V_y = \mbox{span}\{ \hat{\psi}_0(y),\ldots,\hat{\psi}_{N_y}(y)\}\]\[     {\thinspace .}\]</div>
+<p>We can then form 2D basis functions as <em>tensor products</em> of 1D basis functions.</p>
+<div class="admonition-tensor-products admonition">
+<p class="first admonition-title">Tensor products</p>
+<p>Given two vectors <span class="math">\(a=(a_0,\ldots,a_M)\)</span> and <span class="math">\(b=(b_0,\ldots,b_N)\)</span>,
+their <em>outer tensor product</em>, also called the <em>dyadic product</em>,
+is <span class="math">\(p=a\otimes b\)</span>, defined through</p>
 <div class="math">
-\[\{ \hat{\psi}_0(x),\ldots,\hat{\psi}_{N_x}(x)\}
-{\thinspace .}\]</div>
-<p>We can now form 2D basis functions as products of 1D basis functions:
-<span class="math">\(\hat{\psi}_p(x)\hat{\psi}_q(y)\)</span> for <span class="math">\(p\in{\mathcal{I}_x}=\{0,\ldots,N_x\}\)</span>
-and <span class="math">\(q\in{\mathcal{I}_y}=\{0,\ldots,N_y\}\)</span>.
-We can either work with double indices,
-<span class="math">\({\psi}_{p,q}(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y)\)</span>, and write</p>
+\[p_{i,j}=a_ib_j,\quad i=0,\ldots,M,\ j=0,\ldots,N{\thinspace .}\]</div>
+<p>In the tensor terminology,
+<span class="math">\(a\)</span> and <span class="math">\(b\)</span> are first-order tensors (vectors with one index, also termed
+rank-1 tensors), and then their outer
+tensor product is a second-order tensor (matrix with two indices, also
+termed rank-2 tensor). The
+corresponding <em>inner tensor product</em> is the well-known scalar or dot
+product of two vectors: <span class="math">\(p=a\cdot b = \sum_{j=0}^N a_jb_j\)</span>. Now,
+<span class="math">\(p\)</span> is a rank-0 tensor.</p>
+<p>Tensors are typically represented by arrays in computer code.
+In the above example, <span class="math">\(a\)</span> and <span class="math">\(b\)</span> are represented by
+one-dimensional arrays of length
+<span class="math">\(M\)</span> and <span class="math">\(N\)</span>, respectively, while <span class="math">\(p=a\otimes b\)</span> must be represented
+by a two-dimensional array of size <span class="math">\(M\times N\)</span>.</p>
+<p class="last"><a class="reference external" href="http://en.wikipedia.org/wiki/Tensor_product">Tensor products</a> can
+be used in a variety of context.</p>
+</div>
+<p>Given the vector spaces <span class="math">\(V_x\)</span> and <span class="math">\(V_y\)</span> as defined
+in <a href="#equation-fem:approx:2D:Vx">(41)</a> and <a href="#equation-fem:approx:2D:Vy">(42)</a>, the
+tensor product space <span class="math">\(V=V_x\otimes V_y\)</span> has a basis formed
+as the tensor product of the basis for <span class="math">\(V_x\)</span> and <span class="math">\(V_y\)</span>.
+That is, if <span class="math">\(\left\{ {\varphi}_i(x) \right\}_{i\in{I_x}}\)</span>
+and <span class="math">\(\left\{ {\varphi}_i(y) \right\}_{i\in {I_y}}\)</span> are basis for
+<span class="math">\(V_x\)</span> and <span class="math">\(V_y\)</span>, respectively, the elements in the basis for <span class="math">\(V\)</span> arise
+from the tensor product:
+<span class="math">\(\left\{ {\varphi}_i(x){\varphi}_j(y) \right\}_{i\in {I_x},j\in {I_y}}\)</span>.
+The index sets are <span class="math">\(I_x=\{0,\ldots,N_x\}\)</span> and <span class="math">\(I_y=\{0,\ldots,N_y\}\)</span>.</p>
+<p>The notation for a basis function in 2D can employ a double index as in</p>
 <div class="math">
-\[u = \sum_{p\in{\mathcal{I}_x}}\sum_{q\in{\mathcal{I}_y}} c_{p,q}{\psi}_{p,q}(x,y),\]</div>
-<p>or we may transform the double index <span class="math">\((p,q)\)</span> to a single index <span class="math">\(i\)</span>,
-using <span class="math">\(i=p N_y + q\)</span> or <span class="math">\(i=q N_x + p\)</span>.</p>
+\[{\psi}_{p,q}(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y),
+\quad p\in{I_x},q\in{I_y}{\thinspace .}\]</div>
+<p>The expansion for <span class="math">\(u\)</span> is then written as a double sum</p>
+<div class="math">
+\[u = \sum_{p\in{I_x}}\sum_{q\in{I_y}} c_{p,q}{\psi}_{p,q}(x,y){\thinspace .}\]</div>
+<p>Alternatively, we may employ a single index,</p>
+<div class="math">
+\[{\psi}_i(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y),\]</div>
+<p>and use the standard form for <span class="math">\(u\)</span>,</p>
+<div class="math">
+\[u = \sum_{j\inI} c_j{\psi}_i(x,y){\thinspace .}\]</div>
+<p>The single index is related to the double index through
+<span class="math">\(i=p N_y + q\)</span> or <span class="math">\(i=q N_x + p\)</span>.</p>
+</div>
+<div class="section" id="example-polynomial-basis-in-2d">
+<h2>Example: Polynomial basis in 2D<a class="headerlink" href="#example-polynomial-basis-in-2d" title="Permalink to this headline">¶</a></h2>
 <p>Suppose we choose <span class="math">\(\hat{\psi}_p(x)=x^p\)</span>, and try an approximation with
 <span class="math">\(N_x=N_y=1\)</span>:</p>
 <div class="math">
@@ -3063,9 +3105,6 @@ using <span class="math">\(i=p N_y + q\)</span> or <span class="math">\(i=q N_x 
 <div class="math">
 \[{\psi}_0=1,\quad {\psi}_1=x, \quad {\psi}_2=y,\quad{\psi}_3 =xy
 {\thinspace .}\]</div>
-</div>
-<div class="section" id="hand-calculations">
-<h3>Hand calculations<a class="headerlink" href="#hand-calculations" title="Permalink to this headline">¶</a></h3>
 <p>With the specific choice <span class="math">\(f(x,y) = (1+x^2)(1+2y^2)\)</span> on
 <span class="math">\(\Omega = [0,L_x]\times [0,L_y]\)</span>, we can perform actual calculations:</p>
 <div class="math">
@@ -3121,7 +3160,7 @@ An arbitrary matrix entry has the formula</p>
 <div class="math">
 \[A_{i,j} = \hat A^{(x)}_{p,r} \hat A^{(y)}_{q,s} =
 \frac{1}{p+r+1}L_x^{p+r+1} \frac{1}{q+s+1}L_y^{q+s+1},\]</div>
-<p>for <span class="math">\(p,r\in{\mathcal{I}_x}\)</span> and <span class="math">\(q,s\in{\mathcal{I}_y}\)</span>.</p>
+<p>for <span class="math">\(p,r\in{I_x}\)</span> and <span class="math">\(q,s\in{I_y}\)</span>.</p>
 <p>Corresponding reasoning for the right-hand side leads to</p>
 <div class="math">
 \[\begin{split}b_i &amp;= ({\psi}_i,f) = \int_0^{L_y}\int_{0}^{L_x}{\psi}_i f\,dxdx\\
@@ -3157,7 +3196,6 @@ b = \left[\begin{array}{c}
 <p class="caption"><em>Approximation of a 2D quadratic function (left) by a 2D bilinear function (right) using the Galerkin or least squares method</em></p>
 </div>
 </div>
-</div>
 <div class="section" id="implementation-3">
 <span id="fem-approx-2d-global-code"></span><h2>Implementation  (3)<a class="headerlink" href="#implementation-3" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">least_squares</span></tt> function from
@@ -3187,7 +3225,9 @@ The 2D version of numerical integration becomes</p>
 </pre></div>
 </div>
 <p>The right-hand side integrals are modified in a similar way.</p>
-<p>Third, we must construct a list of 2D basis functions, e.g.,</p>
+<p>Third, we must construct a list of 2D basis functions. Here are two
+examples based on tensor products of 1D &#8220;Taylor-style&#8221; polynomials <span class="math">\(x^i\)</span>
+and 1D sine functions <span class="math">\(\sin((i+1)\pi x)\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">taylor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">**</span><span class="n">i</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="n">j</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
 
@@ -3223,6 +3263,39 @@ a bilinear function can be computed symbolically by</p>
 <p>For <span class="math">\(N_x\geq 2\)</span> and <span class="math">\(N_y\geq 2\)</span> we recover the exact function <span class="math">\(f\)</span>, as
 expected, since in that case <span class="math">\(f\in V\)</span> (see
 the section <a class="reference internal" href="#fem-approx-global-exact"><em>Perfect approximation</em></a>).</p>
+</div>
+<div class="section" id="extension-to-3d">
+<span id="fem-approx-3d-global"></span><h2>Extension to 3D<a class="headerlink" href="#extension-to-3d" title="Permalink to this headline">¶</a></h2>
+<p>Extension to 3D is in principle straightforward once the 2D extension
+is understood. The only major difference is that we need the
+repeated outer tensor product,</p>
+<div class="math">
+\[V = V_x\otimes V_y\otimes V_z{\thinspace .}\]</div>
+<p>In general, given vectors (first-order tensors)
+<span class="math">\(a^{(q)} = (a^{(q)}_0,\ldots,a^{(q)}_{N_q}\)</span>, <span class="math">\(q=0,\ldots,m\)</span>,
+the tensor product <span class="math">\(p=a^{(0)}\otimes\cdots\otimes a^{m}\)</span> has
+elements</p>
+<div class="math">
+\[p_{i_0,i_1,\ldots,i_m} = a^{(0)}_{i_1}a^{(1)}_{i_1}\cdots a^{(m)}_{i_m}{\thinspace .}\]</div>
+<p>The basis functions in 3D are then</p>
+<div class="math">
+\[{\psi}_{p,q,r}(x,y,z) = \hat{\varphi}_p(x)\hat{\varphi}_q(y)\hat{\varphi}_r(z),\]</div>
+<p>with <span class="math">\(p\in{I_x}\)</span>, <span class="math">\(q\in{I_y}\)</span>, <span class="math">\(r\in{I_z}\)</span>. The expansion of <span class="math">\(u\)</span> becomes</p>
+<div class="math">
+\[u(x,y,z) = \sum_{p\in{I_x}}\sum_{q\in{I_y}}\sum_{r\in{I_z}} c_{p,q,r}
+{\psi}_{p,q,r}(x,y,z){\thinspace .}\]</div>
+<p>A single index can be introduced also here, e.g., <span class="math">\(i=N_xN_yr + q_Nx + p\)</span>,
+<span class="math">\(u=\sum_i c_i{\varphi}_i(x,y,z)\)</span>.</p>
+<div class="admonition-use-of-tensor-product-spaces admonition">
+<p class="first admonition-title">Use of tensor product spaces</p>
+<p class="last">Constructing a multi-dimensional space and basis from tensor products
+of 1D spaces is a standard technique when working with global basis
+functions. In the world of finite elements, constructing basis functions
+by tensor products is much used on quadrilateral and hexahedra cell
+shapes, but not on triangles and tetrahedra. The global
+finite element basis functions are almost exclusively denoted by a single
+index.</p>
+</div>
 </div>
 </div>
 <div class="section" id="finite-elements-in-2d-and-3d">
@@ -3358,7 +3431,7 @@ Figure <a class="reference internal" href="#fem-approx-fe-2d-fig-p2-123d"><em>P2
 <img alt="_images/P2-1d2d3d1.png" src="_images/P2-1d2d3d1.png" style="width: 400px;" />
 <p class="caption"><em>P2 elements in 1D, 2D, and 3D</em></p>
 </div>
-<span class="target" id="index-57"></span><span class="target" id="index-58"></span><span class="target" id="index-59"></span><p id="index-60">The interval in 1D, the triangle in 2D, the tetrahedron in 3D, and
+<span class="target" id="index-58"></span><span class="target" id="index-59"></span><span class="target" id="index-60"></span><p id="index-61">The interval in 1D, the triangle in 2D, the tetrahedron in 3D, and
 its generalizations to higher space dimensions are known
 as <em>simplex</em> cells (the geometry) or <em>simplex</em> elements (the geometry,
 basis functions, degrees of freedom, etc.). The plural forms
@@ -3382,7 +3455,7 @@ to the point <span class="math">\(\boldsymbol{x}\)</span> in the physical coordi
 The affine mapping of any <span class="math">\(\boldsymbol{X}\)</span> onto <span class="math">\(\boldsymbol{x}\)</span> is
 then defined by</p>
 <div class="math" id="equation-fem:approx:fe:affine:map">
-<span id="index-61"></span><span class="eqno">(41)</span>\[     \boldsymbol{x} = \sum_{r} {\tilde{\varphi}}_r^{(1)}(\boldsymbol{X})\boldsymbol{x}_{q(e,r)},\]</div>
+<span id="index-62"></span><span class="eqno">(43)</span>\[     \boldsymbol{x} = \sum_{r} {\tilde{\varphi}}_r^{(1)}(\boldsymbol{X})\boldsymbol{x}_{q(e,r)},\]</div>
 <p>where <span class="math">\(r\)</span> runs over the local vertex numbers in the cell.
 The affine mapping essentially stretches, translates, and rotates
 the triangle. Straight or planar faces of the reference cell are
@@ -3397,27 +3470,27 @@ mapping itself always applies the P1 basis functions.</p>
 </div>
 <div class="section" id="isoparametric-mapping-of-the-reference-cell">
 <h2>Isoparametric mapping of the reference cell<a class="headerlink" href="#isoparametric-mapping-of-the-reference-cell" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="index-62"></span><p id="index-63">Instead of using the P1 basis functions in the mapping
-<a href="#equation-fem:approx:fe:affine:map">(41)</a>,
-we may use the basis functions of the actual P$d$ element:</p>
+<span class="target" id="index-63"></span><p id="index-64">Instead of using the P1 basis functions in the mapping
+<a href="#equation-fem:approx:fe:affine:map">(43)</a>,
+we may use the basis functions of the actual Pd element:</p>
 <div class="math" id="equation-fem:approx:fe:isop:map">
-<span class="eqno">(42)</span>\[     \boldsymbol{x} = \sum_{r} {\tilde{\varphi}}_r(\boldsymbol{X})\boldsymbol{x}_{q(e,r)},\]</div>
+<span class="eqno">(44)</span>\[     \boldsymbol{x} = \sum_{r} {\tilde{\varphi}}_r(\boldsymbol{X})\boldsymbol{x}_{q(e,r)},\]</div>
 <p>where <span class="math">\(r\)</span> runs over all nodes, i.e., all points associated with the
 degrees of freedom. This is called an <em>isoparametric mapping</em>.
 For P1 elements it is identical to the affine mapping
-<a href="#equation-fem:approx:fe:affine:map">(41)</a>, but for higher-order elements
+<a href="#equation-fem:approx:fe:affine:map">(43)</a>, but for higher-order elements
 the mapping of the straight or planar faces of the reference cell will
 result in a <em>curved</em> face in the physical coordinate system.
 For example, when we use the basis functions of the triangular P2 element
-in 2D in <a href="#equation-fem:approx:fe:isop:map">(42)</a>, the straight faces of the
+in 2D in <a href="#equation-fem:approx:fe:isop:map">(44)</a>, the straight faces of the
 reference triangle are mapped onto curved faces of parabolic shape in
 the physical coordinate system, see Figure <a class="reference internal" href="#fem-approx-fe-map-fig-2dp2"><em>Isoparametric mapping of a P2 element</em></a>.</p>
 <div class="figure" id="fem-approx-fe-map-fig-2dp2">
 <img alt="_images/ElmT6n2D_map1.png" src="_images/ElmT6n2D_map1.png" style="width: 400px;" />
 <p class="caption"><em>Isoparametric mapping of a P2 element</em></p>
 </div>
-<p>From <a href="#equation-fem:approx:fe:affine:map">(41)</a> or
-<a href="#equation-fem:approx:fe:isop:map">(42)</a> it is easy to realize that the
+<p>From <a href="#equation-fem:approx:fe:affine:map">(43)</a> or
+<a href="#equation-fem:approx:fe:isop:map">(44)</a> it is easy to realize that the
 vertices are correctly mapped. Consider a vertex with local number <span class="math">\(s\)</span>.
 Then <span class="math">\({\tilde{\varphi}}_s=1\)</span> at this vertex and zero at the others.
 This means that only one term in the sum is nonzero and <span class="math">\(\boldsymbol{x}=\boldsymbol{x}_{q(e,s)}\)</span>,
@@ -3440,7 +3513,7 @@ the integral from the physical to the reference coordinate system reads</p>
 definition of <span class="math">\({\, \mathrm{d}X}\)</span>. The quantity <span class="math">\(\det J\)</span> is the determinant of the
 Jacobian of the mapping <span class="math">\(\boldsymbol{x}(\boldsymbol{X})\)</span>. In 2D,</p>
 <div class="math" id="equation-fem:approx:fe:2D:mapping:J:detJ">
-<span class="eqno">(43)</span>\[\begin{split}     J = \left[\begin{array}{cc}
+<span class="eqno">(45)</span>\[\begin{split}     J = \left[\begin{array}{cc}
      \frac{\partial x}{\partial X} &amp; \frac{\partial x}{\partial Y}\\
      \frac{\partial y}{\partial X} &amp; \frac{\partial y}{\partial Y}
      \end{array}\right], \quad
@@ -3448,7 +3521,7 @@ Jacobian of the mapping <span class="math">\(\boldsymbol{x}(\boldsymbol{X})\)</s
      - \frac{\partial x}{\partial Y}\frac{\partial y}{\partial X}
      {\thinspace .}\end{split}\]</div>
 <p>With the affine mapping
-<a href="#equation-fem:approx:fe:affine:map">(41)</a>, <span class="math">\(\det J=2\Delta\)</span>, where <span class="math">\(\Delta\)</span> is
+<a href="#equation-fem:approx:fe:affine:map">(43)</a>, <span class="math">\(\det J=2\Delta\)</span>, where <span class="math">\(\Delta\)</span> is
 the area or volume of the cell in the physical coordinate system.</p>
 <p><em>Remark.</em> Observe that finite elements in 2D and 3D builds on the same
 <em>ideas</em> and <em>concepts</em> as in 1D, but there is simply much
@@ -3530,8 +3603,16 @@ compute with only one basis function at a time and accumulate
 the corresponding <tt class="docutils literal"><span class="pre">u</span></tt> in the total solution.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">tanh_sines_approx1.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-7-fourier-series-as-a-least-squares-approximation">
-<span id="fem-approx-exer-fourier"></span><h2>Exercise 7: Fourier series as a least squares approximation<a class="headerlink" href="#exercise-7-fourier-series-as-a-least-squares-approximation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-7-approximate-a-steep-function-by-sines">
+<span id="fem-approx-exer-tanh-sine2"></span><h2>Exercise 7: Approximate a steep function by sines<a class="headerlink" href="#exercise-7-approximate-a-steep-function-by-sines" title="Permalink to this headline">¶</a></h2>
+<p>Make a movie where the steepness (<span class="math">\(s\)</span>) of the <span class="math">\(\tanh\)</span> function in
+<a class="reference internal" href="#fem-approx-exer-tanh-sine1"><em>Exercise 6: Approximate a steep function by sines</em></a> grows in &#8220;time&#8221;,
+and for each value of the steepness, the movie shows how the
+approximation improves with increasing <span class="math">\(N\)</span>.
+Filename: <tt class="docutils literal"><span class="pre">tanh_sines_approx2.py</span></tt>.</p>
+</div>
+<div class="section" id="exercise-8-fourier-series-as-a-least-squares-approximation">
+<span id="fem-approx-exer-fourier"></span><h2>Exercise 8: Fourier series as a least squares approximation<a class="headerlink" href="#exercise-8-fourier-series-as-a-least-squares-approximation" title="Permalink to this headline">¶</a></h2>
 <p>Given a function <span class="math">\(f(x)\)</span> on an interval <span class="math">\([0,L]\)</span>, look up the formula
 for the coefficients <span class="math">\(a_j\)</span> and <span class="math">\(b_j\)</span> in the Fourier series of <span class="math">\(f\)</span>:</p>
 <div class="math">
@@ -3558,8 +3639,8 @@ some truncated versions of the series together with <span class="math">\(f(x)\)<
 the series expansion converges for <span class="math">\(s=10\)</span> and <span class="math">\(s=100\)</span>.
 Filename: <tt class="docutils literal"><span class="pre">Fourier_approx.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-8-approximate-a-steep-function-by-lagrange-polynomials">
-<span id="fem-approx-exer-tanh"></span><h2>Exercise 8: Approximate a steep function by Lagrange polynomials<a class="headerlink" href="#exercise-8-approximate-a-steep-function-by-lagrange-polynomials" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-9-approximate-a-steep-function-by-lagrange-polynomials">
+<span id="fem-approx-exer-tanh"></span><h2>Exercise 9: Approximate a steep function by Lagrange polynomials<a class="headerlink" href="#exercise-9-approximate-a-steep-function-by-lagrange-polynomials" title="Permalink to this headline">¶</a></h2>
 <p>Use interpolation/collocation with uniformly distributed
 points and Chebychev nodes to approximate</p>
 <div class="math">
@@ -3569,8 +3650,8 @@ Make separate plots of the approximation for each combination of
 <span class="math">\(s\)</span>, point type (Chebyshev or uniform), and <span class="math">\(N\)</span>.
 Filename: <tt class="docutils literal"><span class="pre">tanh_Lagrange.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-9-define-nodes-and-elements">
-<span id="fem-approx-fe-exer-mesh1"></span><h2>Exercise 9: Define nodes and elements<a class="headerlink" href="#exercise-9-define-nodes-and-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-10-define-nodes-and-elements">
+<span id="fem-approx-fe-exer-mesh1"></span><h2>Exercise 10: Define nodes and elements<a class="headerlink" href="#exercise-10-define-nodes-and-elements" title="Permalink to this headline">¶</a></h2>
 <p>Consider a domain <span class="math">\(\Omega =[0,2]\)</span> divided into the three elements
 <span class="math">\([0,1]\)</span>, <span class="math">\([1,1.2]\)</span>, and <span class="math">\([1.2,2]\)</span>, with two nodes in each element
 (P1 elements).
@@ -3583,15 +3664,15 @@ Add the new node and the two new elements to the data structures created above,
 and try to minimize the modifications.
 Filename: <tt class="docutils literal"><span class="pre">fe_numberings1.py.</span></tt>.</p>
 </div>
-<div class="section" id="exercise-10-define-vertices-cells-and-dof-maps">
-<span id="fem-approx-fe-exer-mesh2"></span><h2>Exercise 10: Define vertices, cells, and dof maps<a class="headerlink" href="#exercise-10-define-vertices-cells-and-dof-maps" title="Permalink to this headline">¶</a></h2>
-<p>Repeat <a class="reference internal" href="#fem-approx-fe-exer-mesh2"><em>Exercise 10: Define vertices, cells, and dof maps</em></a>, but define the
+<div class="section" id="exercise-11-define-vertices-cells-and-dof-maps">
+<span id="fem-approx-fe-exer-mesh2"></span><h2>Exercise 11: Define vertices, cells, and dof maps<a class="headerlink" href="#exercise-11-define-vertices-cells-and-dof-maps" title="Permalink to this headline">¶</a></h2>
+<p>Repeat <a class="reference internal" href="#fem-approx-fe-exer-mesh2"><em>Exercise 11: Define vertices, cells, and dof maps</em></a>, but define the
 data structures <tt class="docutils literal"><span class="pre">vertices</span></tt>, <tt class="docutils literal"><span class="pre">cells</span></tt>, and <tt class="docutils literal"><span class="pre">dof_map</span></tt> instead of
 <tt class="docutils literal"><span class="pre">nodes</span></tt> and <tt class="docutils literal"><span class="pre">elements</span></tt>.
 Filename: <tt class="docutils literal"><span class="pre">fe_numberings2.py.</span></tt>.</p>
 </div>
-<div class="section" id="exercise-11-construct-matrix-sparsity-patterns">
-<span id="fem-approx-fe-exer-defmesh-sparsity"></span><h2>Exercise 11: Construct matrix sparsity patterns<a class="headerlink" href="#exercise-11-construct-matrix-sparsity-patterns" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-12-construct-matrix-sparsity-patterns">
+<span id="fem-approx-fe-exer-defmesh-sparsity"></span><h2>Exercise 12: Construct matrix sparsity patterns<a class="headerlink" href="#exercise-12-construct-matrix-sparsity-patterns" title="Permalink to this headline">¶</a></h2>
 <p><em class="xref std std-ref">fem:approx:fe:exer:defmesh</em> describes a element mesh
 with a total of five elements, but with two different element and
 node orderings. For each of the two orderings,
@@ -3600,8 +3681,8 @@ make a <span class="math">\(5\times 5\)</span> matrix and fill in the entries th
 same element.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">fe_sparsity_pattern.pdf</span></tt>.</p>
 </div>
-<div class="section" id="exercise-12-perform-symbolic-finite-element-computations">
-<span id="fem-approx-fe-exer-asinwt-symbolic"></span><h2>Exercise 12: Perform symbolic finite element computations<a class="headerlink" href="#exercise-12-perform-symbolic-finite-element-computations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-13-perform-symbolic-finite-element-computations">
+<span id="fem-approx-fe-exer-asinwt-symbolic"></span><h2>Exercise 13: Perform symbolic finite element computations<a class="headerlink" href="#exercise-13-perform-symbolic-finite-element-computations" title="Permalink to this headline">¶</a></h2>
 <p>Find formulas for the coefficient matrix and right-hand side
 when approximating <span class="math">\(f(x) = sin (x)\)</span> on
 <span class="math">\(\Omega=[0, \pi]\)</span> by two P1 elements of size <span class="math">\(\pi/2\)</span>.
@@ -3609,8 +3690,8 @@ Solve the system and compare <span class="math">\(u(\pi/2\)</span> with
 the exact value 1.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">sin_approx_P1.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-13-approximate-a-steep-function-by-p1-and-p2-elements">
-<span id="id3"></span><h2>Exercise 13: Approximate a steep function by P1 and P2 elements<a class="headerlink" href="#exercise-13-approximate-a-steep-function-by-p1-and-p2-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-14-approximate-a-steep-function-by-p1-and-p2-elements">
+<span id="id3"></span><h2>Exercise 14: Approximate a steep function by P1 and P2 elements<a class="headerlink" href="#exercise-14-approximate-a-steep-function-by-p1-and-p2-elements" title="Permalink to this headline">¶</a></h2>
 <p>Given</p>
 <div class="math">
 \[f(x) = \tanh(s(x-\frac{1}{2}))\]</div>
@@ -3621,18 +3702,18 @@ an approximate function <span class="math">\(u(x)\)</span>. Choose <span class="
 Integrate <span class="math">\(f{\varphi}_i\)</span> numerically.
 Filename: <tt class="docutils literal"><span class="pre">tanh_fe_P1P2_approx.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-14-approximate-a-function-by-p3-and-p4-elements">
-<span id="fem-approx-exer-tanh2"></span><h2>Exercise 14: Approximate a <span class="math">\(\tanh\)</span> function by P3 and P4 elements<a class="headerlink" href="#exercise-14-approximate-a-function-by-p3-and-p4-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-15-approximate-a-function-by-p3-and-p4-elements">
+<span id="fem-approx-exer-tanh2"></span><h2>Exercise 15: Approximate a <span class="math">\(\tanh\)</span> function by P3 and P4 elements<a class="headerlink" href="#exercise-15-approximate-a-function-by-p3-and-p4-elements" title="Permalink to this headline">¶</a></h2>
 <p>Solve <em class="xref std std-ref">fem:approx:exer:tanh</em> using <span class="math">\(N_e=1,2,4\)</span> P3 and P4
 elements. How will a collocation/interpolation method work in
 this case with the same number of nodes?
 Filename: <tt class="docutils literal"><span class="pre">tanh_fe_P3P4_approx.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-15-investigate-the-approximation-error-in-finite-elements">
-<span id="fem-approx-fe-exer-asinwt-interpol-error"></span><h2>Exercise 15: Investigate the approximation error in finite elements<a class="headerlink" href="#exercise-15-investigate-the-approximation-error-in-finite-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-16-investigate-the-approximation-error-in-finite-elements">
+<span id="fem-approx-fe-exer-asinwt-interpol-error"></span><h2>Exercise 16: Investigate the approximation error in finite elements<a class="headerlink" href="#exercise-16-investigate-the-approximation-error-in-finite-elements" title="Permalink to this headline">¶</a></h2>
 <p>The theory <a href="#equation-fem:approx:fe:error:theorem">(39)</a> from
 the section <em class="xref std std-ref">fem:approx:fe:error</em> predicts that the
-error in the P$d$ approximation of a function
+error in the Pd approximation of a function
 should behave as <span class="math">\(h^{d+1}\)</span>. Use experiments to verify this
 asymptotic behavior (i.e., for small enough <span class="math">\(h\)</span>).
 Choose two examples: <span class="math">\(f(x)=Ae^{-\omega x}\)</span> on <span class="math">\([0,3/\omega]\)</span>
@@ -3649,8 +3730,8 @@ experiments:</p>
 <span class="math">\(r\)</span>, and <span class="math">\(r_{m-1}\)</span> can be taken as an approximation to <span class="math">\(r\)</span>.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">Asinwt_interpolation_error.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-16-approximate-a-step-function-by-finite-elements">
-<span id="fem-approx-fe-exer-heaviside"></span><h2>Exercise 16: Approximate a step function by finite elements<a class="headerlink" href="#exercise-16-approximate-a-step-function-by-finite-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-17-approximate-a-step-function-by-finite-elements">
+<span id="fem-approx-fe-exer-heaviside"></span><h2>Exercise 17: Approximate a step function by finite elements<a class="headerlink" href="#exercise-17-approximate-a-step-function-by-finite-elements" title="Permalink to this headline">¶</a></h2>
 <p>Approximate the step function</p>
 <div class="math">
 \[\begin{split}f(x) = \left\lbrace\begin{array}{ll}
@@ -3675,8 +3756,8 @@ special-purpose code for this case or perform all
 calculations by hand.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">Heaviside_approx_P1P2.py.</span></tt>.</p>
 </div>
-<div class="section" id="exercise-17-2d-approximation-with-orthogonal-functions">
-<span id="fem-approx-fe-exer-2dsines-symbolic"></span><h2>Exercise 17: 2D approximation with orthogonal functions<a class="headerlink" href="#exercise-17-2d-approximation-with-orthogonal-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-18-2d-approximation-with-orthogonal-functions">
+<span id="fem-approx-fe-exer-2dsines-symbolic"></span><h2>Exercise 18: 2D approximation with orthogonal functions<a class="headerlink" href="#exercise-18-2d-approximation-with-orthogonal-functions" title="Permalink to this headline">¶</a></h2>
 <p>Assume we have basis functions <span class="math">\({\varphi}_i(x,y)\)</span> in 2D that are
 orthogonal
 such that <span class="math">\(({\varphi}_i,{\varphi}_j)=0\)</span> when <span class="math">\(i\neq j\)</span>.
@@ -3697,8 +3778,8 @@ the section <a class="reference internal" href="#fem-approx-global-orth"><em>Ort
 file <a class="reference external" href="http://tinyurl.com/jvzzcfn/fem/fe_approx1D.py">approx1D.py</a>.</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">approx2D_lsorth_sin.py</span></tt>.</p>
 </div>
-<div class="section" id="exercise-18-use-the-trapezoidal-rule-and-p1-elements">
-<span id="fem-approx-fe-exer-1d-trapez"></span><h2>Exercise 18: Use the Trapezoidal rule and P1 elements<a class="headerlink" href="#exercise-18-use-the-trapezoidal-rule-and-p1-elements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exercise-19-use-the-trapezoidal-rule-and-p1-elements">
+<span id="fem-approx-fe-exer-1d-trapez"></span><h2>Exercise 19: Use the Trapezoidal rule and P1 elements<a class="headerlink" href="#exercise-19-use-the-trapezoidal-rule-and-p1-elements" title="Permalink to this headline">¶</a></h2>
 <p>Consider approximation of some <span class="math">\(f(x)\)</span> on an interval <span class="math">\(\Omega\)</span> using
 the least squares or Galerkin methods with P1 elements. Derive
 the element matrix and vector using the
@@ -3708,8 +3789,8 @@ a uniform cell partitioning, and show that the resulting linear system
 has the form <span class="math">\(c_i=f(x_{i})\)</span> for <span class="math">\(i\inI\)</span>.
 Filename: <tt class="docutils literal"><span class="pre">fe_trapez.pdf</span></tt>.</p>
 </div>
-<div class="section" id="problem-19-compare-p1-elements-and-interpolation">
-<span id="fem-approx-fe-exer-1d-p1-vs-interp"></span><h2>Problem 19: Compare P1 elements and interpolation<a class="headerlink" href="#problem-19-compare-p1-elements-and-interpolation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="problem-20-compare-p1-elements-and-interpolation">
+<span id="fem-approx-fe-exer-1d-p1-vs-interp"></span><h2>Problem 20: Compare P1 elements and interpolation<a class="headerlink" href="#problem-20-compare-p1-elements-and-interpolation" title="Permalink to this headline">¶</a></h2>
 <p>We shall approximate the function</p>
 <div class="math">
 \[f(x) = 1 + \epsilon\sin (2\pi nx),\quad x\in \Omega = [0,1],\]</div>
@@ -3732,6 +3813,13 @@ compute <span class="math">\(u(x)\)</span> (recall that <span class="math">\(c_i
 Compute the error <span class="math">\(E=||u-f||_{L^2}\)</span>.
 Which method seems to be most accurate?</p>
 <p>Filename: <tt class="docutils literal"><span class="pre">P1_vs_interp.py</span></tt>.</p>
+</div>
+<div class="section" id="exercise-21-implement-3d-computations-with-global-basis-functions">
+<span id="fem-approx-fe-exer-3d-approx3d"></span><h2>Exercise 21: Implement 3D computations with global basis functions<a class="headerlink" href="#exercise-21-implement-3d-computations-with-global-basis-functions" title="Permalink to this headline">¶</a></h2>
+<p>Extend the <a class="reference external" href="http://tinyurl.com/jvzzcfn/fem/approx2D.py">approx2D.py</a> code to 3D
+applying ideas from the section <a class="reference internal" href="#fem-approx-3d-global"><em>Extension to 3D</em></a>.
+Use a 3D generalization of the test problem in the section <a class="reference internal" href="#fem-approx-2d-global-code"><em>Implementation  (3)</em></a> to test the implementation.
+Filename: <tt class="docutils literal"><span class="pre">approx3D.py</span></tt>.</p>
 </div>
 </div>
 
@@ -3841,12 +3929,10 @@ Which method seems to be most accurate?</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#approximation-of-functions-in-2d">Approximation of functions in 2D</a><ul>
-<li><a class="reference internal" href="#global-basis-functions">Global basis functions</a><ul>
-<li><a class="reference internal" href="#constructing-2d-basis-functions-from-1d-functions">Constructing 2D basis functions from 1D functions</a></li>
-<li><a class="reference internal" href="#hand-calculations">Hand calculations</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#d-basis-functions-as-tensor-products-of-1d-functions">2D basis functions as tensor products of 1D functions</a></li>
+<li><a class="reference internal" href="#example-polynomial-basis-in-2d">Example: Polynomial basis in 2D</a></li>
 <li><a class="reference internal" href="#implementation-3">Implementation  (3)</a></li>
+<li><a class="reference internal" href="#extension-to-3d">Extension to 3D</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#finite-elements-in-2d-and-3d">Finite elements in 2D and 3D</a><ul>
@@ -3867,19 +3953,21 @@ Which method seems to be most accurate?</p>
 <li><a class="reference internal" href="#exercise-4-approximate-the-exponential-function-by-power-functions">Exercise 4: Approximate the exponential function by power functions</a></li>
 <li><a class="reference internal" href="#exercise-5-approximate-the-sine-function-by-power-functions">Exercise 5: Approximate the sine function by power functions</a></li>
 <li><a class="reference internal" href="#exercise-6-approximate-a-steep-function-by-sines">Exercise 6: Approximate a steep function by sines</a></li>
-<li><a class="reference internal" href="#exercise-7-fourier-series-as-a-least-squares-approximation">Exercise 7: Fourier series as a least squares approximation</a></li>
-<li><a class="reference internal" href="#exercise-8-approximate-a-steep-function-by-lagrange-polynomials">Exercise 8: Approximate a steep function by Lagrange polynomials</a></li>
-<li><a class="reference internal" href="#exercise-9-define-nodes-and-elements">Exercise 9: Define nodes and elements</a></li>
-<li><a class="reference internal" href="#exercise-10-define-vertices-cells-and-dof-maps">Exercise 10: Define vertices, cells, and dof maps</a></li>
-<li><a class="reference internal" href="#exercise-11-construct-matrix-sparsity-patterns">Exercise 11: Construct matrix sparsity patterns</a></li>
-<li><a class="reference internal" href="#exercise-12-perform-symbolic-finite-element-computations">Exercise 12: Perform symbolic finite element computations</a></li>
-<li><a class="reference internal" href="#exercise-13-approximate-a-steep-function-by-p1-and-p2-elements">Exercise 13: Approximate a steep function by P1 and P2 elements</a></li>
-<li><a class="reference internal" href="#exercise-14-approximate-a-function-by-p3-and-p4-elements">Exercise 14: Approximate a <span class="math">\(\tanh\)</span> function by P3 and P4 elements</a></li>
-<li><a class="reference internal" href="#exercise-15-investigate-the-approximation-error-in-finite-elements">Exercise 15: Investigate the approximation error in finite elements</a></li>
-<li><a class="reference internal" href="#exercise-16-approximate-a-step-function-by-finite-elements">Exercise 16: Approximate a step function by finite elements</a></li>
-<li><a class="reference internal" href="#exercise-17-2d-approximation-with-orthogonal-functions">Exercise 17: 2D approximation with orthogonal functions</a></li>
-<li><a class="reference internal" href="#exercise-18-use-the-trapezoidal-rule-and-p1-elements">Exercise 18: Use the Trapezoidal rule and P1 elements</a></li>
-<li><a class="reference internal" href="#problem-19-compare-p1-elements-and-interpolation">Problem 19: Compare P1 elements and interpolation</a></li>
+<li><a class="reference internal" href="#exercise-7-approximate-a-steep-function-by-sines">Exercise 7: Approximate a steep function by sines</a></li>
+<li><a class="reference internal" href="#exercise-8-fourier-series-as-a-least-squares-approximation">Exercise 8: Fourier series as a least squares approximation</a></li>
+<li><a class="reference internal" href="#exercise-9-approximate-a-steep-function-by-lagrange-polynomials">Exercise 9: Approximate a steep function by Lagrange polynomials</a></li>
+<li><a class="reference internal" href="#exercise-10-define-nodes-and-elements">Exercise 10: Define nodes and elements</a></li>
+<li><a class="reference internal" href="#exercise-11-define-vertices-cells-and-dof-maps">Exercise 11: Define vertices, cells, and dof maps</a></li>
+<li><a class="reference internal" href="#exercise-12-construct-matrix-sparsity-patterns">Exercise 12: Construct matrix sparsity patterns</a></li>
+<li><a class="reference internal" href="#exercise-13-perform-symbolic-finite-element-computations">Exercise 13: Perform symbolic finite element computations</a></li>
+<li><a class="reference internal" href="#exercise-14-approximate-a-steep-function-by-p1-and-p2-elements">Exercise 14: Approximate a steep function by P1 and P2 elements</a></li>
+<li><a class="reference internal" href="#exercise-15-approximate-a-function-by-p3-and-p4-elements">Exercise 15: Approximate a <span class="math">\(\tanh\)</span> function by P3 and P4 elements</a></li>
+<li><a class="reference internal" href="#exercise-16-investigate-the-approximation-error-in-finite-elements">Exercise 16: Investigate the approximation error in finite elements</a></li>
+<li><a class="reference internal" href="#exercise-17-approximate-a-step-function-by-finite-elements">Exercise 17: Approximate a step function by finite elements</a></li>
+<li><a class="reference internal" href="#exercise-18-2d-approximation-with-orthogonal-functions">Exercise 18: 2D approximation with orthogonal functions</a></li>
+<li><a class="reference internal" href="#exercise-19-use-the-trapezoidal-rule-and-p1-elements">Exercise 19: Use the Trapezoidal rule and P1 elements</a></li>
+<li><a class="reference internal" href="#problem-20-compare-p1-elements-and-interpolation">Problem 20: Compare P1 elements and interpolation</a></li>
+<li><a class="reference internal" href="#exercise-21-implement-3d-computations-with-global-basis-functions">Exercise 21: Implement 3D computations with global basis functions</a></li>
 </ul>
 </li>
 </ul>

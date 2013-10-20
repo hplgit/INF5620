@@ -237,8 +237,8 @@ def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
         x_u, u = u_glob(np.asarray(c), vertices, cells, dof_map,
                         resolution_per_element=51)
         x_f = np.linspace(Omega[0], Omega[1], 10001) # mesh for f
-        plt.plot(x_u, u, 'r-',
-                 x_f, f(x_f), 'b-')
+        plt.plot(x_u, u, '-',
+                 x_f, f(x_f), '--')
         plt.legend(['u', 'f'])
         plt.title(title)
         plt.savefig(filename + '.pdf')

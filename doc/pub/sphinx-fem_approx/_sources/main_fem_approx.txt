@@ -5,7 +5,7 @@ Approximation of functions with finite elements
 ===============================================
 
 :Author: Hans Petter Langtangen
-:Date: Oct 16, 2013
+:Date: Oct 20, 2013
 
 **PRELIMINARY VERSION**
 
@@ -2339,7 +2339,7 @@ piecewise linear basis functions. Similarly, *quadratic elements* and
 *cubic elements* refer to piecewise quadratic or cubic functions
 over elements with three or four local nodes, respectively.
 Alternative names, frequently used later, are P1 elements for linear
-elements, P2 for quadratic elements, and so forth: P$d$ signifies
+elements, P2 for quadratic elements, and so forth: Pd signifies
 degree :math:`d` of the polynomial basis functions.
 
 
@@ -2465,10 +2465,10 @@ too:
         A_{i,i-1} &= \int_\Omega {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}\\ 
         &=
         \underbrace{\int_{x_{i-2}}^{x_{i-1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_i=0} +
-        \int_{x_{i}}^{x_{i}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} +
+        \int_{x_{i-1}}^{x_{i}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x} +
         \underbrace{\int_{x_{i}}^{x_{i+1}} {\varphi}_i{\varphi}_{i-1}{\, \mathrm{d}x}}_{{\varphi}_{i-1}=0}\\ 
         &= \int_{x_{i-1}}^{x_{i}}
-        \underbrace{\frac{x - x_{i}}{h}}_{{\varphi}_i(x)}
+        \underbrace{\left(\frac{x - x_{i}}{h}\right)}_{{\varphi}_i(x)}
         \underbrace{\left(1 - \frac{x - x_{i-1}}{h}\right)}_{{\varphi}_{i-1}(x)} {\, \mathrm{d}x} =
         \frac{h}{6}
         {\thinspace .}
@@ -2730,7 +2730,7 @@ The right-hand side of the linear system is also computed elementwise:
 
 .. math::
         
-        b_i = \int_\Omega{\varphi}_i{\varphi}_j {\, \mathrm{d}x} = \sum_{e} b^{(e)}_{i},\quad
+        b_i = \int_\Omega f(x){\varphi}_i(x) {\, \mathrm{d}x} = \sum_{e} b^{(e)}_{i},\quad
         b^{(e)}_{i}=\int_{\Omega^{(e)}} f(x){\varphi}_i(x){\, \mathrm{d}x}
         {\thinspace .}  
 
@@ -4191,16 +4191,17 @@ Implementationwise,
     in ``vertices``;
 
   * we replace ``elements`` by ``dof_map`` (the contents are the same
-    for P$d$ elements).
+    for Pd elements).
 
 Consider the example from the section :ref:`fem:approx:fe:def:elements:nodes`
 where :math:`\Omega =[0,1]` is divided into two cells,
-:math:`\Omega^{(0)}=[0,0.4]` and :math:`\Omega^{(1)}=[0.4,1]`.
+:math:`\Omega^{(0)}=[0,0.4]` and :math:`\Omega^{(1)}=[0.4,1]`, as
+depicted in Figure :ref:`fem:approx:fe:def:elements:nodes:fig:P2`.
 The vertices are :math:`[0,0.4,1]`. Local vertex 0 and 1 are
 :math:`0` and :math:`0.4` in cell 0 and :math:`0.4` and :math:`1` in cell 1.
 A P2 element means that the degrees of freedom are
 the value of :math:`u` at three equally spaced points (nodes) in each
-cell. The data structures become
+cell. The data structures become[[[
 
 
 .. code-block:: python
@@ -4304,7 +4305,7 @@ reflect the error and use a norm for this purpose, usually the :math:`L^2` norm
 
 
 .. math::
-         ||e||_{L^2} = \left(\int_{\Omega} e^2 dx\right)^{\frac{1}{2}}{\thinspace .}
+         ||e||_{L^2} = \left(\int_{\Omega} e^2 dx\right)^{1/2}{\thinspace .}
 
 Since the finite element approximation is defined for all :math:`x\in\Omega`,
 and we are interested in how :math:`u(x)` deviates from :math:`f(x)` through all
@@ -4359,7 +4360,7 @@ Computing the :math:`L^2` norm of the error, here named ``E``, is now achieved b
 .. admonition:: How does the error depend on :math:`h` and :math:`d`
 
    Theory and experiments show that the least squares or projection/Galerkin
-   method in combination with P$d$ elements of equal length :math:`h` has an error
+   method in combination with Pd elements of equal length :math:`h` has an error
    
    
    .. math::
@@ -4638,15 +4639,8 @@ All the concepts and algorithms developed for approximation of 1D functions
 for the least squares and Galerkin methods, the integration is done over
 :math:`\Omega`.
 
-.. _fem:approx:2D:global:
-
-Global basis functions
-----------------------
-
-An example will demonstrate the necessary extensions to use global
-basis functions and the least squares, projection/Galerkin,
-or interpolation/collocation
-methods in 2D. The former two lead to linear systems
+As in 1D, the least squares and projection/Galerkin methods
+two lead to linear systems
 
 
 .. math::
@@ -4665,33 +4659,122 @@ completely analogously to the 1D case :eq:`fem:approx:LS:innerprod`:
         
 
 
+.. _fem:approx:2D:global:
 
-Constructing 2D basis functions from 1D functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2D basis functions as tensor products of 1D functions
+-----------------------------------------------------
+
+
+
+.. index:: tensor product
+
 
 One straightforward
 way to construct a basis in 2D is to combine
-1D basis functions. Say we have the 1D basis
+1D basis functions. Say we have the 1D vector space
 
 
 .. math::
-         \{ \hat{\psi}_0(x),\ldots,\hat{\psi}_{N_x}(x)\}
+   :label: fem:approx:2D:Vx
+        
+        V_x = \mbox{span}\{ \hat{\psi}_0(x),\ldots,\hat{\psi}_{N_x}(x)\}
+        
         {\thinspace .}
         
 
-We can now form 2D basis functions as products of 1D basis functions:
-:math:`\hat{\psi}_p(x)\hat{\psi}_q(y)` for :math:`p\in{\mathcal{I}_x}=\{0,\ldots,N_x\}`
-and :math:`q\in{\mathcal{I}_y}=\{0,\ldots,N_y\}`.
-We can either work with double indices,
-:math:`{\psi}_{p,q}(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y)`, and write
+A similar space for variation in :math:`y` can be defined,
 
 
 .. math::
-         u = \sum_{p\in{\mathcal{I}_x}}\sum_{q\in{\mathcal{I}_y}} c_{p,q}{\psi}_{p,q}(x,y),
+   :label: fem:approx:2D:Vy
+        
+        V_y = \mbox{span}\{ \hat{\psi}_0(y),\ldots,\hat{\psi}_{N_y}(y)\}
+        
+        {\thinspace .}
         
 
-or we may transform the double index :math:`(p,q)` to a single index :math:`i`,
-using :math:`i=p N_y + q` or :math:`i=q N_x + p`.
+We can then form 2D basis functions as *tensor products* of 1D basis functions.
+
+
+
+.. admonition:: Tensor products
+
+   Given two vectors :math:`a=(a_0,\ldots,a_M)` and :math:`b=(b_0,\ldots,b_N)`,
+   their *outer tensor product*, also called the *dyadic product*,
+   is :math:`p=a\otimes b`, defined through
+   
+   
+   .. math::
+            p_{i,j}=a_ib_j,\quad i=0,\ldots,M,\ j=0,\ldots,N{\thinspace .}
+   
+   In the tensor terminology,
+   :math:`a` and :math:`b` are first-order tensors (vectors with one index, also termed
+   rank-1 tensors), and then their outer
+   tensor product is a second-order tensor (matrix with two indices, also
+   termed rank-2 tensor). The
+   corresponding *inner tensor product* is the well-known scalar or dot
+   product of two vectors: :math:`p=a\cdot b = \sum_{j=0}^N a_jb_j`. Now,
+   :math:`p` is a rank-0 tensor.
+   
+   Tensors are typically represented by arrays in computer code.
+   In the above example, :math:`a` and :math:`b` are represented by
+   one-dimensional arrays of length
+   :math:`M` and :math:`N`, respectively, while :math:`p=a\otimes b` must be represented
+   by a two-dimensional array of size :math:`M\times N`.
+   
+   `Tensor products <http://en.wikipedia.org/wiki/Tensor_product>`_ can
+   be used in a variety of context.
+
+
+.. The following is from `<http://en.wikipedia.org/wiki/Tensor_product>`_,
+
+.. Notation and examples
+
+Given the vector spaces :math:`V_x` and :math:`V_y` as defined
+in :eq:`fem:approx:2D:Vx` and :eq:`fem:approx:2D:Vy`, the
+tensor product space :math:`V=V_x\otimes V_y` has a basis formed
+as the tensor product of the basis for :math:`V_x` and :math:`V_y`.
+That is, if :math:`\left\{ {\varphi}_i(x) \right\}_{i\in{I_x}}`
+and :math:`\left\{ {\varphi}_i(y) \right\}_{i\in {I_y}}` are basis for
+:math:`V_x` and :math:`V_y`, respectively, the elements in the basis for :math:`V` arise
+from the tensor product:
+:math:`\left\{ {\varphi}_i(x){\varphi}_j(y) \right\}_{i\in {I_x},j\in {I_y}}`.
+The index sets are :math:`I_x=\{0,\ldots,N_x\}` and :math:`I_y=\{0,\ldots,N_y\}`.
+
+The notation for a basis function in 2D can employ a double index as in
+
+
+.. math::
+         {\psi}_{p,q}(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y),
+        \quad p\in{I_x},q\in{I_y}{\thinspace .}
+        
+
+The expansion for :math:`u` is then written as a double sum
+
+
+.. math::
+         u = \sum_{p\in{I_x}}\sum_{q\in{I_y}} c_{p,q}{\psi}_{p,q}(x,y){\thinspace .}
+        
+
+Alternatively, we may employ a single index,
+
+
+.. math::
+        
+        {\psi}_i(x,y) = \hat{\psi}_p(x)\hat{\psi}_q(y),
+        
+
+and use the standard form for :math:`u`,
+
+
+.. math::
+         u = \sum_{j\inI} c_j{\psi}_i(x,y){\thinspace .}
+
+The single index is related to the double index through
+:math:`i=p N_y + q` or :math:`i=q N_x + p`.
+
+Example: Polynomial basis in 2D
+-------------------------------
 
 Suppose we choose :math:`\hat{\psi}_p(x)=x^p`, and try an approximation with
 :math:`N_x=N_y=1`:
@@ -4711,9 +4794,6 @@ Using a mapping to one index like :math:`i=q N_x + p`, we get
         {\thinspace .}
         
 
-
-Hand calculations
-~~~~~~~~~~~~~~~~~
 
 With the specific choice :math:`f(x,y) = (1+x^2)(1+2y^2)` on
 :math:`\Omega = [0,L_x]\times [0,L_y]`, we can perform actual calculations:
@@ -4799,7 +4879,7 @@ and
         \frac{1}{p+r+1}L_x^{p+r+1} \frac{1}{q+s+1}L_y^{q+s+1},
         
 
-for :math:`p,r\in{\mathcal{I}_x}` and :math:`q,s\in{\mathcal{I}_y}`.
+for :math:`p,r\in{I_x}` and :math:`q,s\in{I_y}`.
 
 Corresponding reasoning for the right-hand side leads to
 
@@ -4893,7 +4973,9 @@ The 2D version of numerical integration becomes
 
 The right-hand side integrals are modified in a similar way.
 
-Third, we must construct a list of 2D basis functions, e.g.,
+Third, we must construct a list of 2D basis functions. Here are two
+examples based on tensor products of 1D "Taylor-style" polynomials :math:`x^i`
+and 1D sine functions :math:`\sin((i+1)\pi x)`:
 
 
 .. code-block:: python
@@ -4935,6 +5017,57 @@ We may continue with adding higher powers to the basis:
 For :math:`N_x\geq 2` and :math:`N_y\geq 2` we recover the exact function :math:`f`, as
 expected, since in that case :math:`f\in V` (see
 the section :ref:`fem:approx:global:exact`).
+
+.. _fem:approx:3D:global:
+
+Extension to 3D
+---------------
+
+Extension to 3D is in principle straightforward once the 2D extension
+is understood. The only major difference is that we need the
+repeated outer tensor product,
+
+
+.. math::
+         V = V_x\otimes V_y\otimes V_z{\thinspace .}
+
+In general, given vectors (first-order tensors)
+:math:`a^{(q)} = (a^{(q)}_0,\ldots,a^{(q)}_{N_q}`, :math:`q=0,\ldots,m`,
+the tensor product :math:`p=a^{(0)}\otimes\cdots\otimes a^{m}` has
+elements
+
+
+.. math::
+         p_{i_0,i_1,\ldots,i_m} = a^{(0)}_{i_1}a^{(1)}_{i_1}\cdots a^{(m)}_{i_m}{\thinspace .}
+
+The basis functions in 3D are then
+
+
+.. math::
+         {\psi}_{p,q,r}(x,y,z) = \hat{\varphi}_p(x)\hat{\varphi}_q(y)\hat{\varphi}_r(z),
+
+with :math:`p\in{I_x}`, :math:`q\in{I_y}`, :math:`r\in{I_z}`. The expansion of :math:`u` becomes
+
+
+.. math::
+         u(x,y,z) = \sum_{p\in{I_x}}\sum_{q\in{I_y}}\sum_{r\in{I_z}} c_{p,q,r}
+        {\psi}_{p,q,r}(x,y,z){\thinspace .}
+
+A single index can be introduced also here, e.g., :math:`i=N_xN_yr + q_Nx + p`,
+:math:`u=\sum_i c_i{\varphi}_i(x,y,z)`.
+
+
+
+.. admonition:: Use of tensor product spaces
+
+   Constructing a multi-dimensional space and basis from tensor products
+   of 1D spaces is a standard technique when working with global basis
+   functions. In the world of finite elements, constructing basis functions
+   by tensor products is much used on quadrilateral and hexahedra cell
+   shapes, but not on triangles and tetrahedra. The global
+   finite element basis functions are almost exclusively denoted by a single
+   index.
+
 
 Finite elements in 2D and 3D
 ============================
@@ -5236,7 +5369,7 @@ Isoparametric mapping of the reference cell
 
 Instead of using the P1 basis functions in the mapping
 :eq:`fem:approx:fe:affine:map`,
-we may use the basis functions of the actual P$d$ element:
+we may use the basis functions of the actual Pd element:
 
 
 .. math::
@@ -5534,9 +5667,29 @@ Filename: ``tanh_sines_approx1.py``.
 .. --- begin exercise ---
 
 
+.. _fem:approx:exer:tanh:sine2:
+
+Exercise 7: Approximate a steep function by sines
+-------------------------------------------------
+
+Make a movie where the steepness (:math:`s`) of the :math:`\tanh` function in
+:ref:`fem:approx:exer:tanh:sine1` grows in "time",
+and for each value of the steepness, the movie shows how the
+approximation improves with increasing :math:`N`.
+Filename: ``tanh_sines_approx2.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
 .. _fem:approx:exer:Fourier:
 
-Exercise 7: Fourier series as a least squares approximation
+Exercise 8: Fourier series as a least squares approximation
 -----------------------------------------------------------
 
 Given a function :math:`f(x)` on an interval :math:`[0,L]`, look up the formula
@@ -5544,8 +5697,10 @@ for the coefficients :math:`a_j` and :math:`b_j` in the Fourier series of :math:
 
 
 .. math::
-         f(x) = a_0 + \sum_{j=1}^\infty a_j\cos \left(j\frac{\pi x}{L}\right)
-        + \sum_{j=1}^\infty b_j\sin \left(j\frac{\pi x}{L}\right){\thinspace .}  
+        
+        f(x) = a_0 + \sum_{j=1}^\infty a_j\cos \left(j\frac{\pi x}{L}\right)
+        + \sum_{j=1}^\infty b_j\sin \left(j\frac{\pi x}{L}\right){\thinspace .}
+        
 
 
 Let an infinite-dimensional vector space :math:`V` have the basis functions
@@ -5584,7 +5739,7 @@ Filename: ``Fourier_approx.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 8: Approximate a steep function by Lagrange polynomials
+Exercise 9: Approximate a steep function by Lagrange polynomials
 ----------------------------------------------------------------
 
 Use interpolation/collocation with uniformly distributed
@@ -5610,8 +5765,8 @@ Filename: ``tanh_Lagrange.py``.
 
 .. _fem:approx:fe:exer:mesh1:
 
-Exercise 9: Define nodes and elements
--------------------------------------
+Exercise 10: Define nodes and elements
+--------------------------------------
 
 Consider a domain :math:`\Omega =[0,2]` divided into the three elements
 :math:`[0,1]`, :math:`[1,1.2]`, and :math:`[1.2,2]`, with two nodes in each element
@@ -5637,7 +5792,7 @@ Filename: ``fe_numberings1.py.``.
 
 .. _fem:approx:fe:exer:mesh2:
 
-Exercise 10: Define vertices, cells, and dof maps
+Exercise 11: Define vertices, cells, and dof maps
 -------------------------------------------------
 
 Repeat :ref:`fem:approx:fe:exer:mesh2`, but define the
@@ -5656,7 +5811,7 @@ Filename: ``fe_numberings2.py.``.
 
 .. _fem:approx:fe:exer:defmesh:sparsity:
 
-Exercise 11: Construct matrix sparsity patterns
+Exercise 12: Construct matrix sparsity patterns
 -----------------------------------------------
 
 :ref:`fem:approx:fe:exer:defmesh` describes a element mesh
@@ -5685,7 +5840,7 @@ Filename: ``fe_sparsity_pattern.pdf``.
 
 .. _fem:approx:fe:exer:Asinwt:symbolic:
 
-Exercise 12: Perform symbolic finite element computations
+Exercise 13: Perform symbolic finite element computations
 ---------------------------------------------------------
 
 Find formulas for the coefficient matrix and right-hand side
@@ -5724,7 +5879,7 @@ Filename: ``sin_approx_P1.py``.
 
 .. _fem:approx:exer:tanh:
 
-Exercise 13: Approximate a steep function by P1 and P2 elements
+Exercise 14: Approximate a steep function by P1 and P2 elements
 ---------------------------------------------------------------
 
 Given
@@ -5751,7 +5906,7 @@ Filename: ``tanh_fe_P1P2_approx.py``.
 
 .. _fem:approx:exer:tanh2:
 
-Exercise 14: Approximate a :math:`\tanh` function by P3 and P4 elements
+Exercise 15: Approximate a :math:`\tanh` function by P3 and P4 elements
 -----------------------------------------------------------------------
 
 Solve :ref:`fem:approx:exer:tanh` using :math:`N_e=1,2,4` P3 and P4
@@ -5770,12 +5925,12 @@ Filename: ``tanh_fe_P3P4_approx.py``.
 
 .. _fem:approx:fe:exer:Asinwt:interpol:error:
 
-Exercise 15: Investigate the approximation error in finite elements
+Exercise 16: Investigate the approximation error in finite elements
 -------------------------------------------------------------------
 
 The theory :eq:`fem:approx:fe:error:theorem` from
 the section :ref:`fem:approx:fe:error` predicts that the
-error in the P$d$ approximation of a function
+error in the Pd approximation of a function
 should behave as :math:`h^{d+1}`. Use experiments to verify this
 asymptotic behavior (i.e., for small enough :math:`h`).
 Choose two examples: :math:`f(x)=Ae^{-\omega x}` on :math:`[0,3/\omega]`
@@ -5813,7 +5968,7 @@ Filename: ``Asinwt_interpolation_error.py``.
 
 .. _fem:approx:fe:exer:Heaviside:
 
-Exercise 16: Approximate a step function by finite elements
+Exercise 17: Approximate a step function by finite elements
 -----------------------------------------------------------
 
 Approximate the step function
@@ -5865,7 +6020,7 @@ Filename: ``Heaviside_approx_P1P2.py.``.
 
 .. _fem:approx:fe:exer:2Dsines:symbolic:
 
-Exercise 17: 2D approximation with orthogonal functions
+Exercise 18: 2D approximation with orthogonal functions
 -------------------------------------------------------
 
 Assume we have basis functions :math:`{\varphi}_i(x,y)` in 2D that are
@@ -5913,7 +6068,7 @@ Filename: ``approx2D_lsorth_sin.py``.
 
 .. _fem:approx:fe:exer:1D:trapez:
 
-Exercise 18: Use the Trapezoidal rule and P1 elements
+Exercise 19: Use the Trapezoidal rule and P1 elements
 -----------------------------------------------------
 
 Consider approximation of some :math:`f(x)` on an interval :math:`\Omega` using
@@ -5936,7 +6091,7 @@ Filename: ``fe_trapez.pdf``.
 
 .. _fem:approx:fe:exer:1D:P1:vs:interp:
 
-Problem 19: Compare P1 elements and interpolation
+Problem 20: Compare P1 elements and interpolation
 -------------------------------------------------
 
 We shall approximate the function
@@ -5978,6 +6133,25 @@ Compute the error :math:`E=||u-f||_{L^2}`.
 Which method seems to be most accurate?
 
 Filename: ``P1_vs_interp.py``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _fem:approx:fe:exer:3D:approx3D:
+
+Exercise 21: Implement 3D computations with global basis functions
+------------------------------------------------------------------
+
+Extend the `approx2D.py <http://tinyurl.com/jvzzcfn/fem/approx2D.py>`_ code to 3D
+applying ideas from the section :ref:`fem:approx:3D:global`.
+Use a 3D generalization of the test problem in the section :ref:`fem:approx:2D:global:code` to test the implementation.
+Filename: ``approx3D.py``.
 
 .. --- end exercise ---
 
