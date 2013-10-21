@@ -165,7 +165,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     psi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_abs_%d.pdf' % (N+1),
+                    filename='Lagrange_interp_abs_%d' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
     # Make figures of Lagrange polynomials (psi)
@@ -183,6 +183,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_%d.pdf' % (N+1))
+    plt.savefig('Lagrange_basis_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     f = sm.Abs(1-2*x)
@@ -211,6 +212,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_Cheb_%d.pdf' % (N+1))
+    plt.savefig('Lagrange_basis_Cheb_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_conv(N=[3, 6, 12, 24]):
     f = sm.abs(1-2*x)
