@@ -8,7 +8,7 @@ def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     all_x_L = [nodes[elements[e][0]] for e in range(len(elements))]
     element_boundaries = all_x_L + [nodes[-1]]
     for x in element_boundaries:
-        plt.plot([x, x], element_marker, 'm--')  # m gives dotted eps/pdf lines
+        plt.plot([x, x], element_marker, 'm--')  # m gives dotted lines
     plt.plot(nodes, [0]*len(nodes), 'ro2')
 
 def fe_basis_function_figure(d, target_elm=[1], N_e=3,
@@ -47,9 +47,9 @@ def fe_basis_function_figure(d, target_elm=[1], N_e=3,
                 if labels:
                     if plt.backend == 'gnuplot':
                         if derivative == 0:
-                            plt.legend(r'basis function no. %d' % i)
+                            plt.legend(r'basis func. %d' % i)
                         else:
-                            plt.legend(r'derivative of basis function no. %d' % i)
+                            plt.legend(r'derivative of basis func. %d' % i)
                     elif plt.backend == 'matplotlib':
                         if derivative == 0:
                             plt.legend(r'\varphi_%d' % i)

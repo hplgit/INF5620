@@ -139,6 +139,7 @@ $$
 \newcommand{\I}{\boldsymbol{I}}
 \newcommand{\T}{\boldsymbol{T}}
 
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
 \newcommand{\ii}{\boldsymbol{i}}
 \newcommand{\jj}{\boldsymbol{j}}
 \newcommand{\kk}{\boldsymbol{k}}
@@ -152,6 +153,7 @@ $$
 \newcommand{\It}{{I_t}}
 \newcommand{\If}{{I}}     % for FEM
 \newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
 \newcommand{\setb}[1]{#1^0}    % set begin
 \newcommand{\sete}[1]{#1^{-1}} % set end
 \newcommand{\setl}[1]{#1^-}
@@ -207,7 +209,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>&nbsp;<br>
-<center><h4>Oct 21, 2013</h4></center> <!-- date -->
+<center><h4>Oct 22, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -889,7 +891,7 @@ where
 <ul>
  <p><li> \( f(x) \) is given as a <code>sympy</code> expression <code>f</code> (involving
    the symbol <code>x</code>),</li>
- <p><li> <code>phi</code> is a list of \( \sequencei{\baspsi} \),</li>
+ <p><li> <code>psi</code> is a list of \( \sequencei{\baspsi} \),</li>
  <p><li> <code>Omega</code> is a 2-tuple/list holding the domain \( \Omega \)</li>
 </ul>
 <p>
@@ -911,21 +913,21 @@ return \( u(x)=\sum_jc_j\baspsi_j(x) \)
 <!-- code=python (from !bc pycod) typeset with pygments style "native" -->
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
 
-<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">least_squares</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega):</span>
-    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
+<span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">least_squares</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">psi,</span> <span style="color: #d0d0d0">Omega):</span>
+    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(psi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
     <span style="color: #d0d0d0">A</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
     <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
     <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
     <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
         <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">j</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(i,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
-            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(phi[i]*phi[j],</span>
+            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(psi[i]*psi[j],</span>
                                   <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
             <span style="color: #d0d0d0">A[j,i]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A[i,j]</span>
-        <span style="color: #d0d0d0">b[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(phi[i]*f,</span> <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
+        <span style="color: #d0d0d0">b[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(psi[i]*f,</span> <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
     <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
     <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
-    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)):</span>
-        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*phi[i]</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(psi)):</span>
+        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*psi[i]</span>
     <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u</span>
 </pre></div>
 <p>
@@ -979,7 +981,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span>
-<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">phi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">psi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">comparison_plot(f,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
 </pre></div>
 <p>
@@ -1009,7 +1011,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">approx1D</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">*</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">-</span><span style="color: #3677a9">1</span>
-<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">phi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">x**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
+<span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f=f,</span> <span style="color: #d0d0d0">psi=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">x,</span> <span style="color: #d0d0d0">x**</span><span style="color: #3677a9">2</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega=[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">2</span><span style="color: #d0d0d0">])</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">u</span>
 <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*x**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">20</span><span style="color: #d0d0d0">*x</span> <span style="color: #d0d0d0">+</span> <span style="color: #3677a9">9</span>
 <span style="color: #d0d0d0">&gt;&gt;&gt;</span> <span style="color: #6ab825; font-weight: bold">print</span> <span style="color: #d0d0d0">sm.expand(f)</span>
@@ -1027,7 +1029,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <p>
 
 <ul>
- <p><li> What if we use \( \phi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?</li>
+ <p><li> What if we use \( \psi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?</li>
  <p><li> The output from <code>least_squares</code> is \( c_i=0 \) for \( i>2 \)</li>
 </ul>
 <p>
@@ -1180,10 +1182,10 @@ $$
 <!-- code=python (from !bc pycod) typeset with pygments style "native" -->
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">3</span>
 <span style="color: #6ab825; font-weight: bold">from</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #d0d0d0">sin,</span> <span style="color: #d0d0d0">pi</span>
-<span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sin(pi*(i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)*x)</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+<span style="color: #d0d0d0">psi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sin(pi*(i+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)*x)</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
 <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">10</span><span style="color: #d0d0d0">*(x-</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)**</span><span style="color: #3677a9">2</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
 <span style="color: #d0d0d0">Omega</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">]</span>
-<span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">Omega)</span>
+<span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">least_squares(f,</span> <span style="color: #d0d0d0">psi,</span> <span style="color: #d0d0d0">Omega)</span>
 <span style="color: #d0d0d0">comparison_plot(f,</span> <span style="color: #d0d0d0">u,</span> <span style="color: #d0d0d0">Omega)</span>
 </pre></div>
 <p>
@@ -1344,22 +1346,22 @@ No symmetric matrix: \( \baspsi_j(\xno{i})\neq \baspsi_i(\xno{j}) \) in general
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "native" -->
-<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">interpolation</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">phi,</span> <span style="color: #d0d0d0">points):</span>
-    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">def</span> <span style="color: #447fcf">interpolation</span><span style="color: #d0d0d0">(f,</span> <span style="color: #d0d0d0">psi,</span> <span style="color: #d0d0d0">points):</span>
+    <span style="color: #d0d0d0">N</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">len</span><span style="color: #d0d0d0">(psi)</span> <span style="color: #d0d0d0">-</span> <span style="color: #3677a9">1</span>
     <span style="color: #d0d0d0">A</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
     <span style="color: #d0d0d0">b</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.zeros((N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">,</span> <span style="color: #3677a9">1</span><span style="color: #d0d0d0">))</span>
     <span style="color: #d0d0d0">x</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.Symbol(</span><span style="color: #ed9d13">&#39;x&#39;</span><span style="color: #d0d0d0">)</span>
-    <span style="color: #999999; font-style: italic"># Turn phi and f into Python functions</span>
-    <span style="color: #d0d0d0">phi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sm.lambdify([x],</span> <span style="color: #d0d0d0">phi[i])</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
+    <span style="color: #999999; font-style: italic"># Turn psi and f into Python functions</span>
+    <span style="color: #d0d0d0">psi</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">[sm.lambdify([x],</span> <span style="color: #d0d0d0">psi[i])</span> <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">)]</span>
     <span style="color: #d0d0d0">f</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.lambdify([x],</span> <span style="color: #d0d0d0">f)</span>
     <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
         <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">j</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(N+</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">):</span>
-            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">phi[j](points[i])</span>
+            <span style="color: #d0d0d0">A[i,j]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">psi[j](points[i])</span>
         <span style="color: #d0d0d0">b[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">f(points[i])</span>
     <span style="color: #d0d0d0">c</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">A.LUsolve(b)</span>
     <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">=</span> <span style="color: #3677a9">0</span>
-    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(phi)):</span>
-        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*phi[i](x)</span>
+    <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">i</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #24909d">range</span><span style="color: #d0d0d0">(</span><span style="color: #24909d">len</span><span style="color: #d0d0d0">(psi)):</span>
+        <span style="color: #d0d0d0">u</span> <span style="color: #d0d0d0">+=</span> <span style="color: #d0d0d0">c[i,</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">]*psi[i](x)</span>
     <span style="color: #6ab825; font-weight: bold">return</span> <span style="color: #d0d0d0">u</span>
 </pre></div>
 <p>
@@ -1409,7 +1411,7 @@ The <em>Lagrange interpolating polynomials</em> \( \baspsi_j \) have the propert
 
 <p>
 <p>&nbsp;<br>
-$$ \basphi_i(\xno{j}) =\delta_{ij},\quad \delta_{ij} =
+$$ \baspsi_i(\xno{j}) =\delta_{ij},\quad \delta_{ij} =
 \left\lbrace\begin{array}{ll}
 1, & i=j\\ 
 0, & i\neq j
@@ -1605,6 +1607,8 @@ they are zero at all points except one.
  <p><li> Typically hat-shaped</li>
  <p><li> \( u(x) \) based on these \( \baspsi_i \) is a piecewise polynomial
    defined over many (small) subdomains</li>
+ <p><li> We introduce \( \basphi_i \) as the name of these finite element hat
+   functions (and for now choose \( \baspsi_i=\basphi_i \))</li>
 </ul>
 <p>
 
@@ -4132,7 +4136,7 @@ Very small modification of <code>approx1D.py</code>:
 <!-- code=python (from !bc pycod) typeset with pygments style "native" -->
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%"><span style="color: #6ab825; font-weight: bold">import</span> <span style="color: #447fcf; text-decoration: underline">sympy</span> <span style="color: #6ab825; font-weight: bold">as</span> <span style="color: #447fcf; text-decoration: underline">sm</span>
 
-<span style="color: #d0d0d0">integrand</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">phi[i]*phi[j]</span>
+<span style="color: #d0d0d0">integrand</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">psi[i]*psi[j]</span>
 <span style="color: #d0d0d0">I</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">sm.integrate(integrand,</span>
                  <span style="color: #d0d0d0">(x,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">][</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">][</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]),</span>
                  <span style="color: #d0d0d0">(y,</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">][</span><span style="color: #3677a9">0</span><span style="color: #d0d0d0">],</span> <span style="color: #d0d0d0">Omega[</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">][</span><span style="color: #3677a9">1</span><span style="color: #d0d0d0">]))</span>
@@ -4194,9 +4198,9 @@ Complete code in
 <!-- code=text (from !bc ipy) typeset with pygments style "native" -->
 <div class="highlight" style="background: #202020"><pre style="line-height: 125%">&gt;&gt;&gt; from approx2D import *
 &gt;&gt;&gt; f = (1+x**2)*(1+2*y**2)
-&gt;&gt;&gt; phi = taylor(x, y, 1, 1)
+&gt;&gt;&gt; psi = taylor(x, y, 1, 1)
 &gt;&gt;&gt; Omega = [[0, 2], [0, 2]]
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 8*x*y - 2*x/3 + 4*y/3 - 1/9
 &gt;&gt;&gt; print sm.expand(f)
@@ -4217,8 +4221,8 @@ Add higher powers to the basis such that \( f\in V \):
 <p>
 
 <!-- code=text (from !bc ipy) typeset with pygments style "native" -->
-<div class="highlight" style="background: #202020"><pre style="line-height: 125%">&gt;&gt;&gt; phi = taylor(x, y, 2, 2)
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">&gt;&gt;&gt; psi = taylor(x, y, 2, 2)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 2*x**2*y**2 + x**2 + 2*y**2 + 1
 &gt;&gt;&gt; print u-f

@@ -192,6 +192,7 @@ $$
 \newcommand{\I}{\boldsymbol{I}}
 \newcommand{\T}{\boldsymbol{T}}
 
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
 \newcommand{\ii}{\boldsymbol{i}}
 \newcommand{\jj}{\boldsymbol{j}}
 \newcommand{\kk}{\boldsymbol{k}}
@@ -205,6 +206,7 @@ $$
 \newcommand{\It}{{I_t}}
 \newcommand{\If}{{I}}     % for FEM
 \newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
 \newcommand{\setb}[1]{#1^0}    % set begin
 \newcommand{\sete}[1]{#1^{-1}} % set end
 \newcommand{\setl}[1]{#1^-}
@@ -260,7 +262,7 @@ $$
 <center>[1] <b style="font-weight: bold">Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b style="font-weight: bold">Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Oct 21, 2013</h4></center> <!-- date -->
+<center><h4>Oct 22, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -942,7 +944,7 @@ where
 <ul>
  <p><li> \( f(x) \) is given as a <code>sympy</code> expression <code>f</code> (involving
    the symbol <code>x</code>),</li>
- <p><li> <code>phi</code> is a list of \( \sequencei{\baspsi} \),</li>
+ <p><li> <code>psi</code> is a list of \( \sequencei{\baspsi} \),</li>
  <p><li> <code>Omega</code> is a 2-tuple/list holding the domain \( \Omega \)</li>
 </ul>
 <p>
@@ -964,21 +966,21 @@ return \( u(x)=\sum_jc_j\baspsi_j(x) \)
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">sm</span>
 
-<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">least_squares</span>(f, phi, Omega):
-    N = <span style="color: #658b00">len</span>(phi) - <span style="color: #B452CD">1</span>
+<span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">least_squares</span>(f, psi, Omega):
+    N = <span style="color: #658b00">len</span>(psi) - <span style="color: #B452CD">1</span>
     A = sm.zeros((N+<span style="color: #B452CD">1</span>, N+<span style="color: #B452CD">1</span>))
     b = sm.zeros((N+<span style="color: #B452CD">1</span>, <span style="color: #B452CD">1</span>))
     x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>):
         <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(i, N+<span style="color: #B452CD">1</span>):
-            A[i,j] = sm.integrate(phi[i]*phi[j],
+            A[i,j] = sm.integrate(psi[i]*psi[j],
                                   (x, Omega[<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>]))
             A[j,i] = A[i,j]
-        b[i,<span style="color: #B452CD">0</span>] = sm.integrate(phi[i]*f, (x, Omega[<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>]))
+        b[i,<span style="color: #B452CD">0</span>] = sm.integrate(psi[i]*f, (x, Omega[<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>]))
     c = A.LUsolve(b)
     u = <span style="color: #B452CD">0</span>
-    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(phi)):
-        u += c[i,<span style="color: #B452CD">0</span>]*phi[i]
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(psi)):
+        u += c[i,<span style="color: #B452CD">0</span>]*psi[i]
     <span style="color: #8B008B; font-weight: bold">return</span> u
 </code></pre></div>
 <p>
@@ -1032,7 +1034,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">approx1D</span> <span style="color: #8B008B; font-weight: bold">import</span> *
 &gt;&gt;&gt; x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
 &gt;&gt;&gt; f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span>-<span style="color: #B452CD">1</span>
-&gt;&gt;&gt; u = least_squares(f=f, phi=[<span style="color: #B452CD">1</span>, x], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
+&gt;&gt;&gt; u = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 &gt;&gt;&gt; comparison_plot(f, u, Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 </code></pre></div>
 <p>
@@ -1062,7 +1064,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">approx1D</span> <span style="color: #8B008B; font-weight: bold">import</span> *
 &gt;&gt;&gt; x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
 &gt;&gt;&gt; f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span>-<span style="color: #B452CD">1</span>
-&gt;&gt;&gt; u = least_squares(f=f, phi=[<span style="color: #B452CD">1</span>, x, x**<span style="color: #B452CD">2</span>], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
+&gt;&gt;&gt; u = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x, x**<span style="color: #B452CD">2</span>], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 &gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> u
 <span style="color: #B452CD">10</span>*x**<span style="color: #B452CD">2</span> - <span style="color: #B452CD">20</span>*x + <span style="color: #B452CD">9</span>
 &gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> sm.expand(f)
@@ -1080,7 +1082,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <p>
 
 <ul>
- <p><li> What if we use \( \phi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?</li>
+ <p><li> What if we use \( \psi_i(x)=x^i \) for \( i=0,\ldots,N=40 \)?</li>
  <p><li> The output from <code>least_squares</code> is \( c_i=0 \) for \( i>2 \)</li>
 </ul>
 <p>
@@ -1233,10 +1235,10 @@ $$
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">N = <span style="color: #B452CD">3</span>
 <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">import</span> sin, pi
-phi = [sin(pi*(i+<span style="color: #B452CD">1</span>)*x) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>)]
+psi = [sin(pi*(i+<span style="color: #B452CD">1</span>)*x) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>)]
 f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span> - <span style="color: #B452CD">1</span>
 Omega = [<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>]
-u = least_squares(f, phi, Omega)
+u = least_squares(f, psi, Omega)
 comparison_plot(f, u, Omega)
 </code></pre></div>
 <p>
@@ -1397,22 +1399,22 @@ No symmetric matrix: \( \baspsi_j(\xno{i})\neq \baspsi_i(\xno{j}) \) in general
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">interpolation</span>(f, phi, points):
-    N = <span style="color: #658b00">len</span>(phi) - <span style="color: #B452CD">1</span>
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">interpolation</span>(f, psi, points):
+    N = <span style="color: #658b00">len</span>(psi) - <span style="color: #B452CD">1</span>
     A = sm.zeros((N+<span style="color: #B452CD">1</span>, N+<span style="color: #B452CD">1</span>))
     b = sm.zeros((N+<span style="color: #B452CD">1</span>, <span style="color: #B452CD">1</span>))
     x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
-    <span style="color: #228B22"># Turn phi and f into Python functions</span>
-    phi = [sm.lambdify([x], phi[i]) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>)]
+    <span style="color: #228B22"># Turn psi and f into Python functions</span>
+    psi = [sm.lambdify([x], psi[i]) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>)]
     f = sm.lambdify([x], f)
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>):
         <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>):
-            A[i,j] = phi[j](points[i])
+            A[i,j] = psi[j](points[i])
         b[i,<span style="color: #B452CD">0</span>] = f(points[i])
     c = A.LUsolve(b)
     u = <span style="color: #B452CD">0</span>
-    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(phi)):
-        u += c[i,<span style="color: #B452CD">0</span>]*phi[i](x)
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(psi)):
+        u += c[i,<span style="color: #B452CD">0</span>]*psi[i](x)
     <span style="color: #8B008B; font-weight: bold">return</span> u
 </code></pre></div>
 <p>
@@ -1462,7 +1464,7 @@ The <em>Lagrange interpolating polynomials</em> \( \baspsi_j \) have the propert
 
 <p>
 <p>&nbsp;<br>
-$$ \basphi_i(\xno{j}) =\delta_{ij},\quad \delta_{ij} =
+$$ \baspsi_i(\xno{j}) =\delta_{ij},\quad \delta_{ij} =
 \left\lbrace\begin{array}{ll}
 1, & i=j\\ 
 0, & i\neq j
@@ -1658,6 +1660,8 @@ they are zero at all points except one.
  <p><li> Typically hat-shaped</li>
  <p><li> \( u(x) \) based on these \( \baspsi_i \) is a piecewise polynomial
    defined over many (small) subdomains</li>
+ <p><li> We introduce \( \basphi_i \) as the name of these finite element hat
+   functions (and for now choose \( \baspsi_i=\basphi_i \))</li>
 </ul>
 <p>
 
@@ -4185,7 +4189,7 @@ Very small modification of <code>approx1D.py</code>:
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">sm</span>
 
-integrand = phi[i]*phi[j]
+integrand = psi[i]*psi[j]
 I = sm.integrate(integrand,
                  (x, Omega[<span style="color: #B452CD">0</span>][<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">0</span>][<span style="color: #B452CD">1</span>]),
                  (y, Omega[<span style="color: #B452CD">1</span>][<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>][<span style="color: #B452CD">1</span>]))
@@ -4247,9 +4251,9 @@ Complete code in
 <!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; from approx2D import *
 &gt;&gt;&gt; f = (1+x**2)*(1+2*y**2)
-&gt;&gt;&gt; phi = taylor(x, y, 1, 1)
+&gt;&gt;&gt; psi = taylor(x, y, 1, 1)
 &gt;&gt;&gt; Omega = [[0, 2], [0, 2]]
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 8*x*y - 2*x/3 + 4*y/3 - 1/9
 &gt;&gt;&gt; print sm.expand(f)
@@ -4270,8 +4274,8 @@ Add higher powers to the basis such that \( f\in V \):
 <p>
 
 <!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; phi = taylor(x, y, 2, 2)
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; psi = taylor(x, y, 2, 2)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 2*x**2*y**2 + x**2 + 2*y**2 + 1
 &gt;&gt;&gt; print u-f

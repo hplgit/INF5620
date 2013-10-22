@@ -453,6 +453,7 @@ $$
 \newcommand{\I}{\boldsymbol{I}}
 \newcommand{\T}{\boldsymbol{T}}
 
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
 \newcommand{\ii}{\boldsymbol{i}}
 \newcommand{\jj}{\boldsymbol{j}}
 \newcommand{\kk}{\boldsymbol{k}}
@@ -466,6 +467,7 @@ $$
 \newcommand{\It}{{I_t}}
 \newcommand{\If}{{I}}     % for FEM
 \newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
 \newcommand{\setb}[1]{#1^0}    % set begin
 \newcommand{\sete}[1]{#1^{-1}} % set end
 \newcommand{\setl}[1]{#1^-}
@@ -521,7 +523,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Oct 21, 2013</h4></center> <!-- date -->
+<center><h4>Oct 22, 2013</h4></center> <!-- date -->
 <p>
 <b>PRELIMINARY VERSION</b>
 
@@ -2614,7 +2616,7 @@ in Figure <a href="#fem:approx:fe:fig:P2">19</a>.
 <center> <!-- figure -->
 <hr class="figure">
 <center><p class="caption">Figure 20:  Sketch of mesh with 4 elements and 3 nodes per element.  <a name="fem:approx:fe:fig:P2:mesh"></a> </p></center>
-<p><img src="fig-fem/fe_mesh1D_P2_ne4.png" align="bottom" width=500></p>
+<p><img src="fig-fem/fe_mesh1D_P2.png" align="bottom" width=500></p>
 </center>
 
 <p>
@@ -5053,6 +5055,8 @@ for \( p,r\in\Ix \) and \( q,s\in\Iy \).
 
 <p>
 Corresponding reasoning for the right-hand side leads to
+
+<p>
 $$
 \begin{align*}
 b_i &= (\baspsi_i,f) = \int_0^{L_y}\int_{0}^{L_x}\baspsi_i f\,dxdx\\ 
@@ -5119,7 +5123,7 @@ Second, the symbolic integration must be extended to 2D:
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">sm</span>
 
-integrand = phi[i]*phi[j]
+integrand = psi[i]*psi[j]
 I = sm.integrate(integrand,
                  (x, Omega[<span style="color: #B452CD">0</span>][<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">0</span>][<span style="color: #B452CD">1</span>]),
                  (y, Omega[<span style="color: #B452CD">1</span>][<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>][<span style="color: #B452CD">1</span>]))
@@ -5169,9 +5173,9 @@ a bilinear function can be computed symbolically by
 <!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; from approx2D import *
 &gt;&gt;&gt; f = (1+x**2)*(1+2*y**2)
-&gt;&gt;&gt; phi = taylor(x, y, 1, 1)
+&gt;&gt;&gt; psi = taylor(x, y, 1, 1)
 &gt;&gt;&gt; Omega = [[0, 2], [0, 2]]
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 8*x*y - 2*x/3 + 4*y/3 - 1/9
 &gt;&gt;&gt; print sm.expand(f)
@@ -5183,8 +5187,8 @@ We may continue with adding higher powers to the basis:
 <p>
 
 <!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; phi = taylor(x, y, 2, 2)
-&gt;&gt;&gt; u = least_squares(f, phi, Omega)
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; psi = taylor(x, y, 2, 2)
+&gt;&gt;&gt; u = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 2*x**2*y**2 + x**2 + 2*y**2 + 1
 &gt;&gt;&gt; print u-f
@@ -5216,7 +5220,7 @@ $$ p_{i_0,i_1,\ldots,i_m} = a^{(0)}_{i_1}a^{(1)}_{i_1}\cdots a^{(m)}_{i_m}\tp$$
 The basis functions in 3D are then
 
 <p>
-$$ \baspsi_{p,q,r}(x,y,z) = \hat\basphi_p(x)\hat\basphi_q(y)\hat\basphi_r(z),$$
+$$ \baspsi_{p,q,r}(x,y,z) = \hat\baspsi_p(x)\hat\baspsi_q(y)\hat\baspsi_r(z),$$
 
 with \( p\in\Ix \), \( q\in\Iy \), \( r\in\Iz \). The expansion of \( u \) becomes
 
@@ -5225,7 +5229,7 @@ $$ u(x,y,z) = \sum_{p\in\Ix}\sum_{q\in\Iy}\sum_{r\in\Iz} c_{p,q,r}
 \baspsi_{p,q,r}(x,y,z)\tp$$
 
 A single index can be introduced also here, e.g., \( i=N_xN_yr + q_Nx + p \),
-\( u=\sum_i c_i\basphi_i(x,y,z) \).
+\( u=\sum_i c_i\baspsi_i(x,y,z) \).
 
 <p>
 <div class="alert alert-block alert-warning alert-text-normal"><b>Use of tensor product spaces.</b>
@@ -5703,7 +5707,7 @@ Filename: <code>sin_powers.py</code>.
 <p>
 Find the best approximation of \( f(x) = \tanh (s(x-\pi)) \) on
 \( [0, 2\pi] \) in the space \( V \) with basis
-\( \basphi_i(x) = \sin((2i+1)x) \), \( i\in\If \).
+\( \basphi_i(x) = \sin((2i+1)x) \), \( i\in\If = \{0,\ldots,N\} \).
 Make a movie showing how \( u=\sum_{j\in\If}c_j\basphi_j(x) \)
 approximates \( f(x) \) as \( N \) grows. Choose \( s \) such that \( f \) is
 steep (\( s=20 \) may be appropriate).
@@ -5807,7 +5811,7 @@ $$
 \begin{equation*} f(x) = -\tanh(s(x-\half)),\quad x\in [0,1],\end{equation*}
 $$
 
-by Lagrange polynomials for \( s=10,100 \) and \( N=3,6,9,11 \).
+by Lagrange polynomials for \( s=10 \) and \( s=100 \), and \( N=3,6,9,11 \).
 Make separate plots of the approximation for each combination of
 \( s \), point type (Chebyshev or uniform), and \( N \).
 Filename: <code>tanh_Lagrange.py</code>.
