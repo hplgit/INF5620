@@ -148,7 +148,7 @@ def interpolation(f, psi, points):
 
 collocation = interpolation  # synonym in this module
 
-def comparison_plot(f, u, Omega, filename='tmp.pdf',
+def comparison_plot(f, u, Omega, filename='tmp',
                     plot_title='', ymin=None, ymax=None,
                     u_legend='approximation'):
     """Compare f(x) and u(x) for x in Omega in a plot."""
@@ -182,7 +182,8 @@ def comparison_plot(f, u, Omega, filename='tmp.pdf',
     plt.xlabel('x')
     if ymin is not None and ymax is not None:
         plt.axis([xcoor[0], xcoor[-1], ymin, ymax])
-    plt.savefig(filename)
+    plt.savefig(filename + '.pdf')
+    plt.savefig(filename + '.png')
     plt.show()
 
 if __name__ == '__main__':

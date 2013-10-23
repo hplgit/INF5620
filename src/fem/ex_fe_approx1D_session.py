@@ -3,6 +3,23 @@
 import sympy as sm
 import sys
 
+# Integration associated with sine expansion for -u''=2
+i, j = sm.symbols('i j', integer=True)
+x, L = sm.symbols('x L')
+# Cannot do this one unless the arguments are i*x and j*x
+#A_ij = sm.integrate(sm.sin((i+1)*sm.pi*x/L)*sm.sin((j+1)*sm.pi*x/L),
+#                    (x, 0, L))
+A_ii = sm.integrate(sm.sin((i+1)*sm.pi*x/L)**2, (x, 0, L))
+print A_ii
+f = 2
+a = 2*L/(sm.pi**2*(i+1)**2)
+c_i = a*sm.integrate(f*sm.sin((i+1)*sm.pi*x/L), (x, 0, L))
+c_i = sm.simplify(c_i)
+print c_i
+print sm.latex(c_i, mode='plain')
+sys.exit(1)
+
+
 x, x_m, h, X = sm.symbols('x x_m h X')
 
 from fe_approx1D_numint import *

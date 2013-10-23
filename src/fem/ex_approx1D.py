@@ -33,7 +33,7 @@ def run_linear_leastsq_parabola():
     psi = [1, x]
     Omega = [1, 2]
     u = least_squares(f, psi, Omega)
-    comparison_plot(f, u, Omega, 'parabola_ls_linear.pdf')
+    comparison_plot(f, u, Omega, 'parabola_ls_linear')
 
 def run_taylor_leastsq_parabola_illconditioning(N=2):
     """
@@ -46,7 +46,7 @@ def run_taylor_leastsq_parabola_illconditioning(N=2):
     # of the systems
     print 'f:', sm.expand(f)
     print 'u:', sm.expand(u)
-    comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d.pdf' % N)
+    comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d' % N)
 
 def run_sines_leastsq_parabola(help=False):
     for N in (4, 12):
@@ -60,7 +60,7 @@ def run_sines_leastsq_parabola(help=False):
         else:
             u = least_squares_orth(f, psi, Omega)
         plt.figure()
-        comparison_plot(f, u, Omega, 'parabola_ls_sines%d%s.pdf' %
+        comparison_plot(f, u, Omega, 'parabola_ls_sines%d%s' %
                         (N, '_wfterm' if help else ''))
 
 
@@ -88,7 +88,7 @@ def run_Lagrange_leastsq_sin(N, ymin=-1.2, ymax=1.2):
     psi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
     u = least_squares(f, psi, Omega)
-    comparison_plot(f, u, Omega, filename='Lagrange_ls_sin_%d.pdf' % (N+1),
+    comparison_plot(f, u, Omega, filename='Lagrange_ls_sin_%d' % (N+1),
                     plot_title='Least squares approximation by '\
                     'Lagrange polynomials of degree %d' % N,
                     ymin=ymin, ymax=ymax)
@@ -100,7 +100,7 @@ def run_Lagrange_leastsq_abs(N):
     psi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
     u = least_squares(f, psi, Omega)
-    comparison_plot(f, u, Omega, filename='Lagrange_ls_abs_%d.pdf' % (N+1),
+    comparison_plot(f, u, Omega, filename='Lagrange_ls_abs_%d' % (N+1),
                     plot_title='Least squares approximation by '\
                     'Lagrange polynomials of degree %d' % N)
 
@@ -110,7 +110,7 @@ def run_linear_interp1_parabola():
     Omega = [1, 2]
     points = [1 + sm.Rational(1,3), 1 + sm.Rational(2,3)]
     u = interpolation(f, psi, points)
-    comparison_plot(f, u, Omega, 'parabola_interp1_linear.pdf')
+    comparison_plot(f, u, Omega, 'parabola_interp1_linear')
 
 
 def run_linear_interp2_parabola():
@@ -120,15 +120,15 @@ def run_linear_interp2_parabola():
     Omega = [1, 2]
     points = [1, 2]
     u = interpolation(f, psi, points)
-    comparison_plot(f, u, Omega, 'parabola_interp2_linear.pdf')
+    comparison_plot(f, u, Omega, 'parabola_interp2_linear')
 
-def run_quadratic__interp_parabola():
+def run_quadratic_interp_parabola():
     f = 10*(x-1)**2 - 1
     psi = [1, x, x**2]
     Omega = [1, 2]
     points = [1, 1.2, 2]
     u = interpolation(f, psi, points)
-    comparison_plot(f, u, Omega, 'parabola_interp3_quadratic.pdf')
+    comparison_plot(f, u, Omega, 'parabola_interp3_quadratic')
 
 
 def run_poly_interp_sin(N):
@@ -138,7 +138,7 @@ def run_poly_interp_sin(N):
     import numpy as np
     points = np.linspace(1, 2, N+1)
     u = interpolation(f, psi, points)
-    comparison_plot(f, u, Omega, 'sin_interp_poly%d.pdf' % N)
+    comparison_plot(f, u, Omega, 'sin_interp_poly%d' % N)
 
 
 def run_Lagrange_interp_sin(N, ymin=-1.2, ymax=1.2):
@@ -146,7 +146,7 @@ def run_Lagrange_interp_sin(N, ymin=-1.2, ymax=1.2):
     psi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_sin_%d.pdf' % (N+1),
+                    filename='Lagrange_interp_sin_%d' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N,
                     ymin=ymin, ymax=ymax)
@@ -156,7 +156,7 @@ def run_Lagrange_interp_poly(n, N):
     psi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_p%d_%d.pdf' % (n, N+1),
+                    filename='Lagrange_interp_p%d_%d' % (n, N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N)
 
@@ -165,7 +165,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     psi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_abs_%d.pdf' % (N+1),
+                    filename='Lagrange_interp_abs_%d' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
     # Make figures of Lagrange polynomials (psi)
@@ -183,6 +183,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_%d.pdf' % (N+1))
+    plt.savefig('Lagrange_basis_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     f = sm.Abs(1-2*x)
@@ -191,7 +192,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
                                       point_distribution='Chebyshev')
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
-                    filename='Lagrange_interp_abs_Cheb_%d.pdf' % (N+1),
+                    filename='Lagrange_interp_abs_Cheb_%d' % (N+1),
                     plot_title='Interpolation by Lagrange polynomials '\
                     'of degree %d' % N, ymin=ymin, ymax=ymax)
     print 'Interpolation points:', points
@@ -211,6 +212,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     #if ymin is not None and ymax is not None:
     #    axis([xcoor[0], xcoor[-1], ymin, ymax])
     plt.savefig('Lagrange_basis_Cheb_%d.pdf' % (N+1))
+    plt.savefig('Lagrange_basis_Cheb_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_conv(N=[3, 6, 12, 24]):
     f = sm.abs(1-2*x)
