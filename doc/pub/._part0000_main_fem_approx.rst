@@ -5,7 +5,7 @@ Approximation of functions with finite elements
 ===============================================
 
 :Author: Hans Petter Langtangen
-:Date: Oct 23, 2013
+:Date: Oct 27, 2013
 
 **PRELIMINARY VERSION**
 
@@ -994,7 +994,7 @@ and ``Omega`` is a 2-tuple/list holding the limits of the domain :math:`\Omega`:
             u = 0
             for i in range(len(psi)):
                 u += c[i,0]*psi[i]
-            return u
+            return u, c
 
 Observe that we exploit the symmetry of the coefficient matrix:
 only the upper triangular part is computed. Symbolic integration in
@@ -1056,7 +1056,7 @@ The answer is quickly found by running
         >>> from approx1D import *
         >>> x = sm.Symbol('x')
         >>> f = 10*(x-1)**2-1
-        >>> u = least_squares(f=f, psi=[1, x, x**2], Omega=[1, 2])
+        >>> u, c = least_squares(f=f, psi=[1, x, x**2], Omega=[1, 2])
         >>> print u
         10*x**2 - 20*x + 9
         >>> print sm.expand(f)
@@ -1243,7 +1243,7 @@ the section :ref:`fem:approx:global:linear` can then be computed by the
         psi = [sin(pi*(i+1)*x) for i in range(N+1)]
         f = 10*(x-1)**2 - 1
         Omega = [0, 1]
-        u = least_squares(f, psi, Omega)
+        u, c = least_squares(f, psi, Omega)
         comparison_plot(f, u, Omega)
 
 Figure :ref:`fem:approx:global:fig:parabola:sine1` (left) shows the oscillatory approximation
@@ -1357,9 +1357,94 @@ the matrix is diagonal and only the diagonal elements need to be computed:
             u = 0
             for i in range(len(psi)):
                 u += c[i]*psi[i]
-            return u
+            return u, c
 
 This function is found in the file ``approx1D.py``.
+
+Numerical computations
+----------------------
+
+Sometimes the basis functions :math:`{\psi}_i` and/or the function :math:`f`
+have a nature that makes symbolic integration CPU-time
+consuming or impossible.
+Even though we implemented a fallback on numerical integration
+of :math:`\int f{\varphi}_i dx` considerable time might be required
+by ``sympy`` in the attempt to integrate symbolically.
+Therefore, it will be handy to have function for fast
+*numerical* integration and *numerical* solution
+of the linear system. Below is such a method. It requires
+Python functions ``f(x)`` and ``psi(x,i)`` for :math:`f(x)` and :math:`{\psi}_i(x)`
+as input. The output is a mesh function
+with values ``u`` on the mesh with points in the array ``x``.
+Three numerical integration methods are offered:
+``scipy.integrate.quad`` (precision set to :math:`10^{-8}`),
+``sympy.mpmath.quad`` (high precision), and a Trapezoidal
+rule based on the points in ``x``.
+
+
+.. code-block:: python
+
+        def least_squares_numerical(f, psi, N, x,
+                                    integration_method='scipy',
+                                    orthogonal_basis=False):
+            import scipy.integrate
+            A = np.zeros((N+1, N+1))
+            b = np.zeros(N+1)
+            Omega = [x[0], x[-1]]
+            dx = x[1] - x[0]
+        
+            for i in range(N+1):
+                j_limit = i+1 if orthogonal_basis else N+1
+                for j in range(i, j_limit):
+                    print '(%d,%d)' % (i, j)
+                    if integration_method == 'scipy':
+                        A_ij = scipy.integrate.quad(
+                            lambda x: psi(x,i)*psi(x,j),
+                            Omega[0], Omega[1], epsabs=1E-9, epsrel=1E-9)[0]
+                    elif integration_method == 'sympy':
+                        A_ij = sm.mpmath.quad(
+                            lambda x: psi(x,i)*psi(x,j),
+                            [Omega[0], Omega[1]])
+                    else:
+                        values = psi(x,i)*psi(x,j)
+                        A_ij = trapezoidal(values, dx)
+                    A[i,j] = A[j,i] = A_ij
+        
+                if integration_method == 'scipy':
+                    b_i = scipy.integrate.quad(
+                        lambda x: f(x)*psi(x,i), Omega[0], Omega[1],
+                        epsabs=1E-9, epsrel=1E-9)[0]
+                elif integration_method == 'sympy':
+                    b_i = sm.mpmath.quad(
+                        lambda x: f(x)*psi(x,i), [Omega[0], Omega[1]])
+                else:
+                    values = f(x)*psi(x,i)
+                    b_i = trapezoidal(values, dx)
+                b[i] = b_i
+        
+            c = b/np.diag(A) if orthogonal_basis else np.linalg.solve(A, b)
+            u = sum(c[i]*psi(x, i) for i in range(N+1))
+            return u, c
+        
+        def trapezoidal(values, dx):
+            """Integrate values by the Trapezoidal rule (mesh size dx)."""
+            return dx*(np.sum(values) - 0.5*values[0] - 0.5*values[-1])
+
+Here is an example on calling the function:
+
+
+.. code-block:: python
+
+        from numpy import linspace, tanh, pi
+        
+        def psi(x, i):
+            return sin((i+1)*x)
+        
+        x = linspace(0, 2*pi, 501)
+        N = 20
+        u, c = least_squares_numerical(lambda x: tanh(x-pi), psi, N, x,
+                                       orthogonal_basis=True)
+
 
 .. _fem:approx:global:interp:
 
@@ -4279,14 +4364,14 @@ The vertices are :math:`[0,0.4,1]`. Local vertex 0 and 1 are
 :math:`0` and :math:`0.4` in cell 0 and :math:`0.4` and :math:`1` in cell 1.
 A P2 element means that the degrees of freedom are
 the value of :math:`u` at three equally spaced points (nodes) in each
-cell. The data structures become[[[
+cell. The data structures become
 
 
 .. code-block:: python
 
         vertices = [0, 0.4, 1]
         cells = [[0, 1], [1, 2]]
-        dof_map = [[0, 1, 2], [1, 2, 3]]
+        dof_map = [[0, 1, 2], [2, 3, 4]]
 
 
 If we would approximate :math:`f` by piecewise constants, known as
@@ -5151,9 +5236,10 @@ A single index can be introduced also here, e.g., :math:`i=N_xN_yr + q_Nx + p`,
    of 1D spaces is a standard technique when working with global basis
    functions. In the world of finite elements, constructing basis functions
    by tensor products is much used on quadrilateral and hexahedra cell
-   shapes, but not on triangles and tetrahedra. The global
+   shapes, but not on triangles and tetrahedra. Also, the global
    finite element basis functions are almost exclusively denoted by a single
-   index.
+   index and not by the natural tuple of indices that arises from
+   tensor products.
 
 
 Finite elements in 2D and 3D
@@ -5629,7 +5715,6 @@ Filename: ``linalg1.pdf``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5646,7 +5731,6 @@ general requirements of an inner product in a vector space.
 Filename: ``linalg2.pdf``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5669,7 +5753,6 @@ Filename: ``vec111_approx.pdf``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5678,15 +5761,15 @@ Filename: ``vec111_approx.pdf``.
 Exercise 4: Approximate the exponential function by power functions
 -------------------------------------------------------------------
 
-Let :math:`V` be a function space with basis functions
-:math:`x^{2i+1}`, :math:`i=0,1,\ldots,N`.
-Find the best approximation to :math:`f(x)=\exp(-x)` on :math:`\Omega =[0,4]`
-among all functions in :math:`V`
-for :math:`N=2,3,4`. Illustrate the three approximations in three separate plots.
+Let :math:`V` be a function space with basis functions :math:`x^i`,
+:math:`i=0,1,\ldots,N`.  Find the best approximation to :math:`f(x)=\exp(-x)` on
+:math:`\Omega =[0,4]` among all functions in :math:`V` for :math:`N=2,4,6`. Illustrate
+the three approximations in three separate plots.  Add the
+corresponding Taylor polynomial approximation of degree :math:`N` in each
+plot.
 Filename: ``exp_powers.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5723,7 +5806,6 @@ Filename: ``sin_powers.py``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5734,8 +5816,8 @@ Exercise 6: Approximate a steep function by sines
 
 Find the best approximation of :math:`f(x) = \tanh (s(x-\pi))` on
 :math:`[0, 2\pi]` in the space :math:`V` with basis
-:math:`{\varphi}_i(x) = \sin((2i+1)x)`, :math:`i\in{I} = \{0,\ldots,N\}`.
-Make a movie showing how :math:`u=\sum_{j\in{I}}c_j{\varphi}_j(x)`
+:math:`{\psi}_i(x) = \sin((2i+1)x)`, :math:`i\in{I} = \{0,\ldots,N\}`.
+Make a movie showing how :math:`u=\sum_{j\in{I}}c_j{\psi}_j(x)`
 approximates :math:`f(x)` as :math:`N` grows. Choose :math:`s` such that :math:`f` is
 steep (:math:`s=20` may be appropriate).
 
@@ -5760,7 +5842,6 @@ Filename: ``tanh_sines_approx1.py``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5776,7 +5857,6 @@ approximation improves with increasing :math:`N`.
 Filename: ``tanh_sines_approx2.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5810,8 +5890,8 @@ the section :ref:`fem:approx:global:Fourier`). You may choose
 
 
 .. math::
-         {\varphi}_{2i} = \cos\left( i\frac{\pi}{L}x\right),\quad
-        {\varphi}_{2i+1} = \sin\left( i\frac{\pi}{L}x\right),
+         {\psi}_{2i} = \cos\left( i\frac{\pi}{L}x\right),\quad
+        {\psi}_{2i+1} = \sin\left( i\frac{\pi}{L}x\right),
 
 for :math:`i=0,1,\ldots,N\rightarrow\infty`.
 
@@ -5826,7 +5906,6 @@ the series expansion converges for :math:`s=10` and :math:`s=100`.
 Filename: ``Fourier_approx.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5852,7 +5931,6 @@ Make separate plots of the approximation for each combination of
 Filename: ``tanh_Lagrange.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5883,7 +5961,6 @@ Filename: ``fe_numberings1.py.``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5892,13 +5969,12 @@ Filename: ``fe_numberings1.py.``.
 Exercise 11: Define vertices, cells, and dof maps
 -------------------------------------------------
 
-Repeat :ref:`fem:approx:fe:exer:mesh2`, but define the
+Repeat :ref:`fem:approx:fe:exer:mesh1`, but define the
 data structures ``vertices``, ``cells``, and ``dof_map`` instead of
 ``nodes`` and ``elements``.
-Filename: ``fe_numberings2.py.``.
+Filename: ``fe_numberings2.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5911,7 +5987,7 @@ Filename: ``fe_numberings2.py.``.
 Exercise 12: Construct matrix sparsity patterns
 -----------------------------------------------
 
-:ref:`fem:approx:fe:exer:defmesh` describes a element mesh
+:ref:`fem:approx:fe:exer:mesh1` describes a element mesh
 with a total of five elements, but with two different element and
 node orderings. For each of the two orderings,
 make a :math:`5\times 5` matrix and fill in the entries that will be nonzero.
@@ -5932,7 +6008,6 @@ Filename: ``fe_sparsity_pattern.pdf``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -5941,10 +6016,11 @@ Filename: ``fe_sparsity_pattern.pdf``.
 Exercise 13: Perform symbolic finite element computations
 ---------------------------------------------------------
 
-Find formulas for the coefficient matrix and right-hand side
-when approximating :math:`f(x) = sin (x)` on
+Perform hand calculations to find formulas for the coefficient matrix
+and right-hand side
+when approximating :math:`f(x) = \sin (x)` on
 :math:`\Omega=[0, \pi]` by two P1 elements of size :math:`\pi/2`.
-Solve the system and compare :math:`u(\pi/2` with
+Solve the system and compare :math:`u(\pi/2)` with
 the exact value 1.
 
 .. Hint: wolframalpha or sympy can help with (1-x)*sin(a*x+b),
@@ -5967,7 +6043,6 @@ the exact value 1.
 Filename: ``sin_approx_P1.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -5998,7 +6073,6 @@ Filename: ``tanh_fe_P1P2_approx.py``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -6013,7 +6087,6 @@ this case with the same number of nodes?
 Filename: ``tanh_fe_P3P4_approx.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -6057,7 +6130,6 @@ Hopefully, the sequence :math:`r_0,\ldots,r_{m-1}` converges to the true
 Filename: ``Asinwt_interpolation_error.py``.
 
 .. --- end exercise ---
-
 
 
 
@@ -6114,7 +6186,6 @@ Filename: ``Heaviside_approx_P1P2.py.``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -6163,7 +6234,6 @@ Filename: ``approx2D_lsorth_sin.py``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -6182,7 +6252,6 @@ has the form :math:`c_i=f(x_{i})` for :math:`i\in{I}`.
 Filename: ``fe_trapez.pdf``.
 
 .. --- end exercise ---
-
 
 
 
@@ -6245,7 +6314,6 @@ Filename: ``P1_vs_interp.py``.
 
 
 
-
 .. --- begin exercise ---
 
 
@@ -6260,5 +6328,4 @@ Use a 3D generalization of the test problem in the section :ref:`fem:approx:2D:g
 Filename: ``approx3D.py``.
 
 .. --- end exercise ---
-
 

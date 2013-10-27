@@ -10,7 +10,7 @@ from scitools.std import plot, hold, legend, savefig, linspace, \
 
 def solve(integrand_lhs, integrand_rhs, psi, Omega,
           boundary_lhs=None, boundary_rhs=None,
-          numint=False, verbose=False):
+          symbolic=True, verbose=False):
     """
     psi: dictionary of lists, psi[0] holdes the basis functions,
     psi[1] holdes the first-order derivatives, and psi[2] the
@@ -21,7 +21,7 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
     contributions from the boundary (boundary integrals, which are point
     values in 1D).
 
-    if numint True, all integrals are calculated by sympy.mpmath.quad
+    if symbolic is False, all integrals are calculated by sympy.mpmath.quad
     to high precision.
     if verbose is True, integrations and linear system A*c=b are printed
     during the computations.
@@ -36,12 +36,12 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
             integrand = integrand_lhs(psi, i, j)
             if verbose:
                 print '(%d,%d):' % (i, j), integrand
-            if not numint:
+            if symbolic:
                 I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
                 if isinstance(I, sm.Integral):
-                    numint = True  # force numerical integration hereafter
+                    symbolic = False  # force numerical integration hereafter
                     print 'numerical integration of', integrand
-            if numint:
+            if not symbolic:
                 integrand_ = sm.lambdify([x], integrand)
                 try:
                     I = sm.mpmath.quad(integrand_, [Omega[0], Omega[1]])
@@ -54,12 +54,12 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
         integrand = integrand_rhs(psi, i)
         if verbose:
             print 'rhs:', integrand
-        if not numint:
+        if symbolic:
             I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
             if isinstance(I, sm.Integral):
-                numint = True
+                symbolic = False
                 print 'numerical integration of', integrand
-        if numint:
+        if not symbolic:
             integrand_ = sm.lambdify([x], integrand)
             try:
                 I = sm.mpmath.quad(integrand_, [Omega[0], Omega[1]])

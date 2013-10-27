@@ -262,7 +262,7 @@ $$
 <center>[1] <b style="font-weight: bold">Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b style="font-weight: bold">Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Oct 23, 2013</h4></center> <!-- date -->
+<center><h4>Oct 27, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -971,7 +971,7 @@ return \( u(x)=\sum_jc_j\baspsi_j(x) \)
 
 <section class="slide">
 
-<h3>Implementation of the least squares method; code  <a name="___sec23"></a></h3>
+<h3>Implementation of the least squares method; symbolic code  <a name="___sec23"></a></h3>
 
 <p>
 
@@ -993,7 +993,7 @@ return \( u(x)=\sum_jc_j\baspsi_j(x) \)
     u = <span style="color: #B452CD">0</span>
     <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(psi)):
         u += c[i,<span style="color: #B452CD">0</span>]*psi[i]
-    <span style="color: #8B008B; font-weight: bold">return</span> u
+    <span style="color: #8B008B; font-weight: bold">return</span> u, c
 </code></pre></div>
 <p>
 Observe: symmetric coefficient matrix so we can halve the integrations.
@@ -1005,7 +1005,59 @@ Observe: symmetric coefficient matrix so we can halve the integrations.
 
 <section class="slide">
 
-<h3>Implementation of the least squares method; plotting  <a name="___sec24"></a></h3>
+<h3>Implementation of the least squares method; numerical code  <a name="___sec24"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Symbolic integration may be impossible and/or very slow</li>
+ <p><li> Turn to pure numerical computations in those cases</li>
+ <p><li> Supply Python functions <code>f(x)</code>, <code>psi(x,i)</code>, and a mesh <code>x</code></li>
+</ul>
+<p>
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">least_squares_numerical</span>(f, psi, N, x,
+                            integration_method=<span style="color: #CD5555">&#39;scipy&#39;</span>,
+                            orthogonal_basis=<span style="color: #658b00">False</span>):
+    <span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">scipy.integrate</span>
+    A = np.zeros((N+<span style="color: #B452CD">1</span>, N+<span style="color: #B452CD">1</span>))
+    b = np.zeros(N+<span style="color: #B452CD">1</span>)
+    Omega = [x[<span style="color: #B452CD">0</span>], x[-<span style="color: #B452CD">1</span>]]
+    dx = x[<span style="color: #B452CD">1</span>] - x[<span style="color: #B452CD">0</span>]
+
+    <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>):
+        j_limit = i+<span style="color: #B452CD">1</span> <span style="color: #8B008B; font-weight: bold">if</span> orthogonal_basis <span style="color: #8B008B; font-weight: bold">else</span> N+<span style="color: #B452CD">1</span>
+        <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(i, j_limit):
+            <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;(%d,%d)&#39;</span> % (i, j)
+            <span style="color: #8B008B; font-weight: bold">if</span> integration_method == <span style="color: #CD5555">&#39;scipy&#39;</span>:
+                A_ij = scipy.integrate.quad(
+                    <span style="color: #8B008B; font-weight: bold">lambda</span> x: psi(x,i)*psi(x,j),
+                    Omega[<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>], epsabs=<span style="color: #B452CD">1E-9</span>, epsrel=<span style="color: #B452CD">1E-9</span>)[<span style="color: #B452CD">0</span>]
+            <span style="color: #8B008B; font-weight: bold">elif</span> ...
+            A[i,j] = A[j,i] = A_ij
+
+        <span style="color: #8B008B; font-weight: bold">if</span> integration_method == <span style="color: #CD5555">&#39;scipy&#39;</span>:
+            b_i = scipy.integrate.quad(
+                <span style="color: #8B008B; font-weight: bold">lambda</span> x: f(x)*psi(x,i), Omega[<span style="color: #B452CD">0</span>], Omega[<span style="color: #B452CD">1</span>],
+                epsabs=<span style="color: #B452CD">1E-9</span>, epsrel=<span style="color: #B452CD">1E-9</span>)[<span style="color: #B452CD">0</span>]
+        <span style="color: #8B008B; font-weight: bold">elif</span> ...
+        b[i] = b_i
+
+    c = b/np.diag(A) <span style="color: #8B008B; font-weight: bold">if</span> orthogonal_basis <span style="color: #8B008B; font-weight: bold">else</span> np.linalg.solve(A, b)
+    u = <span style="color: #658b00">sum</span>(c[i]*psi(x, i) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>))
+    <span style="color: #8B008B; font-weight: bold">return</span> u, c
+</code></pre></div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Implementation of the least squares method; plotting  <a name="___sec25"></a></h3>
 
 <p>
 Compare \( f \) and \( u \) visually:
@@ -1038,7 +1090,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 
 <section class="slide">
 
-<h3>Implementation of the least squares method; application  <a name="___sec25"></a></h3>
+<h3>Implementation of the least squares method; application  <a name="___sec26"></a></h3>
 
 <p>
 
@@ -1046,7 +1098,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">approx1D</span> <span style="color: #8B008B; font-weight: bold">import</span> *
 &gt;&gt;&gt; x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
 &gt;&gt;&gt; f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span>-<span style="color: #B452CD">1</span>
-&gt;&gt;&gt; u = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
+&gt;&gt;&gt; u, c = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 &gt;&gt;&gt; comparison_plot(f, u, Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 </code></pre></div>
 <p>
@@ -1076,7 +1128,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">approx1D</span> <span style="color: #8B008B; font-weight: bold">import</span> *
 &gt;&gt;&gt; x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
 &gt;&gt;&gt; f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span>-<span style="color: #B452CD">1</span>
-&gt;&gt;&gt; u = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x, x**<span style="color: #B452CD">2</span>], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
+&gt;&gt;&gt; u, c = least_squares(f=f, psi=[<span style="color: #B452CD">1</span>, x, x**<span style="color: #B452CD">2</span>], Omega=[<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>])
 &gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> u
 <span style="color: #B452CD">10</span>*x**<span style="color: #B452CD">2</span> - <span style="color: #B452CD">20</span>*x + <span style="color: #B452CD">9</span>
 &gt;&gt;&gt; <span style="color: #8B008B; font-weight: bold">print</span> sm.expand(f)
@@ -1089,7 +1141,7 @@ All code in module <a href="http://tinyurl.com/jvzzcfn/fem/approx1D.py"><tt>appr
 
 <section class="slide">
 
-<h3>Perfect approximation; the general result  <a name="___sec27"></a></h3>
+<h3>Perfect approximation; the general result  <a name="___sec28"></a></h3>
 
 <p>
 
@@ -1109,7 +1161,7 @@ If \( f\in V \), least squares and projection/Galerkin give \( u=f \).
 
 <section class="slide">
 
-<h3>Perfect approximation; proof of the general result  <a name="___sec28"></a></h3>
+<h3>Perfect approximation; proof of the general result  <a name="___sec29"></a></h3>
 
 <p>
 If \( f\in V \), \( f=\sum_{j\in\If}d_j\baspsi_j \), for
@@ -1181,7 +1233,7 @@ linear system numerically with standard arrays?
 
 <section class="slide">
 
-<h3>Ill-conditioning (1)  <a name="___sec30"></a></h3>
+<h3>Ill-conditioning (1)  <a name="___sec31"></a></h3>
 
 <p>
 Observations:
@@ -1207,7 +1259,7 @@ large \( N \).
 
 <section class="slide">
 
-<h3>Ill-conditioning (2)  <a name="___sec31"></a></h3>
+<h3>Ill-conditioning (2)  <a name="___sec32"></a></h3>
 
 <p>
 
@@ -1250,7 +1302,7 @@ $$
 psi = [sin(pi*(i+<span style="color: #B452CD">1</span>)*x) <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(N+<span style="color: #B452CD">1</span>)]
 f = <span style="color: #B452CD">10</span>*(x-<span style="color: #B452CD">1</span>)**<span style="color: #B452CD">2</span> - <span style="color: #B452CD">1</span>
 Omega = [<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>]
-u = least_squares(f, psi, Omega)
+u, c = least_squares(f, psi, Omega)
 comparison_plot(f, u, Omega)
 </code></pre></div>
 <p>
@@ -1260,7 +1312,7 @@ comparison_plot(f, u, Omega)
 
 <section class="slide">
 
-<h3>Fourier series approximation; plot  <a name="___sec33"></a></h3>
+<h3>Fourier series approximation; plot  <a name="___sec34"></a></h3>
 
 <p>
 \( N=3 \) vs \( N=11 \):
@@ -1275,7 +1327,7 @@ comparison_plot(f, u, Omega)
 
 <section class="slide">
 
-<h3>Fourier series approximation; improvements  <a name="___sec34"></a></h3>
+<h3>Fourier series approximation; improvements  <a name="___sec35"></a></h3>
 
 <p>
 
@@ -1306,7 +1358,7 @@ approximation!
 
 <section class="slide">
 
-<h3>Fourier series approximation; final results  <a name="___sec35"></a></h3>
+<h3>Fourier series approximation; final results  <a name="___sec36"></a></h3>
 
 <p>
 \( N=3 \) vs \( N=11 \):
@@ -1321,7 +1373,7 @@ approximation!
 
 <section class="slide">
 
-<h3>Orthogonal basis functions  <a name="___sec36"></a></h3>
+<h3>Orthogonal basis functions  <a name="___sec37"></a></h3>
 
 <p>
 This choice of sine functions as basis functions is popular because
@@ -1403,7 +1455,7 @@ No symmetric matrix: \( \baspsi_j(\xno{i})\neq \baspsi_i(\xno{j}) \) in general
 
 <section class="slide">
 
-<h3>The collocation or interpolation method; implementation  <a name="___sec38"></a></h3>
+<h3>The collocation or interpolation method; implementation  <a name="___sec39"></a></h3>
 
 <p>
 <code>points</code> holds the interpolation/collocation points
@@ -1436,7 +1488,7 @@ No symmetric matrix: \( \baspsi_j(\xno{i})\neq \baspsi_i(\xno{j}) \) in general
 
 <section class="slide">
 
-<h3>The collocation or interpolation method; approximating a parabola by linear functions  <a name="___sec39"></a></h3>
+<h3>The collocation or interpolation method; approximating a parabola by linear functions  <a name="___sec40"></a></h3>
 
 <p>
 
@@ -1512,7 +1564,7 @@ $$
 
 <section class="slide">
 
-<h3>Lagrange polynomials; formula and code  <a name="___sec41"></a></h3>
+<h3>Lagrange polynomials; formula and code  <a name="___sec42"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -1546,7 +1598,7 @@ $$
 
 <section class="slide">
 
-<h3>Lagrange polynomials; successful example  <a name="___sec42"></a></h3>
+<h3>Lagrange polynomials; successful example  <a name="___sec43"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/Lagrange_ls_interp_sin_4.png" align="bottom" width=800,></p></center>
@@ -1558,7 +1610,7 @@ $$
 
 <section class="slide">
 
-<h3>Lagrange polynomials; a less successful example  <a name="___sec43"></a></h3>
+<h3>Lagrange polynomials; a less successful example  <a name="___sec44"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/Lagrange_interp_abs_8_15.png" align="bottom" width=800,></p></center>
@@ -1570,7 +1622,7 @@ $$
 
 <section class="slide">
 
-<h3>Lagrange polynomials; oscillatory behavior  <a name="___sec44"></a></h3>
+<h3>Lagrange polynomials; oscillatory behavior  <a name="___sec45"></a></h3>
 
 <p>
 12 points, degree 11, plot of two of the Lagrange polynomials - note that
@@ -1589,7 +1641,7 @@ Problem: strong oscillations near the boundaries for larger \( N \) values.
 
 <section class="slide">
 
-<h3>Lagrange polynomials; remedy for strong oscillations  <a name="___sec45"></a></h3>
+<h3>Lagrange polynomials; remedy for strong oscillations  <a name="___sec46"></a></h3>
 
 <p>
 The oscillations can be reduced by a more clever choice of
@@ -1613,7 +1665,7 @@ on an interval \( [a,b] \).
 
 <section class="slide">
 
-<h3>Lagrange polynomials; recalculation with Chebyshev nodes  <a name="___sec46"></a></h3>
+<h3>Lagrange polynomials; recalculation with Chebyshev nodes  <a name="___sec47"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/Lagrange_interp_abs_Cheb_8_15.png" align="bottom" width=800,></p></center>
@@ -1625,7 +1677,7 @@ on an interval \( [a,b] \).
 
 <section class="slide">
 
-<h3>Lagrange polynomials; less oscillations with Chebyshev nodes  <a name="___sec47"></a></h3>
+<h3>Lagrange polynomials; less oscillations with Chebyshev nodes  <a name="___sec48"></a></h3>
 
 <p>
 12 points, degree 11, plot of two of the Lagrange polynomials - note that
@@ -1650,7 +1702,7 @@ they are zero at all points except one.
 
 <section class="slide">
 
-<h3>The basis functions have so far been global: \( \baspsi_i(x) \neq 0 \) almost everywhere  <a name="___sec49"></a></h3>
+<h3>The basis functions have so far been global: \( \baspsi_i(x) \neq 0 \) almost everywhere  <a name="___sec50"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/u_example_sin.png" align="bottom" width=500></p></center>
@@ -1662,7 +1714,7 @@ they are zero at all points except one.
 
 <section class="slide">
 
-<h3>In the finite element method we use basis functions with local support  <a name="___sec50"></a></h3>
+<h3>In the finite element method we use basis functions with local support  <a name="___sec51"></a></h3>
 
 <p>
 
@@ -1686,7 +1738,7 @@ they are zero at all points except one.
 
 <section class="slide">
 
-<h3>The linear combination of hat functions is a piecewise linear function  <a name="___sec51"></a></h3>
+<h3>The linear combination of hat functions is a piecewise linear function  <a name="___sec52"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/u_example_fe2.png" align="bottom" width=500></p></center>
@@ -1733,7 +1785,7 @@ On each element, introduce points called <em>nodes</em>: \( \xno{0},\ldots,\xno{
 
 <section class="slide">
 
-<h3>Example on elements with two nodes (P1 elements)  <a name="___sec53"></a></h3>
+<h3>Example on elements with two nodes (P1 elements)  <a name="___sec54"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D.png" align="bottom" width=500></p></center>
@@ -1755,7 +1807,7 @@ elements = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD"
 
 <section class="slide">
 
-<h3>Illustration of two basis functions on the mesh  <a name="___sec54"></a></h3>
+<h3>Illustration of two basis functions on the mesh  <a name="___sec55"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=500></p></center>
@@ -1767,7 +1819,7 @@ elements = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD"
 
 <section class="slide">
 
-<h3>Example on elements with three nodes (P2 elements)  <a name="___sec55"></a></h3>
+<h3>Example on elements with three nodes (P2 elements)  <a name="___sec56"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_P2.png" align="bottom" width=500></p></center>
@@ -1785,7 +1837,7 @@ elements = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD"
 
 <section class="slide">
 
-<h3>Some corresponding basis functions (P2 elements)  <a name="___sec56"></a></h3>
+<h3>Some corresponding basis functions (P2 elements)  <a name="___sec57"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/phi/mpl_fe_basis_p2_4e.png" align="bottom" width=600></p></center>
@@ -1797,7 +1849,7 @@ elements = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD"
 
 <section class="slide">
 
-<h3>Examples on elements with four nodes per element (P3 elements)  <a name="___sec57"></a></h3>
+<h3>Examples on elements with four nodes per element (P3 elements)  <a name="___sec58"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_d4_stretched.png" align="bottom" width=500></p></center>
@@ -1818,7 +1870,7 @@ elements = [[i*d+j <span style="color: #8B008B; font-weight: bold">for</span> j 
 
 <section class="slide">
 
-<h3>Some corresponding basis functions (P3 elements)  <a name="___sec58"></a></h3>
+<h3>Some corresponding basis functions (P3 elements)  <a name="___sec59"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/phi/mpl_fe_basis_p3_4e.png" align="bottom" width=600></p></center>
@@ -1830,7 +1882,7 @@ elements = [[i*d+j <span style="color: #8B008B; font-weight: bold">for</span> j 
 
 <section class="slide">
 
-<h3>The numbering does not need to be regular from left to right  <a name="___sec59"></a></h3>
+<h3>The numbering does not need to be regular from left to right  <a name="___sec60"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_random_numbering.png" align="bottom" width=500></p></center>
@@ -1848,7 +1900,7 @@ elements = [[<span style="color: #B452CD">2</span>, <span style="color: #B452CD"
 
 <section class="slide">
 
-<h3>Interpretation of the coefficients \( c_i \)  <a name="___sec60"></a></h3>
+<h3>Interpretation of the coefficients \( c_i \)  <a name="___sec61"></a></h3>
 
 <p>
 Important property: \( c_i \)
@@ -1876,7 +1928,7 @@ because \( \basphi_j(\xno{i}) =0 \) if \( i\neq j \)
 
 <section class="slide">
 
-<h3>Properties of the basis functions  <a name="___sec61"></a></h3>
+<h3>Properties of the basis functions  <a name="___sec62"></a></h3>
 
 <p>
 
@@ -1900,7 +1952,7 @@ Since \( A_{i,j}=\int\basphi_i\basphi_j\dx \),
 
 <section class="slide">
 
-<h3>How to construct quadratic \( \basphi_i \) (P2 elements)  <a name="___sec62"></a></h3>
+<h3>How to construct quadratic \( \basphi_i \) (P2 elements)  <a name="___sec63"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/phi/mpl_fe_basis_p2_4e.png" align="bottom" width=350></p></center>
@@ -1920,7 +1972,7 @@ Since \( A_{i,j}=\int\basphi_i\basphi_j\dx \),
 
 <section class="slide">
 
-<h3>Example on linear \( \basphi_i \) (P1 elements)  <a name="___sec63"></a></h3>
+<h3>Example on linear \( \basphi_i \) (P1 elements)  <a name="___sec64"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/phi/mpl_fe_basis_p1_4e.png" align="bottom" width=350></p></center>
@@ -1952,7 +2004,7 @@ $$
 
 <section class="slide">
 
-<h3>Example on cubic \( \basphi_i \) (P3 elements)  <a name="___sec64"></a></h3>
+<h3>Example on cubic \( \basphi_i \) (P3 elements)  <a name="___sec65"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/phi/mpl_fe_basis_p3_4e.png" align="bottom" width=350,></p></center>
@@ -1973,7 +2025,7 @@ $$
 
 <section class="slide">
 
-<h3>Computing a specific matrix entry (1)  <a name="___sec66"></a></h3>
+<h3>Computing a specific matrix entry (1)  <a name="___sec67"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=300></p></center>
@@ -2006,7 +2058,7 @@ $$
 
 <section class="slide">
 
-<h3>Computing a specific matrix entry (2)  <a name="___sec67"></a></h3>
+<h3>Computing a specific matrix entry (2)  <a name="___sec68"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_phi_2_3.png" align="bottom" width=500></p></center>
@@ -2030,7 +2082,7 @@ $$
 
 <section class="slide">
 
-<h3>Calculating a general row in the matrix; figure  <a name="___sec68"></a></h3>
+<h3>Calculating a general row in the matrix; figure  <a name="___sec69"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_phi_i_im1.png" align="bottom" width=500></p></center>
@@ -2048,7 +2100,7 @@ $$ A_{i,i-1} = \int_\Omega \basphi_i\basphi_{i-1}\dx = \hbox{?}$$
 
 <section class="slide">
 
-<h3>Calculating a general row in the matrix; details  <a name="___sec69"></a></h3>
+<h3>Calculating a general row in the matrix; details  <a name="___sec70"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2083,7 +2135,7 @@ $$
 
 <section class="slide">
 
-<h3>Calculation of the right-hand side  <a name="___sec70"></a></h3>
+<h3>Calculation of the right-hand side  <a name="___sec71"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_phi_i_f.png" align="bottom" width=500></p></center>
@@ -2112,7 +2164,7 @@ Need a specific \( f(x) \) to do more...
 
 <section class="slide">
 
-<h3>Specific example with two elements; linear system and solution  <a name="___sec71"></a></h3>
+<h3>Specific example with two elements; linear system and solution  <a name="___sec72"></a></h3>
 
 <p>
 
@@ -2157,7 +2209,7 @@ $$
 
 <section class="slide">
 
-<h3>Specific example with two elements; plot  <a name="___sec72"></a></h3>
+<h3>Specific example with two elements; plot  <a name="___sec73"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2177,7 +2229,7 @@ $$
 
 <section class="slide">
 
-<h3>Specific example: what about four elements?  <a name="___sec73"></a></h3>
+<h3>Specific example: what about four elements?  <a name="___sec74"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_p1_x2_2e_4e.png" align="bottom" width=800,></p></center>
@@ -2198,7 +2250,7 @@ $$
 
 <section class="slide">
 
-<h3>Split the integrals into elementwise integrals  <a name="___sec75"></a></h3>
+<h3>Split the integrals into elementwise integrals  <a name="___sec76"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2232,7 +2284,7 @@ Important:
 
 <section class="slide">
 
-<h3>The element matrix  <a name="___sec76"></a></h3>
+<h3>The element matrix  <a name="___sec77"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2274,7 +2326,7 @@ $$
 
 <section class="slide">
 
-<h3>Illustration of the matrix assembly: regularly numbered P1 elements  <a name="___sec77"></a></h3>
+<h3>Illustration of the matrix assembly: regularly numbered P1 elements  <a name="___sec78"></a></h3>
 
 <p>
 <center><p><img src="mov-fem/fe_assembly_regular_2x2/fe_assembly_regular_2x2.png" align="bottom" width=400></p></center>
@@ -2289,7 +2341,7 @@ $$
 
 <section class="slide">
 
-<h3>Illustration of the matrix assembly: regularly numbered P3 elements  <a name="___sec78"></a></h3>
+<h3>Illustration of the matrix assembly: regularly numbered P3 elements  <a name="___sec79"></a></h3>
 
 <p>
 <center><p><img src="mov-fem/fe_assembly_regular_4x4/fe_assembly_regular_4x4.png" align="bottom" width=400></p></center>
@@ -2304,7 +2356,7 @@ $$
 
 <section class="slide">
 
-<h3>Illustration of the matrix assembly: irregularly numbered P1 elements  <a name="___sec79"></a></h3>
+<h3>Illustration of the matrix assembly: irregularly numbered P1 elements  <a name="___sec80"></a></h3>
 
 <p>
 <center><p><img src="mov-fem/fe_assembly_irregular/fe_assembly_irregular.png" align="bottom" width=400></p></center>
@@ -2319,7 +2371,7 @@ $$
 
 <section class="slide">
 
-<h3>Assembly of the right-hand side  <a name="___sec80"></a></h3>
+<h3>Assembly of the right-hand side  <a name="___sec81"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2390,7 +2442,7 @@ a standardized reference element domain \( [-1,1] \) with local coordinate \( X 
 
 <section class="slide">
 
-<h3>Affine mapping  <a name="___sec82"></a></h3>
+<h3>Affine mapping  <a name="___sec83"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2420,7 +2472,7 @@ $$
 
 <section class="slide">
 
-<h3>Integral transformation  <a name="___sec83"></a></h3>
+<h3>Integral transformation  <a name="___sec84"></a></h3>
 
 <p>
 Reference element integration: just change integration variable
@@ -2467,7 +2519,7 @@ $$
 
 <section class="slide">
 
-<h3>Advantages of the reference element  <a name="___sec84"></a></h3>
+<h3>Advantages of the reference element  <a name="___sec85"></a></h3>
 
 <p>
 
@@ -2487,7 +2539,7 @@ $$
 
 <section class="slide">
 
-<h3>Standardized basis functions for P1 elements  <a name="___sec85"></a></h3>
+<h3>Standardized basis functions for P1 elements  <a name="___sec86"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2509,7 +2561,7 @@ $$
 
 <section class="slide">
 
-<h3>Standardized basis functions for P2 elements  <a name="___sec86"></a></h3>
+<h3>Standardized basis functions for P2 elements  <a name="___sec87"></a></h3>
 
 <p>
 P2 elements:
@@ -2573,7 +2625,7 @@ $$
 
 <section class="slide">
 
-<h3>Integration over a reference element; element vector  <a name="___sec88"></a></h3>
+<h3>Integration over a reference element; element vector  <a name="___sec89"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -2606,7 +2658,7 @@ $$
 
 <section class="slide">
 
-<h3>Tedious calculations! Let's use symbolic software  <a name="___sec89"></a></h3>
+<h3>Tedious calculations! Let's use symbolic software  <a name="___sec90"></a></h3>
 
 <p>
 
@@ -2640,7 +2692,7 @@ Can printe out in LaTeX too (convenient for copying into reports):
 
 <section class="slide">
 
-<h2>Implementation  <a name="___sec90"></a></h2>
+<h2>Implementation  <a name="___sec91"></a></h2>
 
 <p>
 
@@ -2657,7 +2709,7 @@ Can printe out in LaTeX too (convenient for copying into reports):
 
 <section class="slide">
 
-<h3>Compute finite element basis functions in the reference element  <a name="___sec91"></a></h3>
+<h3>Compute finite element basis functions in the reference element  <a name="___sec92"></a></h3>
 
 <p>
 Let \( \refphi_r(X) \) be a Lagrange polynomial of degree <code>d</code>:
@@ -2697,7 +2749,7 @@ Let \( \refphi_r(X) \) be a Lagrange polynomial of degree <code>d</code>:
 
 <section class="slide">
 
-<h3>Compute the element matrix  <a name="___sec92"></a></h3>
+<h3>Compute the element matrix  <a name="___sec93"></a></h3>
 
 <p>
 
@@ -2724,7 +2776,7 @@ Let \( \refphi_r(X) \) be a Lagrange polynomial of degree <code>d</code>:
 
 <section class="slide">
 
-<h3>Example on symbolic vs numeric element matrix  <a name="___sec93"></a></h3>
+<h3>Example on symbolic vs numeric element matrix  <a name="___sec94"></a></h3>
 
 <p>
 
@@ -2747,7 +2799,7 @@ Let \( \refphi_r(X) \) be a Lagrange polynomial of degree <code>d</code>:
 
 <section class="slide">
 
-<h3>Compute the element vector  <a name="___sec94"></a></h3>
+<h3>Compute the element vector  <a name="___sec95"></a></h3>
 
 <p>
 
@@ -2778,7 +2830,7 @@ Note <code>f.subs('x', x)</code>: replace <code>x</code> by \( x(X) \) such that
 
 <section class="slide">
 
-<h3>Fallback on numerical integration if symbolic integration fails  <a name="___sec95"></a></h3>
+<h3>Fallback on numerical integration if symbolic integration fails  <a name="___sec96"></a></h3>
 
 <p>
 
@@ -2810,7 +2862,7 @@ Note <code>f.subs('x', x)</code>: replace <code>x</code> by \( x(X) \) such that
 
 <section class="slide">
 
-<h3>Linear system assembly and solution  <a name="___sec96"></a></h3>
+<h3>Linear system assembly and solution  <a name="___sec97"></a></h3>
 
 <p>
 
@@ -2839,7 +2891,7 @@ Note <code>f.subs('x', x)</code>: replace <code>x</code> by \( x(X) \) such that
 
 <section class="slide">
 
-<h3>Linear system solution  <a name="___sec97"></a></h3>
+<h3>Linear system solution  <a name="___sec98"></a></h3>
 
 <p>
 
@@ -2860,7 +2912,7 @@ solution can be very tedious.
 
 <section class="slide">
 
-<h3>Example on computing symbolic approximations  <a name="___sec98"></a></h3>
+<h3>Example on computing symbolic approximations  <a name="___sec99"></a></h3>
 
 <p>
 
@@ -2892,7 +2944,7 @@ solution can be very tedious.
 
 <section class="slide">
 
-<h3>Example on computing numerical approximations  <a name="___sec99"></a></h3>
+<h3>Example on computing numerical approximations  <a name="___sec100"></a></h3>
 
 <p>
 
@@ -2955,7 +3007,7 @@ Note: do this by hand to understand what is going on!
 
 <section class="slide">
 
-<h3>General result: the coefficient matrix is sparse  <a name="___sec101"></a></h3>
+<h3>General result: the coefficient matrix is sparse  <a name="___sec102"></a></h3>
 
 <p>
 
@@ -2996,7 +3048,7 @@ $$
 
 <section class="slide">
 
-<h3>Exemplifying the sparsity for P2 elements  <a name="___sec102"></a></h3>
+<h3>Exemplifying the sparsity for P2 elements  <a name="___sec103"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3031,7 +3083,7 @@ $$
 
 <section class="slide">
 
-<h3>Matrix sparsity pattern for regular/random numbering of P1 elements  <a name="___sec103"></a></h3>
+<h3>Matrix sparsity pattern for regular/random numbering of P1 elements  <a name="___sec104"></a></h3>
 
 <p>
 
@@ -3050,7 +3102,7 @@ $$
 
 <section class="slide">
 
-<h3>Matrix sparsity pattern for regular/random numbering of P3 elements  <a name="___sec104"></a></h3>
+<h3>Matrix sparsity pattern for regular/random numbering of P3 elements  <a name="___sec105"></a></h3>
 
 <p>
 
@@ -3091,7 +3143,7 @@ The minimum storage requirements for the coefficient matrix \( A_{i,j} \):
 
 <section class="slide">
 
-<h3>Approximate \( f\sim x^9 \) by various elements; code  <a name="___sec106"></a></h3>
+<h3>Approximate \( f\sim x^9 \) by various elements; code  <a name="___sec107"></a></h3>
 
 <p>
 Compute a mesh with \( N_e \) elements, basis functions of
@@ -3117,7 +3169,7 @@ approximate(f=x*(<span style="color: #B452CD">1</span>-x)**<span style="color: #
 
 <section class="slide">
 
-<h3>Approximate \( f\sim x^9 \) by various elements; plot  <a name="___sec107"></a></h3>
+<h3>Approximate \( f\sim x^9 \) by various elements; plot  <a name="___sec108"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_p1_p2_x9_248e.png" align="bottom" width=800,></p></center>
@@ -3148,7 +3200,7 @@ approximate(f=x*(<span style="color: #B452CD">1</span>-x)**<span style="color: #
 
 <section class="slide">
 
-<h3>Interpolation/collocation with finite elements  <a name="___sec109"></a></h3>
+<h3>Interpolation/collocation with finite elements  <a name="___sec110"></a></h3>
 
 <p>
 Let \( \{\xno{i}\}_{i\in\If} \) be the nodes in the mesh.
@@ -3194,7 +3246,7 @@ define \( u \) also between the \( \xno{i} \) points
 
 <section class="slide">
 
-<h3>How does finite elements compare with finite differences?  <a name="___sec110"></a></h3>
+<h3>How does finite elements compare with finite differences?  <a name="___sec111"></a></h3>
 
 <p>
 
@@ -3237,7 +3289,7 @@ Note:
 
 <section class="slide">
 
-<h3>Expressing the left-hand side in finite difference operator notation  <a name="___sec111"></a></h3>
+<h3>Expressing the left-hand side in finite difference operator notation  <a name="___sec112"></a></h3>
 
 <p>
 Rewrite the left-hand side of finite element equation no \( i \):
@@ -3266,7 +3318,7 @@ $$ h(u - \frac{h^2}{6}u'')$$
 
 <section class="slide">
 
-<h3>Treating the right-hand side; Trapezoidal rule  <a name="___sec112"></a></h3>
+<h3>Treating the right-hand side; Trapezoidal rule  <a name="___sec113"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3311,7 +3363,7 @@ and the finite difference method!
 
 <section class="slide">
 
-<h3>Treating the right-hand side; Simpson's rule  <a name="___sec113"></a></h3>
+<h3>Treating the right-hand side; Simpson's rule  <a name="___sec114"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3355,7 +3407,7 @@ Conclusions:
 
 <section class="slide">
 
-<h3>Finite element approximation vs finite differences  <a name="___sec114"></a></h3>
+<h3>Finite element approximation vs finite differences  <a name="___sec115"></a></h3>
 
 <p>
 With Trapezoidal integration of \( (f,\basphi_i) \), the finite element
@@ -3410,7 +3462,7 @@ Note: as \( h\rightarrow 0 \), \( hu''\rightarrow 0 \) and \( \bar f_i\rightarro
 
 <section class="slide">
 
-<h3>Making finite elements behave as finite differences  <a name="___sec115"></a></h3>
+<h3>Making finite elements behave as finite differences  <a name="___sec116"></a></h3>
 
 <p>
 
@@ -3492,7 +3544,7 @@ One problem:
 
 <section class="slide">
 
-<h3>The concept of a finite element  <a name="___sec118"></a></h3>
+<h3>The concept of a finite element  <a name="___sec119"></a></h3>
 
 <p>
 
@@ -3543,7 +3595,7 @@ b[dof_map[e][r]] += b_e[r]
 
 <section class="slide">
 
-<h3>Implementation; example with P2 elements  <a name="___sec120"></a></h3>
+<h3>Implementation; example with P2 elements  <a name="___sec121"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_mesh1D_P2.png" align="bottom" width=500></p></center>
@@ -3562,7 +3614,7 @@ dof_map = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD">
 
 <section class="slide">
 
-<h3>Implementation; example with P0 elements  <a name="___sec121"></a></h3>
+<h3>Implementation; example with P0 elements  <a name="___sec122"></a></h3>
 
 <p>
 Example: Same mesh, but \( u \) is piecewise constant in each cell (P0 element).
@@ -3587,7 +3639,7 @@ We will hereafter work with <code>cells</code>, <code>vertices</code>, and <code
 
 <section class="slide">
 
-<h3>Example on doing the algorithmic steps  <a name="___sec122"></a></h3>
+<h3>Example on doing the algorithmic steps  <a name="___sec123"></a></h3>
 
 <p>
 
@@ -3621,7 +3673,7 @@ plot(x_u, u)
 
 <section class="slide">
 
-<h3>Approximating a parabola by P0 elements  <a name="___sec123"></a></h3>
+<h3>Approximating a parabola by P0 elements  <a name="___sec124"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fe_p0_x2_4e_8e.png" align="bottom" width=800></p></center>
@@ -3671,7 +3723,7 @@ Accurate approximation of the integral:
 
 <section class="slide">
 
-<h3>Computing the error of the approximation; details  <a name="___sec125"></a></h3>
+<h3>Computing the error of the approximation; details  <a name="___sec126"></a></h3>
 
 <p>
 <div class="alert alert-block alert-warning alert-text-normal"><b style="font-weight: bold">Note.</b>
@@ -3703,7 +3755,7 @@ E = np.sqrt(<span style="color: #B452CD">0.5</span>*np.sum((e2[:-<span style="co
 
 <section class="slide">
 
-<h3>How does the error depend on \( h \) and \( d \)?  <a name="___sec126"></a></h3>
+<h3>How does the error depend on \( h \) and \( d \)?  <a name="___sec127"></a></h3>
 
 <p>
 Theory and experiments show that the least squares or projection/Galerkin
@@ -3728,7 +3780,7 @@ where \( C \) depends on \( f \), but not on \( h \) or \( d \).
 
 <section class="slide">
 
-<h3>Cubic Hermite polynomials; definition  <a name="___sec127"></a></h3>
+<h3>Cubic Hermite polynomials; definition  <a name="___sec128"></a></h3>
 
 <p>
 
@@ -3761,7 +3813,7 @@ and thereby continuous derivatives.
 
 <section class="slide">
 
-<h3>Cubic Hermite polynomials; derivation  <a name="___sec128"></a></h3>
+<h3>Cubic Hermite polynomials; derivation  <a name="___sec129"></a></h3>
 
 <p>
 4 constraints on \( \refphi_r \) (1 for dof \( r \), 0 for all others):
@@ -3804,7 +3856,7 @@ $$
 
 <section class="slide">
 
-<h2>Numerical integration  <a name="___sec129"></a></h2>
+<h2>Numerical integration  <a name="___sec130"></a></h2>
 
 <p>
 
@@ -3842,7 +3894,7 @@ where
 
 <section class="slide">
 
-<h3>The Midpoint rule  <a name="___sec130"></a></h3>
+<h3>The Midpoint rule  <a name="___sec131"></a></h3>
 
 <p>
 Simplest possibility: the Midpoint rule,
@@ -3924,7 +3976,7 @@ $$
 
 <section class="slide">
 
-<h3>Gauss-Legendre rules with optimized points  <a name="___sec132"></a></h3>
+<h3>Gauss-Legendre rules with optimized points  <a name="___sec133"></a></h3>
 
 <p>
 
@@ -4050,7 +4102,7 @@ $$
 
 <section class="slide">
 
-<h3>Tensor products  <a name="___sec135"></a></h3>
+<h3>Tensor products  <a name="___sec136"></a></h3>
 
 <p>
 Given two vectors \( a=(a_0,\ldots,a_M) \) and \( b=(b_0,\ldots,b_N) \),
@@ -4081,7 +4133,7 @@ $$ \baspsi_{p,q}(x,y) = \hat\baspsi_p(x)\hat\baspsi_q(y),
 
 <section class="slide">
 
-<h3>Double or single index?  <a name="___sec136"></a></h3>
+<h3>Double or single index?  <a name="___sec137"></a></h3>
 
 <p>
 The 2D basis can employ a double index and double sum:
@@ -4119,7 +4171,7 @@ $$
 
 <section class="slide">
 
-<h3>Example on 2D (bilinear) basis functions; formulas  <a name="___sec137"></a></h3>
+<h3>Example on 2D (bilinear) basis functions; formulas  <a name="___sec138"></a></h3>
 
 <p>
 In 1D we use the basis
@@ -4159,7 +4211,7 @@ See notes for details of a hand-calculation.
 
 <section class="slide">
 
-<h3>Example on 2D (bilinear) basis functions; plot  <a name="___sec138"></a></h3>
+<h3>Example on 2D (bilinear) basis functions; plot  <a name="___sec139"></a></h3>
 
 <p>
 Quadratic \( f(x,y) = (1+x^2)(1+2y^2) \) (left), bilinear \( u \) (right):
@@ -4194,7 +4246,7 @@ Very small modification of <code>approx1D.py</code>:
 
 <section class="slide">
 
-<h3>Implementation; 2D integration  <a name="___sec140"></a></h3>
+<h3>Implementation; 2D integration  <a name="___sec141"></a></h3>
 
 <p>
 
@@ -4221,7 +4273,7 @@ I = sm.integrate(integrand,
 
 <section class="slide">
 
-<h3>Implementation; 2D basis functions  <a name="___sec141"></a></h3>
+<h3>Implementation; 2D basis functions  <a name="___sec142"></a></h3>
 
 <p>
 Tensor product of 1D "Taylor-style" polynomials \( x^i \):
@@ -4253,7 +4305,7 @@ Complete code in
 
 <section class="slide">
 
-<h3>Implementation; application  <a name="___sec142"></a></h3>
+<h3>Implementation; application  <a name="___sec143"></a></h3>
 
 <p>
 \( f(x,y) = (1+x^2)*(1+2y^2) \)
@@ -4265,7 +4317,7 @@ Complete code in
 &gt;&gt;&gt; f = (1+x**2)*(1+2*y**2)
 &gt;&gt;&gt; psi = taylor(x, y, 1, 1)
 &gt;&gt;&gt; Omega = [[0, 2], [0, 2]]
-&gt;&gt;&gt; u = least_squares(f, psi, Omega)
+&gt;&gt;&gt; u, c = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 8*x*y - 2*x/3 + 4*y/3 - 1/9
 &gt;&gt;&gt; print sm.expand(f)
@@ -4278,7 +4330,7 @@ Complete code in
 
 <section class="slide">
 
-<h3>Implementation; trying a perfect expansion  <a name="___sec143"></a></h3>
+<h3>Implementation; trying a perfect expansion  <a name="___sec144"></a></h3>
 
 <p>
 Add higher powers to the basis such that \( f\in V \):
@@ -4287,7 +4339,7 @@ Add higher powers to the basis such that \( f\in V \):
 
 <!-- code=text (from !bc ipy) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">&gt;&gt;&gt; psi = taylor(x, y, 2, 2)
-&gt;&gt;&gt; u = least_squares(f, psi, Omega)
+&gt;&gt;&gt; u, c = least_squares(f, psi, Omega)
 &gt;&gt;&gt; print u
 2*x**2*y**2 + x**2 + 2*y**2 + 1
 &gt;&gt;&gt; print u-f
@@ -4350,7 +4402,7 @@ $$
 
 <section class="slide">
 
-<h2>Finite elements in 2D and 3D  <a name="___sec145"></a></h2>
+<h2>Finite elements in 2D and 3D  <a name="___sec146"></a></h2>
 
 <p>
 The two great advantages of the finite element method:
@@ -4372,7 +4424,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Examples on cell types  <a name="___sec146"></a></h3>
+<h3>Examples on cell types  <a name="___sec147"></a></h3>
 
 <p>
 2D:
@@ -4401,7 +4453,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Rectangular domain with 2D P1 elements  <a name="___sec147"></a></h3>
+<h3>Rectangular domain with 2D P1 elements  <a name="___sec148"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_rect_P1.png" align="bottom" width=800></p></center>
@@ -4413,7 +4465,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Deformed geometry with 2D P1 elements  <a name="___sec148"></a></h3>
+<h3>Deformed geometry with 2D P1 elements  <a name="___sec149"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_quarter_circle.png" align="bottom" width=600></p></center>
@@ -4425,7 +4477,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Rectangular domain with 2D Q1 elements  <a name="___sec149"></a></h3>
+<h3>Rectangular domain with 2D Q1 elements  <a name="___sec150"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_rect_Q1.png" align="bottom" width=500></p></center>
@@ -4437,7 +4489,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Basis functions over triangles in the physical domain  <a name="___sec150"></a></h3>
+<h3>Basis functions over triangles in the physical domain  <a name="___sec151"></a></h3>
 
 <p>
 The P1 triangular 2D element: \( u \) is linear \( ax + by + c \) over each
@@ -4453,7 +4505,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Basic features of 2D P1 elements  <a name="___sec151"></a></h3>
+<h3>Basic features of 2D P1 elements  <a name="___sec152"></a></h3>
 
 <p>
 
@@ -4472,7 +4524,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Linear mapping of reference element onto general triangular cell  <a name="___sec152"></a></h3>
+<h3>Linear mapping of reference element onto general triangular cell  <a name="___sec153"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/ElmT3n2D_map.png" align="bottom" width=400></p></center>
@@ -4484,7 +4536,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>\( \basphi_i \): pyramid shape, composed of planes  <a name="___sec153"></a></h3>
+<h3>\( \basphi_i \): pyramid shape, composed of planes  <a name="___sec154"></a></h3>
 
 <p>
 
@@ -4503,7 +4555,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Element matrices and vectors  <a name="___sec154"></a></h3>
+<h3>Element matrices and vectors  <a name="___sec155"></a></h3>
 
 <p>
 
@@ -4522,7 +4574,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Basis functions over triangles in the reference cell  <a name="___sec155"></a></h3>
+<h3>Basis functions over triangles in the reference cell  <a name="___sec156"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fenics-book/elements/P1_2d.png" align="bottom" width=100></p></center>
@@ -4549,7 +4601,7 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>2D P1, P2, P3, P4, P5, and P6 elements  <a name="___sec156"></a></h3>
+<h3>2D P1, P2, P3, P4, P5, and P6 elements  <a name="___sec157"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fenics-book/elements/P1-6_2d.png" align="bottom" width=400></p></center>
@@ -4561,7 +4613,7 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>P1 elements in 1D, 2D, and 3D  <a name="___sec157"></a></h3>
+<h3>P1 elements in 1D, 2D, and 3D  <a name="___sec158"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fenics-book/elements/P1-1d2d3d.png" align="bottom" width=400></p></center>
@@ -4573,7 +4625,7 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>P2 elements in 1D, 2D, and 3D  <a name="___sec158"></a></h3>
+<h3>P2 elements in 1D, 2D, and 3D  <a name="___sec159"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fenics-book/elements/P2-1d2d3d.png" align="bottom" width=400></p></center>
@@ -4594,7 +4646,7 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>Affine mapping of the reference cell; formula  <a name="___sec159"></a></h3>
+<h3>Affine mapping of the reference cell; formula  <a name="___sec160"></a></h3>
 
 <p>
 Mapping of local \( \X = (X,Y) \) coordinates in the reference cell to
@@ -4632,7 +4684,7 @@ This mapping preserves the straight/planar faces and edges.
 
 <section class="slide">
 
-<h3>Affine mapping of the reference cell; figure  <a name="___sec160"></a></h3>
+<h3>Affine mapping of the reference cell; figure  <a name="___sec161"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/ElmT3n2D_map.png" align="bottom" width=400></p></center>
@@ -4644,7 +4696,7 @@ This mapping preserves the straight/planar faces and edges.
 
 <section class="slide">
 
-<h3>Isoparametric mapping of the reference cell  <a name="___sec161"></a></h3>
+<h3>Isoparametric mapping of the reference cell  <a name="___sec162"></a></h3>
 
 <p>
 Idea: Use the basis functions
@@ -4676,7 +4728,7 @@ reference cell to a <em>curved</em> triangle or tetrahedron.
 
 <section class="slide">
 
-<h3>Computing integrals  <a name="___sec162"></a></h3>
+<h3>Computing integrals  <a name="___sec163"></a></h3>
 
 <p>
 Integrals must be transformed from \( \Omega^{(e)} \) (physical cell)
@@ -4721,7 +4773,7 @@ Affine mapping
 <p>
 !slide
 
-<h3>Remark on going from 1D to 2D/3D  <a name="___sec163"></a></h3>
+<h3>Remark on going from 1D to 2D/3D  <a name="___sec164"></a></h3>
 
 <p>
 <div class="alert alert-block alert-block alert-text-normal"><b style="font-weight: bold"></b>
@@ -4752,10 +4804,16 @@ $$ u = f $$
 
 
 <p>
-to real differential equations.
+to real differential equations like
 
 <p>
-Three methods:
+<p>&nbsp;<br>
+$$ -u'' + bu = f,\quad u(0)=1,\ u'(L)=D $$
+<p>&nbsp;<br>
+
+
+<p>
+Three methods are addressed:
 
 <p>
 
@@ -4775,7 +4833,7 @@ Method 2 will be totally dominating!
 
 <section class="slide">
 
-<h3>Abstract differential equation  <a name="___sec165"></a></h3>
+<h3>Abstract differential equation  <a name="___sec166"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -4787,7 +4845,7 @@ $$
 
 
 <p>
-Examples:
+Examples (1D problems):
 
 <p>
 <p>&nbsp;<br>
@@ -4813,7 +4871,7 @@ $$
 
 <section class="slide">
 
-<h3>Abstract boundary conditions  <a name="___sec166"></a></h3>
+<h3>Abstract boundary conditions  <a name="___sec167"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -4847,7 +4905,7 @@ $$
 
 <section class="slide">
 
-<h3>Reminder about notation  <a name="___sec167"></a></h3>
+<h3>Reminder about notation  <a name="___sec168"></a></h3>
 
 <p>
 
@@ -4855,8 +4913,8 @@ $$
  <p><li> \( \uex(x) \) is the symbol for the <em>exact</em> solution
    of \( \mathcal{L}(\uex)=0 \)</li>
  <p><li> \( u(x) \) denotes an <em>approximate</em> solution</li>
- <p><li> \( V = \hbox{span}\{ \baspsi_0(x),\ldots,\baspsi_N(x)\} \): we seek \( u\in V \)</li>
- <p><li> \( V \) has basis \( \sequencei{\baspsi} \)</li>
+ <p><li> We seek \( u\in V \)</li>
+ <p><li> \( V = \hbox{span}\{ \baspsi_0(x),\ldots,\baspsi_N(x)\} \), \( V \) has basis \( \sequencei{\baspsi} \)</li>
  <p><li> \( \If =\{0,\ldots,N\} \) is an index set</li>
  <p><li> \( u(x) = \sum_{j\in\If} c_j\baspsi_j(x) \)</li>
  <p><li> Inner product: \( (u,v) = \int_\Omega uv\dx \)</li>
@@ -4912,7 +4970,7 @@ $$ R=R(c_0,\ldots,c_N; x)$$
 
 <section class="slide">
 
-<h3>The least squares method  <a name="___sec169"></a></h3>
+<h3>The least squares method  <a name="___sec170"></a></h3>
 
 <p>
 Idea: minimize
@@ -4954,7 +5012,7 @@ $$
 
 <section class="slide">
 
-<h3>The Galerkin method  <a name="___sec170"></a></h3>
+<h3>The Galerkin method  <a name="___sec171"></a></h3>
 
 <p>
 Idea: make \( R \) orthogonal to \( V \),
@@ -4994,7 +5052,7 @@ $$
 
 <section class="slide">
 
-<h3>The Method of Weighted Residuals  <a name="___sec171"></a></h3>
+<h3>The Method of Weighted Residuals  <a name="___sec172"></a></h3>
 
 <p>
 Generalization of the Galerkin method: demand \( R \)
@@ -5040,7 +5098,7 @@ $$
 
 <section class="slide">
 
-<h3>Terminology: test and Trial Functions  <a name="___sec172"></a></h3>
+<h3>Terminology: test and Trial Functions  <a name="___sec173"></a></h3>
 
 <p>
 
@@ -5056,7 +5114,7 @@ $$
 
 <section class="slide">
 
-<h3>The collocation method  <a name="___sec173"></a></h3>
+<h3>The collocation method  <a name="___sec174"></a></h3>
 
 <p>
 Idea: demand \( R=0 \) at \( N+1 \) points
@@ -5119,7 +5177,7 @@ in a simple 1D problem with global basis functions.
 
 <section class="slide">
 
-<h3>The first model problem  <a name="___sec175"></a></h3>
+<h3>The first model problem  <a name="___sec176"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5170,7 +5228,7 @@ $$
 
 <section class="slide">
 
-<h3>Boundary conditions  <a name="___sec176"></a></h3>
+<h3>Boundary conditions  <a name="___sec177"></a></h3>
 
 <p>
 Since \( u(0)=u(L)=0 \) we must ensure that
@@ -5197,7 +5255,7 @@ $$ u(0) = \sum_jc_j\baspsi_j(0) = 0,\quad u(L) = \sum_jc_j\baspsi_j(L) $$
 
 <section class="slide">
 
-<h3>The least squares method; principle  <a name="___sec177"></a></h3>
+<h3>The least squares method; principle  <a name="___sec178"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5237,7 +5295,7 @@ $$
 
 <section class="slide">
 
-<h3>The least squares method; equation system  <a name="___sec178"></a></h3>
+<h3>The least squares method; equation system  <a name="___sec179"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5297,7 +5355,7 @@ $$
 
 <section class="slide">
 
-<h3>Orthogonality of the basis functions gives diagonal matrix  <a name="___sec179"></a></h3>
+<h3>Orthogonality of the basis functions gives diagonal matrix  <a name="___sec180"></a></h3>
 
 <p>
 Useful property:
@@ -5337,7 +5395,7 @@ $$
 
 <section class="slide">
 
-<h3>Least squares method; solution  <a name="___sec180"></a></h3>
+<h3>Least squares method; solution  <a name="___sec181"></a></h3>
 
 <p>
 Let's <code>sympy</code> do the work (\( f(x)=2 \)):
@@ -5398,7 +5456,7 @@ $$
 
 <section class="slide">
 
-<h3>The Galerkin method; principle  <a name="___sec181"></a></h3>
+<h3>The Galerkin method; principle  <a name="___sec182"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5442,7 +5500,7 @@ $$
 
 <section class="slide">
 
-<h3>The Galerkin method; solution  <a name="___sec182"></a></h3>
+<h3>The Galerkin method; solution  <a name="___sec183"></a></h3>
 
 <p>
 Since \( \baspsi_i''\propto \baspsi_i \),
@@ -5456,7 +5514,7 @@ as the least squares method (in this particular example).
 
 <section class="slide">
 
-<h3>The collocation method  <a name="___sec183"></a></h3>
+<h3>The collocation method  <a name="___sec184"></a></h3>
 
 <p>
 \( R=0 \) or the differential equation must be satisfied at \( N+1 \) points:
@@ -5501,7 +5559,7 @@ $$ c_0=2L^2/\pi^2 $$
 
 <section class="slide">
 
-<h3>Comparison of the methods  <a name="___sec184"></a></h3>
+<h3>Comparison of the methods  <a name="___sec185"></a></h3>
 
 <p>
 
@@ -5520,7 +5578,7 @@ $$ c_0=2L^2/\pi^2 $$
 
 <section class="slide">
 
-<h2>Useful techniques  <a name="___sec185"></a></h2>
+<h2>Useful techniques  <a name="___sec186"></a></h2>
 
 <p>
 
@@ -5563,7 +5621,8 @@ Motivation:
 </ul>
 <p>
 
-<h3>Boundary function; principles <a name="fem:deq:1D:essBC:Bfunc"></a></h3>
+<h3>Boundary function; principles  <a name="___sec188"></a></h3>
+<a name="fem:deq:1D:essBC:Bfunc"></a>
 
 <p>
 
@@ -5583,7 +5642,7 @@ Motivation:
 
 <section class="slide">
 
-<h3>Boundary function; example  <a name="___sec188"></a></h3>
+<h3>Boundary function; example  <a name="___sec189"></a></h3>
 
 <p>
 \( u(0)=C \) and \( u(L)=D \). Choose
@@ -5638,7 +5697,7 @@ $$ a(u,v) = L(v)\quad \forall v\in V $$
 
 <section class="slide">
 
-<h3>Example on abstract notation  <a name="___sec190"></a></h3>
+<h3>Example on abstract notation  <a name="___sec191"></a></h3>
 
 <p>
 Given a variational formulation for \( -u''=f \):
@@ -5677,7 +5736,7 @@ $$ a(u,v) = (u',v'),\quad L(v) = (f,v)  $$
 
 <section class="slide">
 
-<h3>Bilinear and linear forms  <a name="___sec191"></a></h3>
+<h3>Bilinear and linear forms  <a name="___sec192"></a></h3>
 
 <p>
 
@@ -5720,7 +5779,7 @@ In nonlinear problems: Find \( (u-B)\in V \) such that \( F(u;v)=0\ \forall v\in
 
 <section class="slide">
 
-<h3>The linear system associated with abstract form  <a name="___sec192"></a></h3>
+<h3>The linear system associated with abstract form  <a name="___sec193"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5772,7 +5831,7 @@ $$
 
 <section class="slide">
 
-<h3>Equivalence with minimization problem  <a name="___sec193"></a></h3>
+<h3>Equivalence with minimization problem  <a name="___sec194"></a></h3>
 
 <p>
 If \( a(u,v)=a(v,u) \),
@@ -5837,7 +5896,7 @@ equations in 1D that include
 
 <section class="slide">
 
-<h3>Variable coefficient; problem  <a name="___sec195"></a></h3>
+<h3>Variable coefficient; problem  <a name="___sec196"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5881,7 +5940,7 @@ $$ B(x) = C + \frac{1}{L}(D-C)x$$
 
 <section class="slide">
 
-<h3>Variable coefficient; variational formulation (1)  <a name="___sec196"></a></h3>
+<h3>Variable coefficient; variational formulation (1)  <a name="___sec197"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5918,7 +5977,7 @@ $$
 
 <section class="slide">
 
-<h3>Variable coefficient; variational formulation (2)  <a name="___sec197"></a></h3>
+<h3>Variable coefficient; variational formulation (2)  <a name="___sec198"></a></h3>
 
 <p>
 Integration by parts:
@@ -5966,7 +6025,7 @@ $$ (\dfc u',v') = (f,v),\quad \forall v\in V $$
 
 <section class="slide">
 
-<h3>Variable coefficient; abstract notation  <a name="___sec198"></a></h3>
+<h3>Variable coefficient; abstract notation  <a name="___sec199"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -5987,7 +6046,7 @@ $$ a(u,v)= (\dfc u',v'),\quad L(v)=(f,v)   $$
 
 <section class="slide">
 
-<h3>Variable coefficient; linear system  <a name="___sec199"></a></h3>
+<h3>Variable coefficient; linear system  <a name="___sec200"></a></h3>
 
 <p>
 \( v=\baspsi_i \) and \( u=B + \sum_jc_j\baspsi_j \):
@@ -6037,10 +6096,1340 @@ $$
 
 <section class="slide">
 
-<h3>First-order derivative in the equation and boundary condition; problem  <a name="___sec200"></a></h3>
+<h3>First-order derivative in the equation and boundary condition; problem  <a name="___sec201"></a></h3>
 
 <p>
-[[[
+<p>&nbsp;<br>
+$$
+\begin{equation}
+-u''(x) + bu'(x) = f(x),\quad x\in\Omega =[0,L],\ 
+u(0)=C,\ u'(L)=E
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+New features:
+
+<p>
+
+<ul>
+ <p><li> first-order derivative \( u' \) in the equation</li>
+ <p><li> boundary condition with \( u' \): \( u'(L)=E \)</li>
+</ul>
+<p>
+
+Initial steps:
+
+<p>
+
+<ul>
+ <p><li> Must force \( \baspsi_i(0)=0 \) because of Dirichlet condition at \( x=0 \)</li>
+ <p><li> Boundary function: \( B(x)=C(L-x)/L \)</li>
+ <p><li> No requirements on \( \baspsi_i(L) \) (no Dirichlet condition at \( x=L \))</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>First-order derivative in the equation and boundary condition; details  <a name="___sec202"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ u = \frac{C}{L}(L-x) + \sum_{j\in\If} c_j \baspsi_i(x)$$
+<p>&nbsp;<br>
+
+
+<p>
+Galerkin's method: multiply by \( v \), integrate over \( \Omega \), integrate
+by parts.
+
+<p>
+<p>&nbsp;<br>
+$$  (-u'' + bu' - f, v) = 0,\quad\forall v\in V,$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ (u',v') + (bu',v) = (f,v) + [u' v]_0^L, \quad\forall v\in V,$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ (u'v') + (bu',v) = (f,v) + Ev(L), \quad\forall v\in V,$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>First-order derivative in the equation and boundary condition; observations  <a name="___sec203"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ (u'v') + (bu',v) = (f,v) + Ev(L), \quad\forall v\in V,$$
+<p>&nbsp;<br>
+
+
+<p>
+Important:
+
+<p>
+
+<ul>
+  <p><li> \( [u' v]_0^L = u'(L)v(L) = E v(L) \) because \( v(0)=0 \) and \( u'(L)=E \)</li>
+  <p><li> The boundary term can be used to implement Neumann conditions</li>
+  <p><li> Forgetting the boundary term implies the condition \( u'=0 \) (!)</li>
+  <p><li> Such conditions are called <em>natural boundary conditions</em></li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>First-order derivative in the equation and boundary condition; abstract notation  <a name="___sec204"></a></h3>
+
+<p>
+Abstract notation:
+
+<p>
+<p>&nbsp;<br>
+$$ a(u,v)=L(v)\quad\forall v\in V,$$
+<p>&nbsp;<br>
+
+
+<p>
+where
+
+<p>
+<p>&nbsp;<br>
+$$ a(u,v)=(u',v') + (bu',v),\quad L(v)= (f+C,v) + E v(L) $$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>First-order derivative in the equation and boundary condition; linear system  <a name="___sec205"></a></h3>
+
+<p>
+Insert \( u=B+\sum_jc_j\baspsi_j \) and \( v=\baspsi_i \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\sum_{j\in\If}
+\underbrace{((\baspsi_j',\baspsi_i') + (b\baspsi_j',\baspsi_i))}_{A_{i,j}}
+c_j =
+\underbrace{(f,\baspsi_i) + (bCL^{-1},\baspsi_i') + E \baspsi_i(L)}_{b_i}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Observation: \( A_{i,j} \) is not symmetric because of the term
+
+<p>
+<p>&nbsp;<br>
+$$
+(b\baspsi_j',\baspsi_i)=\int_{\Omega} b\baspsi_j'\baspsi_i dx
+ \neq \int_{\Omega} b \baspsi_i' \baspsi_jdx = (\baspsi_i',b\baspsi_j)
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Terminology: natural and essential boundary conditions  <a name="___sec206"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ (u',v') + (bu',v) = (f,v) + u'(L)v(L) - u'(0)v(0)$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Note: forgetting the boundary terms implies \( u'(L)=u'(0)=0 \)
+   (unless prescribe a Dirichlet condition)</li>
+ <p><li> Conditions on \( u' \) are simply inserted in the variational form
+   and called <em>natural conditions</em></li>
+ <p><li> Conditions on \( u \) at \( x=0 \) requires modifying \( V \) (through \( \baspsi_i(0)=0 \))
+   and are known as <em>essential conditions</em></li>
+</ul>
+<p>
+
+<div class="alert alert-block alert-notice alert-text-normal"><b style="font-weight: bold">Lesson learned.</b>
+It is easy to forget the boundary term when integrating by parts.
+That mistake may prescribe a condition on \( u' \)!
+</div>
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Nonlinear coefficient; problem  <a name="___sec207"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+-(\dfc(u)u')' = f(u),\quad x\in [0,L],\ u(0)=0,\ u'(L)=E
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( V \): basis \( \sequencei{\baspsi} \) with \( \baspsi_i(0)=0 \) because of \( u(0)=0 \)</li>
+ <p><li> How does the nonlinear coefficient \( \dfc(u) \) impact the variational
+   formulation?</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Nonlinear coefficient; variational formulation  <a name="___sec208"></a></h3>
+
+<p>
+Galerkin: multiply by \( v \), integrate, integrate by parts
+
+<p>
+<p>&nbsp;<br>
+$$ \int_0^L \dfc(u)\frac{du}{dx}\frac{dv}{dx}\dx =
+\int_0^L f(u)v\dx + [\dfc(u)vu']_0^L\quad\forall v\in V
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> \( \dfc(u(0))v(0)u'(0)=0 \) since \( v(0) \)</li>
+ <p><li> \( \dfc(u(L))v(L)u'(L) = \dfc(u(L))v(L)E \) since \( u'(L)=E \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$ \int_0^L \dfc(u)\frac{du}{dx}\frac{dv}{dx}v\dx =
+\int_0^L f(u)v\dx + \dfc(u(L))v(L)E\quad\forall v\in V
+$$
+<p>&nbsp;<br>
+
+
+<p>
+or
+
+<p>
+<p>&nbsp;<br>
+$$ (\dfc(u)u', v') = (f(u),v) + \dfc(L)v(L)E\quad\forall v\in V
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Nonlinear coefficient; where does the nonlinearity cause challenges?  <a name="___sec209"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Abstract notation: no \( a(u,v) \) and \( L(v) \) because \( a \) and \( L \) are nonlinear</li>
+ <p><li> Abstract notation: \( F(u;v)=0 \) $\forall v\in V$</li>
+ <p><li> What about forming a linear system? We get a <em>nonlinear</em> system of
+   algebraic equations</li>
+ <p><li> Must use methods like Picard iteration or Newton's method to solve
+   nonlinear algebraic equations</li>
+ <p><li> But: the variational formulation was not much affected by nonlinearities</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computing with Dirichlet and Neumann conditions; problem  <a name="___sec210"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+-u''(x)=f(x),\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+<ul>
+ <p><li> Use a <em>global</em> polynomial basis \( \baspsi_i\sim x^i \) on \( [0,1] \)</li>
+ <p><li> Because of \( u(1)=D \): \( \baspsi_i(1)=0 \)</li>
+ <p><li> Basis: \( \baspsi_i(x)=(1-x)^{i+1} \), \( i\in\If \)</li>
+ <p><li> \( B(x)=Dx \)</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computing with Dirichlet and Neumann conditions; details  <a name="___sec211"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ A_{i,j} = (\baspsi_j',\baspsi_i') = \int_{0}^1 \baspsi_i'(x)\baspsi_j'(x)dx
+= \int_0^1 (i+1)(j+1)(1-x)^{i+j} dx,
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+b_i &= (2,\baspsi_i) - (D,\baspsi_i') -C\baspsi_i(0)\\ 
+&= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\baspsi_i(0)
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Can easily do the integrals with <code>sympy</code>. \( N=1 \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+\left(\begin{array}{cc}
+1 & 1\\ 
+1 & 4/3
+\end{array}\right)
+\left(\begin{array}{c}
+c_0\\ 
+c_1
+\end{array}\right)
+=
+\left(\begin{array}{c}
+-C+D+1\\ 
+2/3 -C + D
+\end{array}\right)
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ c_0=-C+D+2, \quad c_1=-1,$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ u(x) = 1 -x^2 + D + C(x-1)\quad\hbox{(exact solution)} $$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>When the numerical method is exact  <a name="___sec212"></a></h3>
+
+<p>
+Let
+
+<p>
+$$
+\begin{align*}
+u &= B + F,\quad F\in V
+a(B+F, v) &= L(v)\quad\forall v\in V
+\uex & = B + E,\quad E\in V
+a(B+E, v) &= L(v)\quad\forall v\in V
+\end{align*}
+
+Subtract: $a(F-E,v)=0$ and $E=F$.
+
+Apart from boundary conditions, $\uex$ lies in the same as we seek $u$.
+Then $u=\uex$.
+
+
+!split
+========= Computing with finite elements =========
+\tag{52}
+
+Tasks:
+
+ * Address the model problem $-u''(x)=2$, $u(0)=u(L)=0$
+ * Uniform finite element mesh with P1 elements
+ * Show all finite element computations in detail
+
+!split
+======= Variational formulation, finite element mesh, and basis =======
+
+<p>&nbsp;<br>
+$$ -u''(x) = 2,\quad x\in (0,L),\ u(0)=u(L)=0,$$
+<p>&nbsp;<br>
+
+
+<p>
+Variational formulation:
+
+<p>
+<p>&nbsp;<br>
+$$ (u',v') = (2,v)\quad\forall v\in V  $$
+<p>&nbsp;<br>
+
+
+<p>
+Since \( u(0)=0 \) and \( u(L)=0 \), we must force
+
+<p>
+<p>&nbsp;<br>
+$$ v(0)=v(L)=0,\quad \baspsi_i(0)=\baspsi_i(L)=0$$
+<p>&nbsp;<br>
+
+
+<p>
+Use finite element basis, but exclude \( \basphi_0 \) and \( \basphi_{N_n} \)
+since these are not 0 on the boundary:
+
+<p>
+<p>&nbsp;<br>
+$$ \baspsi_i=\basphi_{i+1},\quad i=0,\ldots,N=N_n-2$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ u = \sum_{j\in\If}c_j\basphi_{\nu(i)},\quad i=0,\ldots,N,\quad \nu(j) = j+1$$
+<p>&nbsp;<br>
+
+
+<p>
+Irregular numbering: more complicated \( \nu(j) \) mapping
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computation in the global physical domain; formulas  <a name="___sec213"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+A_{i,j}=\int_0^L\basphi_{i+1}'(x)\basphi_{j+1}'(x) dx,\quad
+b_i=\int_0^L2\basphi_{i+1}(x) dx
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( i+1\rightarrow i \), \( j+1\rightarrow j \)
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+A_{i-1,j-1}=\int_0^L\basphi_{i}'(x)\basphi_{j}'(x) \dx,\quad
+b_{i-1}=\int_0^L2\basphi_{i}(x) \dx
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computation in the global physical domain; details  <a name="___sec214"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fe_mesh1D_dphi_2_3.png" align="bottom" width=400></p></center>
+
+<p>
+<p>&nbsp;<br>
+$$ \basphi_i = \pm h^{-1} $$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ A_{i-1,i-1} = h^{-2}2h = 2h^{-1},\quad
+A_{i-1,i-2} = h^{-1}(-h^{-1})h = -h^{-1},\quad A_{i-1,i}=A_{i-1,i-2}$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ b_{i-1} = 2(\frac{1}{2}h + \frac{1}{2}h) = 2h$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Computation in the global physical domain; linear system  <a name="___sec215"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+2 & -1 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\ 
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\ 
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\ 
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\ 
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\ 
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\ 
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & -1 & 2
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\ 
+\vdots\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots\\ 
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+2h \\ 
+\vdots\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots\\ 
+2h
+\end{array}
+\right)
+\tag{53}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Comparison with a finite difference discretization  <a name="___sec216"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Recall: \( c_i = u(\xno{i+1})\equiv u_{i+1} \)</li>
+ <p><li> Write out a general equation at node \( i-1 \), expressed by \( u_i \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+-\frac{1}{h}u_{i-1} + \frac{2}{h}u_{i} - \frac{1}{h}u_{i+1} = 2h
+\tag{54}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+The standard finite difference method for \( -u''=2 \) is
+
+<p>
+<p>&nbsp;<br>
+$$ -\frac{1}{h^2}u_{i-1} + \frac{2}{h^2}u_{i} - \frac{1}{h^2}u_{i+1} = 2 $$
+<p>&nbsp;<br>
+
+
+<p>
+<div class="alert alert-block alert-block alert-text-normal"><b style="font-weight: bold"></b>
+The finite element method and the finite difference method are
+identical <em>in this example</em>.
+</div>
+<p>
+(Remains to study the equations involving boundary values)
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cellwise computations; formulas <a name="fem:deq:1D:comp:elmwise"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Repeat the previous example, but apply the cellwise algorithm</li>
+ <p><li> Work with one cell at a time</li>
+ <p><li> Thansform physical cell to reference cell \( X\in [-1,1] \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+A_{i-1,j-1}^{(e)}=\int_{\Omega^{(e)}} \basphi_i'(x)\basphi_j'(x) \dx
+= \int_{-1}^1 \frac{d}{dx}\refphi_r(X)\frac{d}{dx}\refphi_s(X)
+\frac{h}{2} \dX,
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ \refphi_0(X)=\half(1-X),\quad\refphi_1(X)=\half(1+X)$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{d\refphi_0}{dX} = -\half,\quad  \frac{d\refphi_1}{dX} = \half $$
+<p>&nbsp;<br>
+
+
+<p>
+From the chain rule
+
+<p>
+<p>&nbsp;<br>
+$$ \frac{d\refphi_r}{dx} = \frac{d\refphi_r}{dX}\frac{dX}{dx}
+= \frac{2}{h}\frac{d\refphi_r}{dX}$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cellwise computations; details  <a name="___sec218"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+A_{i-1,j-1}^{(e)}=\int_{\Omega^{(e)}} \basphi_i'(x)\basphi_j'(x) \dx
+= \int_{-1}^1 \frac{2}{h}\frac{d\refphi_r}{dX}\frac{2}{h}\frac{d\refphi_s}{dX}
+\frac{h}{2} \dX
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation*}
+b_{i-1}^{(e)} = \int_{\Omega^{(e)}} 2\basphi_i(x) \dx =
+\int_{-1}^12\refphi_r(X)\frac{h}{2} \dX,\quad i=q(e,r),\ r=0,1
+\end{equation*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Must run through all \( r,s=0,1 \) and \( r=0,1 \) and compute each entry in
+the element matrix and vector:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{rr}
+1 & -1\\ 
+-1 & 1
+\end{array}\right),\quad
+\tilde b^{(e)} = h\left(\begin{array}{c}
+1\\ 
+1
+\end{array}\right)\tp
+\tag{55}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cellwise computations; details of boundary cells  <a name="___sec219"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> The boundary cells involve only one unknown</li>
+ <p><li> \( \Omega^{(0)} \): left node value known,
+   only a contribution from right node</li>
+ <p><li> \( \Omega^{(N_e)} \): right node value known,
+   only a contribution from left node</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{r}
+1
+\end{array}\right),\quad
+\tilde b^{(e)} = h\left(\begin{array}{c}
+1
+\end{array}\right),\quad e=0,\ e=N_e
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Only one degree of freedom ("node") in these cells (\( r=0 \))
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cellwise computations; assembly  <a name="___sec220"></a></h3>
+
+<p>
+4 P1 elements:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">vertices = [<span style="color: #B452CD">0</span>, <span style="color: #B452CD">0.5</span>, <span style="color: #B452CD">1</span>, <span style="color: #B452CD">1.5</span>, <span style="color: #B452CD">2</span>]
+cells = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>], [<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>], [<span style="color: #B452CD">2</span>, <span style="color: #B452CD">3</span>], [<span style="color: #B452CD">3</span>, <span style="color: #B452CD">4</span>]]
+dof_map = [[<span style="color: #B452CD">0</span>], [<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>], [<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>], [<span style="color: #B452CD">2</span>]]
+</code></pre></div>
+<p>
+Python code for the assembly algorithm:
+
+<p>
+
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #228B22"># Ae[e][r,s]: element matrix, be[e][r]: element vector</span>
+<span style="color: #228B22"># A[i,j]: coefficient matrix, b[i]: right-hand side</span>
+
+<span style="color: #8B008B; font-weight: bold">for</span> e <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(<span style="color: #658b00">len</span>(Ae)):
+    <span style="color: #8B008B; font-weight: bold">for</span> r <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ae[e].shape[<span style="color: #B452CD">0</span>]):
+        <span style="color: #8B008B; font-weight: bold">for</span> s <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ae[e].shape[<span style="color: #B452CD">1</span>]):
+            A[dof_map[e,r],dof_map[e,s]] += Ae[e][i,j]
+        b[dof_map[e,r]] += be[e][i,j]
+</code></pre></div>
+<p>
+Result: same linear system
+
+<h2>Boundary conditions: specified nonzero value <a name="fem:deq:1D:essBC"></a></h2>
+
+<h3>General construction of a boundary function <a name="fem:deq:1D:essBC:Bfunc"></a></h3>
+
+<p>
+
+<ul>
+  <p><li> \( B(x) \) is not always easy to construct (extend to the interior of \( \Omega \)),
+    at least not in 2D and 3D</li>
+  <p><li> With finite element \( \basphi_i \), \( B(x) \) can be constructed in
+    a completely general way</li>
+  <p><li> \( \Ifb \): set of indices with nodes where \( u \) is known</li>
+  <p><li> \( U_i \): Dirichlet value of \( u \) at node \( i \), \( i\in\Ifb \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+B(x) = \sum_{j\in\Ifb} U_j\basphi_j(x),
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+1D: \( \Ifb = \{1,N_n\} \)
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x) = U_0\basphi_0(x) + U_{N_n}\basphi_{N_n}(x)
++ \sum{j\in\If}c_j\basphi_{\nu(j)},\quad \nu(j)=j+1,\ N=N_n-2
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example with two Dirichlet values; variational formulation  <a name="___sec223"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ -u''=2, \quad u(0)=C,\ u(L)=D  $$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ (u',v') = (2,v)\quad\forall v\in V$$
+<p>&nbsp;<br>
+
+
+<p>
+Insert \( u = B + \sum_j c_j\baspsi_j \) in variational formulation:
+
+<p>
+<p>&nbsp;<br>
+$$
+A_{i,j} = \int_0^L \baspsi_i'(x)\baspsi_j'(x) \dx,\quad
+b_i = \int_0^L (f(x) - B'(x))\baspsi_i(x) \dx
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example with two Dirichlet values; details  <a name="___sec224"></a></h3>
+
+<p>
+\( \baspsi_i = \basphi_{i+1} \), \( i=0,\ldots,N=N_n-2 \)
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{align*}
+u(x) &= \underline{0\cdot\basphi_0 + D\basphi_{N_n}}_{B(x)}
++ \sum_{j\in\If} c_j\basphi_{j+1}
+&= D\basphi_{N_n} + c_0\basphi_1 + c_1\basphi_2 +\cdots
++ c_N\basphi_{N_n-1}\tp
+\end{align*}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+A_{i-1,j-1} = \int_0^L \basphi_i'(x)\basphi_j'(x) \dx,\quad
+b_{i-1} = \int_0^L (f(x) - D\basphi_{N_n}'(x))\basphi_i(x) \dx,
+$$
+<p>&nbsp;<br>
+
+for \( i,j = 1,\ldots,N+1=N_n-1 \).
+
+<p>
+New boundary term from \( B' \): \( -D/2 \)
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Example with two Dirichlet values; cellwise computations  <a name="___sec225"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Element matrices as in the previous example (with \( u=0 \) on the boundary)</li>
+ <p><li> New element vector</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\tilde b_0^{(e)} = \int_{-1}^1 \left(f - D\frac{2}{h}\frac{\refphi_1}{dX}\right)
+\refphi_0\frac{h}{2} \dX
+= (\frac{h}{2}(2 - D\frac{2}{h}\frac{1}{2})
+\int_{-1}^1 \refphi_0 \dX =  h - D/2,\quad e=N_e=N_n-1
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Modification of the linear system; ideas <a name="fem:deq:1D:fem:essBC:Bfunc:modsys"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Method 1: incorporate Dirichlet values through a \( B(x) \) function
+   and demand \( \baspsi_i=0 \) where Dirichlet values apply</li>
+ <p><li> Method 2: drop \( B(x) \), drop demands to \( \baspsi_i \), just assemble
+   as if there were no Dirichlet conditions, and modify the linear
+   system instead</li>
+</ul>
+<p>
+
+Method 2: \( \baspsi_i = \basphi_i \)
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u(x) = \sum_{j\in\If}c_j\basphi_j(x),\quad \If=\{0,\ldots,N=N_n\}
+\tag{56}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( u \) is treated as unknown at \( x=0 \) and \( x=L \)
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Modification of the linear system; linear system  <a name="___sec227"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$ -u''=2,\quad u(0)=0,\ u(L)=D$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+1 & -1 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\ 
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\ 
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\ 
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\ 
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\ 
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\ 
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & -1 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\ 
+\vdots\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots\\ 
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+h \\ 
+2h\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+2h\\ 
+h
+\end{array}
+\right)
+\tag{57}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Modification of the linear system; modifications  <a name="___sec228"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Dirichlet condition \( u(\xno{i})= U_i \) means \( c_i=U_i \) (since \( c_i=u(\xno{i}) \))</li>
+ <p><li> Replace first row by \( c_0=0 \)</li>
+ <p><li> Replace last row by \( c_N=D \)</li>
+</ul>
+<p>
+
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+1 & 0 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\ 
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\ 
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\ 
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\ 
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\ 
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\ 
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\ 
+\vdots\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots\\ 
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+0 \\ 
+2h\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+2h\\ 
+D
+\end{array}
+\right)
+\tag{58}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Modification of the linear system; element matrix/vector  <a name="___sec229"></a></h3>
+
+<p>
+In cell 0 we know \( u \) for local node (degree of freedom) \( r=0 \) and
+replace the first cell equation by \( \tilde c_0 = 0 \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(0)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & 0\\ 
+-1 & 1
+\end{array}\right),\quad
+\tilde b^{(0)} = \left(\begin{array}{c}
+0\\ 
+h
+\end{array}\right)
+\tag{59}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+In cell \( N_e \) we know \( u \) for local node \( r=1 \) and replace the last
+equation in the cell system by \( \tilde c_1=D \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(N_e)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & -1\\ 
+0 & 1
+\end{array}\right),\quad
+\tilde b^{(N_e)} = \left(\begin{array}{c}
+h\\ 
+D
+\end{array}\right)
+\tag{60}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Symmetric modification of the linear system; algorithm  <a name="___sec230"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> The modification above destroys symmetry of the matrix:
+   \( A_{0,1}\neq A_{1,0} \))</li>
+ <p><li> Symmetry is often important in 2D and 3D (faster computations)</li>
+ <p><li> A more complex modification preserves symmetry</li>
+</ul>
+<p>
+
+Algorithm for incorporating \( c_i=U_i \):
+
+<p>
+
+<ol>
+<p><li> Subtract column \( i \) times \( U_i \) from the right-hand side</li>
+<p><li> Zero out column and row no \( i \)</li>
+<p><li> Place 1 on the diagonal</li>
+<p><li> Set \( b_i=U_i \)</li>
+</ol>
+<p>
+
+
+</section>
+
+
+<section class="slide">
+
+<h3>Symmetric modification of the linear system; example  <a name="___sec231"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+1 & 0 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\ 
+0 & 2 & -1 & \ddots &   & &  & &  \vdots \\ 
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\ 
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\ 
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\ 
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
+\vdots & & & &  &\ddots  & \ddots &\ddots  & 0 \\ 
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\ 
+\vdots\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots\\ 
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+0 \\ 
+2h\\ 
+\vdots\\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+\vdots \\ 
+2h +D/h\\ 
+D
+\end{array}
+\right)
+\tag{61}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+<h3>Modification of the element matrix and vector  <a name="___sec232"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> Modification of the linear system can be done in the
+   the element matrix and vector instead</li>
+ <p><li> Exactly the same procedure</li>
+</ul>
+<p>
+
+Last degree of freedom in the last element is prescribed:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(N-1)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & -1\\ 
+0 & 1
+\end{array}\right),\quad
+\tilde b^{(N-1)} = \left(\begin{array}{c}
+h\\ 
+D
+\end{array}\right)
+\tag{60}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Or symmetric modification:
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\tilde A^{(N-1)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & 0\\ 
+0 & 1
+\end{array}\right),\quad
+\tilde b^{(N-1)} = \left(\begin{array}{c}
+h + D/h\\ 
+D
+\end{array}\right)
+\tag{63}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h2>Boundary conditions: specified derivative <a name="fem:deq:1D:BC:nat"></a></h2>
+
+<p>
+Focus: how to incorporate \( u'(0)=C \) with finite elements.
 
 
 </section>

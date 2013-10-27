@@ -17,8 +17,7 @@ c_i = a*sm.integrate(f*sm.sin((i+1)*sm.pi*x/L), (x, 0, L))
 c_i = sm.simplify(c_i)
 print c_i
 print sm.latex(c_i, mode='plain')
-sys.exit(1)
-
+#sys.exit(0)
 
 x, x_m, h, X = sm.symbols('x x_m h X')
 
@@ -29,7 +28,7 @@ print c
 c = approximate(sm.sin(x), symbolic=True, d=1, N_e=4, numint='Simpson',
                 Omega=[0,sm.pi])
 print c
-sys.exit(0)
+#sys.exit(0)
 from fe_approx1D import *
 
 # "Hand"-integration of element matrix and vector

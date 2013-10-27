@@ -32,7 +32,7 @@ def run_linear_leastsq_parabola():
     f = 10*(x-1)**2 - 1
     psi = [1, x]
     Omega = [1, 2]
-    u = least_squares(f, psi, Omega)
+    u, c = least_squares(f, psi, Omega)
     comparison_plot(f, u, Omega, 'parabola_ls_linear')
 
 def run_taylor_leastsq_parabola_illconditioning(N=2):
@@ -41,27 +41,28 @@ def run_taylor_leastsq_parabola_illconditioning(N=2):
     ill-conditioned numerical approaches.
     """
     f = 10*(x-1)**2 - 1
-    u = least_squares(f, psi=[x**i for i in range(N+1)], Omega=[1, 2])
+    u, c = least_squares(f, psi=[x**i for i in range(N+1)], Omega=[1, 2])
     # Note: in least_squares there is extra code for numerical solution
     # of the systems
     print 'f:', sm.expand(f)
     print 'u:', sm.expand(u)
     comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d' % N)
 
-def run_sines_leastsq_parabola(help=False):
+def run_sines_leastsq_parabola(boundary_term=False):
     for N in (4, 12):
         f = 10*(x-1)**2 - 1
         psi = sines(x, N)
         Omega = [0, 1]
-        if help:  # u = 9 + sum
+        if boundary_term:
             f0 = 9; f1 = -1
             term = f0*(1-x) + x*f1
-            u = term + least_squares_orth(f-term, psi, Omega)
+            u, c = least_squares_orth(f-term, psi, Omega)
+            u = u + term
         else:
-            u = least_squares_orth(f, psi, Omega)
+            u, c = least_squares_orth(f, psi, Omega)
         plt.figure()
         comparison_plot(f, u, Omega, 'parabola_ls_sines%d%s' %
-                        (N, '_wfterm' if help else ''))
+                        (N, '_wfterm' if boundary_term else ''))
 
 
 def run_sine_by_powers(N):

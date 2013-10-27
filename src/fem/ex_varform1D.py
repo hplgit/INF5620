@@ -50,7 +50,7 @@ def case0(f, N=3):
     Omega = [0, 1]
 
     u_bar = solve(integrand_lhs, integrand_rhs, phi, Omega,
-                  verbose=True, numint=False)
+                  verbose=True, symbolic=True)
     u = B + u_bar
     print 'solution u:', sm.simplify(sm.expand(u))
 
@@ -148,9 +148,11 @@ def case2(N):
     u_e = -f2 + s[C1]*x + s[C2]
 
     def diff_eq(u, x):
-        return {'eq': sm.simplify(-sm.diff(u, x, x) - f),
+        eqs =  {'diff': -sm.diff(u, x, x) - f,
                 'BC1': sm.diff(u, x).subs(x, 0) - C,
                 'BC2': u.subs(x, L) - D}
+        for eq in eqs:
+            eqs[eq] = sm.simplify(eqs[eq])
 
     print 'Check of exact solution:', diff_eq(u_e, x)
 
@@ -189,7 +191,7 @@ def case2(N):
     comparison_plot(u, [0, 1])
 
 def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
-          basis='poly', numint=False, B_type='linear'):
+          basis='poly', symbolic=True, B_type='linear'):
     """
     Solve -(a(x)u)'=0 on [0,1], u(0)=1, u(1)=0.
     Method: Galerkin.
@@ -271,10 +273,10 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
 
     dBdx = sm.diff(B, x)
 
-    verbose = False if numint else True
+    verbose = True if symbolic else False
     phi_sum = solve(integrand_lhs, integrand_rhs, phi, Omega,
                     boundary_lhs, boundary_rhs, verbose=verbose,
-                    numint=numint)
+                    symbolic=symbolic)
     print 'sum c_j*phi_j:', phi_sum
     name = 'numerical, N=%d' % N
     u = {name: phi_sum + B, 'exact': sm.simplify(u_exact)}
@@ -327,13 +329,9 @@ x, b = sm.symbols('x b')
 #case1(8, 'sines')
 #case2(1)
 #case3(4)
-"""
-case3(N=3, a=sm.exp(b*x), f=0, basis='Lagrange', numint=False,
-      a_symbols={'b': 8}, f_symbols={})
-"""
-#case3(N=3, a=sm.exp(b*x), f=0, basis='poly', numint=False,
+#case3(N=3, a=sm.exp(b*x), f=0, basis='poly',
 #      a_symbols={b: 8}, f_symbols={})
-#case3(N=2, a=1, f=b, basis='poly', numint=False, f_symbols={b: 10}, B_type='cubic')
+#case3(N=2, a=1, f=b, basis='poly', f_symbols={b: 10}, B_type='cubic')
 
 #case0(f=b, N=1)
 #case0(f=x**6, N=7)

@@ -47,7 +47,7 @@ def least_squares(f, psi, Omega):
     # c is a sympy Matrix object, numbers are in c[i,0]
     u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
-    return u
+    return u, [c[i,0] for i in range(len(c))]
 
 def numerical_linsys_solve(A, b, floating_point_calc='sumpy'):
     """
@@ -92,6 +92,7 @@ def least_squares_orth(f, psi, Omega):
     print '...evaluating matrix...',
     for i in range(N+1):
         print '(%d,%d)' % (i, i)
+        # Assume orthogonal psi can be be integrated symbolically...
         A[i] = sm.integrate(psi[i]**2, (x, Omega[0], Omega[1]))
 
         # Fallback on numerical integration if f*psi is too difficult
@@ -112,7 +113,72 @@ def least_squares_orth(f, psi, Omega):
     # Alternative:
     # u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', u
-    return u
+    return u, c
+
+def trapezoidal(values, dx):
+    """
+    Integrate a function whose values on a mesh with spacing dx
+    are in the array values.
+    """
+    #return dx*np.sum(values)
+    return dx*(np.sum(values) - 0.5*values[0] - 0.5*values[-1])
+
+
+def least_squares_numerical(f, psi, N, x,
+                            integration_method='scipy',
+                            orthogonal_basis=False):
+    """
+    Given a function f(x) (Python function), a basis specified by the
+    Python function psi(x, i), and a mesh x (array), return the best
+    approximation to f(x) in in the space V spanned by the functions
+    in the list psi. The best approximation is represented as an array
+    of values corresponding to x.  All calculations are performed
+    numerically. integration_method can be `scipy` or `trapezoidal`
+    (the latter uses x as mesh for evaluating f).
+    """
+    A = np.zeros((N+1, N+1))
+    b = np.zeros(N+1)
+    if not callable(f) or not callable(psi):
+        raise TypeError('f and psi must be callable Python functions')
+    Omega = [x[0], x[-1]]
+    dx = x[1] - x[0]       # assume uniform partition
+
+    import scipy.integrate
+
+    print '...evaluating matrix...',
+    for i in range(N+1):
+        j_limit = i+1 if orthogonal_basis else N+1
+        for j in range(i, j_limit):
+            print '(%d,%d)' % (i, j)
+            if integration_method == 'scipy':
+                A_ij = scipy.integrate.quad(
+                    lambda x: psi(x,i)*psi(x,j),
+                    Omega[0], Omega[1], epsabs=1E-9, epsrel=1E-9)[0]
+            elif integration_method == 'sympy':
+                A_ij = sm.mpmath.quad(
+                    lambda x: psi(x,i)*psi(x,j),
+                    [Omega[0], Omega[1]])
+            else:
+                values = psi(x,i)*psi(x,j)
+                A_ij = trapezoidal(values, dx)
+            A[i,j] = A[j,i] = A_ij
+
+        if integration_method == 'scipy':
+            b_i = scipy.integrate.quad(
+                lambda x: f(x)*psi(x,i), Omega[0], Omega[1],
+                epsabs=1E-9, epsrel=1E-9)[0]
+        elif integration_method == 'sympy':
+            b_i = sm.mpmath.quad(
+                lambda x: f(x)*psi(x,i), [Omega[0], Omega[1]])
+        else:
+            values = f(x)*psi(x,i)
+            b_i = trapezoidal(values, dx)
+        b[i] = b_i
+
+    c = b/np.diag(A) if orthogonal_basis else np.linalg.solve(A, b)
+    u = sum(c[i]*psi(x, i) for i in range(N+1))
+    return u, c
+
 
 def interpolation(f, psi, points):
     """
@@ -144,7 +210,7 @@ def interpolation(f, psi, points):
     # Alternative:
     # u = sum(c[i,0]*psi[i] for i in range(len(psi)))
     print 'approximation:', sm.simplify(u)
-    return u
+    return u, c
 
 collocation = interpolation  # synonym in this module
 

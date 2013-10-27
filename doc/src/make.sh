@@ -12,8 +12,7 @@ done
 
 # These require full math
 names="oblig2 oblig3"
-names="oblig2"
-names=
+names="oblig3"
 for name in $names; do
 preprocess -DFORMAT=html ../slides/src/newcommands_keep.p.tex > newcommands_keep.tex
 doconce format html $name
