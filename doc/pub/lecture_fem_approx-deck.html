@@ -3550,14 +3550,14 @@ One problem:
 
 <ol>
  <p><li> a <em>reference cell</em> in a local reference coordinate system</li>
- <p><li> a set of <em>basis functions</em> \( \refphi_i \) defined on the cell</li>
+ <p><li> a set of <em>basis functions</em> \( \refphi_r \) defined on the cell</li>
  <p><li> a set of <em>degrees of freedom</em> (e.g., function values)
     that uniquely determine
-    the basis functions such that \( \refphi_i=1 \) for degree of freedom
-    number \( i \) and \( \refphi_i=0 \) for all other degrees of freedom</li>
+    the basis functions such that \( \refphi_r=1 \) for degree of freedom
+    number \( r \) and \( \refphi_r=0 \) for all other degrees of freedom</li>
  <p><li> a mapping between local and global degree of freedom numbers (<em>dof map</em>)</li>
  <p><li> a geometric <em>mapping</em> of the reference cell onto to cell in the physical
-    domain: \( [-1,1]\quad\Rightarrow\quad [x_L,x_R] \)</li>
+    domain: \( [-1,1]\ \Rightarrow\ [x_L,x_R] \)</li>
 </ol>
 <p>
 
@@ -3572,7 +3572,7 @@ One problem:
 <p>
 
 <ul>
-  <p><li> Cell vertex coordinates: <code>vertices</code> equals <code>nodes</code> for P1 elements</li>
+  <p><li> Cell vertex coordinates: <code>vertices</code> (equals <code>nodes</code> for P1 elements)</li>
   <p><li> Element vertices: <code>cell[e][r]</code> holds global vertex number of
     local vertex no <code>r</code> in element <code>e</code> (same as <code>elements</code> for P1 elements)</li>
   <p><li> <code>dof_map[e,r]</code> maps local dof <code>r</code> in element <code>e</code> to global dof
@@ -3580,7 +3580,7 @@ One problem:
 </ul>
 <p>
 
-The assembly process applies <code>dof_map</code> (no more <code>elements</code> list!):
+The assembly process now applies <code>dof_map</code>:
 
 <p>
 
@@ -3605,7 +3605,7 @@ b[dof_map[e][r]] += b_e[r]
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">vertices = [<span style="color: #B452CD">0</span>, <span style="color: #B452CD">0.4</span>, <span style="color: #B452CD">1</span>]
 cells = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>], [<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>]]
-dof_map = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>], [<span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>, <span style="color: #B452CD">3</span>]]
+dof_map = [[<span style="color: #B452CD">0</span>, <span style="color: #B452CD">1</span>, <span style="color: #B452CD">2</span>], [<span style="color: #B452CD">2</span>, <span style="color: #B452CD">3</span>, <span style="color: #B452CD">4</span>]]
 </code></pre></div>
 <p>
 
@@ -3626,7 +3626,7 @@ Same <code>vertices</code> and <code>cells</code>, but
 <div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">dof_map = [[<span style="color: #B452CD">0</span>], [<span style="color: #B452CD">1</span>], [<span style="color: #B452CD">2</span>]]
 </code></pre></div>
 <p>
-May think of nodes in the middle of each element.
+May think of one node in the middle of each element.
 
 <p>
 <div class="alert alert-block alert-block alert-text-normal"><b style="font-weight: bold"></b>
@@ -3651,7 +3651,7 @@ x = sm.Symbol(<span style="color: #CD5555">&#39;x&#39;</span>)
 f = x*(<span style="color: #B452CD">1</span> - x)
 
 N_e = <span style="color: #B452CD">10</span>
-<span style="color: #228B22"># Create mesh</span>
+<span style="color: #228B22"># Create mesh with P3 (cubic) elements</span>
 vertices, cells, dof_map = mesh_uniform(N_e, d=<span style="color: #B452CD">3</span>, Omega=[<span style="color: #B452CD">0</span>,<span style="color: #B452CD">1</span>])
 
 <span style="color: #228B22"># Create basis functions on the mesh</span>
@@ -3711,9 +3711,10 @@ Accurate approximation of the integral:
 <p>
 
 <ul>
- <p><li> Sample \( u(x) \) at many points in each element</li>
- <p><li> <code>u_glob</code> does this and returns <code>x</code> and <code>u</code></li>
+ <p><li> Sample \( u(x) \) at many points in each element (call <code>u_glob</code>, returns <code>x</code> and <code>u</code>)</li>
  <p><li> Use the Trapezoidal rule based on the samples</li>
+ <p><li> It is important to integrate \( u \) accurately <em>over the elements</em></li>
+ <p><li> (In a finite difference method we would just sample the mesh point values)</li>
 </ul>
 <p>
 
@@ -3834,7 +3835,16 @@ and thereby continuous derivatives.
 
 This gives 4 linear, coupled
 equations <em>for each</em> \( \refphi_r \) to determine the 4
-coefficients in the cubic polynomial. Result:
+coefficients in the cubic polynomial
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>Cubic Hermite polynomials; result  <a name="___sec130"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3856,7 +3866,7 @@ $$
 
 <section class="slide">
 
-<h2>Numerical integration  <a name="___sec130"></a></h2>
+<h2>Numerical integration  <a name="___sec131"></a></h2>
 
 <p>
 
@@ -3866,7 +3876,7 @@ $$
 </ul>
 <p>
 
-Common form:
+Common form of a numerical integration rule:
 
 <p>
 <p>&nbsp;<br>
@@ -3884,17 +3894,19 @@ where
 <ul>
  <p><li> \( \bar X_j \) are <em>integration points</em></li>
  <p><li> \( w_j \) are <em>integration weights</em></li>
- <p><li> Different rules correspond to different choices of points and weights</li>
 </ul>
 <p>
 
+Different rules correspond to different choices of points and weights
+
+<p>
 
 </section>
 
 
 <section class="slide">
 
-<h3>The Midpoint rule  <a name="___sec131"></a></h3>
+<h3>The Midpoint rule  <a name="___sec132"></a></h3>
 
 <p>
 Simplest possibility: the Midpoint rule,
@@ -3924,10 +3936,10 @@ Exact for linear integrands
 <p>
 
 <ul>
- <p><li> Idea: use a fixed, uniformly distributed set of points</li>
+ <p><li> Idea: use a fixed, uniformly distributed set of points in \( [-1,1] \)</li>
  <p><li> The points often coincides with nodes</li>
  <p><li> Very useful for making \( \basphi_i\basphi_j=0 \) and get diagonal
-   ("mass") matrices ("lumping").</li>
+   ("mass") matrices ("lumping")</li>
 </ul>
 <p>
 
@@ -3976,7 +3988,7 @@ $$
 
 <section class="slide">
 
-<h3>Gauss-Legendre rules with optimized points  <a name="___sec133"></a></h3>
+<h3>Gauss-Legendre rules with optimized points  <a name="___sec134"></a></h3>
 
 <p>
 
@@ -4102,10 +4114,10 @@ $$
 
 <section class="slide">
 
-<h3>Tensor products  <a name="___sec136"></a></h3>
+<h3>Tensor products  <a name="___sec137"></a></h3>
 
 <p>
-Given two vectors \( a=(a_0,\ldots,a_M) \) and \( b=(b_0,\ldots,b_N) \),
+Given two vectors \( a=(a_0,\ldots,a_M) \) and \( b=(b_0,\ldots,b_N) \)
 their <em>outer tensor product</em>, also called the <em>dyadic product</em>,
 is \( p=a\otimes b \), defined through
 
@@ -4114,10 +4126,10 @@ is \( p=a\otimes b \), defined through
 $$ p_{i,j}=a_ib_j,\quad i=0,\ldots,M,\ j=0,\ldots,N\tp$$
 <p>&nbsp;<br>
 
-Note: \( p \) has two indices (as matrix or two-dimensional array)
+Note: \( p \) has two indices (as a matrix or two-dimensional array)
 
 <p>
-2D basis as tensor product of 1D spaces:
+Example: 2D basis as tensor product of 1D spaces,
 
 <p>
 <p>&nbsp;<br>
@@ -4133,7 +4145,7 @@ $$ \baspsi_{p,q}(x,y) = \hat\baspsi_p(x)\hat\baspsi_q(y),
 
 <section class="slide">
 
-<h3>Double or single index?  <a name="___sec137"></a></h3>
+<h3>Double or single index?  <a name="___sec138"></a></h3>
 
 <p>
 The 2D basis can employ a double index and double sum:
@@ -4171,7 +4183,7 @@ $$
 
 <section class="slide">
 
-<h3>Example on 2D (bilinear) basis functions; formulas  <a name="___sec138"></a></h3>
+<h3>Example on 2D (bilinear) basis functions; formulas  <a name="___sec139"></a></h3>
 
 <p>
 In 1D we use the basis
@@ -4211,7 +4223,7 @@ See notes for details of a hand-calculation.
 
 <section class="slide">
 
-<h3>Example on 2D (bilinear) basis functions; plot  <a name="___sec139"></a></h3>
+<h3>Example on 2D (bilinear) basis functions; plot  <a name="___sec140"></a></h3>
 
 <p>
 Quadratic \( f(x,y) = (1+x^2)(1+2y^2) \) (left), bilinear \( u \) (right):
@@ -4246,7 +4258,7 @@ Very small modification of <code>approx1D.py</code>:
 
 <section class="slide">
 
-<h3>Implementation; 2D integration  <a name="___sec141"></a></h3>
+<h3>Implementation; 2D integration  <a name="___sec142"></a></h3>
 
 <p>
 
@@ -4273,7 +4285,7 @@ I = sm.integrate(integrand,
 
 <section class="slide">
 
-<h3>Implementation; 2D basis functions  <a name="___sec142"></a></h3>
+<h3>Implementation; 2D basis functions  <a name="___sec143"></a></h3>
 
 <p>
 Tensor product of 1D "Taylor-style" polynomials \( x^i \):
@@ -4289,10 +4301,10 @@ Tensor product of 1D sine functions \( \sin((i+1)\pi x) \):
 
 <p>
 
-<!-- code=text typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%">def sines(x, y, Nx, Ny):
-    return [sm.sin(sm.pi*(i+1)*x)*sm.sin(sm.pi*(j+1)*y)
-            for i in range(Nx+1) for j in range(Ny+1)]
+<!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">sines</span>(x, y, Nx, Ny):
+    <span style="color: #8B008B; font-weight: bold">return</span> [sm.sin(sm.pi*(i+<span style="color: #B452CD">1</span>)*x)*sm.sin(sm.pi*(j+<span style="color: #B452CD">1</span>)*y)
+            <span style="color: #8B008B; font-weight: bold">for</span> i <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Nx+<span style="color: #B452CD">1</span>) <span style="color: #8B008B; font-weight: bold">for</span> j <span style="color: #8B008B">in</span> <span style="color: #658b00">range</span>(Ny+<span style="color: #B452CD">1</span>)]
 </code></pre></div>
 <p>
 Complete code in
@@ -4305,10 +4317,10 @@ Complete code in
 
 <section class="slide">
 
-<h3>Implementation; application  <a name="___sec143"></a></h3>
+<h3>Implementation; application  <a name="___sec144"></a></h3>
 
 <p>
-\( f(x,y) = (1+x^2)*(1+2y^2) \)
+\( f(x,y) = (1+x^2)(1+2y^2) \)
 
 <p>
 
@@ -4330,7 +4342,7 @@ Complete code in
 
 <section class="slide">
 
-<h3>Implementation; trying a perfect expansion  <a name="___sec144"></a></h3>
+<h3>Implementation; trying a perfect expansion  <a name="___sec145"></a></h3>
 
 <p>
 Add higher powers to the basis such that \( f\in V \):
@@ -4373,7 +4385,7 @@ $$ V = V_x\otimes V_y\otimes V_z$$
 <p>&nbsp;<br>
 $$
 \begin{align*}
-a^{(q)} &= (a^{(q)}_0,\ldots,a^{(q)}_{N_q},\quad q=0,\ldots,m\\ 
+a^{(q)} &= (a^{(q)}_0,\ldots,a^{(q)}_{N_q}),\quad q=0,\ldots,m\\ 
 p &= a^{(0)}\otimes\cdots\otimes a^{(m)}\\ 
 p_{i_0,i_1,\ldots,i_m} &= a^{(0)}_{i_1}a^{(1)}_{i_1}\cdots a^{(m)}_{i_m}
 \end{align*}
@@ -4402,7 +4414,7 @@ $$
 
 <section class="slide">
 
-<h2>Finite elements in 2D and 3D  <a name="___sec146"></a></h2>
+<h2>Finite elements in 2D and 3D  <a name="___sec147"></a></h2>
 
 <p>
 The two great advantages of the finite element method:
@@ -4424,7 +4436,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Examples on cell types  <a name="___sec147"></a></h3>
+<h3>Examples on cell types  <a name="___sec148"></a></h3>
 
 <p>
 2D:
@@ -4453,7 +4465,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Rectangular domain with 2D P1 elements  <a name="___sec148"></a></h3>
+<h3>Rectangular domain with 2D P1 elements  <a name="___sec149"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_rect_P1.png" align="bottom" width=800></p></center>
@@ -4465,7 +4477,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Deformed geometry with 2D P1 elements  <a name="___sec149"></a></h3>
+<h3>Deformed geometry with 2D P1 elements  <a name="___sec150"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_quarter_circle.png" align="bottom" width=600></p></center>
@@ -4477,7 +4489,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Rectangular domain with 2D Q1 elements  <a name="___sec150"></a></h3>
+<h3>Rectangular domain with 2D Q1 elements  <a name="___sec151"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/mesh2D_rect_Q1.png" align="bottom" width=500></p></center>
@@ -4489,7 +4501,7 @@ Finite elements in 1D: mostly for learning, insight, debugging
 
 <section class="slide">
 
-<h3>Basis functions over triangles in the physical domain  <a name="___sec151"></a></h3>
+<h3>Basis functions over triangles in the physical domain  <a name="___sec152"></a></h3>
 
 <p>
 The P1 triangular 2D element: \( u \) is linear \( ax + by + c \) over each
@@ -4505,7 +4517,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Basic features of 2D P1 elements  <a name="___sec152"></a></h3>
+<h3>Basic features of 2D P1 elements  <a name="___sec153"></a></h3>
 
 <p>
 
@@ -4524,7 +4536,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Linear mapping of reference element onto general triangular cell  <a name="___sec153"></a></h3>
+<h3>Linear mapping of reference element onto general triangular cell  <a name="___sec154"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/ElmT3n2D_map.png" align="bottom" width=400></p></center>
@@ -4536,7 +4548,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>\( \basphi_i \): pyramid shape, composed of planes  <a name="___sec154"></a></h3>
+<h3>\( \basphi_i \): pyramid shape, composed of planes  <a name="___sec155"></a></h3>
 
 <p>
 
@@ -4555,7 +4567,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Element matrices and vectors  <a name="___sec155"></a></h3>
+<h3>Element matrices and vectors  <a name="___sec156"></a></h3>
 
 <p>
 
@@ -4574,7 +4586,7 @@ triangular cell
 
 <section class="slide">
 
-<h3>Basis functions over triangles in the reference cell  <a name="___sec156"></a></h3>
+<h3>Basis functions over triangles in the reference cell  <a name="___sec157"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/fenics-book/elements/P1_2d.png" align="bottom" width=100></p></center>
@@ -4601,22 +4613,10 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>2D P1, P2, P3, P4, P5, and P6 elements  <a name="___sec157"></a></h3>
+<h3>2D P1, P2, P3, P4, P5, and P6 elements  <a name="___sec158"></a></h3>
 
 <p>
-<center><p><img src="fig-fem/fenics-book/elements/P1-6_2d.png" align="bottom" width=400></p></center>
-
-<p>
-
-</section>
-
-
-<section class="slide">
-
-<h3>P1 elements in 1D, 2D, and 3D  <a name="___sec158"></a></h3>
-
-<p>
-<center><p><img src="fig-fem/fenics-book/elements/P1-1d2d3d.png" align="bottom" width=400></p></center>
+<center><p><img src="fig-fem/fenics-book/elements/P1-6_2d.png" align="bottom" width=320></p></center>
 
 <p>
 
@@ -4625,10 +4625,22 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>P2 elements in 1D, 2D, and 3D  <a name="___sec159"></a></h3>
+<h3>P1 elements in 1D, 2D, and 3D  <a name="___sec159"></a></h3>
 
 <p>
-<center><p><img src="fig-fem/fenics-book/elements/P2-1d2d3d.png" align="bottom" width=400></p></center>
+<center><p><img src="fig-fem/fenics-book/elements/P1-1d2d3d.png" align="bottom" width=320></p></center>
+
+<p>
+
+</section>
+
+
+<section class="slide">
+
+<h3>P2 elements in 1D, 2D, and 3D  <a name="___sec160"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/fenics-book/elements/P2-1d2d3d.png" align="bottom" width=320></p></center>
 
 <p>
 
@@ -4646,7 +4658,7 @@ Higher-degree \( \refphi_r \) introduce more nodes (dof = node values)
 
 <section class="slide">
 
-<h3>Affine mapping of the reference cell; formula  <a name="___sec160"></a></h3>
+<h3>Affine mapping of the reference cell; formula  <a name="___sec161"></a></h3>
 
 <p>
 Mapping of local \( \X = (X,Y) \) coordinates in the reference cell to
@@ -4684,7 +4696,7 @@ This mapping preserves the straight/planar faces and edges.
 
 <section class="slide">
 
-<h3>Affine mapping of the reference cell; figure  <a name="___sec161"></a></h3>
+<h3>Affine mapping of the reference cell; figure  <a name="___sec162"></a></h3>
 
 <p>
 <center><p><img src="fig-fem/ElmT3n2D_map.png" align="bottom" width=400></p></center>
@@ -4696,7 +4708,7 @@ This mapping preserves the straight/planar faces and edges.
 
 <section class="slide">
 
-<h3>Isoparametric mapping of the reference cell  <a name="___sec162"></a></h3>
+<h3>Isoparametric mapping of the reference cell  <a name="___sec163"></a></h3>
 
 <p>
 Idea: Use the basis functions
@@ -4728,7 +4740,7 @@ reference cell to a <em>curved</em> triangle or tetrahedron.
 
 <section class="slide">
 
-<h3>Computing integrals  <a name="___sec163"></a></h3>
+<h3>Computing integrals  <a name="___sec164"></a></h3>
 
 <p>
 Integrals must be transformed from \( \Omega^{(e)} \) (physical cell)
@@ -4773,7 +4785,7 @@ Affine mapping
 <p>
 !slide
 
-<h3>Remark on going from 1D to 2D/3D  <a name="___sec164"></a></h3>
+<h3>Remark on going from 1D to 2D/3D  <a name="___sec165"></a></h3>
 
 <p>
 <div class="alert alert-block alert-block alert-text-normal"><b style="font-weight: bold"></b>
