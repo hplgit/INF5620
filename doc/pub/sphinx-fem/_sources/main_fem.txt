@@ -5,7 +5,7 @@ Introduction to finite element methods
 ======================================
 
 :Author: Hans Petter Langtangen
-:Date: Oct 28, 2013
+:Date: Oct 30, 2013
 
 **PRELIMINARY VERSION**
 
@@ -4309,7 +4309,7 @@ The ``cells`` and ``vertices`` arrays remain the same, but
 
 .. code-block:: python
 
-        dof_map = [[0], [1], [2]]
+        dof_map = [[0], [1]]
 
 
 We use the ``cells`` and ``vertices`` lists to retrieve information
@@ -4577,7 +4577,7 @@ The numerical integration rules can be expressed in a common form,
 
 .. math::
         
-        \int_{-1}^{1} g(X)dX \approx \sum_{j=0}^M w_j\bar X_j,
+        \int_{-1}^{1} g(X)dX \approx \sum_{j=0}^M w_j g(\bar X_j),
         
 
 where :math:`\bar X_j` are *integration points* and :math:`w_j` are
@@ -4855,7 +4855,7 @@ and use the standard form for :math:`u`,
 
 
 .. math::
-         u = \sum_{j\in{I}} c_j{\psi}_i(x,y){\thinspace .}
+         u = \sum_{j\in{I}} c_j{\psi}_j(x,y){\thinspace .}
 
 The single index is related to the double index through
 :math:`i=p N_y + q` or :math:`i=q N_x + p`.
@@ -9734,17 +9734,12 @@ To demonstrate the code above, we address
 .. math::
          -u''(x)=b,\quad x\in\Omega=[0,1],\quad u(0)=1,\ u(1)=0,
 
-with :math:`b` as a (symbolic) constant. A possible choice of space :math:`V`,
-where the basis functions satisfy
-the requirements :math:`{\psi}_i(0)={\psi}_i(1)=0`, is
-
-
-.. math::
-         V = \hbox{span}\,\{{\psi}_i(x) = x^{i+1}(1-x)\}_{i\in{I}}{\thinspace .} 
-
-We also need a :math:`B(x)` function to take care of the known boundary
-values of :math:`u`. Any function :math:`B(x)=1-x^p`, :math:`p\in\mathbb{R}`, is a candidate.
-One arbitrary choice from this family
+with :math:`b` as a (symbolic) constant. A possible basis for the space :math:`V`
+is :math:`{\psi}_i(x) = x^{i+1}(1-x)`, :math:`i\in{I}`. Note that
+:math:`{\psi}_i(0)={\psi}_i(1)=0` as required by the Dirichlet conditions.
+We need a :math:`B(x)` function to take care of the known boundary
+values of :math:`u`. Any function :math:`B(x)=1-x^p`, :math:`p\in\mathbb{R}`, is a candidate,
+and one arbitrary choice from this family
 is :math:`B(x)=1-x^3`. The unknown function is then written as
 a sum of a known (:math:`B`) and an unknown (:math:`\bar u`) function:
 
@@ -10605,7 +10600,7 @@ Given :math:`u^0=I`, we can use :eq:`fem:deq:diffu:FE:eq:unp1` to compute
 For absolute clarity in the various stages of the discretizations, we
 introduce :math:`{u_{\small\mbox{e}}}(\boldsymbol{x},t)` as the exact solution of the space-and time-continuous
 partial differential equation :eq:`fem:deq:diffu:eq` and
-:math:`{u_{\small\mbox{e}}}^n` as the time-discrete approximation, arising from the finite
+:math:`{u_{\small\mbox{e}}}^n(\boldsymbol{x})` as the time-discrete approximation, arising from the finite
 difference method in time :eq:`fem:deq:diffu:FE:eq:unp1`.
 More precisely, :math:`{u_{\small\mbox{e}}}` fulfills and :math:`{u_{\small\mbox{e}}}^n` we have
 
@@ -10694,27 +10689,27 @@ results in
 
 for :math:`i=0,\ldots,N_s`.
 
-The Galerkin method corresponds to choosing :math:`w_i={\varphi}_i`.
+The Galerkin method corresponds to choosing :math:`w_i={\psi}_i`.
 Isolating the unknown :math:`u^{n+1}` on the left-hand side gives
 
 
 .. math::
         
-        \int_{\Omega} u^{n+1}{\varphi}_i{\, \mathrm{d}x} = \int_{\Omega}
+        \int_{\Omega} u^{n+1}{\psi}_i{\, \mathrm{d}x} = \int_{\Omega}
         \left\lbrack u^n - \Delta t \left( \alpha\nabla^2 u^n + f(\boldsymbol{x}, t_n)\right)
-        \right\rbrack{\varphi}_i{\, \mathrm{d}x}
+        \right\rbrack{\psi}_i{\, \mathrm{d}x}
         {\thinspace .}
         
 
 
 As usual in spatial finite element problems involving second-order
-derivatives, we apply integration by parts on the term :math:`\nabla^2 u^n{\varphi}_i`:
+derivatives, we apply integration by parts on the term :math:`\nabla^2 u^n{\psi}_i`:
 
 
 .. math::
-         \int_{\Omega}\alpha\nabla^2 u^n{\varphi}_i {\, \mathrm{d}x} =
-        -\int_{\Omega}\alpha\nabla u^n\cdot\nabla{\varphi}_i{\, \mathrm{d}x} +
-        \int_{\partial\Omega}\alpha\frac{\partial u^n}{\partial n}{\varphi} {\, \mathrm{d}x}
+         \int_{\Omega}\alpha\nabla^2 u^n{\psi}_i {\, \mathrm{d}x} =
+        -\int_{\Omega}\alpha\nabla u^n\cdot\nabla{\psi}_i{\, \mathrm{d}x} +
+        \int_{\partial\Omega}\alpha\frac{\partial u^n}{\partial n}{\psi} {\, \mathrm{d}x}
         {\thinspace .}
         
 
@@ -10726,10 +10721,10 @@ space and time then reads
 .. math::
    :label: fem:deq:diffu:FE:vf:u:np1
         
-        \int_{\Omega} u^{n+1}{\varphi}_i{\, \mathrm{d}x} =
-        \int_{\Omega} u^n{\varphi}_i{\, \mathrm{d}x} -
-        \Delta t \int_{\Omega}\alpha\nabla u^n\cdot\nabla{\varphi}_i{\, \mathrm{d}x} +
-        \Delta t\int_{\Omega}f^n{\varphi}_i{\, \mathrm{d}x}
+        \int_{\Omega} u^{n+1}{\psi}_i{\, \mathrm{d}x} =
+        \int_{\Omega} u^n{\psi}_i{\, \mathrm{d}x} -
+        \Delta t \int_{\Omega}\alpha\nabla u^n\cdot\nabla{\psi}_i{\, \mathrm{d}x} +
+        \Delta t\int_{\Omega}f^n{\psi}_i{\, \mathrm{d}x}
         {\thinspace .}
         
         
@@ -10750,10 +10745,10 @@ discrete unknown at the new time level, :math:`u^{n+1}`.
 .. math::
    :label: fem:deq:diffu:FE:vf:u
         
-        \int_{\Omega} u{\varphi}_i{\, \mathrm{d}x} =
-        \int_{\Omega} u_1{\varphi}_i{\, \mathrm{d}x} -
-        \Delta t \int_{\Omega}\alpha\nabla u_1\cdot\nabla{\varphi}_i{\, \mathrm{d}x} +
-        \Delta t\int_{\Omega}f^n{\varphi}_i{\, \mathrm{d}x}
+        \int_{\Omega} u{\psi}_i{\, \mathrm{d}x} =
+        \int_{\Omega} u_1{\psi}_i{\, \mathrm{d}x} -
+        \Delta t \int_{\Omega}\alpha\nabla u_1\cdot\nabla{\psi}_i{\, \mathrm{d}x} +
+        \Delta t\int_{\Omega}f^n{\psi}_i{\, \mathrm{d}x}
         {\thinspace .}
         
         
@@ -10765,9 +10760,9 @@ product notation:
 .. math::
    :label: fem:deq:diffu:FE:vf:u:short
         
-        (u, {\varphi}_i) = (u_1,{\varphi}_i) -
-        \Delta t (\alpha\nabla u_1,\nabla{\varphi}_i) +
-        (f^n,{\varphi}_i)
+        (u, {\psi}_i) = (u_1,{\psi}_i) -
+        \Delta t (\alpha\nabla u_1,\nabla{\psi}_i) +
+        (f^n,{\psi}_i)
         {\thinspace .}
         
         
@@ -10776,12 +10771,13 @@ product notation:
 Linear systems  (1)
 ~~~~~~~~~~~~~~~~~~~
 
-To derive the equations for the new coefficients, we insert
+To derive the equations for the new unknown coefficients :math:`c_j^{n+1}`,
+now just called :math:`c_j`, we insert
 
 
 .. math::
-         u = \sum_{j=0}^{N_s}c_j{\varphi}_j(\boldsymbol{x}),\quad
-        u_1 = \sum_{j=0}^{N_s} c_{1,j}{\varphi}(\boldsymbol{x})
+         u = \sum_{j=0}^{N_s}c_j{\psi}_j(\boldsymbol{x}),\quad
+        u_1 = \sum_{j=0}^{N_s} c_{1,j}{\psi}(\boldsymbol{x})
 
 in :eq:`fem:deq:diffu:FE:vf:u` or :eq:`fem:deq:diffu:FE:vf:u:short`,
 and order the terms as matrix-vector products:
@@ -10789,10 +10785,10 @@ and order the terms as matrix-vector products:
 
 .. math::
         
-        \sum_{j=0}^{N_s} ({\varphi}_i,{\varphi}_j) c_j =
-        \sum_{j=0}^{N_s} ({\varphi}_i,{\varphi}_j) c_{1,j}
-        -\Delta t\alpha \sum_{j=0}^{N_s} (\nabla{\varphi}_i,\nabla{\varphi}_j) c_{1,j}
-        + (f^n,{\varphi}_i),\quad i=0,\ldots,N_s
+        \sum_{j=0}^{N_s} ({\psi}_i,{\psi}_j) c_j =
+        \sum_{j=0}^{N_s} ({\psi}_i,{\psi}_j) c_{1,j}
+        -\Delta t\alpha \sum_{j=0}^{N_s} (\nabla{\psi}_i,\nabla{\psi}_j) c_{1,j}
+        + (f^n,{\psi}_i),\quad i=0,\ldots,N_s
         {\thinspace .}
         
 
@@ -10800,16 +10796,16 @@ This is a linear system :math:`\sum_j A_{i,j} = b_i` with
 
 
 .. math::
-         A_{i,j} = ({\varphi}_i,{\varphi}_j)
+         A_{i,j} = ({\psi}_i,{\psi}_j)
         
 
 and
 
 
 .. math::
-         b_i = \sum_{j=0}^{N_s} ({\varphi}_i,{\varphi}_j) c_{1,j}
-        -\Delta t\alpha \sum_{j=0}^{N_s} (\nabla{\varphi}_i,\nabla{\varphi}_j) c_{1,j}
-        + (f^n,{\varphi}_i){\thinspace .}  
+         b_i = \sum_{j=0}^{N_s} ({\psi}_i,{\psi}_j) c_{1,j}
+        -\Delta t\alpha \sum_{j=0}^{N_s} (\nabla{\psi}_i,\nabla{\psi}_j) c_{1,j}
+        + (f^n,{\psi}_i){\thinspace .}  
 
 
 It is instructive and convenient for implementations to write the linear
@@ -10826,7 +10822,7 @@ where
 
 .. math::
         
-        f &= ((f(\boldsymbol{x},t_n),{\varphi}_i), \ldots, (f(\boldsymbol{x},t_n),{\varphi}_{N_s})),\\ 
+        f &= ((f(\boldsymbol{x},t_n),{\psi}_i), \ldots, (f(\boldsymbol{x},t_n),{\psi}_{N_s})),\\ 
         c &=(c_0,\ldots,c_{N_s}),\\ 
         c_1 &= (c_{1,j},\ldots,c_{1,N_s}),
         
@@ -10841,8 +10837,8 @@ and :math:`M` and :math:`K` are matrices,
 
 
 .. math::
-         M_{i,j} = ({\varphi}_i,{\varphi}_j),\quad
-        K_{i,j} =(\nabla{\varphi}_i,\nabla{\varphi}_j)
+         M_{i,j} = ({\psi}_i,{\psi}_j),\quad
+        K_{i,j} =(\nabla{\psi}_i,\nabla{\psi}_j)
         {\thinspace .} 
 
 We realize that :math:`M` is the matrix arising from a term with the
@@ -10880,7 +10876,7 @@ The computational algorithm has the following steps:
   1. interpolation: :math:`c_{1,j} = I(\boldsymbol{x}_j)`, where :math:`\boldsymbol{x}_j` is node number :math:`j`, or
 
   2. projection: solve
-     :math:`\sum_j M_{i,j}c_{1,j} = (I,{\varphi}_i)`, :math:`i=0,\ldots,N_s`.
+     :math:`\sum_j M_{i,j}c_{1,j} = (I,{\psi}_i)`, :math:`i=0,\ldots,N_s`.
 
 
 3. For :math:`n=1,2,\ldots,N_t`:
@@ -10975,10 +10971,10 @@ in the variational form
 .. math::
    :label: fem:deq:diffu:BE:vf:u:n
         
-        \int_{\Omega} \left( u^{n}{\varphi}_i
-        + \Delta t \alpha\nabla u^n\cdot\nabla{\varphi}_i\right){\, \mathrm{d}x}
-        = \int_{\Omega} u^{n-1}{\varphi}_i{\, \mathrm{d}x} -
-        \Delta t\int_{\Omega}f^n{\varphi}_i{\, \mathrm{d}x}
+        \int_{\Omega} \left( u^{n}{\psi}_i
+        + \Delta t \alpha\nabla u^n\cdot\nabla{\psi}_i\right){\, \mathrm{d}x}
+        = \int_{\Omega} u^{n-1}{\psi}_i{\, \mathrm{d}x} -
+        \Delta t\int_{\Omega}f^n{\psi}_i{\, \mathrm{d}x}
         
         {\thinspace .}
         
@@ -10989,10 +10985,10 @@ Expressed with :math:`u` as :math:`u^n` and :math:`u_1` as :math:`u^{n-1}`, this
 .. math::
    :label: fem:deq:diffu:BE:vf:u
         
-        \int_{\Omega} \left( u{\varphi}_i
-        + \Delta t \alpha\nabla u\cdot\nabla{\varphi}_i\right){\, \mathrm{d}x}
-        = \int_{\Omega} u_1{\varphi}_i{\, \mathrm{d}x} +
-        \Delta t\int_{\Omega}f^n{\varphi}_i{\, \mathrm{d}x},
+        \int_{\Omega} \left( u{\psi}_i
+        + \Delta t \alpha\nabla u\cdot\nabla{\psi}_i\right){\, \mathrm{d}x}
+        = \int_{\Omega} u_1{\psi}_i{\, \mathrm{d}x} +
+        \Delta t\int_{\Omega}f^n{\psi}_i{\, \mathrm{d}x},
         
         
 
@@ -11002,10 +10998,10 @@ or
 .. math::
    :label: fem:deq:diffu:BE:vf:u:short
         
-        (u,{\varphi}_i)
-        + \Delta t \alpha(\nabla u,\nabla{\varphi}_i)
-        = (u_1{\varphi}_i) +
-        \Delta t (f^n,{\varphi}_i)
+        (u,{\psi}_i)
+        + \Delta t \alpha(\nabla u,\nabla{\psi}_i)
+        = (u_1{\psi}_i) +
+        \Delta t (f^n,{\psi}_i)
         
         {\thinspace .}
         
@@ -11014,7 +11010,7 @@ or
 Linear systems  (2)
 ~~~~~~~~~~~~~~~~~~~
 
-Inserting :math:`u=\sum_j c_j{\varphi}_i` and :math:`u_1=\sum_j c_{1,j}{\varphi}_i`,
+Inserting :math:`u=\sum_j c_j{\psi}_i` and :math:`u_1=\sum_j c_{1,j}{\psi}_i`,
 we arrive after some algebra at the following linear system to be
 solved at each time level:
 
@@ -11258,13 +11254,13 @@ Let
 
 
 .. math::
-         V^{(i)} = \hbox{span}\{{\varphi}_0^{(i)},\ldots,{\varphi}_{N_i}^{(i)}\},
+         V^{(i)} = \hbox{span}\{{\psi}_0^{(i)},\ldots,{\psi}_{N_i}^{(i)}\},
 
 such that
 
 
 .. math::
-         u^{(i)} = B^{(i)}(\boldsymbol{x}) + \sum_{j=0}^{N_i} c_j^{(i)} {\varphi}_j^{(i)}(\boldsymbol{x}),
+         u^{(i)} = B^{(i)}(\boldsymbol{x}) + \sum_{j=0}^{N_i} c_j^{(i)} {\psi}_j^{(i)}(\boldsymbol{x}),
         
 
 where :math:`B^{(i)}` is a boundary function to handle nonzero Dirichlet conditions.
@@ -11410,7 +11406,7 @@ With
 
 
 .. math::
-         V = \hbox{span}\{{\varphi}_0(x,y),\ldots,{\varphi}_N(x,y)\}, 
+         V = \hbox{span}\{{\psi}_0(x,y),\ldots,{\psi}_N(x,y)\}, 
 
 we write
 
@@ -11418,8 +11414,8 @@ we write
 .. math::
    :label: fem:sys:wT:ex:sum
         
-        w = \sum_{j=0}^N c^{(w)}_j {\varphi}_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
-        {\varphi}_j{\thinspace .}
+        w = \sum_{j=0}^N c^{(w)}_j {\psi}_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
+        {\psi}_j{\thinspace .}
         
         
 
@@ -11565,7 +11561,7 @@ Decoupled linear systems
 The linear systems governing the coefficients :math:`c_j^{(w)}` and
 :math:`c_j^{(T)}`, :math:`j=0,\ldots,N`, are derived by inserting the
 expansions :eq:`fem:sys:wT:ex:sum` in :eq:`fem:sys:wT:ex:w:vf1`
-and :eq:`fem:sys:wT:ex:T:vf1`, and choosing :math:`v={\varphi}_i` for
+and :eq:`fem:sys:wT:ex:T:vf1`, and choosing :math:`v={\psi}_i` for
 :math:`i=0,\ldots,N`. The result becomes
 
 
@@ -11589,36 +11585,36 @@ and :eq:`fem:sys:wT:ex:T:vf1`, and choosing :math:`v={\varphi}_i` for
 
 .. math::
           
-        A^{(w)}_{i,j} = \mu(\nabla {\varphi}_j,\nabla {\varphi}_i),
+        A^{(w)}_{i,j} = \mu(\nabla {\psi}_j,\nabla {\psi}_i),
         
 
 
 
 .. math::
           
-        b_i^{(w)} = (\beta, {\varphi}_i),
+        b_i^{(w)} = (\beta, {\psi}_i),
         
 
 
 
 .. math::
           
-        A^{(T)}_{i,j} = \kappa(\nabla {\varphi}_j,\nabla {\varphi}_i),
+        A^{(T)}_{i,j} = \kappa(\nabla {\psi}_j,\nabla {\psi}_i),
         
 
 
 
 .. math::
           
-        b_i^{(T)} = \mu((\sum_j c^{(w)}_j\nabla{\varphi}_j)\cdot (\sum_k
-        c^{(w)}_k\nabla{\varphi}_k), {\varphi}_i)
+        b_i^{(T)} = \mu((\sum_j c^{(w)}_j\nabla{\psi}_j)\cdot (\sum_k
+        c^{(w)}_k\nabla{\psi}_k), {\psi}_i)
         {\thinspace .}
         
 
 
 It can also be instructive to write the linear systems using matrices
 and vectors. Define :math:`K` as the matrix corresponding to the Laplace
-operator :math:`\nabla^2`. That is, :math:`K_{i,j} = (\nabla {\varphi}_j,\nabla {\varphi}_i)`.
+operator :math:`\nabla^2`. That is, :math:`K_{i,j} = (\nabla {\psi}_j,\nabla {\psi}_i)`.
 Let us introduce the vectors
 
 
@@ -11690,7 +11686,7 @@ known. The total linear system becomes
 
 .. math::
           
-        A^{(w,w)}_{i,j} = \mu(\nabla {\varphi}_j,{\varphi}_i),
+        A^{(w,w)}_{i,j} = \mu(\nabla {\psi}_j,{\psi}_i),
         
 
 
@@ -11704,21 +11700,21 @@ known. The total linear system becomes
 
 .. math::
           
-        b_i^{(w)} = (\beta, {\varphi}_i),
+        b_i^{(w)} = (\beta, {\psi}_i),
         
 
 
 
 .. math::
           
-        A^{(w,T)}_{i,j} = \mu((\nabla{\varphi} w_{-})\cdot\nabla{\varphi}_j), {\varphi}_i),
+        A^{(w,T)}_{i,j} = \mu((\nabla{\psi} w_{-})\cdot\nabla{\psi}_j), {\psi}_i),
         
 
 
 
 .. math::
           
-        A^{(T,T)}_{i,j} = \kappa(\nabla {\varphi}_j,{\varphi}_i),
+        A^{(T,T)}_{i,j} = \kappa(\nabla {\psi}_j,{\psi}_i),
         
 
 
@@ -11819,8 +11815,8 @@ We write
 
 .. math::
         
-        V^{(w)} &= \hbox{span}\{{\varphi}_0^{(w)},\ldots,{\varphi}_{N_w}^{(w)}\},\\ 
-        V^{(T)} &= \hbox{span}\{{\varphi}_0^{(T)},\ldots,{\varphi}_{N_T}^{(T)}\}
+        V^{(w)} &= \hbox{span}\{{\psi}_0^{(w)},\ldots,{\psi}_{N_w}^{(w)}\},\\ 
+        V^{(T)} &= \hbox{span}\{{\psi}_0^{(T)},\ldots,{\psi}_{N_T}^{(T)}\}
         {\thinspace .}
         
 
@@ -11869,8 +11865,8 @@ The associated linear system is similar to
 :eq:`fem:sys:wT:ex:linsys:w1`-:eq:`fem:sys:wT:ex:linsys:T1`
 or
 :eq:`fem:sys:wT:ex:linsys:w2`-:eq:`fem:sys:wT:ex:linsys:T2`,
-except that we need to distinguish between :math:`{\varphi}_i^{(w)}`
-and :math:`{\varphi}_i^{(T)}`, and the range in the sums over :math:`j`
+except that we need to distinguish between :math:`{\psi}_i^{(w)}`
+and :math:`{\psi}_i^{(T)}`, and the range in the sums over :math:`j`
 must match the number of degrees of freedom in the spaces :math:`V^{(w)}`
 and :math:`V^{(T)}`. The formulas become
 
@@ -11895,28 +11891,28 @@ and :math:`V^{(T)}`. The formulas become
 
 .. math::
           
-        A^{(w)}_{i,j} = \mu(\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),
+        A^{(w)}_{i,j} = \mu(\nabla {\psi}_j^{(w)},{\psi}_i^{(w)}),
         
 
 
 
 .. math::
           
-        b_i^{(w)} = (\beta, {\varphi}_i^{(w)}),
+        b_i^{(w)} = (\beta, {\psi}_i^{(w)}),
         
 
 
 
 .. math::
           
-        A^{(T)}_{i,j} = \kappa(\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),
+        A^{(T)}_{i,j} = \kappa(\nabla {\psi}_j^{(T)},{\psi}_i^{(T)}),
         
 
 
 
 .. math::
           
-        b_i^{(T)} = \mu(\nabla w_{-}, {\varphi}_i^{(T)})
+        b_i^{(T)} = \mu(\nabla w_{-}, {\psi}_i^{(T)})
         {\thinspace .}
         
 
@@ -11948,7 +11944,7 @@ becomes
 
 .. math::
           
-        A^{(w,w)}_{i,j} = \mu(\nabla {\varphi}_j^{(w)},{\varphi}_i^{(w)}),
+        A^{(w,w)}_{i,j} = \mu(\nabla {\psi}_j^{(w)},{\psi}_i^{(w)}),
         
 
 
@@ -11962,21 +11958,21 @@ becomes
 
 .. math::
           
-        b_i^{(w)} = (\beta, {\varphi}_i^{(w)}),
+        b_i^{(w)} = (\beta, {\psi}_i^{(w)}),
         
 
 
 
 .. math::
           
-        A^{(w,T)}_{i,j} = \mu (\nabla w_{-}\cdot\nabla{\varphi}_j^{(w)}), {\varphi}_i^{(T)}),
+        A^{(w,T)}_{i,j} = \mu (\nabla w_{-}\cdot\nabla{\psi}_j^{(w)}), {\psi}_i^{(T)}),
         
 
 
 
 .. math::
           
-        A^{(T,T)}_{i,j} = \kappa(\nabla {\varphi}_j^{(T)},{\varphi}_i^{(T)}),
+        A^{(T,T)}_{i,j} = \kappa(\nabla {\psi}_j^{(T)},{\psi}_i^{(T)}),
         
 
 
@@ -12223,16 +12219,16 @@ the scaled problem for the dimensionless vertical deflection :math:`u`:
         u'' = 1,\quad x\in (0,1),\quad u(0)=0,\ u'(1)=0\thinspace
         
 
-Introduce the function space spanned by :math:`{\varphi}_i=\sin ((i+1)\pi x/2)`,
+Introduce the function space spanned by :math:`{\psi}_i=\sin ((i+1)\pi x/2)`,
 :math:`i=1,\ldots,N`.
 Use a Galerkin and a least squares method to find the coefficients
-:math:`c_j` in :math:`u(x)=\sum_j c_j{\varphi}_j`. Find how fast the coefficients
+:math:`c_j` in :math:`u(x)=\sum_j c_j{\psi}_j`. Find how fast the coefficients
 decrease in magnitude by looking at :math:`c_j/c_{j-1}`.
 Find the error in the maximum deflection at :math:`x=1` when only one
 basis function is used (:math:`N=0`).
 
 What happens if we choose basis functions
-:math:`{\varphi}_i=\sin ((i+1)\pi x)`?
+:math:`{\psi}_i=\sin ((i+1)\pi x)`?
 Filename: ``cable_sin``.
 
 .. --- end exercise ---
@@ -12329,9 +12325,9 @@ and we must solve the scaled problem
 
 
 **a)**
-Use :math:`{\varphi}_i = \sin((i+1)\pi x)`, :math:`i=0,\ldots,N` and the Galerkin method
+Use :math:`{\psi}_i = \sin((i+1)\pi x)`, :math:`i=0,\ldots,N` and the Galerkin method
 without integration by parts. Derive a formula
-for :math:`c_j` in the solution expansion :math:`u=\sum_j c_j{\varphi}_j`.
+for :math:`c_j` in the solution expansion :math:`u=\sum_j c_j{\psi}_j`.
 Plot how fast the coefficients :math:`c_j` tend to zero (on a log scale).
 
 **b)**
@@ -12614,7 +12610,7 @@ We assume for simplicity that the cross section is the unit square:
 
 **a)**
 We consider the basis
-:math:`{\varphi}_{p,q}(x,y) = \sin((p+1)\pi x)\sin (q\pi y)`, :math:`p,q=0,\ldots,n`.
+:math:`{\psi}_{p,q}(x,y) = \sin((p+1)\pi x)\sin (q\pi y)`, :math:`p,q=0,\ldots,n`.
 These basis functions fulfill the Dirichlet condition.
 Use a Galerkin method and :math:`n=0`.
 
@@ -12622,11 +12618,11 @@ Use a Galerkin method and :math:`n=0`.
 The basis function involving sine functions are orthogonal.
 Use this property in the Galerkin method
 to derive the coefficients :math:`c_{p,q}` in a
-formula :math:`u=\sum_p\sum_q c_{p,q}{\varphi}_{p,q}(x,y)`.
+formula :math:`u=\sum_p\sum_q c_{p,q}{\psi}_{p,q}(x,y)`.
 
 **c)**
 Another possible basis is
-:math:`{\varphi}_i(x,y) = (x(1-x)y(1-y))^{i+1}`, :math:`i=0,\ldots,N`.
+:math:`{\psi}_i(x,y) = (x(1-x)y(1-y))^{i+1}`, :math:`i=0,\ldots,N`.
 Use the Galerkin method to compute the solution for :math:`N=0`.
 Which choice of a single basis function is best,
 :math:`u\sim x(1-x)y(1-y)` or :math:`u\sim \sin(\pi x)\sin(\pi y)`?

@@ -766,7 +766,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Oct 28, 2013</h4></center> <!-- date -->
+<center><h4>Oct 30, 2013</h4></center> <!-- date -->
 <p>
 <b>PRELIMINARY VERSION</b>
 
@@ -4911,7 +4911,7 @@ The <code>cells</code> and <code>vertices</code> arrays remain the same, but
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "default" -->
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">dof_map <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>], [<span style="color: #666666">1</span>], [<span style="color: #666666">2</span>]]
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">dof_map <span style="color: #666666">=</span> [[<span style="color: #666666">0</span>], [<span style="color: #666666">1</span>]]
 </pre></div>
 <p>
 We use the <code>cells</code> and <code>vertices</code> lists to retrieve information
@@ -5145,7 +5145,7 @@ The numerical integration rules can be expressed in a common form,
 <p>
 $$
 \begin{equation}
-\int_{-1}^{1} g(X)dX \approx \sum_{j=0}^M w_j\bar X_j,
+\int_{-1}^{1} g(X)dX \approx \sum_{j=0}^M w_j g(\bar X_j),
 \end{equation}
 $$
 
@@ -5369,7 +5369,7 @@ $$
 and use the standard form for \( u \),
 
 <p>
-$$ u = \sum_{j\in\If} c_j\baspsi_i(x,y)\tp$$
+$$ u = \sum_{j\in\If} c_j\baspsi_j(x,y)\tp$$
 
 The single index is related to the double index through
 \( i=p N_y + q \) or \( i=q N_x + p \).
@@ -9911,16 +9911,12 @@ $$
 \begin{equation*} -u''(x)=b,\quad x\in\Omega=[0,1],\quad u(0)=1,\ u(1)=0,\end{equation*}
 $$
 
-with \( b \) as a (symbolic) constant. A possible choice of space \( V \),
-where the basis functions satisfy
-the requirements \( \baspsi_i(0)=\baspsi_i(1)=0 \), is
-
-<p>
-$$ V = \hbox{span}\,\{\baspsi_i(x) = x^{i+1}(1-x)\}_{i\in\If}\tp $$
-
-We also need a \( B(x) \) function to take care of the known boundary
-values of \( u \). Any function \( B(x)=1-x^p \), \( p\in\Real \), is a candidate.
-One arbitrary choice from this family
+with \( b \) as a (symbolic) constant. A possible basis for the space \( V \)
+is \( \baspsi_i(x) = x^{i+1}(1-x) \), \( i\in\If \). Note that
+\( \baspsi_i(0)=\baspsi_i(1)=0 \) as required by the Dirichlet conditions.
+We need a \( B(x) \) function to take care of the known boundary
+values of \( u \). Any function \( B(x)=1-x^p \), \( p\in\Real \), is a candidate,
+and one arbitrary choice from this family
 is \( B(x)=1-x^3 \). The unknown function is then written as
 a sum of a known (\( B \)) and an unknown (\( \bar u \)) function:
 
@@ -10723,7 +10719,7 @@ Given \( u^0=I \), we can use <a href="#mjx-eqn-104">(104)</a> to compute
 For absolute clarity in the various stages of the discretizations, we
 introduce \( \uex(\x,t) \) as the exact solution of the space-and time-continuous
 partial differential equation <a href="#mjx-eqn-101">(101)</a> and
-\( \uex^n \) as the time-discrete approximation, arising from the finite
+\( \uex^n(\x) \) as the time-discrete approximation, arising from the finite
 difference method in time <a href="#mjx-eqn-104">(104)</a>.
 More precisely, \( \uex \) fulfills and \( \uex^n \) we have
 
@@ -10802,26 +10798,26 @@ $$
 for \( i=0,\ldots,N_s \).
 
 <p>
-The Galerkin method corresponds to choosing \( w_i=\basphi_i \).
+The Galerkin method corresponds to choosing \( w_i=\baspsi_i \).
 Isolating the unknown \( u^{n+1} \) on the left-hand side gives
 
 <p>
 $$
-\int_{\Omega} u^{n+1}\basphi_i\dx = \int_{\Omega}
+\int_{\Omega} u^{n+1}\baspsi_i\dx = \int_{\Omega}
 \left\lbrack u^n - \Delta t \left( \alpha\nabla^2 u^n + f(\x, t_n)\right)
-\right\rbrack\basphi_i\dx
+\right\rbrack\baspsi_i\dx
 \tp
 $$
 
 
 <p>
 As usual in spatial finite element problems involving second-order
-derivatives, we apply integration by parts on the term \( \nabla^2 u^n\basphi_i \):
+derivatives, we apply integration by parts on the term \( \nabla^2 u^n\baspsi_i \):
 
 <p>
-$$ \int_{\Omega}\alpha\nabla^2 u^n\basphi_i \dx =
--\int_{\Omega}\alpha\nabla u^n\cdot\nabla\basphi_i\dx +
-\int_{\partial\Omega}\alpha\frac{\partial u^n}{\partial n}\basphi \dx
+$$ \int_{\Omega}\alpha\nabla^2 u^n\baspsi_i \dx =
+-\int_{\Omega}\alpha\nabla u^n\cdot\nabla\baspsi_i\dx +
+\int_{\partial\Omega}\alpha\frac{\partial u^n}{\partial n}\baspsi \dx
 \tp
 $$
 
@@ -10832,10 +10828,10 @@ space and time then reads
 <p>
 $$
 \begin{equation}
-\int_{\Omega} u^{n+1}\basphi_i\dx =
-\int_{\Omega} u^n\basphi_i\dx -
-\Delta t \int_{\Omega}\alpha\nabla u^n\cdot\nabla\basphi_i\dx +
-\Delta t\int_{\Omega}f^n\basphi_i\dx
+\int_{\Omega} u^{n+1}\baspsi_i\dx =
+\int_{\Omega} u^n\baspsi_i\dx -
+\Delta t \int_{\Omega}\alpha\nabla u^n\cdot\nabla\baspsi_i\dx +
+\Delta t\int_{\Omega}f^n\baspsi_i\dx
 \tp
 \tag{109}
 \end{equation}
@@ -10857,10 +10853,10 @@ discrete unknown at the new time level, \( u^{n+1} \).
 <p>
 $$
 \begin{equation}
-\int_{\Omega} u\basphi_i\dx =
-\int_{\Omega} u_1\basphi_i\dx -
-\Delta t \int_{\Omega}\alpha\nabla u_1\cdot\nabla\basphi_i\dx +
-\Delta t\int_{\Omega}f^n\basphi_i\dx
+\int_{\Omega} u\baspsi_i\dx =
+\int_{\Omega} u_1\baspsi_i\dx -
+\Delta t \int_{\Omega}\alpha\nabla u_1\cdot\nabla\baspsi_i\dx +
+\Delta t\int_{\Omega}f^n\baspsi_i\dx
 \tp
 \tag{110}
 \end{equation}
@@ -10872,9 +10868,9 @@ product notation:
 <p>
 $$
 \begin{equation}
-(u, \basphi_i) = (u_1,\basphi_i) -
-\Delta t (\alpha\nabla u_1,\nabla\basphi_i) +
-(f^n,\basphi_i)
+(u, \baspsi_i) = (u_1,\baspsi_i) -
+\Delta t (\alpha\nabla u_1,\nabla\baspsi_i) +
+(f^n,\baspsi_i)
 \tp
 \tag{111}
 \end{equation}
@@ -10883,11 +10879,12 @@ $$
 <h4>Linear systems  <a name="___sec165"></a></h4>
 
 <p>
-To derive the equations for the new coefficients, we insert
+To derive the equations for the new unknown coefficients \( c_j^{n+1} \),
+now just called \( c_j \), we insert
 
 <p>
-$$ u = \sum_{j=0}^{N_s}c_j\basphi_j(\x),\quad
-u_1 = \sum_{j=0}^{N_s} c_{1,j}\basphi(\x)$$
+$$ u = \sum_{j=0}^{N_s}c_j\baspsi_j(\x),\quad
+u_1 = \sum_{j=0}^{N_s} c_{1,j}\baspsi(\x)$$
 
 in <a href="#mjx-eqn-110">(110)</a> or <a href="#mjx-eqn-111">(111)</a>,
 and order the terms as matrix-vector products:
@@ -10895,10 +10892,10 @@ and order the terms as matrix-vector products:
 <p>
 $$
 \begin{equation}
-\sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_j =
-\sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_{1,j}
--\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\basphi_i,\nabla\basphi_j) c_{1,j}
-+ (f^n,\basphi_i),\quad i=0,\ldots,N_s
+\sum_{j=0}^{N_s} (\baspsi_i,\baspsi_j) c_j =
+\sum_{j=0}^{N_s} (\baspsi_i,\baspsi_j) c_{1,j}
+-\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\baspsi_i,\nabla\baspsi_j) c_{1,j}
++ (f^n,\baspsi_i),\quad i=0,\ldots,N_s
 \tp
 \end{equation}
 $$
@@ -10906,15 +10903,15 @@ $$
 This is a linear system \( \sum_j A_{i,j} = b_i \) with
 
 <p>
-$$ A_{i,j} = (\basphi_i,\basphi_j)
+$$ A_{i,j} = (\baspsi_i,\baspsi_j)
 $$
 
 and
 
 <p>
-$$ b_i = \sum_{j=0}^{N_s} (\basphi_i,\basphi_j) c_{1,j}
--\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\basphi_i,\nabla\basphi_j) c_{1,j}
-+ (f^n,\basphi_i)\tp  $$
+$$ b_i = \sum_{j=0}^{N_s} (\baspsi_i,\baspsi_j) c_{1,j}
+-\Delta t\alpha \sum_{j=0}^{N_s} (\nabla\baspsi_i,\nabla\baspsi_j) c_{1,j}
++ (f^n,\baspsi_i)\tp  $$
 
 
 <p>
@@ -10933,7 +10930,7 @@ where
 <p>
 $$
 \begin{align*}
-f &= ((f(\x,t_n),\basphi_i), \ldots, (f(\x,t_n),\basphi_{N_s})),\\ 
+f &= ((f(\x,t_n),\baspsi_i), \ldots, (f(\x,t_n),\baspsi_{N_s})),\\ 
 c &=(c_0,\ldots,c_{N_s}),\\ 
 c_1 &= (c_{1,j},\ldots,c_{1,N_s}),
 \end{align*}
@@ -10942,8 +10939,8 @@ $$
 and \( M \) and \( K \) are matrices,
 
 <p>
-$$ M_{i,j} = (\basphi_i,\basphi_j),\quad
-K_{i,j} =(\nabla\basphi_i,\nabla\basphi_j)
+$$ M_{i,j} = (\baspsi_i,\baspsi_j),\quad
+K_{i,j} =(\nabla\baspsi_i,\nabla\baspsi_j)
 \tp $$
 
 We realize that \( M \) is the matrix arising from a term with the
@@ -10983,7 +10980,7 @@ The computational algorithm has the following steps:
 <ol>
   <li> interpolation: \( c_{1,j} = I(\x_j) \), where \( \x_j \) is node number \( j \), or</li>
   <li> projection: solve
-     \( \sum_j M_{i,j}c_{1,j} = (I,\basphi_i) \), \( i=0,\ldots,N_s \).</li>
+     \( \sum_j M_{i,j}c_{1,j} = (I,\baspsi_i) \), \( i=0,\ldots,N_s \).</li>
 </ol>
 
 <li> For \( n=1,2,\ldots,N_t \):</li>
@@ -11074,10 +11071,10 @@ in the variational form
 <p>
 $$
 \begin{equation}
-\int_{\Omega} \left( u^{n}\basphi_i
-+ \Delta t \alpha\nabla u^n\cdot\nabla\basphi_i\right)\dx
-= \int_{\Omega} u^{n-1}\basphi_i\dx -
-\Delta t\int_{\Omega}f^n\basphi_i\dx
+\int_{\Omega} \left( u^{n}\baspsi_i
++ \Delta t \alpha\nabla u^n\cdot\nabla\baspsi_i\right)\dx
+= \int_{\Omega} u^{n-1}\baspsi_i\dx -
+\Delta t\int_{\Omega}f^n\baspsi_i\dx
 \tag{115}
 \tp
 \end{equation}
@@ -11088,10 +11085,10 @@ Expressed with \( u \) as \( u^n \) and \( u_1 \) as \( u^{n-1} \), this becomes
 <p>
 $$
 \begin{equation}
-\int_{\Omega} \left( u\basphi_i
-+ \Delta t \alpha\nabla u\cdot\nabla\basphi_i\right)\dx
-= \int_{\Omega} u_1\basphi_i\dx +
-\Delta t\int_{\Omega}f^n\basphi_i\dx,
+\int_{\Omega} \left( u\baspsi_i
++ \Delta t \alpha\nabla u\cdot\nabla\baspsi_i\right)\dx
+= \int_{\Omega} u_1\baspsi_i\dx +
+\Delta t\int_{\Omega}f^n\baspsi_i\dx,
 \tag{116}
 \end{equation}
 $$
@@ -11101,10 +11098,10 @@ or
 <p>
 $$
 \begin{equation}
-(u,\basphi_i)
-+ \Delta t \alpha(\nabla u,\nabla\basphi_i)
-= (u_1\basphi_i) +
-\Delta t (f^n,\basphi_i)
+(u,\baspsi_i)
++ \Delta t \alpha(\nabla u,\nabla\baspsi_i)
+= (u_1\baspsi_i) +
+\Delta t (f^n,\baspsi_i)
 \tag{117}
 \tp
 \end{equation}
@@ -11113,7 +11110,7 @@ $$
 <h4>Linear systems  <a name="___sec172"></a></h4>
 
 <p>
-Inserting \( u=\sum_j c_j\basphi_i \) and \( u_1=\sum_j c_{1,j}\basphi_i \),
+Inserting \( u=\sum_j c_j\baspsi_i \) and \( u_1=\sum_j c_{1,j}\baspsi_i \),
 we arrive after some algebra at the following linear system to be
 solved at each time level:
 
@@ -11342,12 +11339,12 @@ Neumann conditions inserted in boundary integrals.
 Let
 
 <p>
-$$ V^{(i)} = \hbox{span}\{\basphi_0^{(i)},\ldots,\basphi_{N_i}^{(i)}\},$$
+$$ V^{(i)} = \hbox{span}\{\baspsi_0^{(i)},\ldots,\baspsi_{N_i}^{(i)}\},$$
 
 such that
 
 <p>
-$$ u^{(i)} = B^{(i)}(\x) + \sum_{j=0}^{N_i} c_j^{(i)} \basphi_j^{(i)}(\x),
+$$ u^{(i)} = B^{(i)}(\x) + \sum_{j=0}^{N_i} c_j^{(i)} \baspsi_j^{(i)}(\x),
 $$
 
 where \( B^{(i)} \) is a boundary function to handle nonzero Dirichlet conditions.
@@ -11483,15 +11480,15 @@ Let us first apply the same function space \( V \) for \( w \) and \( T \)
 With
 
 <p>
-$$ V = \hbox{span}\{\basphi_0(x,y),\ldots,\basphi_N(x,y)\}, $$
+$$ V = \hbox{span}\{\baspsi_0(x,y),\ldots,\baspsi_N(x,y)\}, $$
 
 we write
 
 <p>
 $$
 \begin{equation}
-w = \sum_{j=0}^N c^{(w)}_j \basphi_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
-\basphi_j\tp
+w = \sum_{j=0}^N c^{(w)}_j \baspsi_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
+\baspsi_j\tp
 \tag{128}
 \end{equation}
 $$
@@ -11616,7 +11613,7 @@ $$
 The linear systems governing the coefficients \( c_j^{(w)} \) and
 \( c_j^{(T)} \), \( j=0,\ldots,N \), are derived by inserting the
 expansions <a href="#mjx-eqn-128">(128)</a> in <a href="#mjx-eqn-131">(131)</a>
-and <a href="#mjx-eqn-132">(132)</a>, and choosing \( v=\basphi_i \) for
+and <a href="#mjx-eqn-132">(132)</a>, and choosing \( v=\baspsi_i \) for
 \( i=0,\ldots,N \). The result becomes
 
 <p>
@@ -11626,11 +11623,11 @@ $$
 \tag{136}\\ 
 \sum_{j=0}^N A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
 \tag{137}\\ 
-A^{(w)}_{i,j} &= \mu(\nabla \basphi_j,\nabla \basphi_i),\\ 
-b_i^{(w)} &= (\beta, \basphi_i),\\ 
-A^{(T)}_{i,j} &= \kappa(\nabla \basphi_j,\nabla \basphi_i),\\ 
-b_i^{(T)} &= \mu((\sum_j c^{(w)}_j\nabla\basphi_j)\cdot (\sum_k
-c^{(w)}_k\nabla\basphi_k), \basphi_i)
+A^{(w)}_{i,j} &= \mu(\nabla \baspsi_j,\nabla \baspsi_i),\\ 
+b_i^{(w)} &= (\beta, \baspsi_i),\\ 
+A^{(T)}_{i,j} &= \kappa(\nabla \baspsi_j,\nabla \baspsi_i),\\ 
+b_i^{(T)} &= \mu((\sum_j c^{(w)}_j\nabla\baspsi_j)\cdot (\sum_k
+c^{(w)}_k\nabla\baspsi_k), \baspsi_i)
 \tp
 \end{align}
 $$
@@ -11639,7 +11636,7 @@ $$
 <p>
 It can also be instructive to write the linear systems using matrices
 and vectors. Define \( K \) as the matrix corresponding to the Laplace
-operator \( \nabla^2 \). That is, \( K_{i,j} = (\nabla \basphi_j,\nabla \basphi_i) \).
+operator \( \nabla^2 \). That is, \( K_{i,j} = (\nabla \baspsi_j,\nabla \baspsi_i) \).
 Let us introduce the vectors
 
 <p>
@@ -11693,11 +11690,11 @@ $$
 \tag{145}\\ 
 \sum_{j=0}^N A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
 \tag{146}\\ 
-A^{(w,w)}_{i,j} &= \mu(\nabla \basphi_j,\basphi_i),\\ 
+A^{(w,w)}_{i,j} &= \mu(\nabla \baspsi_j,\baspsi_i),\\ 
 A^{(w,T)}_{i,j} &= 0,\\ 
-b_i^{(w)} &= (\beta, \basphi_i),\\ 
-A^{(w,T)}_{i,j} &= \mu((\nabla\basphi w_{-})\cdot\nabla\basphi_j), \basphi_i),\\ 
-A^{(T,T)}_{i,j} &= \kappa(\nabla \basphi_j,\basphi_i),\\ 
+b_i^{(w)} &= (\beta, \baspsi_i),\\ 
+A^{(w,T)}_{i,j} &= \mu((\nabla\baspsi w_{-})\cdot\nabla\baspsi_j), \baspsi_i),\\ 
+A^{(T,T)}_{i,j} &= \kappa(\nabla \baspsi_j,\baspsi_i),\\ 
 b_i^{(T)} &= 0
 \tp
 \end{align}
@@ -11785,8 +11782,8 @@ We write
 <p>
 $$
 \begin{align*}
-V^{(w)} &= \hbox{span}\{\basphi_0^{(w)},\ldots,\basphi_{N_w}^{(w)}\},\\ 
-V^{(T)} &= \hbox{span}\{\basphi_0^{(T)},\ldots,\basphi_{N_T}^{(T)}\}
+V^{(w)} &= \hbox{span}\{\baspsi_0^{(w)},\ldots,\baspsi_{N_w}^{(w)}\},\\ 
+V^{(T)} &= \hbox{span}\{\baspsi_0^{(T)},\ldots,\baspsi_{N_T}^{(T)}\}
 \tp
 \end{align*}
 $$
@@ -11831,8 +11828,8 @@ The associated linear system is similar to
 <a href="#mjx-eqn-136">(136)</a>-<a href="#mjx-eqn-137">(137)</a>
 or
 <a href="#mjx-eqn-145">(145)</a>-<a href="#mjx-eqn-146">(146)</a>,
-except that we need to distinguish between \( \basphi_i^{(w)} \)
-and \( \basphi_i^{(T)} \), and the range in the sums over \( j \)
+except that we need to distinguish between \( \baspsi_i^{(w)} \)
+and \( \baspsi_i^{(T)} \), and the range in the sums over \( j \)
 must match the number of degrees of freedom in the spaces \( V^{(w)} \)
 and \( V^{(T)} \). The formulas become
 
@@ -11843,10 +11840,10 @@ $$
 \tag{143}\\ 
 \sum_{j=0}^{N_T} A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
 \tag{144}\\ 
-A^{(w)}_{i,j} &= \mu(\nabla \basphi_j^{(w)},\basphi_i^{(w)}),\\ 
-b_i^{(w)} &= (\beta, \basphi_i^{(w)}),\\ 
-A^{(T)}_{i,j} &= \kappa(\nabla \basphi_j^{(T)},\basphi_i^{(T)}),\\ 
-b_i^{(T)} &= \mu(\nabla w_{-}, \basphi_i^{(T)})
+A^{(w)}_{i,j} &= \mu(\nabla \baspsi_j^{(w)},\baspsi_i^{(w)}),\\ 
+b_i^{(w)} &= (\beta, \baspsi_i^{(w)}),\\ 
+A^{(T)}_{i,j} &= \kappa(\nabla \baspsi_j^{(T)},\baspsi_i^{(T)}),\\ 
+b_i^{(T)} &= \mu(\nabla w_{-}, \baspsi_i^{(T)})
 \tp
 \end{align}
 $$
@@ -11866,11 +11863,11 @@ $$
 \tag{145}\\ 
 \sum_{j=0}^{N_w} A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^{N_T} A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N_T,
 \tag{146}\\ 
-A^{(w,w)}_{i,j} &= \mu(\nabla \basphi_j^{(w)},\basphi_i^{(w)}),\\ 
+A^{(w,w)}_{i,j} &= \mu(\nabla \baspsi_j^{(w)},\baspsi_i^{(w)}),\\ 
 A^{(w,T)}_{i,j} &= 0,\\ 
-b_i^{(w)} &= (\beta, \basphi_i^{(w)}),\\ 
-A^{(w,T)}_{i,j} &= \mu (\nabla w_{-}\cdot\nabla\basphi_j^{(w)}), \basphi_i^{(T)}),\\ 
-A^{(T,T)}_{i,j} &= \kappa(\nabla \basphi_j^{(T)},\basphi_i^{(T)}),\\ 
+b_i^{(w)} &= (\beta, \baspsi_i^{(w)}),\\ 
+A^{(w,T)}_{i,j} &= \mu (\nabla w_{-}\cdot\nabla\baspsi_j^{(w)}), \baspsi_i^{(T)}),\\ 
+A^{(T,T)}_{i,j} &= \kappa(\nabla \baspsi_j^{(T)},\baspsi_i^{(T)}),\\ 
 b_i^{(T)} &= 0
 \tp
 \end{align}
@@ -12064,17 +12061,17 @@ $$
 u'' = 1,\quad x\in (0,1),\quad u(0)=0,\ u'(1)=0\thinspace
 $$
 
-Introduce the function space spanned by \( \basphi_i=\sin ((i+1)\pi x/2) \),
+Introduce the function space spanned by \( \baspsi_i=\sin ((i+1)\pi x/2) \),
 \( i=1,\ldots,N \).
 Use a Galerkin and a least squares method to find the coefficients
-\( c_j \) in \( u(x)=\sum_j c_j\basphi_j \). Find how fast the coefficients
+\( c_j \) in \( u(x)=\sum_j c_j\baspsi_j \). Find how fast the coefficients
 decrease in magnitude by looking at \( c_j/c_{j-1} \).
 Find the error in the maximum deflection at \( x=1 \) when only one
 basis function is used (\( N=0 \)).
 
 <p>
 What happens if we choose basis functions
-\( \basphi_i=\sin ((i+1)\pi x) \)?
+\( \baspsi_i=\sin ((i+1)\pi x) \)?
 Filename: <code>cable_sin</code>.
 
 <p>
@@ -12156,9 +12153,9 @@ $$ u'' =\left\lbrace\begin{array}{ll}
 
 <p>
 <b>a)</b>
-Use \( \basphi_i = \sin((i+1)\pi x) \), \( i=0,\ldots,N \) and the Galerkin method
+Use \( \baspsi_i = \sin((i+1)\pi x) \), \( i=0,\ldots,N \) and the Galerkin method
 without integration by parts. Derive a formula
-for \( c_j \) in the solution expansion \( u=\sum_j c_j\basphi_j \).
+for \( c_j \) in the solution expansion \( u=\sum_j c_j\baspsi_j \).
 Plot how fast the coefficients \( c_j \) tend to zero (on a log scale).
 
 <p>
@@ -12425,7 +12422,7 @@ We assume for simplicity that the cross section is the unit square:
 <p>
 <b>a)</b>
 We consider the basis
-\( \basphi_{p,q}(x,y) = \sin((p+1)\pi x)\sin (q\pi y) \), \( p,q=0,\ldots,n \).
+\( \baspsi_{p,q}(x,y) = \sin((p+1)\pi x)\sin (q\pi y) \), \( p,q=0,\ldots,n \).
 These basis functions fulfill the Dirichlet condition.
 Use a Galerkin method and \( n=0 \).
 
@@ -12434,12 +12431,12 @@ Use a Galerkin method and \( n=0 \).
 The basis function involving sine functions are orthogonal.
 Use this property in the Galerkin method
 to derive the coefficients \( c_{p,q} \) in a
-formula \( u=\sum_p\sum_q c_{p,q}\basphi_{p,q}(x,y) \).
+formula \( u=\sum_p\sum_q c_{p,q}\baspsi_{p,q}(x,y) \).
 
 <p>
 <b>c)</b>
 Another possible basis is
-\( \basphi_i(x,y) = (x(1-x)y(1-y))^{i+1} \), \( i=0,\ldots,N \).
+\( \baspsi_i(x,y) = (x(1-x)y(1-y))^{i+1} \), \( i=0,\ldots,N \).
 Use the Galerkin method to compute the solution for \( N=0 \).
 Which choice of a single basis function is best,
 \( u\sim x(1-x)y(1-y) \) or \( u\sim \sin(\pi x)\sin(\pi y) \)?
