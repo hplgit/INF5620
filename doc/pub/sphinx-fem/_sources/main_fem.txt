@@ -5,7 +5,7 @@ Introduction to finite element methods
 ======================================
 
 :Author: Hans Petter Langtangen
-:Date: Nov 4, 2013
+:Date: Nov 5, 2013
 
 **PRELIMINARY VERSION**
 
@@ -937,19 +937,19 @@ and ``Omega`` is a 2-tuple/list holding the limits of the domain :math:`\Omega`:
 
 .. code-block:: python
 
-        import sympy as sm
+        import sympy as sp
         
         def least_squares(f, psi, Omega):
             N = len(psi) - 1
-            A = sm.zeros((N+1, N+1))
-            b = sm.zeros((N+1, 1))
-            x = sm.Symbol('x')
+            A = sp.zeros((N+1, N+1))
+            b = sp.zeros((N+1, 1))
+            x = sp.Symbol('x')
             for i in range(N+1):
                 for j in range(i, N+1):
-                    A[i,j] = sm.integrate(psi[i]*psi[j],
+                    A[i,j] = sp.integrate(psi[i]*psi[j],
                                           (x, Omega[0], Omega[1]))
                     A[j,i] = A[i,j]
-                b[i,0] = sm.integrate(psi[i]*f, (x, Omega[0], Omega[1]))
+                b[i,0] = sp.integrate(psi[i]*f, (x, Omega[0], Omega[1]))
             c = A.LUsolve(b)
             u = 0
             for i in range(len(psi)):
@@ -972,9 +972,9 @@ computations:
 .. code-block:: python
 
         def comparison_plot(f, u, Omega, filename='tmp.pdf'):
-            x = sm.Symbol('x')
-            f = sm.lambdify([x], f, modules="numpy")
-            u = sm.lambdify([x], u, modules="numpy")
+            x = sp.Symbol('x')
+            f = sp.lambdify([x], f, modules="numpy")
+            u = sp.lambdify([x], u, modules="numpy")
             resolution = 401  # no of points in plot
             xcoor  = linspace(Omega[0], Omega[1], resolution)
             exact  = f(xcoor)
@@ -1014,12 +1014,12 @@ The answer is quickly found by running
 .. code-block:: python
 
         >>> from approx1D import *
-        >>> x = sm.Symbol('x')
+        >>> x = sp.Symbol('x')
         >>> f = 10*(x-1)**2-1
         >>> u, c = least_squares(f=f, psi=[1, x, x**2], Omega=[1, 2])
         >>> print u
         10*x**2 - 20*x + 9
-        >>> print sm.expand(f)
+        >>> print sp.expand(f)
         10*x**2 - 20*x + 9
 
 
@@ -1199,7 +1199,7 @@ the section :ref:`fem:approx:global:linear` can then be computed by the
 
         N = 3
         from sympy import sin, pi
-        x = sm.Symbol('x')
+        x = sp.Symbol('x')
         psi = [sin(pi*(i+1)*x) for i in range(N+1)]
         f = 10*(x-1)**2 - 1
         Omega = [0, 1]
@@ -1309,10 +1309,10 @@ the matrix is diagonal and only the diagonal elements need to be computed:
             N = len(psi) - 1
             A = [0]*(N+1)
             b = [0]*(N+1)
-            x = sm.Symbol('x')
+            x = sp.Symbol('x')
             for i in range(N+1):
-                A[i] = sm.integrate(psi[i]**2, (x, Omega[0], Omega[1]))
-                b[i] = sm.integrate(psi[i]*f,  (x, Omega[0], Omega[1]))
+                A[i] = sp.integrate(psi[i]**2, (x, Omega[0], Omega[1]))
+                b[i] = sp.integrate(psi[i]*f,  (x, Omega[0], Omega[1]))
             c = [b[i]/A[i] for i in range(len(b))]
             u = 0
             for i in range(len(psi)):
@@ -1362,7 +1362,7 @@ rule based on the points in ``x``.
                             lambda x: psi(x,i)*psi(x,j),
                             Omega[0], Omega[1], epsabs=1E-9, epsrel=1E-9)[0]
                     elif integration_method == 'sympy':
-                        A_ij = sm.mpmath.quad(
+                        A_ij = sp.mpmath.quad(
                             lambda x: psi(x,i)*psi(x,j),
                             [Omega[0], Omega[1]])
                     else:
@@ -1375,7 +1375,7 @@ rule based on the points in ``x``.
                         lambda x: f(x)*psi(x,i), Omega[0], Omega[1],
                         epsabs=1E-9, epsrel=1E-9)[0]
                 elif integration_method == 'sympy':
-                    b_i = sm.mpmath.quad(
+                    b_i = sp.mpmath.quad(
                         lambda x: f(x)*psi(x,i), [Omega[0], Omega[1]])
                 else:
                     values = f(x)*psi(x,i)
@@ -1482,12 +1482,12 @@ for the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`:
 
         def interpolation(f, psi, points):
             N = len(psi) - 1
-            A = sm.zeros((N+1, N+1))
-            b = sm.zeros((N+1, 1))
-            x = sm.Symbol('x')
+            A = sp.zeros((N+1, N+1))
+            b = sp.zeros((N+1, 1))
+            x = sp.Symbol('x')
             # Turn psi and f into Python functions
-            psi = [sm.lambdify([x], psi[i]) for i in range(N+1)]
-            f = sm.lambdify([x], f)
+            psi = [sp.lambdify([x], psi[i]) for i in range(N+1)]
+            f = sp.lambdify([x], f)
             for i in range(N+1):
                 for j in range(N+1):
                     A[i,j] = psi[j](points[i])
@@ -1550,7 +1550,7 @@ using two collocation points :math:`x_0=1+1/3` and :math:`x_1=1+2/3`:
         f = 10*(x-1)**2 - 1
         psi = [1, x]
         Omega = [1, 2]
-        points = [1 + sm.Rational(1,3), 1 + sm.Rational(2,3)]
+        points = [1 + sp.Rational(1,3), 1 + sp.Rational(2,3)]
         u = interpolation(f, psi, points)
         comparison_plot(f, u, Omega)
 
@@ -1682,15 +1682,15 @@ The next function computes a complete basis using equidistant points throughout
 .. code-block:: python
 
         def Lagrange_polynomials_01(x, N):
-            if isinstance(x, sm.Symbol):
-                h = sm.Rational(1, N-1)
+            if isinstance(x, sp.Symbol):
+                h = sp.Rational(1, N-1)
             else:
                 h = 1.0/(N-1)
             points = [i*h for i in range(N)]
             psi = [Lagrange_polynomial(x, i, points) for i in range(N)]
             return psi, points
 
-When ``x`` is an ``sm.Symbol`` object, we let the
+When ``x`` is an ``sp.Symbol`` object, we let the
 spacing between
 the interpolation points, ``h``, be a ``sympy`` rational number
 for nice end results in the formulas for :math:`{\psi}_i`.
@@ -1699,13 +1699,13 @@ signifies numerical computing, and then we let ``h`` be a floating-point
 number.
 Observe that the ``Lagrange_polynomial`` function works equally well
 in the symbolic and numerical case - just think of ``x`` being an
-``sm.Symbol`` object or a Python ``float``.
+``sp.Symbol`` object or a Python ``float``.
 A little interactive session illustrates the difference between symbolic
 and numerical computing of the basis functions and points:
 
 
-        >>> import sympy as sm
-        >>> x = sm.Symbol('x')
+        >>> import sympy as sp
+        >>> x = sp.Symbol('x')
         >>> psi, points = Lagrange_polynomials_01(x, N=3)
         >>> points
         [0, 1/2, 1]
@@ -1755,8 +1755,8 @@ and the interpolation techniques can be done by
 
 .. code-block:: python
 
-        x = sm.Symbol('x')
-        f = sm.sin(2*sm.pi*x)
+        x = sp.Symbol('x')
+        f = sp.sin(2*sp.pi*x)
         psi, points = Lagrange_polynomials_01(x, N)
         Omega=[0, 1]
         u = least_squares(f, psi, Omega)
@@ -1827,8 +1827,8 @@ both uniformly distributed points and Chebyshev nodes:
 
         def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
             if point_distribution == 'uniform':
-                if isinstance(x, sm.Symbol):
-                    h = sm.Rational(Omega[1] - Omega[0], N)
+                if isinstance(x, sp.Symbol):
+                    h = sp.Rational(Omega[1] - Omega[0], N)
                 else:
                     h = (Omega[1] - Omega[0])/float(N)
                 points = [Omega[0] + i*h for i in range(N+1)]
@@ -1912,24 +1912,24 @@ Here is the code:
 
         def least_squares(f, psi, Omega):
             N = len(psi) - 1
-            A = sm.zeros((N+1, N+1))
-            b = sm.zeros((N+1, 1))
-            x = sm.Symbol('x')
+            A = sp.zeros((N+1, N+1))
+            b = sp.zeros((N+1, 1))
+            x = sp.Symbol('x')
             for i in range(N+1):
                 for j in range(i, N+1):
                     integrand = psi[i]*psi[j]
-                    I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-                    if isinstance(I, sm.Integral):
+                    I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+                    if isinstance(I, sp.Integral):
                         # Could not integrate symbolically, fallback
                         # on numerical integration with mpmath.quad
-                        integrand = sm.lambdify([x], integrand)
-                        I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
+                        integrand = sp.lambdify([x], integrand)
+                        I = sp.mpmath.quad(integrand, [Omega[0], Omega[1]])
                     A[i,j] = A[j,i] = I
                 integrand = psi[i]*f
-                I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-                if isinstance(I, sm.Integral):
-                    integrand = sm.lambdify([x], integrand)
-                    I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
+                I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+                if isinstance(I, sp.Integral):
+                    integrand = sp.lambdify([x], integrand)
+                    I = sp.mpmath.quad(integrand, [Omega[0], Omega[1]])
                 b[i,0] = I
             c = A.LUsolve(b)
             u = 0
@@ -3162,14 +3162,14 @@ may help. For example, we can easily calculate
 :eq:`fem:approx:fe:intg:ref:be0` by
 
 
-        >>> import sympy as sm
-        >>> x, x_m, h, X = sm.symbols('x x_m h X')
-        >>> sm.integrate(h/8*(1-X)**2, (X, -1, 1))
+        >>> import sympy as sp
+        >>> x, x_m, h, X = sp.symbols('x x_m h X')
+        >>> sp.integrate(h/8*(1-X)**2, (X, -1, 1))
         h/3
-        >>> sm.integrate(h/8*(1+X)*(1-X), (X, -1, 1))
+        >>> sp.integrate(h/8*(1+X)*(1-X), (X, -1, 1))
         h/6
         >>> x = x_m + h/2*X
-        >>> b_0 = sm.integrate(h/4*x*(1-x)*(1-X), (X, -1, 1))
+        >>> b_0 = sp.integrate(h/4*x*(1-x)*(1-X), (X, -1, 1))
         >>> print b_0
         -h**3/24 + h**2*x_m/6 - h**2/12 - h*x_m**2/2 + h*x_m/2
 
@@ -3177,7 +3177,7 @@ For inclusion of formulas in documents (like the present one), ``sympy`` can pri
 expressions in LaTeX format:
 
 
-        >>> print sm.latex(b_0, mode='plain')
+        >>> print sp.latex(b_0, mode='plain')
         - \frac{1}{24} h^{3} + \frac{1}{6} h^{2} x_{m}
         - \frac{1}{12} h^{2} - \frac{1}{2} h x_{m}^{2}
         + \frac{1}{2} h x_{m}
@@ -3211,12 +3211,12 @@ of degree ``d``:
 
 .. code-block:: python
 
-        import sympy as sm
+        import sympy as sp
         import numpy as np
         
         def phi_r(r, X, d):
-            if isinstance(X, sm.Symbol):
-                h = sm.Rational(1, d)  # node spacing
+            if isinstance(X, sp.Symbol):
+                h = sp.Rational(1, d)  # node spacing
                 nodes = [2*i*h - 1 for i in range(d+1)]
             else:
                 # assume X is numeric: use floats for nodes
@@ -3248,7 +3248,7 @@ symbolic expressions, is constructed by
 .. code-block:: python
 
         def basis(d=1):
-            X = sm.Symbol('X')
+            X = sp.Symbol('X')
             phi = [phi_r(r, X, d) for r in range(d+1)]
             return phi
 
@@ -3260,16 +3260,16 @@ the element matrix:
 
         def element_matrix(phi, Omega_e, symbolic=True):
             n = len(phi)
-            A_e = sm.zeros((n, n))
-            X = sm.Symbol('X')
+            A_e = sp.zeros((n, n))
+            X = sp.Symbol('X')
             if symbolic:
-                h = sm.Symbol('h')
+                h = sp.Symbol('h')
             else:
                 h = Omega_e[1] - Omega_e[0]
             detJ = h/2  # dx/dX
             for r in range(n):
                 for s in range(r, n):
-                    A_e[r,s] = sm.integrate(phi[r]*phi[s]*detJ, (X, -1, 1))
+                    A_e[r,s] = sp.integrate(phi[r]*phi[s]*detJ, (X, -1, 1))
                     A_e[s,r] = A_e[r,s]
             return A_e
 
@@ -3302,18 +3302,18 @@ procedure:
 
         def element_vector(f, phi, Omega_e, symbolic=True):
             n = len(phi)
-            b_e = sm.zeros((n, 1))
+            b_e = sp.zeros((n, 1))
             # Make f a function of X
-            X = sm.Symbol('X')
+            X = sp.Symbol('X')
             if symbolic:
-                h = sm.Symbol('h')
+                h = sp.Symbol('h')
             else:
                 h = Omega_e[1] - Omega_e[0]
             x = (Omega_e[0] + Omega_e[1])/2 + h/2*X  # mapping
             f = f.subs('x', x)  # substitute mapping formula for x
             detJ = h/2  # dx/dX
             for r in range(n):
-                b_e[r] = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
+                b_e[r] = sp.integrate(f*phi[r]*detJ, (X, -1, 1))
             return b_e
 
 Here we need to replace the symbol ``x`` in the expression for ``f``
@@ -3338,12 +3338,12 @@ before an unsuccessful conclusion so we may also introduce a parameter
         def element_vector(f, phi, Omega_e, symbolic=True):
                 ...
                 if symbolic:
-                    I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
-                if not symbolic or isinstance(I, sm.Integral):
+                    I = sp.integrate(f*phi[r]*detJ, (X, -1, 1))
+                if not symbolic or isinstance(I, sp.Integral):
                     h = Omega_e[1] - Omega_e[0]  # Ensure h is numerical
                     detJ = h/2
-                    integrand = sm.lambdify([X], f*phi[r]*detJ)
-                    I = sm.mpmath.quad(integrand, [-1, 1])
+                    integrand = sp.lambdify([X], f*phi[r]*detJ)
+                    I = sp.mpmath.quad(integrand, [-1, 1])
                 b_e[r] = I
                 ...
 
@@ -3368,8 +3368,8 @@ takes the following form
         def assemble(nodes, elements, phi, f, symbolic=True):
             N_n, N_e = len(nodes), len(elements)
             if symbolic:
-                A = sm.zeros((N_n, N_n))
-                b = sm.zeros((N_n, 1))    # note: (N_n, 1) matrix
+                A = sp.zeros((N_n, N_n))
+                b = sp.zeros((N_n, 1))    # note: (N_n, 1) matrix
             else:
                 A = np.zeros((N_n, N_n))
                 b = np.zeros(N_n)
@@ -3421,7 +3421,7 @@ two P1 elements (linear basis functions) on the domain :math:`\Omega=[0,1]`.
 Let us first work with a symbolic element length:
 
 
-        >>> h, x = sm.symbols('h x')
+        >>> h, x = sp.symbols('h x')
         >>> nodes = [0, h, 2*h]
         >>> elements = [[0, 1], [1, 2]]
         >>> phi = basis(d=1)
@@ -3464,7 +3464,7 @@ Therefore, :math:`c_i = f(x_{i}`.
 The associated ``sympy`` calculations are
 
 
-        >>> fn = sm.lambdify([x], f)
+        >>> fn = sp.lambdify([x], f)
         >>> c = [fn(xc) for xc in nodes]
         >>> c
         [0, h*(1 - h), 2*h*(1 - 2*h)]
@@ -3485,7 +3485,7 @@ and still done by ``sympy`` and the ``assemble`` function, go as follows:
         >>> nodes = [0, 0.5, 1]
         >>> elements = [[0, 1], [1, 2]]
         >>> phi = basis(d=1)
-        >>> x = sm.Symbol('x')
+        >>> x = sp.Symbol('x')
         >>> f = x*(1-x)
         >>> A, b = assemble(nodes, elements, phi, f, symbolic=False)
         >>> A
@@ -3705,9 +3705,9 @@ The results arise from the program
 
 .. code-block:: python
 
-        import sympy as sm
+        import sympy as sp
         from fe_approx1D import approximate
-        x = sm.Symbol('x')
+        x = sp.Symbol('x')
         
         approximate(f=x*(1-x)**8, symbolic=False, d=1, N_e=4)
         approximate(f=x*(1-x)**8, symbolic=False, d=2, N_e=2)
@@ -4343,7 +4343,7 @@ the new concepts:
 .. code-block:: python
 
         from fe_approx1D_numint import *
-        x = sm.Symbol('x')
+        x = sp.Symbol('x')
         f = x*(1 - x)
         N_e = 10
         vertices, cells, dof_map = mesh_uniform(N_e, d=3, Omega=[0,1])
@@ -4363,7 +4363,7 @@ can approximate a parabola:
 .. code-block:: python
 
         from fe_approx1D_numint import *
-        x=sm.Symbol("x")
+        x=sp.Symbol("x")
         for N_e in 4, 8:
             approximate(x*(1-x), d=0, N_e=N_e, Omega=[0,1])
 
@@ -5039,10 +5039,10 @@ Second, the symbolic integration must be extended to 2D:
 
 .. code-block:: python
 
-        import sympy as sm
+        import sympy as sp
         
         integrand = psi[i]*psi[j]
-        I = sm.integrate(integrand,
+        I = sp.integrate(integrand,
                          (x, Omega[0][0], Omega[0][1]),
                          (y, Omega[1][0], Omega[1][1]))
 
@@ -5053,9 +5053,9 @@ The 2D version of numerical integration becomes
 
 .. code-block:: python
 
-        if isinstance(I, sm.Integral):
-            integrand = sm.lambdify([x,y], integrand)
-            I = sm.mpmath.quad(integrand,
+        if isinstance(I, sp.Integral):
+            integrand = sp.lambdify([x,y], integrand)
+            I = sp.mpmath.quad(integrand,
                                [Omega[0][0], Omega[0][1]],
                                [Omega[1][0], Omega[1][1]])
 
@@ -5072,7 +5072,7 @@ and 1D sine functions :math:`\sin((i+1)\pi x)`:
             return [x**i*y**j for i in range(Nx+1) for j in range(Ny+1)]
         
         def sines(x, y, Nx, Ny):
-            return [sm.sin(sm.pi*(i+1)*x)*sm.sin(sm.pi*(j+1)*y)
+            return [sp.sin(sp.pi*(i+1)*x)*sp.sin(sp.pi*(j+1)*y)
                     for i in range(Nx+1) for j in range(Ny+1)]
 
 The complete code appears in
@@ -5089,7 +5089,7 @@ a bilinear function can be computed symbolically by
         >>> u = least_squares(f, psi, Omega)
         >>> print u
         8*x*y - 2*x/3 + 4*y/3 - 1/9
-        >>> print sm.expand(f)
+        >>> print sp.expand(f)
         2*x**2*y**2 + x**2 + 2*y**2 + 1
 
 We may continue with adding higher powers to the basis:
@@ -5940,11 +5940,11 @@ the exact value 1.
 
 .. from fe_approx1D_numint import *
 
-.. c = approximate(sm.sin(x), symbolic=True, d=1, N_e=2, numint=None,
+.. c = approximate(sp.sin(x), symbolic=True, d=1, N_e=2, numint=None,
 
-.. Omega=[0,sm.pi])
+.. Omega=[0,sp.pi])
 
-.. print sm.simplify(c[1,0].subs('h', sm.pi/2))
+.. print sp.simplify(c[1,0].subs('h', sp.pi/2))
 
 Filename: ``sin_approx_P1.py``.
 
@@ -6072,7 +6072,7 @@ Therefore, :math:`f` can be defined by
 
 .. code-block:: python
 
-        f = sm.Heaviside(x -  sm.Rational(1,2))
+        f = sp.Heaviside(x -  sp.Rational(1,2))
 
 making the ``approximate`` function in the
 ``fe_approx1D.py`` module an obvious candidate to solve the
@@ -6470,11 +6470,11 @@ we can write the function
 
         def model1(f, L, D):
             """Solve -u'' = f(x), u(0)=0, u(L)=D."""
-            u_x = - sm.integrate(f, (x, 0, x)) + c_0
-            u = sm.integrate(u_x, (x, 0, x)) + c_1
-            r = sm.solve([u.subs(x, 0)-0, u.subs(x,L)-D], [c_0, c_1])
+            u_x = - sp.integrate(f, (x, 0, x)) + c_0
+            u = sp.integrate(u_x, (x, 0, x)) + c_1
+            r = sp.solve([u.subs(x, 0)-0, u.subs(x,L)-D], [c_0, c_1])
             u = u.subs(c_0, r[c_0]).subs(c_1, r[c_1])
-            u = sm.simplify(sm.expand(u))
+            u = sp.simplify(sp.expand(u))
             return u
 
 Calling ``model1(2, L, D)`` results in the solution
@@ -6494,11 +6494,11 @@ Model :ref:`fem:deq:1D:model2`) can be solved by
 
         def model2(f, L, C, D):
             """Solve -u'' = f(x), u'(0)=C, u(L)=D."""
-            u_x = - sm.integrate(f, (x, 0, x)) + c_0
-            u = sm.integrate(u_x, (x, 0, x)) + c_1
-            r = sm.solve([sm.diff(u,x).subs(x, 0)-C, u.subs(x,L)-D], [c_0, c_1])
+            u_x = - sp.integrate(f, (x, 0, x)) + c_0
+            u = sp.integrate(u_x, (x, 0, x)) + c_1
+            r = sp.solve([sp.diff(u,x).subs(x, 0)-C, u.subs(x,L)-D], [c_0, c_1])
             u = u.subs(c_0, r[c_0]).subs(c_1, r[c_1])
-            u = sm.simplify(sm.expand(u))
+            u = sp.simplify(sp.expand(u))
             return u
 
 to yield
@@ -6519,11 +6519,11 @@ code,
 
         def model3(f, a, L, C, D):
             """Solve -(a*u')' = f(x), u(0)=C, u(L)=D."""
-            au_x = - sm.integrate(f, (x, 0, x)) + c_0
-            u = sm.integrate(au_x/a, (x, 0, x)) + c_1
-            r = sm.solve([u.subs(x, 0)-C, u.subs(x,L)-D], [c_0, c_1])
+            au_x = - sp.integrate(f, (x, 0, x)) + c_0
+            u = sp.integrate(au_x/a, (x, 0, x)) + c_1
+            r = sp.solve([u.subs(x, 0)-C, u.subs(x,L)-D], [c_0, c_1])
             u = u.subs(c_0, r[c_0]).subs(c_1, r[c_1])
-            u = sm.simplify(sm.expand(u))
+            u = sp.simplify(sp.expand(u))
             return u
 
 With :math:`f(x)=0` and :math:`{\alpha}(x)=1+x^2` we get
@@ -9669,21 +9669,23 @@ the following function:
 
 .. code-block:: python
 
+        import sympy as sp
+        
         def solve(integrand_lhs, integrand_rhs, psi, Omega,
                   boundary_lhs=None, boundary_rhs=None):
             N = len(psi[0]) - 1
-            A = sm.zeros((N+1, N+1))
-            b = sm.zeros((N+1, 1))
-            x = sm.Symbol('x')
+            A = sp.zeros((N+1, N+1))
+            b = sp.zeros((N+1, 1))
+            x = sp.Symbol('x')
             for i in range(N+1):
                 for j in range(i, N+1):
                     integrand = integrand_lhs(psi, i, j)
-                    I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
+                    I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
                     if boundary_lhs is not None:
                         I += boundary_lhs(psi, i, j)
                     A[i,j] = A[j,i] = I   # assume symmetry
                 integrand = integrand_rhs(psi, i)
-                I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
+                I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
                 if boundary_rhs is not None:
                     I += boundary_rhs(psi, i)
                 b[i,0] = I
@@ -9727,30 +9729,30 @@ method for solving differential equations in 1D with global basis functions:
         def solve(integrand_lhs, integrand_rhs, psi, Omega,
                   boundary_lhs=None, boundary_rhs=None, symbolic=True):
             N = len(psi[0]) - 1
-            A = sm.zeros((N+1, N+1))
-            b = sm.zeros((N+1, 1))
-            x = sm.Symbol('x')
+            A = sp.zeros((N+1, N+1))
+            b = sp.zeros((N+1, 1))
+            x = sp.Symbol('x')
             for i in range(N+1):
                 for j in range(i, N+1):
                     integrand = integrand_lhs(psi, i, j)
                     if symbolic:
-                        I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-                        if isinstance(I, sm.Integral):
+                        I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+                        if isinstance(I, sp.Integral):
                             symbolic = False  # force num.int. hereafter
                     if not symbolic:
-                        integrand = sm.lambdify([x], integrand)
-                        I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
+                        integrand = sp.lambdify([x], integrand)
+                        I = sp.mpmath.quad(integrand, [Omega[0], Omega[1]])
                     if boundary_lhs is not None:
                         I += boundary_lhs(psi, i, j)
                     A[i,j] = A[j,i] = I
                 integrand = integrand_rhs(psi, i)
                 if symbolic:
-                    I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-                    if isinstance(I, sm.Integral):
+                    I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+                    if isinstance(I, sp.Integral):
                         symbolic = False
                 if not symbolic:
-                    integrand = sm.lambdify([x], integrand)
-                    I = sm.mpmath.quad(integrand, [Omega[0], Omega[1]])
+                    integrand = sp.lambdify([x], integrand)
+                    I = sp.mpmath.quad(integrand, [Omega[0], Omega[1]])
                 if boundary_rhs is not None:
                     I += boundary_rhs(psi, i)
                 b[i,0] = I
@@ -9775,11 +9777,12 @@ We need a :math:`B(x)` function to take care of the known boundary
 values of :math:`u`. Any function :math:`B(x)=1-x^p`, :math:`p\in\mathbb{R}`, is a candidate,
 and one arbitrary choice from this family
 is :math:`B(x)=1-x^3`. The unknown function is then written as
-a sum of a known (:math:`B`) and an unknown (:math:`\bar u`) function:
 
 
 .. math::
-         u(x) = B(x) + \bar u (x),\quad \bar u(x) = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x){\thinspace .}  
+        
+        u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x){\thinspace .}
+        
 
 
 Let us use the Galerkin method to derive the variational formulation.
@@ -9792,20 +9795,15 @@ equation by :math:`v` and integrate by parts yield
         \int_0^1 u'v' {\, \mathrm{d}x} = \int_0^1 fv {\, \mathrm{d}x}\quad\forall v\in V,
         
 
-and with :math:`u=B + \bar u`,
+and with :math:`u=B + \sum_jc_j{\psi}_j` we get the linear system
 
-
-.. math::
-        
-        \int_0^1 \bar u'v' {\, \mathrm{d}x} = \int_0^1 (f-B')v {\, \mathrm{d}x}\quad\forall v\in V{\thinspace .}  
-
-Inserting :math:`\bar u = \sum_{j}c_j{\psi}_j`, we get the linear system
 
 
 .. math::
         
         \sum_{j\in{\mathcal{I}_V}}\left(\int_0^1{\psi}_i'{\psi}_j' {\, \mathrm{d}x}\right)c_j = \int_0^1(f-B'){\psi}_i {\, \mathrm{d}x},
-        \quad i\in{\mathcal{I}_V}{\thinspace .}  
+        \quad i\in{\mathcal{I}_V}{\thinspace .}
+        
 
 
 
@@ -9814,15 +9812,15 @@ The application can be coded as follows in ``sympy``:
 
 .. code-block:: python
 
-        x, b = sm.symbols('x b')
+        x, b = sp.symbols('x b')
         f = b
         B = 1 - x**3
-        dBdx = sm.diff(B, x)
+        dBdx = sp.diff(B, x)
         
         # Compute basis functions and their derivatives
         N = 3
         psi = {0: [x**(i+1)*(1-x) for i in range(N+1)]}
-        psi[1] = [sm.diff(psi_i, x) for psi_i in psi[0]]
+        psi[1] = [sp.diff(psi_i, x) for psi_i in psi[0]]
         
         def integrand_lhs(psi, i, j):
             return psi[1][i]*psi[1][j]
@@ -9835,32 +9833,32 @@ The application can be coded as follows in ``sympy``:
         u_bar = solve(integrand_lhs, integrand_rhs, psi, Omega,
                       verbose=True, symbolic=True)
         u = B + u_bar
-        print 'solution u:', sm.simplify(sm.expand(u))
+        print 'solution u:', sp.simplify(sp.expand(u))
 
 The printout of ``u`` reads ``-b*x**2/2 + b*x/2 - x + 1``.
 Note that expanding ``u`` and then simplifying is in the present case
-desirable to get a compact, final expression with ``sympy``.
+necessary to get a compact, final expression with ``sympy``.
 A non-expanded ``u`` might be preferable in other cases - this depends on
 the problem in question.
 
-The exact solution :math:`{u_{\small\mbox{e}}}(x)` can be derived by the following
-``sympy`` code:
+The exact solution :math:`{u_{\small\mbox{e}}}(x)` can be derived by
+some ``sympy`` code that closely follows the examples in
+the section :ref:`fem:deq:1D:models:simple`. The idea is to integrate
+:math:`-u''=b` twice and determine the integration constants from
+the boundary conditions:
 
 
 .. code-block:: python
 
-        # Solve -u''=f by integrating f twice
-        f1 = sm.integrate(f, x)
-        f2 = sm.integrate(f1, x)
-        # Add integration constants
-        C1, C2 = sm.symbols('C1 C2')
-        u_e = -f2 + C1*x + C2
+        C1, C2 = sp.symbols('C1 C2')    # integration constants
+        f1 = sp.integrate(f, x) + C1
+        f2 = sp.integrate(f1, x) + C2
         # Find C1 and C2 from the boundary conditions u(0)=0, u(1)=1
-        s = sm.solve([u_e.subs(x,0) - 1, u_e.subs(x,1) - 0], [C1, C2])
+        s = sp.solve([u_e.subs(x,0) - 1, u_e.subs(x,1) - 0], [C1, C2])
         # Form the exact solution
         u_e = -f2 + s[C1]*x + s[C2]
         print 'analytical solution:', u_e
-        print 'error:', sm.expand(u - u_e)
+        print 'error:', sp.simplify(sp.expand(u - u_e))
 
 The last line prints ``0``, which is not surprising when
 :math:`{u_{\small\mbox{e}}}(x)` is a parabola and our approximate :math:`u` contains polynomials up to
@@ -9999,6 +9997,8 @@ and
         {\thinspace .}
         
 
+We shall continue with the latter operator as the form arises from
+just setting :math:`a=1`.
 
 The general rule for integrating by parts is often referred to as
 `Green's first identity <http://en.wikipedia.org/wiki/Green's_identities>`_:
@@ -10021,9 +10021,6 @@ area integrals in 2D and volume integrals in 3D, while
 :math:`\int_{\partial\Omega} (){\, \mathrm{d}s}` is a line integral in 2D and a surface
 integral in 3D.
 
-Note that :eq:`fem:deq:2D:int:by:parts` obviously applies to a constant
-:math:`a`, which is what we have if the PDE has a Laplace term :math:`a\nabla^2 u`.
-
 Let us divide the boundary into two parts:
 
  * :math:`\partial\Omega_N`, where we have Neumann conditions
@@ -10035,7 +10032,7 @@ Let us divide the boundary into two parts:
 The test functions :math:`v` are required to vanish on :math:`\partial\Omega_D`.
 
 **Example.**
-Here is a quite general linear PDE arising in many problems:
+Here is a quite general, stationary, linear PDE arising in many problems:
 
 
 .. math::
@@ -10066,11 +10063,12 @@ Such a second-order PDE needs exactly one boundary condition at each
 point of the boundary, so :math:`\partial\Omega_N\cup\partial\Omega_D`
 must be the complete boundary :math:`\partial\Omega`.
 
-The unknown function can be expanded as
+Assume that the boundary function :math:`u_0(\boldsymbol{x})` is defined for all :math:`\boldsymbol{x}\in\Omega`.
+The unknown function can then be expanded as
 
 
 .. math::
-         u = u_0 + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j {\thinspace .} 
+         u = B + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j,\quad B = u_0 {\thinspace .} 
 
 The variational formula is obtained from Galerkin's method, which
 technically implies multiplying the PDE by a test
@@ -10139,7 +10137,7 @@ The variational form is then
 
 
 Instead of using the integral signs we may use the inner product
-notation :math:`(\cdot,\cdot)`:
+notation:
 
 
 .. math::
@@ -10149,7 +10147,7 @@ notation :math:`(\cdot,\cdot)`:
         {\thinspace .}
         
 
-The subscript :math:`N` in :math:`(g,v)_{N}` is a notation for a line or surface
+The subscript :math:`\,{}_N` in :math:`(g,v)_{N}` is a notation for a line or surface
 integral over :math:`\partial\Omega_N`.
 
 Inserting the :math:`u` expansion results in
@@ -10200,10 +10198,11 @@ We consider an integral of the type
 
 .. math::
         
-        \int_{{\Omega}^{(e)}} a(\boldsymbol{x})\nabla{\varphi}_i\cdot\nabla{\varphi}_j{\, \mathrm{d}x}
+        \int_{{\Omega}^{(e)}} a(\boldsymbol{x})\nabla{\varphi}_i\cdot\nabla{\varphi}_j{\, \mathrm{d}x},
         
 
-in the physical domain.
+where the :math:`{\varphi}_i` functions are finite element basis functions in
+2D or 3D, defined in the physical domain.
 Suppose we want to calculate this integral over a reference cell,
 denoted by :math:`\tilde\Omega^r`, in a coordinate system with coordinates
 :math:`\boldsymbol{X} = (X_0, X_1)` (2D) or :math:`\boldsymbol{X} = (X_0, X_1, X_2)` (3D).
@@ -10222,9 +10221,10 @@ with respect to :math:`\boldsymbol{x}`, which we may denote by :math:`\nabla_{\b
 The :math:`{\varphi}_i(\boldsymbol{x})` functions in the integral
 are replaced by local basis functions :math:`{\tilde{\varphi}}_r(\boldsymbol{X})` so
 the integral features :math:`\nabla_{\boldsymbol{x}}{\tilde{\varphi}}_r(\boldsymbol{X})`. We readily have
-:math:`\nabla_{\boldsymbol{X}}{\tilde{\varphi}}_r(\boldsymbol{X})` from formulas for the basis functions, but
+:math:`\nabla_{\boldsymbol{X}}{\tilde{\varphi}}_r(\boldsymbol{X})` from formulas for the basis functions in
+the reference cell, but
 the desired quantity :math:`\nabla_{\boldsymbol{x}}{\tilde{\varphi}}_r(\boldsymbol{X})` requires some efforts
-to compute. All the details are now given.
+to compute. All the details are provided below.
 
 Let :math:`i=q(e,r)` and consider two space dimensions. By the chain rule,
 
@@ -10248,7 +10248,7 @@ and
         {\thinspace .}
         
 
-We can write this as a vector equation
+We can write these two equations as a vector equation
 
 .. math::
         
@@ -10290,15 +10290,27 @@ Identifying
 
 we have the relation
 
+
 .. math::
          \nabla_{\boldsymbol{X}}{\tilde{\varphi}}_r = J\cdot\nabla_{\boldsymbol{x}}{\varphi}_i,
 
 which we can solve with respect to :math:`\nabla_{\boldsymbol{x}}{\varphi}_i`:
 
+
 .. math::
         
         \nabla_{\boldsymbol{x}}{\varphi}_i = J^{-1}\cdot\nabla_{\boldsymbol{X}}{\tilde{\varphi}}_r{\thinspace .}
         
+
+On the reference cell, :math:`{\varphi}_i(\boldsymbol{x}) = {\tilde{\varphi}}_r(\boldsymbol{X})`, so
+
+
+.. math::
+        
+        \nabla_{\boldsymbol{x}}{\tilde{\varphi}}_r(\boldsymbol{X}) = J^{-1}(\boldsymbol{X})\cdot\nabla_{\boldsymbol{X}}{\tilde{\varphi}}_r(\boldsymbol{X}){\thinspace .}
+        
+
+
 
 This means that we have the following transformation of the
 integral in the physical domain to its counterpart over the reference cell:
@@ -10320,6 +10332,36 @@ For multi-dimensional cells, various families of rules exist.
 All of them are similar to what is shown in 1D:
 :math:`\int f {\, \mathrm{d}x}\approx \sum_jw_if(\boldsymbol{x}_j)`, where :math:`w_j` are weights and
 :math:`\boldsymbol{x}_j` are corresponding points.
+
+The file `numint.py <http://tinyurl.com/jvzzcfn/fem/numint.py>`_ contains the functions
+``quadrature_for_triangles(n)`` and ``quadrature_for_tetrahedra(n)``,
+which returns lists of points and weights corresponding to integration
+rules with ``n`` points over the reference triangle
+with vertices :math:`(0,0)`, :math:`(1,0)`, :math:`(0,1)`, and the reference tetrahedron
+with vertices :math:`(0,0,0)`, :math:`(1,0,0)`, :math:`(0,1,0)`, :math:`(0,0,1)`,
+respectively. For example, the first two rules for integration over
+a triangle have 1 and 3 points:
+
+
+        >>> import numint
+        >>> x, w = numint.quadrature_for_triangles(1)
+        >>> x
+        [(0.3333333333333333, 0.3333333333333333)]
+        >>> w
+        [0.5]
+        >>> x, w = numint.quadrature_for_triangles(3)
+        >>> x
+        [(0.16666666666666666, 0.16666666666666666),
+         (0.66666666666666666, 0.16666666666666666),
+         (0.16666666666666666, 0.66666666666666666)]
+        >>> w
+        [0.16666666666666666, 0.16666666666666666, 0.16666666666666666]
+
+Rules with 1, 3, 4, and 7 points over the triangle will exactly integrate
+polynomials of degree 1, 2, 3, and 4, respectively.
+In 3D, rules with 1, 4, 5, and 11 points over the tetrahedron will
+exactly integrate polynomials of degree 1, 2, 3, and 4, respectively.
+
 
 Convenient formulas for P1 elements in 2D
 -----------------------------------------
@@ -10451,6 +10493,8 @@ so that the element matrix entry becomes
 From an implementational point of view, one will work with local vertex
 numbers :math:`r=0,1,2`, parameterize the coefficients in the basis
 functions by :math:`r`, and look up vertex coordinates through :math:`q(e,r)`.
+
+Similar formulas exist for integration of P1 elements in 3D.
 
 Summary
 =======
@@ -10962,6 +11006,8 @@ coefficient matrix : :math:`\sum_j M_{i,j}c_{1,j} = (I,{\psi}_i)`,
 :math:`i\in{\mathcal{I}_V}`.
 
 
+.. _fem:deq:diffu:FE:fdvsP1fe:
+
 Comparing P1 elements with the finite difference method
 -------------------------------------------------------
 
@@ -10975,8 +11021,9 @@ From the section :ref:`fem:deq:1D:comp:global` or
 :ref:`fem:deq:1D:comp:elmwise` we have that the :math:`K` matrix is the same as we get
 from the finite difference method: :math:`h[D_xD_x u]^n_i`, while
 from the section :ref:`fem:approx:fe:fd:feproj` we know that :math:`M` can be
-interpreted as the finite difference approximation:
-:math:`[u - \frac{1}{6}h^2D_xD_x u]^n_i`. The equation system :math:`Mc=b` in
+interpreted as the finite difference approximation
+:math:`[u - \frac{1}{6}h^2D_xD_x u]^n_i` (times :math:`h`). The equation system :math:`Mc=b`
+in
 the algorithm is therefore equivalent to the finite difference scheme
 
 
@@ -10988,12 +11035,12 @@ the algorithm is therefore equivalent to the finite difference scheme
         {\thinspace .}
         
 
+(More precisely, :math:`Mc=b` divided by :math:`h` gives the equation above.)
 
 Lumping the mass matrix
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-By applying Trapezoidal integration or summing the rows in :math:`M` and placing
-the sum on the main diagonal, one can turn :math:`M` into a diagonal
+By applying Trapezoidal integration one can turn :math:`M` into a diagonal
 matrix with :math:`(h/2,h,\ldots,h,h/2)` on the diagonal. Then there is
 no need to solve a linear system at each time level, and the finite
 element scheme becomes identical to a standard finite difference method
@@ -11007,6 +11054,30 @@ element scheme becomes identical to a standard finite difference method
         {\thinspace .}
         
 
+
+The Trapezoidal integration is not as accurate as exact integration and
+introduces therefore an error. Whether this error has a good or bad
+influence on the overall numerical method is not immediately obvious,
+and is analyzed in detail in the section :ref:`fem:deq:diffu:anal`.
+The effect of the error is at least not more severe than what is
+produced by the finite difference method.
+
+
+.. index:: mass matrix
+
+.. index:: mass lumping
+
+.. index:: lumped mass matrix
+
+
+Making :math:`M` diagonal is usually referred to as *lumping the mass matrix*.
+There is an alternative method to using an integration rule
+based on the node points: one can sum the entries in each row, place
+the sum on the diagonal, and set all other entries in the row equal
+to zero. For P1 elements the methods of lumping the mass matrix give
+the same result.
+
+.. _fem:deq:diffu:anal:FE:
 
 Discretization in time by a Backward Euler scheme
 -------------------------------------------------
@@ -11024,26 +11095,34 @@ can be expressed as follows using the finite difference operator notation:
         {\thinspace .}
         
 
-Written out, and collecting the unknown :math:`u^n` on the left-hand side,
+Written out, and collecting the unknown :math:`u^n` on the left-hand side
+and all the known terms on the right-hand side,
 the time-discrete differential equation becomes
 
 
 .. math::
    :label: fem:deq:diffu:BE:eq:un
         
-        u^{n} - \Delta t \left( {\alpha}\nabla^2 u^n + f(\boldsymbol{x}, t_{n})\right) = u^{n-1}
+        {u_{\small\mbox{e}}}^{n} - \Delta t \left( {\alpha}\nabla^2 {u_{\small\mbox{e}}}^n + f(\boldsymbol{x}, t_{n})\right) =
+        {u_{\small\mbox{e}}}^{n-1}
         
         {\thinspace .}
         
 
 Equation :eq:`fem:deq:diffu:BE:eq:un` can compute
-:math:`u^1,u^2,\dots,u^{N_t}`, if we have a start :math:`u^0=I` from the initial condition.
+:math:`{u_{\small\mbox{e}}}^1,{u_{\small\mbox{e}}}^2,\dots,{u_{\small\mbox{e}}}^{N_t}`,
+if we have a start :math:`{u_{\small\mbox{e}}}^0=I` from the initial condition.
+However, :eq:`fem:deq:diffu:BE:eq:un` is a partial differential
+equation in space and needs a solution method based on discretization
+in space. For this purpose we use an expansion as in
+:eq:`fem:deq:diffu:femapprox:n`-:eq:`fem:deq:diffu:femapprox:np1`.
 
 Variational forms  (2)
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The Galerkin method applied to :eq:`fem:deq:diffu:BE:eq:un` and
-integrating by parts, as in the Forward Euler case, results
+Inserting :eq:`fem:deq:diffu:femapprox:n`-:eq:`fem:deq:diffu:femapprox:np1`
+in :eq:`fem:deq:diffu:BE:eq:un`, multiplying by :math:`{\psi}_i` (or :math:`v\in V`),
+and integrating by parts, as we did in the Forward Euler case, results
 in the variational form
 
 
@@ -11095,13 +11174,19 @@ solved at each time level:
 
 
 .. math::
+   :label: fem:deq:diffu:BE:vf:linsys
         
         (M + \Delta t {\alpha} K)c = Mc_1 + f,
+        
         
 
 where :math:`M`, :math:`K`, and :math:`f` are as in the Forward Euler case.
 This time we really have to solve a linear system at each time level.
-The system corresponds to solving the finite difference problem
+
+We know what kind of finite difference operators the :math:`M` and :math:`K`
+matrices correspond to (after dividing by :math:`h`), so
+:eq:`fem:deq:diffu:BE:vf:linsys` can be interpreted as
+the following finite difference method:
 
 
 .. math::
@@ -11113,8 +11198,10 @@ The system corresponds to solving the finite difference problem
         
 
 
-The mass matrix :math:`M` can be lumped, and then the linear system corresponds
-to a plain Backward Euler finite difference method for the diffusion equation:
+The mass matrix :math:`M` can be lumped, as explained in the section :ref:`fem:deq:diffu:FE:fdvsP1fe`, and then the linear system arising
+from the finite element method with P1 elements corresponds
+to a plain Backward Euler finite difference method for the diffusion
+equation:
 
 
 .. math::
@@ -11126,20 +11213,53 @@ to a plain Backward Euler finite difference method for the diffusion equation:
         
 
 
+.. _fem:deq:diffu:anal:
+
 Analysis of the discrete equations
 ----------------------------------
 
-Let us see how a typical numerical wave component
+The diffusion equation :math:`u_t = {\alpha} u_{xx}` allows a (Fourier)
+wave component :math:`u=\exp{(\beta t + ikx)}` as solution if
+:math:`\beta = -{\alpha} k^2`, which follows from inserting the wave component
+in the equation. The exact wave component can alternatively be written
+as
+
+
+.. math::
+   :label: fem:deq:diffu:anal:Ae
+        
+        u = {A_{\small\mbox{e}}}^n e^{ikx},\quad {A_{\small\mbox{e}}} = e^{-{\alpha} k^2\Delta t}{\thinspace .}
+        
+        
+
+Many numerical schemes for the diffusion equation
+has a similar wave component as solution:
+
+
+.. math::
+   :label: fem:deq:diffu:analysis:uni0
+        
+        u^n_q = A^n e^{ikx},
+        
+        
+
+where is an amplification factor to be calculated by inserting
+:eq:`fem:deq:diffu:analysis:uni` in the scheme.
+We introduce :math:`x=qh`, or :math:`x=q\Delta x` to align the notation with
+that frequently used in finite difference methods.
+
+A convenient start of the calculations is to establish some
+results for various finite difference operators acting
+on
 
 
 .. math::
    :label: fem:deq:diffu:analysis:uni
         
-        u^n_q = A^n e^{ikq\Delta x} = A^ne^{ikx},
+        u^n_q = A^n e^{ikq\Delta x}{\thinspace .}
         
         
 
-is treated by the schemes. With the results
 
 
 .. math::
@@ -11147,10 +11267,14 @@ is treated by the schemes. With the results
         [D_t^+ A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{A-1}{\Delta t},\\ 
         [D_t^- A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{1-A^{-1}}{\Delta t},\\ 
         [D_t A^n e^{ikq\Delta x}]^{n+\frac{1}{2}} &= A^{n+\frac{1}{2}} e^{ikq\Delta x}\frac{A^{\frac{1}{2}}-A^{-\frac{1}{2}}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t},\\ 
-        [D_xD_x A^ne^{ikq\Delta x}]_q &= -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),
+        [D_xD_x A^ne^{ikq\Delta x}]_q &= -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right){\thinspace .}
         
 
-we can start inserting :eq:`fem:deq:diffu:analysis:uni` in the
+
+Forward Euler discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inserting :eq:`fem:deq:diffu:analysis:uni` in the
 Forward Euler scheme with P1 elements in space and :math:`f=0`,
 
 
@@ -11185,36 +11309,39 @@ or
          \frac{A-1}{\Delta t} \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
         {\thinspace .}  
 
-The complete scheme becomes
+Introducing :math:`p=k\Delta x/2` and :math:`C={\alpha}\Delta t/\Delta x^2`,
+the complete scheme becomes
 
 
 .. math::
         
-        (A-1) \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
-        = -4C\sin^2 (k\Delta x/2),
+        (A-1) \left(1 + \frac{2}{3}\sin^2 p\right)
+        = -4C\sin^2 p,
 
-which we then solve for :math:`A`,
+from which we find :math:`A` to be
 
 
 .. math::
-         A = 1 - 4C\frac{\sin^2 (k\Delta x/2)}{1 + \frac{2}{3}\sin^2 (k\Delta x/2)}
+         A = 1 - 4C\frac{\sin^2 p}{1 + \frac{2}{3}\sin^2 p}
         {\thinspace .} 
 
 
 How does this :math:`A` change the stability criterion compared to the
 Forward Euler finite difference scheme and centered differences in
-space? The stability criterion is :math:`-1<A`, meaning
+space? The stability criterion is :math:`|A|\leq 1`, which here implies
+:math:`A\leq 1` and :math:`A\geq -1`. The former is always fulfilled, while
+the latter leads to
 
 
 .. math::
         
-        4C\frac{\sin^2 (p/2}{1 + \frac{2}{3}\sin^2 (p/2)} \leq 2,
+        4C\frac{\sin^2 p}{1 + \frac{2}{3}\sin^2 p} \leq 2{\thinspace .}
         
 
-with :math:`p=k\Delta x`. The factor :math:`\sin^2 (p/2)/(1 + \frac{2}{3}\sin^2 (p/2))`
-can be plotted for :math:`p\in [0,\pi ]`, and the maximum value goes to 3/5
-as :math:`p\rightarrow \pi`. The worst case for stability therefore occurs for
-the shortest waves, and the stability criterion becomes
+The factor :math:`\sin^2 p/(1 + \frac{2}{3}\sin^2 p`
+can be plotted for :math:`p\in [0,\pi/2]`, and the maximum value goes to 3/5
+as :math:`p\rightarrow \pi/2`. The worst case for stability therefore occurs for
+the shortest possible wave, :math:`p=\pi/2`, and the stability criterion becomes
 
 
 .. math::
@@ -11223,14 +11350,20 @@ the shortest waves, and the stability criterion becomes
         
 
 which is a factor 5/3 better than for the standard Forward Euler
-finite difference method for the diffusion equation.
+finite difference method for the diffusion equation, which demands
+:math:`C\leq 1/2`.
 Lumping the mass matrix will, however, recover the finite difference
-method and imply :math:`C\leq 1/2` for stability.
+method and therefore imply :math:`C\leq 1/2` for stability.
 
 .. plot and compare A_FE_FEM vs A_FE_FDM and exact
 
 
-For the Backward Euler scheme
+Backward Euler discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can use the same approach and insert
+:eq:`fem:deq:diffu:analysis:uni` in the
+Backward Euler scheme with P1 elements in space and :math:`f=0`:
 
 
 .. math::
@@ -11241,29 +11374,84 @@ For the Backward Euler scheme
         {\thinspace .}
         
 
-
-we get
+Similar calculations as in the Forward Euler case lead to
 
 
 .. math::
         
-        (1-A^{-1}) \left(1 + \frac{2}{3}\sin^2 (k\Delta x/2)\right)
-        = -4C\sin^2 (k\Delta x/2),
+        (1-A^{-1}) \left(1 + \frac{2}{3}\sin^2 p\right)
+        = -4C\sin^2 p,
 
 and hence
 
 
 .. math::
         
-        A = \left( 1 + 4C\frac{\sin^2 (k\Delta x/2)}{(1 + \frac{2}{3}\sin^2 (k\Delta x/2))}\right)^{-1}
+        A = \left( 1 + 4C\frac{\sin^2 p}{1 + \frac{2}{3}\sin^2 p}\right)^{-1}
         {\thinspace .}
         
 
 
-**Remaining tasks**:
+Comparing amplification factors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- * Plot :math:`A` vs :math:`{A_{\small\mbox{e}}}` for finite elements and finite differences
-   for each of the time schemes.
+It is of interest to compare :math:`A` and :math:`{A_{\small\mbox{e}}}` as functions of :math:`p`
+for some :math:`C` values. Figures :ref:`fem:deq:diffu:fig:A:FE` and
+:ref:`fem:deq:diffu:fig:A:BE` display the amplification factors corresponding
+to the coarsest choice for finite elements (:math:`C=5/6`) and finite
+differences (:math:`C=1/2`), while Figures
+:ref:`fem:deq:diffu:fig:A:FE2` and :ref:`fem:deq:diffu:fig:A:BE2` shows how
+the accuracy increases with lower :math:`C` values.
+
+
+.. _fem:deq:diffu:fig:A:FE:
+
+.. figure:: diffu_A_factors2_FE.png
+   :width: 400
+
+   *Comparison of coarse-mesh amplification factors for Forward Euler discretization of a 1D diffusion equation*
+
+
+
+.. _fem:deq:diffu:fig:A:BE:
+
+.. figure:: diffu_A_factors2_BE.png
+   :width: 400
+
+   *Comparison of coarse-mesh amplification factors for Backward Euler discretization of a 1D diffusion equation*
+
+
+
+.. _fem:deq:diffu:fig:A:FE2:
+
+.. figure:: diffu_A_factors2_FE.png
+   :width: 400
+
+   *Comparison of fine-mesh amplification factors for Forward Euler discretization of a 1D diffusion equation*
+
+
+
+.. _fem:deq:diffu:fig:A:BE2:
+
+.. figure:: diffu_A_factors2_BE.png
+   :width: 400
+
+   *Comparison of fine-mesh amplification factors for Backward Euler discretization of a 1D diffusion equation*
+
+
+.. FIGURE: [fig-fem/diffu_A_factors2_FE.png, width=400 frac=0.8] Comparison of amplification factors for Forward Euler discretization of a 1D diffusion equation.
+
+
+.. FIGURE: [fig-fem/diffu_A_factors2_FE.png, width=400 frac=0.8] Comparison of amplification factors for Forward Euler discretization of a 1D diffusion equation.
+
+
+Remaining tasks:
+
+ * Taylor expansion of the error in the amplification factor :math:`{A_{\small\mbox{e}}} - A`
+
+ * Taylor expansion of the error :math:`e = ({A_{\small\mbox{e}}}^n - A^n)e^{ikx}`
+
+ * :math:`L^2` norm of :math:`e`
 
 .. _fem:sys:
 
@@ -12632,14 +12820,14 @@ Consider the problem
    :label: fem:deq:1D:model4
         
         -\frac{d}{dx}\left( a(x)\frac{du}{dx}\right) + \gamma u = f(x),
-        \quad x\in\Omega=[0,L],\quad u(0)=\alpha,\ u'(L)=\beta{\thinspace .}
+        \quad x\in\Omega=[0,L],\quad u(0)={\alpha},\ u'(L)=\beta{\thinspace .}
         
         
 
 We choose :math:`a(x)=1+x^2`. Then
 
 .. math::
-         u(x) = \alpha + \beta(1+L^2)\tan^{-1}(x),
+         u(x) = {\alpha} + \beta(1+L^2)\tan^{-1}(x),
         
 
 is an exact solution if :math:`f(x) = \gamma u`.

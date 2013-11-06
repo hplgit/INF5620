@@ -6,20 +6,20 @@ from approx1D import *
 from Lagrange import *
 import matplotlib.pyplot as plt
 #import scitools.std as plt
-import sympy as sm
+import sympy as sp
 import sys
-x = sm.Symbol('x')
+x = sp.Symbol('x')
 
 
 def sines(x, N):
-    return [sm.sin(sm.pi*(i+1)*x) for i in range(N+1)]
+    return [sp.sin(sp.pi*(i+1)*x) for i in range(N+1)]
 
 def cosines(x, N):
-    return [sm.cos(sm.pi*i*x) for i in range(N+1)]
+    return [sp.cos(sp.pi*i*x) for i in range(N+1)]
 
 def sines_cosines(x, N):
-    c = [sm.cos(sm.pi*i*x) for i in range(N+1)]
-    s = [sm.sin(sm.pi*i*x) for i in range(1, N+1)]
+    c = [sp.cos(sp.pi*i*x) for i in range(N+1)]
+    s = [sp.sin(sp.pi*i*x) for i in range(1, N+1)]
     return c + s
 
 def taylor(x, N):
@@ -44,8 +44,8 @@ def run_taylor_leastsq_parabola_illconditioning(N=2):
     u, c = least_squares(f, psi=[x**i for i in range(N+1)], Omega=[1, 2])
     # Note: in least_squares there is extra code for numerical solution
     # of the systems
-    print 'f:', sm.expand(f)
-    print 'u:', sm.expand(u)
+    print 'f:', sp.expand(f)
+    print 'u:', sp.expand(u)
     comparison_plot(f, u, [1, 2], 'parabola_ls_taylor%d' % N)
 
 def run_sines_leastsq_parabola(boundary_term=False):
@@ -66,9 +66,9 @@ def run_sines_leastsq_parabola(boundary_term=False):
 
 
 def run_sine_by_powers(N):
-    f = sm.sin(x)
+    f = sp.sin(x)
     psi = taylor(x, N)
-    Omega=[0, 2*sm.pi]
+    Omega=[0, 2*sp.pi]
     u = least_squares(f, psi, Omega)
     comparison_plot(f, u, Omega)
 
@@ -85,7 +85,7 @@ def run_Lagrange_poly(N):
 
 def run_Lagrange_leastsq_sin(N, ymin=-1.2, ymax=1.2):
     # Least-squares use of Lagrange polynomials
-    f = sm.sin(2*sm.pi*x)
+    f = sp.sin(2*sp.pi*x)
     psi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
     u = least_squares(f, psi, Omega)
@@ -96,7 +96,7 @@ def run_Lagrange_leastsq_sin(N, ymin=-1.2, ymax=1.2):
 
 def run_Lagrange_leastsq_abs(N):
     """Least-squares with of Lagrange polynomials for |1-2x|."""
-    f = sm.abs(1-2*x)
+    f = sp.abs(1-2*x)
     # This f will lead to failure of sympy integrate, fallback on numerical int.
     psi, points = Lagrange_polynomials_01(x, N)
     Omega=[0, 1]
@@ -109,7 +109,7 @@ def run_linear_interp1_parabola():
     f = 10*(x-1)**2 - 1
     psi = [1, x]
     Omega = [1, 2]
-    points = [1 + sm.Rational(1,3), 1 + sm.Rational(2,3)]
+    points = [1 + sp.Rational(1,3), 1 + sp.Rational(2,3)]
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega, 'parabola_interp1_linear')
 
@@ -133,7 +133,7 @@ def run_quadratic_interp_parabola():
 
 
 def run_poly_interp_sin(N):
-    f = sm.sin(sm.pi*x)
+    f = sp.sin(sp.pi*x)
     psi = taylor(x, N)
     Omega = [1, 2]
     import numpy as np
@@ -143,7 +143,7 @@ def run_poly_interp_sin(N):
 
 
 def run_Lagrange_interp_sin(N, ymin=-1.2, ymax=1.2):
-    f = sm.sin(2*sm.pi*x)
+    f = sp.sin(2*sp.pi*x)
     psi, points = Lagrange_polynomials_01(x, N)
     u = interpolation(f, psi, points)
     comparison_plot(f, u, Omega=[0, 1],
@@ -174,7 +174,7 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     xcoor = np.linspace(0, 1, 1001)
     legends = []
     for i in (2, (N+1)/2+1):
-        fn = sm.lambdify([x], psi[i])
+        fn = sp.lambdify([x], psi[i])
         ycoor = fn(xcoor)
         plt.plot(xcoor, ycoor)
         legends.append(r'$\psi_%d$' % i)
@@ -187,8 +187,8 @@ def run_Lagrange_interp_abs(N, ymin=None, ymax=None):
     plt.savefig('Lagrange_basis_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
-    f = sm.Abs(1-2*x)
-    fn = sm.lambdify([x], f)
+    f = sp.Abs(1-2*x)
+    fn = sp.lambdify([x], f)
     psi, points= Lagrange_polynomials(x, N, [0, 1],
                                       point_distribution='Chebyshev')
     u = interpolation(f, psi, points)
@@ -203,7 +203,7 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     xcoor = np.linspace(0, 1, 1001)
     legends = []
     for i in (2, (N+1)/2+1):
-        fn = sm.lambdify([x], psi[i])
+        fn = sp.lambdify([x], psi[i])
         ycoor = fn(xcoor)
         plt.plot(xcoor, ycoor)
         legends.append(r'$\psi_%d$' % i)
@@ -216,9 +216,9 @@ def run_Lagrange_interp_abs_Cheb(N, ymin=None, ymax=None):
     plt.savefig('Lagrange_basis_Cheb_%d.png' % (N+1))
 
 def run_Lagrange_interp_abs_conv(N=[3, 6, 12, 24]):
-    f = sm.abs(1-2*x)
-    f = sm.sin(2*sm.pi*x)
-    fn = sm.lambdify([x], f, modules='numpy')
+    f = sp.abs(1-2*x)
+    f = sp.sin(2*sp.pi*x)
+    fn = sp.lambdify([x], f, modules='numpy')
     resolution = 50001
     import numpy as np
     xcoor = np.linspace(0, 1, resolution)
@@ -229,7 +229,7 @@ def run_Lagrange_interp_abs_conv(N=[3, 6, 12, 24]):
     for _N in N:
         psi, points = Lagrange_polynomials_01(x, _N)
         u = interpolation(f, psi, points)
-        un = sm.lambdify([x], u, modules='numpy')
+        un = sp.lambdify([x], u, modules='numpy')
         ucoor = un(xcoor)
         e = fcoor - ucoor
         Einf.append(e.max())

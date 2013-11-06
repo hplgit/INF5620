@@ -209,7 +209,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>&nbsp;<br>
-<center><h4>Nov 4, 2013</h4></center> <!-- date -->
+<center><h4>Nov 5, 2013</h4></center> <!-- date -->
 <p>
 
 </section>
@@ -3557,7 +3557,7 @@ $$
 
 <p>
 <p>&nbsp;<br>
-$$ u = u_0 + \sum_{j\in\If} c_j\baspsi_j  $$
+$$ u = B + \sum_{j\in\If} c_j\baspsi_j,\quad B = u_0  $$
 <p>&nbsp;<br>
 
 
@@ -3649,7 +3649,8 @@ Can derive
 $$
 \begin{align*}
 \nabla_{\X}\refphi_r &= J\cdot\nabla_{\x}\basphi_i\\ 
-\nabla_{\x}\basphi_i &= J^{-1}\cdot\nabla_{\X}\refphi_r
+\nabla_{\x}\basphi_i &= \nabla_{\x}\refphi_r(\X)
+= J^{-1}\cdot\nabla_{\X}\refphi_r(\X)
 \end{align*}
 $$
 <p>&nbsp;<br>
@@ -3677,7 +3678,47 @@ $$
 
 <section>
 
-<h2>Time-dependent problems  <a name="___sec90"></a></h2>
+<h3>Numerical integration  <a name="___sec90"></a></h3>
+
+<p>
+Numerical integration over reference cell triangles and tetrahedra:
+
+<p>
+<p>&nbsp;<br>
+$$ \int_{\tilde\Omega^r} g\dX = \sum_{j=0}^{n-1} w_j g(\bar\X_j)$$
+<p>&nbsp;<br>
+
+
+<p>
+Module <a href="http://tinyurl.com/jvzzcfn/fem/numint.py"><tt>numint.py</tt></a> contains different rules:
+
+<p>
+
+<!-- code=text (from !bc ipy) typeset with pygments style "native" -->
+<div class="highlight" style="background: #202020"><pre style="line-height: 125%">&gt;&gt;&gt; import numint
+&gt;&gt;&gt; x, w = numint.quadrature_for_triangles(3)
+&gt;&gt;&gt; x
+[(0.16666666666666666, 0.16666666666666666),
+ (0.66666666666666666, 0.16666666666666666),
+ (0.16666666666666666, 0.66666666666666666)]
+&gt;&gt;&gt; w
+[0.16666666666666666, 0.16666666666666666, 0.16666666666666666]
+</pre></div>
+<p>
+
+<ul>
+ <p><li> Triangle: rules with \( n=1,3,4,7 \) integrate exactly polynomials of degree \( 1,2,3,4 \), resp.</li>
+ <p><li> Tetrahedron: rules with \( n=1,4,5,11 \) integrate exactly polynomials of degree \( 1,2,3,4 \), resp.</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h2>Time-dependent problems  <a name="___sec91"></a></h2>
 
 <p>
 
@@ -3695,7 +3736,7 @@ $$
 
 <section>
 
-<h3>Example: diffusion problem  <a name="___sec91"></a></h3>
+<h3>Example: diffusion problem  <a name="___sec92"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3720,7 +3761,7 @@ $$
 
 <section>
 
-<h3>A Forward Euler scheme; ideas  <a name="___sec92"></a></h3>
+<h3>A Forward Euler scheme; ideas  <a name="___sec93"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3759,7 +3800,7 @@ $$
 
 <section>
 
-<h3>A Forward Euler scheme; stages in the discretization  <a name="___sec93"></a></h3>
+<h3>A Forward Euler scheme; stages in the discretization  <a name="___sec94"></a></h3>
 
 <p>
 
@@ -3799,7 +3840,7 @@ $$
 
 <section>
 
-<h3>A Forward Euler scheme; weighted residual (or Galerkin) principle  <a name="___sec94"></a></h3>
+<h3>A Forward Euler scheme; weighted residual (or Galerkin) principle  <a name="___sec95"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3853,7 +3894,7 @@ Galerkin: \( w_i=\baspsi_i \)
 
 <section>
 
-<h3>A Forward Euler scheme; integration by parts  <a name="___sec95"></a></h3>
+<h3>A Forward Euler scheme; integration by parts  <a name="___sec96"></a></h3>
 
 <p>
 Isolating the unknown \( u^{n+1} \) on the left-hand side:
@@ -3901,7 +3942,7 @@ $$
 
 <section>
 
-<h3>New notation for the solution at the most recent time levels  <a name="___sec96"></a></h3>
+<h3>New notation for the solution at the most recent time levels  <a name="___sec97"></a></h3>
 
 <p>
 
@@ -3948,7 +3989,7 @@ $$
 
 <section>
 
-<h3>Deriving the linear systems  <a name="___sec97"></a></h3>
+<h3>Deriving the linear systems  <a name="___sec98"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -3997,7 +4038,7 @@ $$
 
 <section>
 
-<h3>Structure of the linear systems  <a name="___sec98"></a></h3>
+<h3>Structure of the linear systems  <a name="___sec99"></a></h3>
 
 <p>
 <p>&nbsp;<br>
@@ -4031,7 +4072,7 @@ $$
 
 <section>
 
-<h3>Computational algorithm  <a name="___sec99"></a></h3>
+<h3>Computational algorithm  <a name="___sec100"></a></h3>
 
 <p>
 
@@ -4060,6 +4101,343 @@ Initial condition:
 </ul>
 <p>
 
+
+</section>
+
+
+<section>
+
+<h3>Comparing P1 elements with the finite difference method; ideas <a name="fem:deq:diffu:FE:fdvsP1fe"></a></h3>
+
+<p>
+
+<ul>
+ <p><li> P1 elements in 1D</li>
+ <p><li> Uniform mesh on \( [0,L] \) with cell length \( h \)</li>
+ <p><li> No Dirichlet conditions: \( \baspsi_i=\basphi_i \), \( i=0,\ldots,N=N_n \)</li>
+ <p><li> Have found formulas for \( M \) and \( K \) at the element level</li>
+ <p><li> Have assembled the global matrices</li>
+ <p><li> Have developed corresponding finite difference operator formulas</li>
+</ul>
+<p>
+
+
+</section>
+
+
+<section>
+
+<h3>Comparing P1 elements with the finite difference method; results  <a name="___sec102"></a></h3>
+
+<p>
+Diffusion equation with finite elements is equivalent to
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_t^+(u - \frac{1}{6}h^2D_xD_x u) = \dfc D_xD_x u + f]^n_i
+\tag{44}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Can lump the mass matrix by Trapezoidal integration and get
+the standard finite difference scheme
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_t^+u  = \dfc D_xD_x u + f]^n_i
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Discretization in time by a Backward Euler scheme <a name="fem:deq:diffu:anal:FE"></a></h3>
+
+<p>
+Backward Euler scheme in time:
+
+<p>
+<p>&nbsp;<br>
+$$
+[D_t^- u = \dfc\nabla^2 u + f(\x, t)]^n
+\tp
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\uex^{n} - \Delta t \left( \dfc\nabla^2 \uex^n + f(\x, t_{n})\right) =
+\uex^{n-1}
+\tag{45}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<p>&nbsp;<br>
+$$ \uex^n \approx u^n = \sum_{j=0}^{N} c_j^{n}\baspsi_j(\x),\quad
+\uex^{n+1} \approx u^{n+1} = \sum_{j=0}^{N} c_j^{n+1}\baspsi_j(\x)$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The variational form of the time-discrete problem  <a name="___sec104"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+\int_{\Omega} \left( u^{n}\baspsi_i
++ \Delta t \dfc\nabla u^n\cdot\nabla\baspsi_i\right)\dx
+= \int_{\Omega} u^{n-1}\baspsi_i\dx -
+\Delta t\int_{\Omega}f^n\baspsi_i\dx
+\tag{46}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+or
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(u,\baspsi_i)
++ \Delta t \dfc(\nabla u,\nabla\baspsi_i)
+= (u_1\baspsi_i) +
+\Delta t (f^n,\baspsi_i)
+\tag{47}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>The linear system  <a name="___sec105"></a></h3>
+
+<p>
+Insert \( u=\sum_j c_j\baspsi_i \) and \( u_1=\sum_j c_{1,j}\baspsi_i \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+(M + \Delta t \dfc K)c = Mc_1 + f,
+\tag{48}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Calculations with P1 elements in 1D  <a name="___sec106"></a></h3>
+
+<p>
+Can interpret the resulting equation system as
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_t^-(u - \frac{1}{6}h^2D_xD_x u) = \dfc D_xD_x u + f]^n_i
+\tag{49}
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Lumped mass matrix (by Trapezoidal integration):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+[D_t^- u = \dfc D_xD_x u + f]^n_i
+\tag{50}
+\tp
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+(Standard finite difference method)
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Analysis of the discrete equations <a name="fem:deq:diffu:anal"></a></h3>
+
+<p>
+The diffusion equation \( u_t = \dfc u_{xx} \) allows a (Fourier)
+wave component
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u = \Aex^n e^{ikx},\quad \Aex = e^{-\dfc k^2\Delta t}\tp
+\tag{51}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Numerical schemes often allow the similar solution
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+u^n_q = A^n e^{ikx},
+\tag{52}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+\( A \): amplification factor to be computed
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Amplification factor for the Forward Euler method; results  <a name="___sec108"></a></h3>
+
+<p>
+\( p=k\Delta x/2 \) and \( C=\dfc\Delta t/\Delta x^2 \):
+
+<p>
+<p>&nbsp;<br>
+$$ A = 1 - 4C\frac{\sin^2 p}{1 + \underbrace{\frac{2}{3}\sin^2 p}_{\hbox{from }M}}$$
+<p>&nbsp;<br>
+
+
+<p>
+(See notes for details)
+
+<p>
+Stability: \( -1\geq A \):
+
+<p>
+<p>&nbsp;<br>
+$$
+\begin{equation}
+C\leq \frac{5}{6}\quad\Rightarrow\quad \Delta t\leq \frac{5\Delta x^2}{6\dfc}
+\end{equation}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+Finite differences: \( C\leq \frac{1}{2} \)
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Amplification factor for the Forward Euler method; plot  <a name="___sec109"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/diffu_A_factors2_FE.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Amplification factor for the Backward Euler method; results  <a name="___sec110"></a></h3>
+
+<p>
+<p>&nbsp;<br>
+$$
+A = \left( 1 + 4C\frac{\sin^2 p}{1 + \frac{2}{3}\sin^2 p}\right)^{-1}
+\hbox{ (unconditionally stable)}
+$$
+<p>&nbsp;<br>
+
+
+<p>
+<center><p><img src="fig-fem/diffu_A_factors2_BE.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Amplification factors for smaller time steps; Forward Euler  <a name="___sec111"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/diffu_A_factors2_FE.png" align="bottom" width=400></p></center>
+
+<p>
+
+</section>
+
+
+<section>
+
+<h3>Amplification factors for smaller time steps; Backward Euler  <a name="___sec112"></a></h3>
+
+<p>
+<center><p><img src="fig-fem/diffu_A_factors2_BE.png" align="bottom" width=400></p></center>
+
+<p>
 
 
 </section>

@@ -3,7 +3,7 @@ Solution of 1D differential equation by linear combination of
 basis functions in function spaces and a variational formulation
 of the differential equation problem.
 """
-import sympy as sm
+import sympy as sp
 from scitools.std import plot, hold, legend, savefig, linspace, \
      title, xlabel, axis
 
@@ -27,9 +27,9 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
     during the computations.
     """
     N = len(psi[0]) - 1
-    A = sm.zeros((N+1, N+1))
-    b = sm.zeros((N+1, 1))
-    x = sm.Symbol('x')
+    A = sp.zeros((N+1, N+1))
+    b = sp.zeros((N+1, 1))
+    x = sp.Symbol('x')
     print '...evaluating matrix...',
     for i in range(N+1):
         for j in range(i, N+1):
@@ -37,14 +37,14 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
             if verbose:
                 print '(%d,%d):' % (i, j), integrand
             if symbolic:
-                I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-                if isinstance(I, sm.Integral):
+                I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+                if isinstance(I, sp.Integral):
                     symbolic = False  # force numerical integration hereafter
                     print 'numerical integration of', integrand
             if not symbolic:
-                integrand_ = sm.lambdify([x], integrand)
+                integrand_ = sp.lambdify([x], integrand)
                 try:
-                    I = sm.mpmath.quad(integrand_, [Omega[0], Omega[1]])
+                    I = sp.mpmath.quad(integrand_, [Omega[0], Omega[1]])
                 except NameError as e:
                     raise NameError('Numerical integration of\n%s\nrequires symbol %s to be given a value' %
                                     (integrand, str(e).split()[2]))
@@ -55,14 +55,14 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
         if verbose:
             print 'rhs:', integrand
         if symbolic:
-            I = sm.integrate(integrand, (x, Omega[0], Omega[1]))
-            if isinstance(I, sm.Integral):
+            I = sp.integrate(integrand, (x, Omega[0], Omega[1]))
+            if isinstance(I, sp.Integral):
                 symbolic = False
                 print 'numerical integration of', integrand
         if not symbolic:
-            integrand_ = sm.lambdify([x], integrand)
+            integrand_ = sp.lambdify([x], integrand)
             try:
-                I = sm.mpmath.quad(integrand_, [Omega[0], Omega[1]])
+                I = sp.mpmath.quad(integrand_, [Omega[0], Omega[1]])
             except NameError as e:
                 raise NameError('Numerical integration of\n%s\nrequires symbol %s to be given a value' %
                                 (integrand, str(e).split()[2]))
@@ -72,7 +72,7 @@ def solve(integrand_lhs, integrand_rhs, psi, Omega,
     print
     if verbose: print 'A:\n', A, '\nb:\n', b
     c = A.LUsolve(b)
-    #c = sm.mpmath.lu_solve(A, b)
+    #c = sp.mpmath.lu_solve(A, b)
     if verbose: print 'coeff:', c
     u = 0
     for i in range(len(psi[0])):
@@ -89,19 +89,19 @@ def collocation(term_lhs, term_rhs, psi, points):
     coefficient matrix, while term_rhs is a function of psi, i and
     points returning the element i in the right-hand side vector.
     Note that the given psi is transformed to Python functions through
-    sm.lambdify such that term_lhs and term_rhs can simply evaluate
+    sp.lambdify such that term_lhs and term_rhs can simply evaluate
     psi[0][i], ... at a point.
     """
     N = len(psi[0]) - 1
-    A = sm.zeros((N+1, N+1))
-    b = sm.zeros((N+1, 1))
+    A = sp.zeros((N+1, N+1))
+    b = sp.zeros((N+1, 1))
     # Wrap psi in Python functions (psi_) rather than expressions
     # so that we can evaluate psi_ at points[i] (alternative to subs?)
-    x = sm.Symbol('x')
+    x = sp.Symbol('x')
     psi_ = {}
     module = "numpy" if N > 2 else "sympy"
     for derivative in psi:
-        psi_[derivative] = [sm.lambdify([x], psi[derivative][i],
+        psi_[derivative] = [sp.lambdify([x], psi[derivative][i],
                                         modules="sympy")
                             for i in range(N+1)]
     print '...evaluating matrix...',
@@ -130,8 +130,8 @@ def collocation(term_lhs, term_rhs, psi, points):
 
 def comparison_plot(u, Omega, u_e=None, filename='tmp.eps',
                     plot_title='', ymin=None, ymax=None):
-    x = sm.Symbol('x')
-    u = sm.lambdify([x], u, modules="numpy")
+    x = sp.Symbol('x')
+    u = sp.lambdify([x], u, modules="numpy")
     if len(Omega) != 2:
         raise ValueError('Omega=%s must be an interval (2-list)' % str(Omega))
     # When doing symbolics, Omega can easily contain symbolic expressions,
