@@ -5,7 +5,7 @@ Introduction to finite element methods
 ======================================
 
 :Author: Hans Petter Langtangen
-:Date: Nov 5, 2013
+:Date: Nov 11, 2013
 
 **PRELIMINARY VERSION**
 
@@ -652,7 +652,7 @@ These :math:`N+1` equations result in the same linear system as
 
 
 .. math::
-         (\boldsymbol{f} - \sum_{j=0}^N c_j\boldsymbol{\psi}_j, \boldsymbol{\psi}_i) = (\boldsymbol{f}, \boldsymbol{\psi}_i) - \sum_{j\in{\mathcal{I}_V}}
+         (\boldsymbol{f} - \sum_{j=0}^N c_j\boldsymbol{\psi}_j, \boldsymbol{\psi}_i) = (\boldsymbol{f}, \boldsymbol{\psi}_i) - \sum_{j\in{\mathcal{I}_s}}
         (\boldsymbol{\psi}_i,\boldsymbol{\psi}_j)c_j = 0,
 
 and hence
@@ -708,17 +708,17 @@ combination of the basis functions:
 .. math::
    :label: fem:approx:ufem
         
-        u = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j{\thinspace .}
+        u = \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j{\thinspace .}
         
         
 
-The index set :math:`{\mathcal{I}_V}` is defined as :math:`{\mathcal{I}_V} =\{0,\ldots,N\}` and is used
+The index set :math:`{\mathcal{I}_s}` is defined as :math:`{\mathcal{I}_s} =\{0,\ldots,N\}` and is used
 both for compact notation and for flexibility in the numbering of
 elements in sequences.
 
 For now, in this introduction, we shall look at functions of a
 single variable :math:`x`:
-:math:`u=u(x)`, :math:`{\psi}_i={\psi}_i(x)`, :math:`i\in{\mathcal{I}_V}`. Later, we will almost
+:math:`u=u(x)`, :math:`{\psi}_i={\psi}_i(x)`, :math:`i\in{\mathcal{I}_s}`. Later, we will almost
 trivially extend the mathematical details
 to functions of two- or three-dimensional physical spaces.
 The approximation :eq:`fem:approx:ufem` is typically used
@@ -774,7 +774,7 @@ The distance between :math:`f` and any function :math:`u\in V` is simply
 .. math::
    :label: fem:approx:LS:E
         
-        E = (f(x)-\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x), f(x)-\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x)){\thinspace .}
+        E = (f(x)-\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x), f(x)-\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x)){\thinspace .}
         
         
 
@@ -788,12 +788,12 @@ through similar steps as used for the result
 
 .. math::
         
-        E(c_i, \ldots, c_N) = (f,f) -2\sum_{j\in{\mathcal{I}_V}} c_j(f,{\psi}_i)
-        + \sum_{p\in{\mathcal{I}_V}}\sum_{q\in{\mathcal{I}_V}} c_pc_q({\psi}_p,{\psi}_q){\thinspace .}  
+        E(c_i, \ldots, c_N) = (f,f) -2\sum_{j\in{\mathcal{I}_s}} c_j(f,{\psi}_i)
+        + \sum_{p\in{\mathcal{I}_s}}\sum_{q\in{\mathcal{I}_s}} c_pc_q({\psi}_p,{\psi}_q){\thinspace .}  
 
 Minimizing this function of :math:`N+1` scalar variables
-:math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`, requires differentiation
-with respect to :math:`c_i`, for all :math:`i\in{\mathcal{I}_V}`. The resulting
+:math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`, requires differentiation
+with respect to :math:`c_i`, for all :math:`i\in{\mathcal{I}_s}`. The resulting
 equations are very similar to those we had in the vector case,
 and we hence end up with a
 linear system of the form :eq:`fem:approx:vec:Np1dim:eqsys`, with
@@ -858,7 +858,7 @@ it follows that :eq:`fem:approx:Galerkin` is equivalent to
 .. math::
    :label: fem:approx:Galerkin0
         
-        (e,{\psi}_i)=0,\quad i\in{\mathcal{I}_V}{\thinspace .}
+        (e,{\psi}_i)=0,\quad i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
@@ -971,7 +971,7 @@ The linear system can be computed either symbolically or
 numerically (a numerical integration rule is needed in the latter case).
 Here is a function for symbolic computation of the linear system,
 where :math:`f(x)` is given as a ``sympy`` expression ``f`` involving
-the symbol ``x``, ``psi`` is a list of expressions for :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_V}}`,
+the symbol ``x``, ``psi`` is a list of expressions for :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`,
 and ``Omega`` is a 2-tuple/list holding the limits of the domain :math:`\Omega`:
 
 
@@ -1071,23 +1071,23 @@ In fact, we have a general result that
 if :math:`f\in V`, the least squares and projection/Galerkin methods compute
 the exact solution :math:`u=f`.
 The proof is straightforward: if :math:`f\in V`, :math:`f` can be expanded in
-terms of the basis functions, :math:`f=\sum_{j\in{\mathcal{I}_V}} d_j{\psi}_j`, for
-some coefficients :math:`\left\{ {d}_i \right\}_{i\in{\mathcal{I}_V}}`,
+terms of the basis functions, :math:`f=\sum_{j\in{\mathcal{I}_s}} d_j{\psi}_j`, for
+some coefficients :math:`\left\{ {d}_i \right\}_{i\in{\mathcal{I}_s}}`,
 and the right-hand side then has entries
 
 
 .. math::
-         b_i = (f,{\psi}_i) = \sum_{j\in{\mathcal{I}_V}} d_j({\psi}_j, {\psi}_i) = \sum_{j\in{\mathcal{I}_V}} d_jA_{i,j}
+         b_i = (f,{\psi}_i) = \sum_{j\in{\mathcal{I}_s}} d_j({\psi}_j, {\psi}_i) = \sum_{j\in{\mathcal{I}_s}} d_jA_{i,j}
         {\thinspace .}  
 
-The linear system :math:`\sum_jA_{i,j}c_j = b_i`, :math:`i\in{\mathcal{I}_V}`, is then
+The linear system :math:`\sum_jA_{i,j}c_j = b_i`, :math:`i\in{\mathcal{I}_s}`, is then
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}} c_jA_{i,j} = \sum_{j\in{\mathcal{I}_V}}d_jA_{i,j},
-        \quad i\in{\mathcal{I}_V},
+         \sum_{j\in{\mathcal{I}_s}} c_jA_{i,j} = \sum_{j\in{\mathcal{I}_s}}d_jA_{i,j},
+        \quad i\in{\mathcal{I}_s},
 
-which implies that :math:`c_i=d_i` for :math:`i\in{\mathcal{I}_V}`.
+which implies that :math:`c_i=d_i` for :math:`i\in{\mathcal{I}_s}`.
 
 .. _fem:approx:global:illconditioning:
 
@@ -1228,7 +1228,7 @@ That is,
 
 
 .. math::
-         {\psi}_i(x) = \sin ((i+1)\pi x),\quad i\in{\mathcal{I}_V}{\thinspace .} 
+         {\psi}_i(x) = \sin ((i+1)\pi x),\quad i\in{\mathcal{I}_s}{\thinspace .} 
 
 An approximation to the :math:`f(x)` function from
 the section :ref:`fem:approx:global:linear` can then be computed by the
@@ -1267,7 +1267,7 @@ seeking
 
 .. math::
         
-        u(x) = f(0) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x)
+        u(x) = f(0) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x)
         {\thinspace .}
         
 
@@ -1279,7 +1279,7 @@ is :math:`f(0)` at :math:`x=0` and :math:`f(1)` at :math:`x=1`. A simple linear 
 
 .. math::
         
-        u(x) = f(0)(1-x) + xf(1) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x)
+        u(x) = f(0)(1-x) + xf(1) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x)
         {\thinspace .}
         
 
@@ -1328,7 +1328,7 @@ by hand:
 
 .. math::
         
-        c_i = 2\int_0^1 f(x)\sin ((i+1)\pi x) {\, \mathrm{d}x},\quad i\in{\mathcal{I}_V},
+        c_i = 2\int_0^1 f(x)\sin ((i+1)\pi x) {\, \mathrm{d}x},\quad i\in{\mathcal{I}_s},
         
 
 which is nothing but the classical formula for the coefficients of
@@ -1463,21 +1463,21 @@ The principle of minimizing the distance between :math:`u` and :math:`f` is
 an intuitive way of computing a best approximation :math:`u\in V` to :math:`f`.
 However, there are other approaches as well.
 One is to demand that :math:`u(x_{i}) = f(x_{i})` at some selected points
-:math:`x_{i}`, :math:`i\in{\mathcal{I}_V}`:
+:math:`x_{i}`, :math:`i\in{\mathcal{I}_s}`:
 
 
 .. math::
         
-        u(x_{i}) = \sum_{j\in{\mathcal{I}_V}} c_j {\psi}_j(x_{i}) = f(x_{i}),
-        \quad i\in{\mathcal{I}_V}{\thinspace .} 
+        u(x_{i}) = \sum_{j\in{\mathcal{I}_s}} c_j {\psi}_j(x_{i}) = f(x_{i}),
+        \quad i\in{\mathcal{I}_s}{\thinspace .} 
 
 This criterion also gives a linear system
-with :math:`N+1` unknown coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`:
+with :math:`N+1` unknown coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`:
 
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}} A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_V},
+        \sum_{j\in{\mathcal{I}_s}} A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_s},
         
 
 with
@@ -1512,10 +1512,10 @@ one usually applies the name *collocation method* and
    single: approximation; interpolation
 
 
-Given :math:`f`  as a ``sympy`` symbolic expression ``f``, :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_V}}`
-as a list ``psi``, and a set of points :math:`\left\{ {x}_i \right\}_{i\in{\mathcal{I}_V}}`  as a list or array
+Given :math:`f`  as a ``sympy`` symbolic expression ``f``, :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`
+as a list ``psi``, and a set of points :math:`\left\{ {x}_i \right\}_{i\in{\mathcal{I}_s}}`  as a list or array
 ``points``, the following Python function sets up and solves the matrix system
-for the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`:
+for the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`:
 
 
 .. code-block:: python
@@ -1639,7 +1639,7 @@ Lagrange polynomials
 
 
 In the section :ref:`fem:approx:global:Fourier` we explain the advantage with having
-a diagonal matrix: formulas for the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` can
+a diagonal matrix: formulas for the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` can
 then be derived by hand. For an interpolation/collocation method a
 diagonal matrix implies that
 :math:`{\psi}_j(x_{i}) = 0` if :math:`i\neq j`. One set of basis functions :math:`{\psi}_i(x)`
@@ -1663,7 +1663,7 @@ The Lagrange polynomials have the form
         
         
 
-for :math:`i\in{\mathcal{I}_V}`.
+for :math:`i\in{\mathcal{I}_s}`.
 We see from :eq:`fem:approx:global:Lagrange:poly` that all the :math:`{\psi}_i`
 functions are polynomials of degree :math:`N` which have the property
 
@@ -1694,7 +1694,7 @@ them simply
 
 .. math::
         
-        c_i = f(x_{i}),\quad i\in{\mathcal{I}_V},
+        c_i = f(x_{i}),\quad i\in{\mathcal{I}_s},
         
 
 and
@@ -1702,7 +1702,7 @@ and
 
 .. math::
         
-        u(x) = \sum_{j\in{\mathcal{I}_V}} f(x_{i}){\psi}_i(x){\thinspace .}  
+        u(x) = \sum_{j\in{\mathcal{I}_s}} f(x_{i}){\psi}_i(x){\thinspace .}  
 
 
 The following function computes the Lagrange interpolating polynomial
@@ -1991,8 +1991,8 @@ Here is the code:
 
 .. _fem:approx:fe:
 
-Finite element basis functions
-==============================
+Finite element basis functions  (1)
+===================================
 
 The specific basis functions exemplified in the section :ref:`fem:approx:global` are in general nonzero on the entire domain
 :math:`\Omega`, see Figure :ref:`fem:approx:fe:fig:u:sin` for an example
@@ -2226,8 +2226,8 @@ in the usual way as :math:`\sum_jc_j{\psi}_j` and choose :math:`{\psi}_i = {\var
 
 .. math::
         
-        u(x_{i}) = \sum_{j\in{\mathcal{I}_V}} c_j {\psi}_j (x_{i}) =
-        \sum_{j\in{\mathcal{I}_V}} c_j {\varphi}_j (x_{i}) = c_i {\varphi}_i (x_{i}) = c_i
+        u(x_{i}) = \sum_{j\in{\mathcal{I}_s}} c_j {\psi}_j (x_{i}) =
+        \sum_{j\in{\mathcal{I}_s}} c_j {\varphi}_j (x_{i}) = c_i {\varphi}_i (x_{i}) = c_i
         {\thinspace .}
         
 
@@ -2593,7 +2593,7 @@ hat functions as depicted in
 Figure :ref:`fem:approx:fe:fig:phi:i:im1`. Since the integral
 is geometrically identical to the situation with specific nodes
 2 and 3, we realize that :math:`A_{i,i-1}=A_{i,i+1}=h/6` and
-:math:`A_{i,i}=h/3`. However, we can compute the integral directly
+:math:`A_{i,i}=2h/3`. However, we can compute the integral directly
 too:
 
 
@@ -3463,7 +3463,7 @@ The ``nodes`` and ``elements`` variables represent the finite
 element mesh as explained earlier.
 
 Given the coefficient matrix ``A`` and the right-hand side ``b``,
-we can compute the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` in the expansion
+we can compute the coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` in the expansion
 :math:`u(x)=\sum_jc_j{\varphi}_j` as the solution vector ``c`` of the linear
 system:
 
@@ -3527,8 +3527,8 @@ Choosing the nodes as points, the principle is
 
 
 .. math::
-         u(x_{i}) = \sum_{j\in{\mathcal{I}_V}} c_j{\varphi}_j(x_{i}) = f(x_{i}),\quad
-        i\in{\mathcal{I}_V}{\thinspace .}
+         u(x_{i}) = \sum_{j\in{\mathcal{I}_s}} c_j{\varphi}_j(x_{i}) = f(x_{i}),\quad
+        i\in{\mathcal{I}_s}{\thinspace .}
 
 The coefficient matrix :math:`A_{i,j}={\varphi}_j(x_{i})` becomes
 the identity matrix because basis function number :math:`j` vanishes
@@ -3644,7 +3644,10 @@ tridiagonal:
 
 
 
+.. _Eq:fem:approx:fe:A:fullmat:
+
 .. math::
+   :label: fem:approx:fe:A:fullmat
         
         A = \frac{h}{6}
         \left(
@@ -3662,6 +3665,7 @@ tridiagonal:
         0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 1 & 2
         \end{array}
         \right)
+        
         
 
 
@@ -3933,7 +3937,7 @@ reads in general
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}} c_j ({\psi}_i,{\psi}_j) = (f,{\psi}_i),\quad i\in{\mathcal{I}_V}{\thinspace .}
+        \sum_{j\in{\mathcal{I}_s}} c_j ({\psi}_i,{\psi}_j) = (f,{\psi}_i),\quad i\in{\mathcal{I}_s}{\thinspace .}
         
 
 In the finite element approximation we choose :math:`{\psi}_i ={\varphi}_i`.
@@ -4168,7 +4172,7 @@ Trapezoidal integration results in
 
 
 .. math::
-         c_i = f_i,\quad i\in{\mathcal{I}_V}{\thinspace .}  
+         c_i = f_i,\quad i\in{\mathcal{I}_s}{\thinspace .}  
 
 
 Simpsons's rule can be used to achieve a similar result for P2 elements, i.e,
@@ -4812,7 +4816,7 @@ two lead to linear systems
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}} A_{i,j}c_j &= b_i,\quad i\in{\mathcal{I}_V},\\ 
+        \sum_{j\in{\mathcal{I}_s}} A_{i,j}c_j &= b_i,\quad i\in{\mathcal{I}_s},\\ 
         A_{i,j} &= ({\psi}_i,{\psi}_j),\\ 
         b_i &= (f,{\psi}_i),
         
@@ -4939,7 +4943,7 @@ and use the standard form for :math:`u`,
 
 
 .. math::
-         u = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x,y){\thinspace .}
+         u = \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x,y){\thinspace .}
 
 The single index is related to the double index through
 :math:`i=p N_y + q` or :math:`i=q N_x + p`.
@@ -5816,8 +5820,8 @@ Exercise 6: Approximate a steep function by sines
 
 Find the best approximation of :math:`f(x) = \tanh (s(x-\pi))` on
 :math:`[0, 2\pi]` in the space :math:`V` with basis
-:math:`{\psi}_i(x) = \sin((2i+1)x)`, :math:`i\in{\mathcal{I}_V} = \{0,\ldots,N\}`.
-Make a movie showing how :math:`u=\sum_{j\in{\mathcal{I}_V}}c_j{\psi}_j(x)`
+:math:`{\psi}_i(x) = \sin((2i+1)x)`, :math:`i\in{\mathcal{I}_s} = \{0,\ldots,N\}`.
+Make a movie showing how :math:`u=\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j(x)`
 approximates :math:`f(x)` as :math:`N` grows. Choose :math:`s` such that :math:`f` is
 steep (:math:`s=20` may be appropriate).
 
@@ -6244,7 +6248,7 @@ the element matrix and vector using the
 Trapezoidal rule :eq:`fem:approx:fe:numint1:trapez` for calculating
 integrals on the reference element. Assemble the contributions, assuming
 a uniform cell partitioning, and show that the resulting linear system
-has the form :math:`c_i=f(x_{i})` for :math:`i\in{\mathcal{I}_V}`.
+has the form :math:`c_i=f(x_{i})` for :math:`i\in{\mathcal{I}_s}`.
 Filename: ``fe_P1_trapez.pdf``.
 
 .. --- end exercise ---
@@ -6658,14 +6662,14 @@ The fundamental idea is to seek an approximate solution
         
 
 which means that :math:`u` can always be expressed as a linear combination
-of the basis functions :math:`\left\{ {{\varphi}}_i \right\}_{i\in{\mathcal{I}_V}}`, with :math:`{\mathcal{I}_V}` as
+of the basis functions :math:`\left\{ {{\varphi}}_i \right\}_{i\in{\mathcal{I}_s}}`, with :math:`{\mathcal{I}_s}` as
 the index set :math:`\{0,\ldots,N\}`:
 
 
 .. math::
-         u(x) = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x){\thinspace .}
+         u(x) = \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x){\thinspace .}
 
-The coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` are unknowns to be computed.
+The coefficients :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` are unknowns to be computed.
 
 (Later, in the section :ref:`fem:deq:1D:essBC`, we will see that if we specify boundary values of :math:`u` different
 from zero, we must look for an approximate solution
@@ -6675,7 +6679,7 @@ incorporating the right boundary values. Because of :math:`B(x)`, :math:`u` will
 necessarily lie in :math:`V`. This modification does not imply any difficulties.)
 
 We need principles for deriving :math:`N+1` equations to determine the
-:math:`N+1` unknowns :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`.
+:math:`N+1` unknowns :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`.
 When approximating a given function :math:`f` by :math:`u=\sum_jc_j{\varphi}_j`,
 a key idea is to minimize the square norm of the
 approximation error :math:`e=u-f` or (equvalently) demand that :math:`e` is
@@ -6700,9 +6704,9 @@ The nonzero result,
 is called the *residual* and measures the
 error in fulfilling the governing equation.
 
-Various principles for determining :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` try to minimize
+Various principles for determining :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` try to minimize
 :math:`R` in some sense. Note that :math:`R` varies with :math:`x` and
-the :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` parameters. We may write this dependence
+the :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` parameters. We may write this dependence
 explicitly as
 
 
@@ -6717,7 +6721,7 @@ a collocation or interpolation method.
 The least squares method  (4)
 -----------------------------
 
-The least-squares method aims to find :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` such that
+The least-squares method aims to find :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` such that
 the square norm of the residual
 
 
@@ -6743,7 +6747,7 @@ the least-squares method can be defined as
         
         \min_{c_0,\ldots,c_N} E = (R,R){\thinspace .}  
 
-Differentiating with respect to the free parameters :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`
+Differentiating with respect to the free parameters :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`
 gives the :math:`N+1` equations
 
 
@@ -6754,7 +6758,7 @@ gives the :math:`N+1` equations
         
         \int_{\Omega} 2R\frac{\partial R}{\partial c_i} {\, \mathrm{d}x} = 0\quad
         \Leftrightarrow\quad (R,\frac{\partial R}{\partial c_i})=0,\quad
-        i\in{\mathcal{I}_V}{\thinspace .}
+        i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
@@ -6768,7 +6772,7 @@ the space :math:`V` when approximating a function :math:`f` by :math:`u\in V`.
 With a differential equation
 we do not know the true error so we must instead require the residual :math:`R`
 to be orthogonal to :math:`V`. This idea implies
-seeking :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` such that
+seeking :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` such that
 
 
 .. _Eq:fem:deq:1D:Galerkin0:
@@ -6793,11 +6797,11 @@ basis functions only:
 .. math::
    :label: fem:deq:1D:Galerkin
         
-        (R,{\psi}_i)=0,\quad i\in{\mathcal{I}_V},
+        (R,{\psi}_i)=0,\quad i\in{\mathcal{I}_s},
         
         
 
-resulting in :math:`N+1` equations for determining :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`.
+resulting in :math:`N+1` equations for determining :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`.
 
 The Method of Weighted Residuals
 --------------------------------
@@ -6826,11 +6830,11 @@ express the method of weighted residuals as
 .. math::
    :label: fem:deq:1D:WRM
         
-        (R,w_i)=0,\quad i\in{\mathcal{I}_V}{\thinspace .}
+        (R,w_i)=0,\quad i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
-The result is :math:`N+1` equations for :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`.
+The result is :math:`N+1` equations for :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`.
 
 The least-squares method can also be viewed as a weighted residual
 method with :math:`w_i = \partial R/\partial c_i`.
@@ -6923,7 +6927,7 @@ at :math:`N+1` selected points :math:`x_{0},\ldots,x_{N}` in :math:`\Omega`:
 .. math::
    :label: fem:deq:1D:collocation
         
-        R(x_{i}; c_0,\ldots,c_N)=0,\quad i\in{\mathcal{I}_V}{\thinspace .}
+        R(x_{i}; c_0,\ldots,c_N)=0,\quad i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
@@ -6971,14 +6975,14 @@ over :math:`N+1` subdomains :math:`\Omega_i` of :math:`\Omega`:
 
 .. math::
         
-        \int_{\Omega_i} R\, {\, \mathrm{d}x}=0,\quad i\in{\mathcal{I}_V}{\thinspace .}  
+        \int_{\Omega_i} R\, {\, \mathrm{d}x}=0,\quad i\in{\mathcal{I}_s}{\thinspace .}  
 
 This statement can also be expressed as a weighted residual method
 
 
 .. math::
         
-        \int_{\Omega} Rw_i\, {\, \mathrm{d}x}=0,\quad i\in{\mathcal{I}_V}, 
+        \int_{\Omega} Rw_i\, {\, \mathrm{d}x}=0,\quad i\in{\mathcal{I}_s}, 
 
 where :math:`w_i=1` for :math:`x\in\Omega_i` and :math:`w_i=0` otherwise.
 
@@ -7020,7 +7024,7 @@ for :math:`V` is
 .. math::
    :label: fem:deq:1D:ex:sines:psi
         
-        {\psi}_i(x) = {\sin\left((i+1)\pi\frac{x}{L}\right)},\quad i\in{\mathcal{I}_V}{\thinspace .}
+        {\psi}_i(x) = {\sin\left((i+1)\pi\frac{x}{L}\right)},\quad i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
@@ -7075,7 +7079,7 @@ residual:
 
 .. math::
           
-        = \frac{d^2}{dx^2}\left(\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x)\right)
+        = \frac{d^2}{dx^2}\left(\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x)\right)
         + f(x),\nonumber
         
 
@@ -7086,7 +7090,7 @@ residual:
 .. math::
    :label: fem:deq:1D:ex:sines:res
           
-        = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j''(x) + f(x){\thinspace .}
+        = \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j''(x) + f(x){\thinspace .}
         
         
 
@@ -7103,16 +7107,16 @@ in the least squares method require an expression for
         
         \frac{\partial R}{\partial c_i} =
         \frac{\partial}{\partial c_i}
-        \left(\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j''(x) + f(x)\right)
-        = \sum_{j\in{\mathcal{I}_V}} \frac{\partial c_j}{\partial c_i}{\psi}_j''(x)
+        \left(\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j''(x) + f(x)\right)
+        = \sum_{j\in{\mathcal{I}_s}} \frac{\partial c_j}{\partial c_i}{\psi}_j''(x)
         = {\psi}_i''(x){\thinspace .}  
 
-The governing equations for :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` are then
+The governing equations for :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` are then
 
 
 .. math::
         
-        (\sum_j c_j {\psi}_j'' + f,{\psi}_i'')=0,\quad i\in{\mathcal{I}_V},
+        (\sum_j c_j {\psi}_j'' + f,{\psi}_i'')=0,\quad i\in{\mathcal{I}_s},
         
 
 which can be rearranged as
@@ -7120,14 +7124,14 @@ which can be rearranged as
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}}({\psi}_i'',{\psi}_j'')c_j = -(f,{\psi}_i''),\quad i\in{\mathcal{I}_V}{\thinspace .}
+        \sum_{j\in{\mathcal{I}_s}}({\psi}_i'',{\psi}_j'')c_j = -(f,{\psi}_i''),\quad i\in{\mathcal{I}_s}{\thinspace .}
         
 
 This is nothing but a linear system
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}}A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_V},
+         \sum_{j\in{\mathcal{I}_s}}A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_s},
         
 
 with
@@ -7248,22 +7252,22 @@ This is the variational formulation, based on the Galerkin principle,
 of our differential equation.
 The :math:`\forall v\in V` requirement is equivalent to
 demanding the equation :math:`(u'',v) = -(f,v)` to be fulfilled for all
-basis functions :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_V}`, see
+basis functions :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`, see
 :eq:`fem:deq:1D:Galerkin0` and :eq:`fem:deq:1D:Galerkin`.
 We therefore have
 
 
 .. math::
         
-        (\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j'', {\psi}_i)=-(f,{\psi}_i),\quad i\in{\mathcal{I}_V}{\thinspace .}  
+        (\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j'', {\psi}_i)=-(f,{\psi}_i),\quad i\in{\mathcal{I}_s}{\thinspace .}  
 
 This equation can be rearranged to a form that explicitly shows
-that we get a linear system for the unknowns :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}`:
+that we get a linear system for the unknowns :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}`:
 
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}} ({\psi}_i,{\psi}_j'')c_j = (f, {\psi}_i),\quad i\in{\mathcal{I}_V}{\thinspace .}  
+        \sum_{j\in{\mathcal{I}_s}} ({\psi}_i,{\psi}_j'')c_j = (f, {\psi}_i),\quad i\in{\mathcal{I}_s}{\thinspace .}  
 
 For the particular choice of the basis functions :eq:`fem:deq:1D:ex:sines:psi`
 we get in fact the same linear system
@@ -7289,7 +7293,7 @@ the equations
 
 .. math::
         
-        -\sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j''(x_{i}) = f(x_{i}),\quad i\in{\mathcal{I}_V},
+        -\sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j''(x_{i}) = f(x_{i}),\quad i\in{\mathcal{I}_s},
         
 
 which is seen to be a linear system with entries
@@ -7450,12 +7454,12 @@ only first-order derivatives.
 
 .. _fem:deq:1D:essBC:Bfunc:
 
-Boundary function
------------------
+Boundary function  (1)
+----------------------
 
 So far we have assumed zero Dirichlet boundary conditions, typically
 :math:`u(0)=u(L)=0`, and we have demanded that :math:`{\psi}_i(0)={\psi}_i(L)=0`
-for :math:`i\in{\mathcal{I}_V}`. What about a boundary condition like :math:`u(L)=D\neq0`?
+for :math:`i\in{\mathcal{I}_s}`. What about a boundary condition like :math:`u(L)=D\neq0`?
 This condition immediately faces a problem:
 :math:`u = \sum_j c_j{\varphi}_j(L) = 0` since all :math:`{\varphi}_i(L)=0`.
 
@@ -7466,7 +7470,7 @@ the expansion for :math:`u`:
 
 
 .. math::
-         u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x)
+         u(x) = B(x) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x)
         {\thinspace .}
         
 
@@ -7474,7 +7478,7 @@ This :math:`u` gets the right value at :math:`x=L`:
 
 
 .. math::
-         u(L) = B(L) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(L) = B(L) = D{\thinspace .}  
+         u(L) = B(L) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(L) = B(L) = D{\thinspace .}  
 
 The idea is that for any boundary where :math:`u` is known we demand :math:`{\psi}_i` to
 vanish and construct a function :math:`B(x)` to attain the boundary value of :math:`u`.
@@ -7492,7 +7496,7 @@ The unknown function is then sought on the form
 .. math::
    :label: fem:deq:1D:essBC:Bfunc:u1
         
-        u(x) = \frac{x}{L}D + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x),
+        u(x) = \frac{x}{L}D + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x),
         
         
 
@@ -7537,7 +7541,7 @@ ambiguity in the construction of :math:`B(x)`.
 .. math::
    :label: fem:deq:1D:essBC:Bfunc:u2
            
-           u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x),
+           u(x) = B(x) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x),
            
            
    
@@ -7614,14 +7618,14 @@ in :math:`a(u,v)=L(v)`. Using the linear properties, we get
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}} a({\psi}_j,{\psi}_i) c_j = L({\psi}_i),\quad i\in{\mathcal{I}_V},
+         \sum_{j\in{\mathcal{I}_s}} a({\psi}_j,{\psi}_i) c_j = L({\psi}_i),\quad i\in{\mathcal{I}_s},
         
 
 which is a linear system
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}}A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_V},
+         \sum_{j\in{\mathcal{I}_s}}A_{i,j}c_j = b_i,\quad i\in{\mathcal{I}_s},
 
 where
 
@@ -7670,7 +7674,7 @@ minimization of a quadratic function
 
 
 .. math::
-         \bar F(c_0,\ldots,c_N) = \sum_{j\in{\mathcal{I}_V}}\sum_{i\in{\mathcal{I}_V}} a({\psi}_i,{\psi}_j)c_ic_j - \sum_{j\in{\mathcal{I}_V}} L({\psi}_j)c_j
+         \bar F(c_0,\ldots,c_N) = \sum_{j\in{\mathcal{I}_s}}\sum_{i\in{\mathcal{I}_s}} a({\psi}_i,{\psi}_j)c_ic_j - \sum_{j\in{\mathcal{I}_s}} L({\psi}_j)c_j
         
 
 of :math:`N+1` parameters.
@@ -7679,13 +7683,13 @@ Minimization of :math:`\bar F` implies
 
 
 .. math::
-         \frac{\partial\bar F}{\partial c_i}=0,\quad i\in{\mathcal{I}_V}{\thinspace .}
+         \frac{\partial\bar F}{\partial c_i}=0,\quad i\in{\mathcal{I}_s}{\thinspace .}
 
 After some algebra one finds
 
 
 .. math::
-         \sum{j\in{\mathcal{I}_V}} a({\psi}_i,{\psi}_j)c_j = L({\psi}_i),\quad i\in{\mathcal{I}_V},
+         \sum{j\in{\mathcal{I}_s}} a({\psi}_i,{\psi}_j)c_j = L({\psi}_i),\quad i\in{\mathcal{I}_s},
 
 which is the same system as that arising from :math:`a(u,v)=L(v)`.
 
@@ -7726,9 +7730,9 @@ Let us first deal with the boundary conditions. We seek
 
 
 .. math::
-         u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_i(x),
+         u(x) = B(x) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_i(x),
 
-with :math:`{\psi}_i(0)={\psi}_i(L)=0` for :math:`i\in{\mathcal{I}_V}`. The function :math:`B(x)`
+with :math:`{\psi}_i(0)={\psi}_i(L)=0` for :math:`i\in{\mathcal{I}_s}`. The function :math:`B(x)`
 must then fulfill :math:`B(0)=C` and :math:`B(L)=D`. How :math:`B` varies in between
 :math:`x=0` and :math:`x=L` is not of importance. One possible choice is
 
@@ -7748,7 +7752,7 @@ but the two Dirichlet boundary conditions demand that
 
 
 .. math::
-         {\psi}_i(0)={\psi}_i(L)=0, \quad i\in{\mathcal{I}_V}{\thinspace .}
+         {\psi}_i(0)={\psi}_i(L)=0, \quad i\in{\mathcal{I}_s}{\thinspace .}
 
 Note that any :math:`v\in V` has the property :math:`v(0)=v(L)=0`.
 
@@ -7826,8 +7830,8 @@ derive the linear system:
 
 .. math::
         
-        ({\alpha} B' + {\alpha} \sum_{j\in{\mathcal{I}_V}} c_j {\psi}_j', {\psi}_i') =
-        (f,{\psi}_i), \quad i\in{\mathcal{I}_V} {\thinspace .}
+        ({\alpha} B' + {\alpha} \sum_{j\in{\mathcal{I}_s}} c_j {\psi}_j', {\psi}_i') =
+        (f,{\psi}_i), \quad i\in{\mathcal{I}_s} {\thinspace .}
         
 
 Isolating everything with the :math:`c_j` coefficients on the left-hand side
@@ -7836,8 +7840,8 @@ gives
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}} ({\alpha}{\psi}_j', {\psi}_i')c_j  =
-        (f,{\psi}_i) + (a(D-C)L^{-1}, {\psi}_i'), \quad i\in{\mathcal{I}_V}
+         \sum_{j\in{\mathcal{I}_s}} ({\alpha}{\psi}_j', {\psi}_i')c_j  =
+        (f,{\psi}_i) + (a(D-C)L^{-1}, {\psi}_i'), \quad i\in{\mathcal{I}_s}
         {\thinspace .}
         
 
@@ -7881,7 +7885,7 @@ The expansion for :math:`u` becomes
 
 
 .. math::
-         u = C + \sum_{j\in{\mathcal{I}_V}} c_j {\psi}_i(x)
+         u = C + \sum_{j\in{\mathcal{I}_s}} c_j {\psi}_i(x)
         {\thinspace .}
         
 
@@ -7957,11 +7961,11 @@ with the particular formulas
 
 
 The associated linear system is derived by inserting :math:`u=B+\sum_jc_j{\psi}_j`
-and replacing :math:`v` by :math:`{\psi}_i` for :math:`i\in{\mathcal{I}_V}`. Some algebra results in
+and replacing :math:`v` by :math:`{\psi}_i` for :math:`i\in{\mathcal{I}_s}`. Some algebra results in
 
 
 .. math::
-         \sum_{j\in{\mathcal{I}_V}} \underbrace{(({\psi}_j',{\psi}_i') + (b{\psi}_j',{\psi}_i))}_{A_{i,j}} c_j = \underbrace{(f,{\psi}_i) + E {\psi}_i(L)}_{b_i}
+         \sum_{j\in{\mathcal{I}_s}} \underbrace{(({\psi}_j',{\psi}_i') + (b{\psi}_j',{\psi}_i))}_{A_{i,j}} c_j = \underbrace{(f,{\psi}_i) + E {\psi}_i(L)}_{b_i}
         {\thinspace .}
         
 
@@ -8003,8 +8007,8 @@ a nonlinear coefficient and right-hand side:
         {\thinspace .}
         
 
-Our space :math:`V` has basis :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_V}}`, and because of the
-condition :math:`u(0)=0`, we must require :math:`{\psi}_i(0)=0`, :math:`i\in{\mathcal{I}_V}`.
+Our space :math:`V` has basis :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`, and because of the
+condition :math:`u(0)=0`, we must require :math:`{\psi}_i(0)=0`, :math:`i\in{\mathcal{I}_s}`.
 
 Galerkin's method is about inserting the approximate
 :math:`u`, multiplying the differential equation by :math:`v\in V`, and integrate,
@@ -8061,7 +8065,7 @@ with
 
 
 By inserting :math:`u=\sum_j c_j{\psi}_j` we get a *nonlinear system of
-algebraic equations* for the unknowns :math:`c_i`, :math:`i\in{\mathcal{I}_V}`. Such systems must
+algebraic equations* for the unknowns :math:`c_i`, :math:`i\in{\mathcal{I}_s}`. Such systems must
 be solved by constructing a sequence of linear systems whose solutions
 hopefully converge to the solution of the nonlinear system. Frequently applied
 methods are Picard iteration and Newton's method.
@@ -8089,7 +8093,7 @@ specified at :math:`x=1`, so a proper set of polynomial basis functions can be
 
 
 .. math::
-         {\psi}_i(x)=(1-x)^{i+1}, \quad i\in{\mathcal{I}_V}{\thinspace .}
+         {\psi}_i(x)=(1-x)^{i+1}, \quad i\in{\mathcal{I}_s}{\thinspace .}
 
 A suitable :math:`B(x)` function
 to handle the boundary condition :math:`u(1)=D` is :math:`B(x)=Dx`.
@@ -8233,12 +8237,12 @@ need any boundary function :math:`B(x)` and can work with the expansion
 .. math::
    :label: fem:deq:1D:fem1:ex:u
         
-        u(x) = \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x){\thinspace .}
+        u(x) = \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x){\thinspace .}
         
         
 
 Because of the boundary conditions, we must demand
-:math:`{\psi}_i(0)={\psi}_i(L)=0`, :math:`i\in{\mathcal{I}_V}`. When :math:`{\psi}_i`,
+:math:`{\psi}_i(0)={\psi}_i(L)=0`, :math:`i\in{\mathcal{I}_s}`. When :math:`{\psi}_i`,
 :math:`i=0,\ldots,N`, is to be selected among the finite element basis
 functions :math:`{\varphi}_j`, :math:`i=0,\ldots,N_n`, we have to avoid using
 :math:`{\varphi}_j` functions that do not vanish at :math:`x_{0}=0` and
@@ -8260,7 +8264,7 @@ to right, so we introduce a mapping from the node numbering, or more
 precisely the degree of freedom numbering, to the numbering of
 the unknowns in the final equation system. These unknowns take on
 the numbers :math:`0,\ldots,N`. Unknown number :math:`j` in the linear system
-corresponds to degree of freedom number :math:`\nu (j)`, :math:`j\in{\mathcal{I}_V}`.
+corresponds to degree of freedom number :math:`\nu (j)`, :math:`j\in{\mathcal{I}_s}`.
 We can then write
 
 
@@ -8290,7 +8294,7 @@ The entries in the coefficient matrix and right-hand side are
 .. math::
         
         A_{i,j}=\int_0^L{\psi}_i'(x){\psi}_j'(x) {\, \mathrm{d}x},\quad
-        b_i=\int_0^L2{\psi}_i(x) {\, \mathrm{d}x}, \quad i,j\in{\mathcal{I}_V}{\thinspace .}
+        b_i=\int_0^L2{\psi}_i(x) {\, \mathrm{d}x}, \quad i,j\in{\mathcal{I}_s}{\thinspace .}
         
 
 Expressed in terms of finite element basis functions :math:`{\varphi}_i` we
@@ -8300,7 +8304,7 @@ get the alternative expressions
 .. math::
         
         A_{i,j}=\int_0^L{\varphi}_{i+1}'(x){\varphi}_{j+1}'(x) {\, \mathrm{d}x},\quad
-        b_i=\int_0^L2{\varphi}_{i+1}(x) {\, \mathrm{d}x},\quad i,j\in{\mathcal{I}_V}{\thinspace .}
+        b_i=\int_0^L2{\varphi}_{i+1}(x) {\, \mathrm{d}x},\quad i,j\in{\mathcal{I}_s}{\thinspace .}
         
 
 For the following calculations the subscripts on the finite
@@ -8399,7 +8403,7 @@ we can write
 
 
 The equation system to be solved only involves the unknowns
-:math:`c_i` for :math:`i\in{\mathcal{I}_V}`. With our numbering of unknowns and
+:math:`c_i` for :math:`i\in{\mathcal{I}_s}`. With our numbering of unknowns and
 nodes, we have that :math:`c_i` equals :math:`u(x_{i+1})`.
 The complete matrix system that takes the following form:
 
@@ -8813,7 +8817,7 @@ The unknown function can then be written as
 
 .. math::
         
-        u(x) = \sum_{j\in{I_b}} U_j{\varphi}_j(x) + \sum{j\in{\mathcal{I}_V}}c_j{\varphi}_{\nu(j)},
+        u(x) = \sum_{j\in{I_b}} U_j{\varphi}_j(x) + \sum{j\in{\mathcal{I}_s}}c_j{\varphi}_{\nu(j)},
         
 
 where :math:`\nu(j)` maps unknown number :math:`j` in the equation system to
@@ -8825,7 +8829,7 @@ condition :math:`u(x_{k})=U_k` is fulfilled:
         
         u(x_{k}) = \sum_{j\in{I_b}} U_j\underbrace{{\varphi}_j(x)}_{\neq 0
         hbox{ only for }j=k} +
-        \sum_{j\in{\mathcal{I}_V}} c_j\underbrace{{\varphi}_{\nu(j)}(x_{k})}_{=0,\ k\not\in{\mathcal{I}_V}}
+        \sum_{j\in{\mathcal{I}_s}} c_j\underbrace{{\varphi}_{\nu(j)}(x_{k})}_{=0,\ k\not\in{\mathcal{I}_s}}
         = U_k 
 
 
@@ -8874,7 +8878,7 @@ boundary conditions :math:`u(0)=C`, :math:`u(L)=D`, we have :math:`N=N_n-2` and
 
 .. math::
         
-        u(x) &= C{\varphi}_0 + D{\varphi}_{N_n} + \sum_{j\in{\mathcal{I}_V}} c_j{\varphi}_{j+1}
+        u(x) &= C{\varphi}_0 + D{\varphi}_{N_n} + \sum_{j\in{\mathcal{I}_s}} c_j{\varphi}_{j+1}
         &= C{\varphi}_0 + D{\varphi}_{N_n} + c_0{\varphi}_1 + c_1{\varphi}_2 +\cdots
         + c_N{\varphi}_{N_n-1}{\thinspace .}
         
@@ -8894,7 +8898,7 @@ Inserting the expression
 
 
 .. math::
-         u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}}c_j{\psi}_j(x)
+         u(x) = B(x) + \sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j(x)
 
 in :math:`-(u'',{\psi}_i)=(f,{\psi}_i)` and
 integrating by parts results in a linear system with
@@ -8920,7 +8924,7 @@ The expansion for :math:`u(x)` is
 
 
 .. math::
-         u(x)  = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\varphi}_{j+1}(x){\thinspace .} 
+         u(x)  = B(x) + \sum_{j\in{\mathcal{I}_s}} c_j{\varphi}_{j+1}(x){\thinspace .} 
 
 We can write the matrix and right-hand side entries as
 
@@ -9005,8 +9009,8 @@ right-hand side of the linear system gets an extra term
 
 .. _fem:deq:1D:fem:essBC:Bfunc:modsys:
 
-Modification of the linear system
----------------------------------
+Modification of the linear system  (1)
+--------------------------------------
 
 From an implementational point of view, there is a convenient alternative
 to adding the :math:`B(x)` function and using only the basis functions associated
@@ -9020,7 +9024,7 @@ Instead of seeking
    :label: fem:deq:1D:fem:essBC:Bfunc:modsys:utrad
         
         u(x) = \sum_{j\in{I_b}} U_j{\varphi}_j(x)
-        + \sum_{j\in{\mathcal{I}_V}}c_j{\varphi}_{\nu(j)}(x),
+        + \sum_{j\in{\mathcal{I}_s}}c_j{\varphi}_{\nu(j)}(x),
         
         
 
@@ -9033,12 +9037,12 @@ values:
 .. math::
    :label: fem:deq:1D:fem:essBC:Bfunc:modsys:uall
         
-        u(x) = \sum_{j\in{\mathcal{I}_V}}c_j{\varphi}_j(x){\thinspace .}
+        u(x) = \sum_{j\in{\mathcal{I}_s}}c_j{\varphi}_j(x){\thinspace .}
         
         
 
 Note that the collections of unknowns
-:math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_V}}` in :eq:`fem:deq:1D:fem:essBC:Bfunc:modsys:utrad`
+:math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` in :eq:`fem:deq:1D:fem:essBC:Bfunc:modsys:utrad`
 and :eq:`fem:deq:1D:fem:essBC:Bfunc:modsys:uall` are different:
 in :eq:`fem:deq:1D:fem:essBC:Bfunc:modsys:utrad` :math:`N` counts the
 number of nodes where :math:`u` is not known, while
@@ -9168,7 +9172,7 @@ the first and last equation by
         
         \frac{1}{h}\left(
         \begin{array}{ccccccccc}
-        1 & 0 & 0
+        h & 0 & 0
         &\cdots &
         \cdots & \cdots & \cdots &
         \cdots & 0 \\ 
@@ -9180,7 +9184,7 @@ the first and last equation by
         \vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
         \vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
         \vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\ 
-        0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & 1
+        0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & h
         \end{array}
         \right)
         \left(
@@ -9235,14 +9239,14 @@ insert zeroes in row number :math:`k` in the coefficient matrix,
 set 1 on the diagonal, and replace :math:`b_k` by :math:`U_k`.
 A symmetry-preserving modification consists in first
 subtracting column number :math:`k` in the coefficient matrix, i.e., :math:`A_{i,k}`
-for :math:`i\in{\mathcal{I}_V}`, times the boundary value :math:`U_k`, from the
+for :math:`i\in{\mathcal{I}_s}`, times the boundary value :math:`U_k`, from the
 right-hand side: :math:`b_i \leftarrow b_i - A_{i,k}U_k`. Then we put
 zeroes in row number :math:`k` *and* column number :math:`k` in the coefficient matrix,
 and finally set :math:`b_k=U_k`. The steps in algorithmic form becomes
 
- 1. :math:`b_i \leftarrow b_i - A_{i,k}U_k` for :math:`i\in{\mathcal{I}_V}`
+ 1. :math:`b_i \leftarrow b_i - A_{i,k}U_k` for :math:`i\in{\mathcal{I}_s}`
 
- 2. :math:`A_{i,k} = A_{k,i} = 0` for :math:`i\in{\mathcal{I}_V}`
+ 2. :math:`A_{i,k} = A_{k,i} = 0` for :math:`i\in{\mathcal{I}_s}`
 
  3. :math:`A_{k,k}=1`
 
@@ -9267,7 +9271,7 @@ entries. Finally, we set :math:`b_0=0` and :math:`b_N=D`. The result becomes
         
         \frac{1}{h}\left(
         \begin{array}{ccccccccc}
-        1 & 0 & 0
+        h & 0 & 0
         &\cdots &
         \cdots & \cdots & \cdots &
         \cdots & 0 \\ 
@@ -9279,7 +9283,7 @@ entries. Finally, we set :math:`b_0=0` and :math:`b_N=D`. The result becomes
         \vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\ 
         \vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\ 
         \vdots & & & &  &\ddots  & \ddots &\ddots  & 0 \\ 
-        0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & 1
+        0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & h
         \end{array}
         \right)
         \left(
@@ -9336,7 +9340,7 @@ is known and the modification becomes
         
         \tilde A^{(0)} =
         A = \frac{1}{h}\left(\begin{array}{rr}
-        1 & 0\\ 
+        h & 0\\ 
         -1 & 1
         \end{array}\right),\quad
         \tilde b^{(0)} = \left(\begin{array}{c}
@@ -9357,7 +9361,7 @@ In the last cell we set
         \tilde A^{(N_e)} =
         A = \frac{1}{h}\left(\begin{array}{rr}
         1 & -1\\ 
-        0 & 1
+        0 & h
         \end{array}\right),\quad
         \tilde b^{(N_e)} = \left(\begin{array}{c}
         h\\ 
@@ -9379,7 +9383,7 @@ is the same as for the global linear system, resulting in
         
         \tilde A^{(N-1)} =
         A = \frac{1}{h}\left(\begin{array}{rr}
-        1 & 0\\ 
+        h & 0\\ 
         0 & 1
         \end{array}\right),\quad
         \tilde b^{(N-1)} = \left(\begin{array}{c}
@@ -9428,7 +9432,7 @@ Starting with the Galerkin method,
 
 .. math::
         
-        \int_0^L(u''(x)+f(x)){\psi}_i(x) {\, \mathrm{d}x} = 0,\quad i\in{\mathcal{I}_V},
+        \int_0^L(u''(x)+f(x)){\psi}_i(x) {\, \mathrm{d}x} = 0,\quad i\in{\mathcal{I}_s},
         
 
 integrating :math:`u''{\psi}_i` by parts results in
@@ -9437,7 +9441,7 @@ integrating :math:`u''{\psi}_i` by parts results in
 .. math::
         
         \int_0^Lu'(x)'{\psi}_i'(x) {\, \mathrm{d}x} -(u'(L){\psi}_i(L) - u'(0){\psi}_i(0)) =
-        \int_0^L f(x){\psi}_i(x) {\, \mathrm{d}x}, \quad i\in{\mathcal{I}_V}{\thinspace .}
+        \int_0^L f(x){\psi}_i(x) {\, \mathrm{d}x}, \quad i\in{\mathcal{I}_s}{\thinspace .}
         
 
 
@@ -9456,7 +9460,7 @@ The variational form of the differential equation then becomes
 .. math::
    :label: fem:deq:1D:BC:nat:varform
          \int_0^Lu'(x){\varphi}_i'(x) {\, \mathrm{d}x} + C{\varphi}_i(0) =
-        \int_0^L f(x){\varphi}_i(x) {\, \mathrm{d}x},\quad i\in{\mathcal{I}_V}{\thinspace .}
+        \int_0^L f(x){\varphi}_i(x) {\, \mathrm{d}x},\quad i\in{\mathcal{I}_s}{\thinspace .}
         
         
 
@@ -9467,10 +9471,10 @@ Boundary term vanishes because of the test functions
 ----------------------------------------------------
 
 At points where :math:`u` is known we may require :math:`{\psi}_i` to vanish.
-Here, :math:`u(L)=D` and then :math:`{\psi}_i(0)=0`, :math:`i\in{\mathcal{I}_V}`. Obviously,
+Here, :math:`u(L)=D` and then :math:`{\psi}_i(0)=0`, :math:`i\in{\mathcal{I}_s}`. Obviously,
 the boundary term :math:`u'(L){\psi}_i(L)` then vanishes.
 
-The set of basis functions :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_V}}` contains in this
+The set of basis functions :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}` contains in this
 case all the finite element basis functions on the mesh, expect
 the one that is 1 at :math:`x=L`. The basis function that is left out is
 used in a boundary function :math:`B(x)` instead.
@@ -9507,7 +9511,7 @@ Boundary term vanishes because of linear system modifications
 -------------------------------------------------------------
 
 We may, as an alternative to the approach in the previous section, use
-a basis :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_V}}` which contains all the finite element
+a basis :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}` which contains all the finite element
 functions on the mesh: :math:`{\psi}_i={\varphi}_i`, :math:`i=0,\ldots,N_n=N`.  In
 this case, :math:`u'(L){\psi}_i(L)=u'(L){\varphi}_i(L)\neq 0` for the :math:`i`
 corresponding to the boundary node at :math:`x=L` (where :math:`{\varphi}_i=1`).
@@ -9532,7 +9536,7 @@ The expansion for :math:`u` reads
 
 .. math::
         
-        u(x) = \sum_{j\in{\mathcal{I}_V}} c_j{\varphi}_j(x),
+        u(x) = \sum_{j\in{\mathcal{I}_s}} c_j{\varphi}_j(x),
         \quad B(x) = D{\varphi}_N(x),
         
 
@@ -9546,10 +9550,10 @@ the linear system
 .. math::
    :label: fem:deq:1D:natBC2
         
-        \sum_{j\in{\mathcal{I}_V}}\left(
+        \sum_{j\in{\mathcal{I}_s}}\left(
         \int_0^L {\varphi}_i'(x){\varphi}_j'(x) {\, \mathrm{d}x} \right)c_j =
         \int_0^L\left(f(x){\varphi}_i(x)\right) {\, \mathrm{d}x}
-         - C{\varphi}_i(0),\quad i\in{\mathcal{I}_V}
+         - C{\varphi}_i(0),\quad i\in{\mathcal{I}_s}
         {\thinspace .}
         
         
@@ -9961,7 +9965,7 @@ To demonstrate the code above, we address
          -u''(x)=b,\quad x\in\Omega=[0,1],\quad u(0)=1,\ u(1)=0,
 
 with :math:`b` as a (symbolic) constant. A possible basis for the space :math:`V`
-is :math:`{\psi}_i(x) = x^{i+1}(1-x)`, :math:`i\in{\mathcal{I}_V}`. Note that
+is :math:`{\psi}_i(x) = x^{i+1}(1-x)`, :math:`i\in{\mathcal{I}_s}`. Note that
 :math:`{\psi}_i(0)={\psi}_i(1)=0` as required by the Dirichlet conditions.
 We need a :math:`B(x)` function to take care of the known boundary
 values of :math:`u`. Any function :math:`B(x)=1-x^p`, :math:`p\in\mathbb{R}`, is a candidate,
@@ -9971,7 +9975,7 @@ is :math:`B(x)=1-x^3`. The unknown function is then written as
 
 .. math::
         
-        u(x) = B(x) + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j(x){\thinspace .}
+        u(x) = B(x) + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j(x){\thinspace .}
         
 
 
@@ -9991,8 +9995,8 @@ and with :math:`u=B + \sum_jc_j{\psi}_j` we get the linear system
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}}\left(\int_0^1{\psi}_i'{\psi}_j' {\, \mathrm{d}x}\right)c_j = \int_0^1(f-B'){\psi}_i {\, \mathrm{d}x},
-        \quad i\in{\mathcal{I}_V}{\thinspace .}
+        \sum_{j\in{\mathcal{I}_s}}\left(\int_0^1{\psi}_i'{\psi}_j' {\, \mathrm{d}x}\right)c_j = \int_0^1(f-B'){\psi}_i {\, \mathrm{d}x},
+        \quad i\in{\mathcal{I}_s}{\thinspace .}
         
 
 
@@ -10260,7 +10264,7 @@ The unknown function can then be expanded as
 
 
 .. math::
-         u = B + \sum_{j\in{\mathcal{I}_V}} c_j{\psi}_j,\quad B = u_0 {\thinspace .} 
+         u = B + \sum_{j\in{\mathcal{I}_s}} c_j{\psi}_j,\quad B = u_0 {\thinspace .} 
 
 The variational formula is obtained from Galerkin's method, which
 technically implies multiplying the PDE by a test
@@ -10322,7 +10326,7 @@ The variational form is then
         
         \int_{\Omega} (\boldsymbol{v}\cdot\nabla u + \alpha u)v{\, \mathrm{d}x} =
         -\int_{\Omega} a\nabla u\cdot\nabla v {\, \mathrm{d}x}
-        - \int_{\partial\Omega} g v{\, \mathrm{d}s}
+        - \int_{\partial\Omega_N} g v{\, \mathrm{d}s}
         + \int_{\Omega} fv {\, \mathrm{d}x}
         {\thinspace .}
         
@@ -10347,7 +10351,7 @@ Inserting the :math:`u` expansion results in
 
 .. math::
         
-        \sum_{j\in{\mathcal{I}_V}} ((\boldsymbol{v}\cdot\nabla {\psi}_j, {\psi}_i) &+ (\alpha {\psi}_j ,{\psi}_i) + (a\nabla {\psi}_j,\nabla {\psi}_i))c_j = \\ 
+        \sum_{j\in{\mathcal{I}_s}} ((\boldsymbol{v}\cdot\nabla {\psi}_j, {\psi}_i) &+ (\alpha {\psi}_j ,{\psi}_i) + (a\nabla {\psi}_j,\nabla {\psi}_i))c_j = \\ 
         & (g,{\psi}_i)_{N} + (f,{\psi}_i) -
         (\boldsymbol{v}\cdot\nabla u_0, {\psi}_i) + (\alpha u_0 ,{\psi}_i) +
         (a\nabla u_0,\nabla {\psi}_i)
@@ -10372,12 +10376,12 @@ and right-hand side entries
         (a\nabla u_0,\nabla {\psi}_i),
         
 
-for :math:`i,j\in{\mathcal{I}_V}`.
+for :math:`i,j\in{\mathcal{I}_s}`.
 
 In the finite element method, we usually express :math:`u_0` in terms of
 basis functions and restrict :math:`i` and :math:`j` to run over the degrees of
 freedom that are not prescribed as Dirichlet conditions.
-However, we can also keep all the :math:`c_j`, :math:`j\in{\mathcal{I}_V}`, as unknowns
+However, we can also keep all the :math:`c_j`, :math:`j\in{\mathcal{I}_s}`, as unknowns
 drop the :math:`u_0` in the expansion for :math:`u`, and incorporate all the
 known :math:`c_j` values in the linear system. This has been explained
 in detail in the 1D case.
@@ -10536,12 +10540,12 @@ a triangle have 1 and 3 points:
 
 
         >>> import numint
-        >>> x, w = numint.quadrature_for_triangles(1)
+        >>> x, w = numint.quadrature_for_triangles(num_points=1)
         >>> x
         [(0.3333333333333333, 0.3333333333333333)]
         >>> w
         [0.5]
-        >>> x, w = numint.quadrature_for_triangles(3)
+        >>> x, w = numint.quadrature_for_triangles(num_points=3)
         >>> x
         [(0.16666666666666666, 0.16666666666666666),
          (0.66666666666666666, 0.16666666666666666),
@@ -10836,6 +10840,8 @@ Here, :math:`u(\boldsymbol{x},t)` is the unknown function, :math:`{\alpha}` is a
 :math:`f(\boldsymbol{x},t)` and :math:`I(x)` are given functions. We have assigned the particular
 boundary condition :eq:`fem:deq:diffu:bcN` to minimize
 the details on handling boundary conditions in the finite element method.
+
+.. _fem:deq:diffu:FE:
 
 Discretization in time by a Forward Euler scheme
 ------------------------------------------------
@@ -11138,7 +11144,7 @@ and order the terms as matrix-vector products:
         
         \sum_{j=0}^{N} ({\psi}_i,{\psi}_j) c_j =
         \sum_{j=0}^{N} ({\psi}_i,{\psi}_j) c_{1,j}
-        -\Delta t{\alpha} \sum_{j=0}^{N} (\nabla{\psi}_i,\nabla{\psi}_j) c_{1,j}
+        -\Delta t \sum_{j=0}^{N} (\nabla{\psi}_i,{\alpha}\nabla{\psi}_j) c_{1,j}
         + (f^n,{\psi}_i),\quad i=0,\ldots,N
         {\thinspace .}
         
@@ -11155,7 +11161,7 @@ and
 
 .. math::
          b_i = \sum_{j=0}^{N} ({\psi}_i,{\psi}_j) c_{1,j}
-        -\Delta t{\alpha} \sum_{j=0}^{N} (\nabla{\psi}_i,\nabla{\psi}_j) c_{1,j}
+        -\Delta t \sum_{j=0}^{N} (\nabla{\psi}_i,{\alpha}\nabla{\psi}_j) c_{1,j}
         + (f^n,{\psi}_i){\thinspace .}  
 
 
@@ -11165,7 +11171,7 @@ system on the form
 
 .. math::
         
-        Mc = Mc_1 - {\alpha}\Delta t Kc_1 + f,
+        Mc = Mc_1 - \Delta t Kc_1 + f,
         
 
 where
@@ -11173,11 +11179,12 @@ where
 
 .. math::
         
-        M &= \{M_{i,j}\},\quad M_{i,j}=({\psi}_i,{\psi}_j),\quad i,j\in{\mathcal{I}_V},\\ 
-        K &= \{K_{i,j}\},\quad K_{i,j}=(\nabla{\psi}_i,\nabla{\psi}_j),\quad i,j\in{\mathcal{I}_V},\\ 
-        f &= \{(f(\boldsymbol{x},t_n),{\psi}_i)\}_{i\in{\mathcal{I}_V}},\\ 
-        c &= \{c_i\}_{i\in{\mathcal{I}_V}},\\ 
-        c_1 &= \{c_{1,i}\}_{i\in{\mathcal{I}_V}}
+        M &= \{M_{i,j}\},\quad M_{i,j}=({\psi}_i,{\psi}_j),\quad i,j\in{\mathcal{I}_s},\\ 
+        K &= \{K_{i,j}\},\quad K_{i,j}=(\nabla{\psi}_i,{\alpha}\nabla{\psi}_j),
+        \quad i,j\in{\mathcal{I}_s},\\ 
+        f &= \{(f(\boldsymbol{x},t_n),{\psi}_i)\}_{i\in{\mathcal{I}_s}},\\ 
+        c &= \{c_i\}_{i\in{\mathcal{I}_s}},\\ 
+        c_1 &= \{c_{1,i}\}_{i\in{\mathcal{I}_s}}
         {\thinspace .}
         
 
@@ -11222,7 +11229,7 @@ The computational algorithm has the following steps:
 
 3. For :math:`n=1,2,\ldots,N_t`:
 
-  1. compute :math:`b = Mc_1 - {\alpha}\Delta t Kc_1 + f`
+  1. compute :math:`b = Mc_1 - \Delta t Kc_1 + f`
 
   2. solve :math:`Mc = b`
 
@@ -11235,7 +11242,7 @@ one has to solve the linear system :math:`\sum_j{\psi}_j(x_{i})c_j =
 I(x_{i})`, where :math:`\boldsymbol{x}_j` denotes an interpolation point.  Projection
 (or Galerkin's method) implies solving a linear system with :math:`M` as
 coefficient matrix : :math:`\sum_j M_{i,j}c_{1,j} = (I,{\psi}_i)`,
-:math:`i\in{\mathcal{I}_V}`.
+:math:`i\in{\mathcal{I}_s}`.
 
 
 .. _fem:deq:diffu:FE:fdvsP1fe:
@@ -11313,7 +11320,9 @@ the sum on the diagonal, and set all other entries in the row equal
 to zero. For P1 elements the methods of lumping the mass matrix give
 the same result.
 
-.. _fem:deq:diffu:anal:FE:
+
+
+.. _fem:deq:diffu:BE:
 
 Discretization in time by a Backward Euler scheme
 -------------------------------------------------
@@ -11401,7 +11410,7 @@ or
    :label: fem:deq:diffu:BE:vf:u:short
         
         (u,{\psi}_i)
-        + \Delta t {\alpha}(\nabla u,\nabla{\psi}_i)
+        + \Delta t ({\alpha}\nabla u,\nabla{\psi}_i)
         = (u_1{\psi}_i) +
         \Delta t (f^n,{\psi}_i)
         
@@ -11422,12 +11431,34 @@ solved at each time level:
 .. math::
    :label: fem:deq:diffu:BE:vf:linsys
         
-        (M + \Delta t {\alpha} K)c = Mc_1 + f,
+        (M + \Delta t K)c = Mc_1 + f,
         
         
 
 where :math:`M`, :math:`K`, and :math:`f` are as in the Forward Euler case.
 This time we really have to solve a linear system at each time level.
+The computational algorithm goes as follows.
+
+1. Compute :math:`M`, :math:`K`, and :math:`A=M + \Delta t K`
+
+2. Initialize :math:`u^0` by interpolation or projection
+
+3. For :math:`n=1,2,\ldots,N_t`:
+
+  1. compute :math:`b = Mc_1 + f`
+
+  2. solve :math:`Ac = b`
+
+  3. set :math:`c_1 = c`
+
+
+In case of finite element basis functions, interpolation of the
+initial condition at the nodes means :math:`c_{1,j} = I(\boldsymbol{x}_j)`. Otherwise
+one has to solve the linear system :math:`\sum_j{\psi}_j(x_{i})c_j =
+I(x_{i})`, where :math:`\boldsymbol{x}_j` denotes an interpolation point.  Projection
+(or Galerkin's method) implies solving a linear system with :math:`M` as
+coefficient matrix : :math:`\sum_j M_{i,j}c_{1,j} = (I,{\psi}_i)`,
+:math:`i\in{\mathcal{I}_s}`.
 
 We know what kind of finite difference operators the :math:`M` and :math:`K`
 matrices correspond to (after dividing by :math:`h`), so
@@ -11461,6 +11492,448 @@ equation:
         
         {\thinspace .}
         
+
+
+.. _fem:deq:diffu:Dirichlet:
+
+Dirichlet boundary conditions
+-----------------------------
+
+Suppose now that the boundary condition :eq:`fem:deq:diffu:bcN` is
+replaced by a mixed Neumann and Dirichlet condition,
+
+
+.. math::
+        
+        u(\boldsymbol{x},t) = u_0(\boldsymbol{x},t),\quad  \boldsymbol{x}\in\partial\Omega_D,
+        
+
+
+
+.. math::
+          
+        -{\alpha}\frac{\partial}{\partial n} u(\boldsymbol{x},t) = g(\boldsymbol{x},t),\quad
+         \boldsymbol{x}\in\partial{\Omega}_N{\thinspace .}
+        
+
+
+Using a Forward Euler discretization in time, the variational
+form at a time level becomes
+
+
+.. math::
+        
+        \int_\Omega u^{n+1}v{\, \mathrm{d}x} =
+        \int_\Omega (u^n - \Delta t{\alpha}\nabla u^n\cdot\nabla v){\, \mathrm{d}x} -
+        \Delta t\int_{\partial\Omega_N} gv{\, \mathrm{d}s},\quad \forall v\in V{\thinspace .}
+        
+
+
+Boundary function  (2)
+~~~~~~~~~~~~~~~~~~~~~~
+
+The Dirichlet condition :math:`u=u_0` at :math:`\partial\Omega_D` can be incorporated
+through a boundary function :math:`B(\boldsymbol{x})=u_0(\boldsymbol{x})` and demanding that :math:`v=0`
+at :math:`\partial\Omega_D`. The expansion for :math:`u^n` is written as
+
+
+.. math::
+         u^n(\boldsymbol{x}) = u_0(\boldsymbol{x},t_n) + \sum_{j\in{\mathcal{I}_s}}c_j^n{\psi}_j(\boldsymbol{x}){\thinspace .}
+
+Inserting this expansion in the variational formulation and letting it
+hold for all basis functions :math:`{\psi}_i` leads to the linear system
+
+
+.. math::
+        
+        \sum_{j\in{\mathcal{I}_s}} \left(\int_\Omega {\psi}_i{\psi}_j{\, \mathrm{d}x}\right)
+        c^{n+1}_j &= \sum_{j\in{\mathcal{I}_s}}
+        \left(\int_\Omega\left( {\psi}_i{\psi}_j -
+        \Delta t{\alpha}\nabla {\psi}_i\cdot\nabla{\psi}_j\right){\, \mathrm{d}x}\right) c_j^n - \\ 
+        &\quad  \int_\Omega\left( u_0(\boldsymbol{x},t_{n+1} - u_0(\boldsymbol{x},t_n)
+        + \Delta t{\alpha}\nabla u_0(\boldsymbol{x},t_n)\cdot\nabla
+        {\psi}_i\right){\, \mathrm{d}x} \\ 
+        & \quad + \Delta t\int_\Omega f{\psi}_i{\, \mathrm{d}x} -
+        \Delta t\int_{\partial\Omega_N} g{\psi}_i{\, \mathrm{d}s},
+        \quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+
+In the following,
+we adopt the convention that the unknowns :math:`c_j^{n+1}` are written as
+:math:`c_j`, while the known :math:`c_j^n` from the previous time level
+are denoted by :math:`c_{1,j}`.
+
+Finite element basis functions  (2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When using finite elements, each basis function :math:`{\varphi}_i` is associated
+with a node :math:`x_{i}`. We have a collection of nodes
+:math:`\{x_{i}\}_{i\in{I_b}}` on the boundary :math:`\partial\Omega_D`.
+Suppose :math:`U_k^n` is the known
+Dirichlet value at :math:`x_{k}` at time :math:`t_n` (:math:`U_k^n=u_0(x_{k},t_n)`).
+The appropriate boundary function is then
+
+
+.. math::
+         B(\boldsymbol{x},t_n)=\sum_{j\in{I_b}} U_j^n{\varphi}_j{\thinspace .}
+
+The unknown coefficients :math:`c_j` are associated with the rest of the nodes,
+which have numbers :math:`\nu(i)`, :math:`i\in{\mathcal{I}_s} = \{0,\ldots,N\}`. The basis
+functions for :math:`V` are chosen as :math:`{\psi}_i = {\varphi}_{\nu(i)}`, :math:`i\in{\mathcal{I}_s}`,
+and all of these vanish at the boundary nodes as they should.
+The expansion for :math:`u^{n+1}` and :math:`u^n` become
+
+
+.. math::
+        
+        u^n &= \sum_{j\in{I_b}} U_j^n{\varphi}_j + \sum_{j\in{\mathcal{I}_s}}c_{1,j}{\varphi}_{\nu(j)},\\ 
+        u^{n+1} &= \sum_{j\in{I_b}} U_j^{n+1}{\varphi}_j +
+        \sum_{j\in{\mathcal{I}_s}}c_{j}{\varphi}_{\nu(j)}{\thinspace .}
+        
+
+The equations for the unknown coefficients :math:`c_i` become
+
+
+.. math::
+        
+        \sum_{j\in{\mathcal{I}_s}} \left(\int_\Omega {\varphi}_i{\varphi}_j{\, \mathrm{d}x}\right)
+        c_j &= \sum_{j\in{\mathcal{I}_s}}
+        \left(\int_\Omega\left( {\varphi}_i{\varphi}_j -
+        \Delta t{\alpha}\nabla {\varphi}_i\cdot\nabla{\varphi}_j\right){\, \mathrm{d}x}\right) c_{1,j}
+        - \\ 
+        &\quad  \sum_{j\in{I_b}}\int_\Omega\left( {\varphi}_i{\varphi}_j(U_j^{n+1} - U_j^n)
+        + \Delta t{\alpha}\nabla {\varphi}_i\cdot\nabla
+        {\varphi}_jU_j^n\right){\, \mathrm{d}x} \\ 
+        &\quad + \Delta t\int_\Omega f{\varphi}_i{\, \mathrm{d}x} -
+        \Delta t\int_{\partial\Omega_N} g{\varphi}_i{\, \mathrm{d}s},
+        \quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+
+
+Modification of the linear system  (2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Instead of introducing a boundary function :math:`B` we can work with
+basis functions associated with all the nodes and incorporate the
+Dirichlet conditions by modifying the linear system.
+Let :math:`{\mathcal{I}_s}` be the index set that counts all the nodes:
+:math:`\{0,1,\ldots,N=N_n\}`. The
+expansion for :math:`u^n` is then :math:`\sum_{j\in{\mathcal{I}_s}}c^n_j{\varphi}_j` and the
+variational form becomes
+
+
+.. math::
+        
+        \sum_{j\in{\mathcal{I}_s}} \left(\int_\Omega {\varphi}_i{\varphi}_j{\, \mathrm{d}x}\right)
+        c_j &= \sum_{j\in{\mathcal{I}_s}}
+        \left(\int_\Omega\left( {\varphi}_i{\varphi}_j -
+        \Delta t{\alpha}\nabla {\varphi}_i\cdot\nabla{\varphi}_j\right){\, \mathrm{d}x}\right) c_{1,j}
+         \\ 
+        &\quad - \Delta t\int_\Omega f{\varphi}_i{\, \mathrm{d}x} -
+        \Delta t\int_{\partial\Omega_N} g{\varphi}_i{\, \mathrm{d}s}{\thinspace .}
+        
+
+We introduce the matrices :math:`M` and :math:`K` with entries
+:math:`M_{i,j}=\int_\Omega{\varphi}_i{\varphi}_j{\, \mathrm{d}x}` and
+:math:`K_{i,j}=\int_\Omega{\alpha}\nabla{\varphi}_i\cdot\nabla{\varphi}_j{\, \mathrm{d}x}`,
+respectively.
+In addition, we define the vectors :math:`c`, :math:`c_1`, and :math:`f` with
+entries :math:`c_i`, :math:`c_{1,i}`, and
+:math:`\int_\Omega f{\varphi}_i{\, \mathrm{d}x} - \int_{\partial\Omega_N}g{\varphi}_i{\, \mathrm{d}s}`.
+The equation system can then be written as
+
+
+.. math::
+        
+        Mc = Mc_1 - \Delta t Kc_1 + \Delta t f{\thinspace .}
+        
+
+When :math:`M`, :math:`K`, and :math:`b` are assembled without paying attention to
+Dirichlet boundary conditions, we need to replace equation :math:`k`
+by :math:`c_k=U_k` for :math:`k` corresponding to all boundary nodes (:math:`k\in{I_b}`).
+The modification of :math:`M` consists in setting :math:`M_{k,j}=0`, :math:`j\in{\mathcal{I}_s}`, and
+the :math:`M_{k,k}=1`. Alternatively, a modification that preserves
+the symmetry of :math:`M` can be applied. At each time level one forms
+:math:`b = Mc_1 - \Delta t Kc_1 + \Delta t f` and sets :math:`b_k=U^{n+1}_k`,
+:math:`k\in{I_b}`, and solves the system :math:`Mc=b`.
+
+In case of a Backward Euler method, the system becomes
+:eq:`fem:deq:diffu:BE:vf:linsys`. We can write the system
+as :math:`Ac=b`, with :math:`A=M + \Delta t K` and :math:`b = Mc_1 + f`.
+Both :math:`M` and :math:`K` needs to be modified because of Dirichlet
+boundary conditions, but the diagonal entries in :math:`K` should be
+set to zero and those in :math:`M` to unity. In this way, :math:`A_{k,k}=1`.
+The right-hand side must read :math:`b_k=U^n_k` for :math:`k\in{I_b}` (assuming
+the unknown is sought at time level :math:`t_n`).
+
+.. _fem:deq:diffu:Dirichlet:ex:
+
+Example: Oscillating Dirichlet boundary condition
+-------------------------------------------------
+
+We shall address the one-dimensional initial-boundary value problem
+
+
+.. _Eq:fem:deq:diffu:Dirichlet:ex:pde:
+
+.. math::
+   :label: fem:deq:diffu:Dirichlet:ex:pde
+        
+        u_t = ({\alpha} u_x)_x + f,\quad  \boldsymbol{x}\in\Omega =[0,L],\ t>0,
+         
+        
+
+
+
+.. _Eq:fem:deq:diffu:Dirichlet:ex:uic:
+
+.. math::
+   :label: fem:deq:diffu:Dirichlet:ex:uic
+          
+        u(x,0) = 0,\quad  \boldsymbol{x}\in\Omega,
+        
+        
+
+
+
+.. _Eq:fem:deq:diffu:Dirichlet:ex:uL:
+
+.. math::
+   :label: fem:deq:diffu:Dirichlet:ex:uL
+          
+        u(0,t) = a\sin\omega t,\quad  t>0,
+        
+        
+
+
+
+.. _Eq:fem:deq:diffu:Dirichlet:ex:uR:
+
+.. math::
+   :label: fem:deq:diffu:Dirichlet:ex:uR
+          
+        u_x(L,t) = 0,\quad  t>0{\thinspace .}
+        
+        
+
+A physical interpretation may be that :math:`u` is the temperature
+deviation from a constant mean temperature in a body :math:`\Omega`
+that is subject to an oscillating temperature (e.g., day and
+night, or seasonal, variations) at :math:`x=0`.
+
+We use a Backward Euler scheme in time and P1 elements of
+constant length :math:`h` in space.
+Incorporation of the Dirichlet condition at :math:`x=0` through
+modifying the linear system at each time level means that we
+carry out the computations as explained in the section :ref:`fem:deq:diffu:BE` and get a system :eq:`fem:deq:diffu:BE:vf:linsys`.
+The :math:`M` and :math:`K` matrices computed without paying attention to
+Dirichlet boundary conditions become
+
+
+.. math::
+        
+        M = \frac{h}{6}
+        \left(
+        \begin{array}{cccccccccc}
+        2  1  0
+        \cdots  \cdots  \cdots  \cdots  \cdots  0 
+        
+
+
+
+.. math::
+          
+        1  4  1  \ddots          \vdots 
+        
+
+
+
+.. math::
+          
+        0  1  4  1 
+        \ddots       \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots  \ddots    \ddots  \ddots  0     \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots    \ddots  \ddots  \ddots  \ddots  \ddots   \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots     0  1  4  1  \ddots  \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots      \ddots  \ddots  \ddots \ddots   0 
+        
+
+
+
+.. math::
+          
+        \vdots      \ddots   1   4   1 
+        
+
+
+
+.. math::
+          
+        0 \cdots  \cdots \cdots  \cdots  \cdots   0  1  2
+        \end{array}
+        \right)
+        
+
+
+
+.. math::
+          
+        K = \frac{{\alpha}}{h}
+        \left(
+        \begin{array}{cccccccccc}
+        1  -1  0 \cdots  \cdots  \cdots  \cdots  \cdots  0 
+        
+
+
+
+.. math::
+          
+        -1  2  -1  \ddots          \vdots 
+        
+
+
+
+.. math::
+          
+        0  -1  2  -1  \ddots       \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots  \ddots    \ddots  \ddots  0     \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots    \ddots  \ddots  \ddots  \ddots  \ddots   \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots     0  -1  2  -1  \ddots  \vdots 
+        
+
+
+
+.. math::
+          
+        \vdots      \ddots  \ddots  \ddots \ddots   0 
+        
+
+
+
+.. math::
+          
+        \vdots      \ddots   -1   2   -1 
+        
+
+
+
+.. math::
+          
+        0 \cdots  \cdots \cdots  \cdots  \cdots   0  -1  1
+        \end{array}
+        \right)
+        
+
+The right-hand side of the variational form contains :math:`Mc_1` since
+there is no source term (:math:`f`) and no boundary term from the
+integration by parts (:math:`u_x=0` at :math:`x=L` and we compute as if :math:`u_x=0` at
+:math:`x=0` too). We must incorporate the Dirichlet boundary
+condition :math:`c_0=a\sin\omega t_n` by ensuring that this is the
+first equation in the linear system. To this end,
+the first row in :math:`K` and :math:`M` are set to zero, but the diagonal
+entry :math:`M_{0,0}` is set to 1. The right-hand side is :math:`b=Mc_1`,
+and we set :math:`b_0 = a\sin\omega t_n`.
+Note that in this
+approach, :math:`N=N_n`, and :math:`c` equals the unknown :math:`u` at each node
+in the mesh. We can write the complete linear system as
+
+
+.. math::
+        
+        c_0 = a\sin\omega t_n,
+        
+
+
+
+.. math::
+          
+        \frac{h}{6}(c_{i-1} + 4c_i + c_{i+1}) + \Delta t\frac{{\alpha}}{h}(-c_{i-1}
+        +2c_i + c_{i+1}) = \frac{h}{6}(c_{1,i-1} + 4c_{1,i} + c_{1,i+1}),
+        
+
+
+
+.. math::
+          
+        \qquad i=1,\ldots,N_n-1,\nonumber
+        
+
+
+
+.. math::
+          
+        \frac{h}{6}(c_{i-1} + 2c_i) + \Delta t\frac{{\alpha}}{h}(-c_{i-1}
+        +c_i) = \frac{h}{6}(c_{1,i-1} + 2c_{1,i}),\quad i=N_n{\thinspace .}
+        
+
+
+The Dirichlet boundary condition can alternatively be implemented
+through a boundary function :math:`B(x,t)=a\sin\omega t{\varphi}_0(x)`:
+
+
+.. math::
+         u^n(x) = a\sin\omega t_n{\varphi}_0(x) +
+        \sum_{j\in{\mathcal{I}_s}} c_j{\varphi}_{\nu(j)}(x),\quad
+        \nu(j) = j+1{\thinspace .}
+
+Now, :math:`N=N_n-1` and the :math:`c` vector contains values of :math:`u` at nodes
+:math:`1,2,\ldots,N_n`. The right-hand side gets a contribution
+
+
+.. _Eq:fem:deq:diffu:Dirichlet:ex:bterm:
+
+.. math::
+   :label: fem:deq:diffu:Dirichlet:ex:bterm
+        
+        \int_0^L \left(
+        a(\sin\omega t_n - \sin\omega t_{n-1}){\varphi}_0{\varphi}_i
+        - \Delta t{\alpha} a\sin\omega t_n\nabla{\varphi}_0\cdot\nabla{\varphi}_i\right){\, \mathrm{d}x}
+        {\thinspace .}
+        
+        
+
 
 
 .. _fem:deq:diffu:anal:
@@ -11684,7 +12157,7 @@ the accuracy increases with lower :math:`C` values.
 
 .. _fem:deq:diffu:fig:A:FE2:
 
-.. figure:: fig-fem/diffu_A_factors2_FE.png
+.. figure:: fig-fem/diffu_A_factors2_fine_FE.png
    :width: 400
 
    *Comparison of fine-mesh amplification factors for Forward Euler discretization of a 1D diffusion equation*
@@ -11693,7 +12166,7 @@ the accuracy increases with lower :math:`C` values.
 
 .. _fem:deq:diffu:fig:A:BE2:
 
-.. figure:: fig-fem/diffu_A_factors2_BE.png
+.. figure:: fig-fem/diffu_A_factors2_fine_BE.png
    :width: 400
 
    *Comparison of fine-mesh amplification factors for Backward Euler discretization of a 1D diffusion equation*
