@@ -7,7 +7,7 @@ Nonlinear differential equation problems
 :Author: Hans Petter Langtangen
 :Date: Nov 18, 2013
 
-Note: **PRELIMINARY VERSION**
+Note: **VERY PRELIMINARY VERSION** (expect typos and mathematical errors)
 
 
 
@@ -794,6 +794,12 @@ Here, :math:`u` is a vector of unknowns :math:`u=(u_0,\ldots,u_N)`, and
 :math:`F` is a vector function: :math:`F=(F_0,\ldots,F_N)`. Similarly, :math:`A(u)`
 is an :math:`(N+1)\times (N+1)` matrix function of :math:`u` and :math:`b` is a vector
 function: :math:`b=(b_0,\ldots,b_N)`.
+
+We shall next explain how Picard iteration and Newton's method
+can be applied to systems like :math:`F(u)=0` and :math:`A(u)u=b(u)`.
+The exposition has a focus on ideas and practical computations.
+More theoretical considerations, including convergence properties
+of these methods, can be found in Kelley [Ref1]_.
 
 .. _nonlin:systems:alg:Picard:
 
@@ -1625,7 +1631,7 @@ the latter approximation then looks like
 .. math::
    :label: nonlin:alglevel:1D:fd:deq
           
-        \qquad + au_i = f(u_i){\thinspace .}
+        \qquad\qquad + au_i = f(u_i){\thinspace .}
         
         
 
@@ -1705,8 +1711,9 @@ The Jacobian becomes
         \frac{1}{2\Delta x^2}(
         -{\alpha}'(u_i)u_{i-1}
         +2{\alpha}'(u_i)u_{i}
-        +(-{\alpha}(u_{i-1}) + 2{\alpha}(u_i) - {\alpha}(u_{i+1})) + 2a\Delta x^2
-        -{\alpha}'(u_{i})u_{i+1})
+        +(-{\alpha}(u_{i-1}) + 2{\alpha}(u_i) - {\alpha}(u_{i+1}))) +\\ 
+        &\quad a
+        -\frac{1}{2\Delta x^2}{\alpha}'(u_{i})u_{i+1})
         - b'(u_i),\\ 
         J_{i,i-1} &= \frac{\partial F_i}{\partial u_{i-1}}
         = \frac{\partial A_{i,i-1}}{\partial u_{i-1}}u_{i-1}
@@ -1720,7 +1727,7 @@ The Jacobian becomes
         J_{i,i+1} &= \frac{\partial A_{i,i+1}}{\partial u_{i-1}}u_{i+1}
         + A_{i+1,i} +
         \frac{\partial A_{i,i}}{\partial u_{i+1}}u_i
-        - \frac{\partial b_i}{\partial u_{i+1}}
+        - \frac{\partial b_i}{\partial u_{i+1}}\\ 
         &=\frac{1}{2\Delta x^2}(
         -{\alpha}'(u_{i+1})u_{i+1} - (dfc(u_{i}) + {\alpha}(u_{i+1}))
         + {\alpha}'(u_{i+1})u_i){\thinspace .}
@@ -1804,6 +1811,9 @@ to hold for :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`. The result is
 The group finite element method
 -------------------------------
 
+Motivation
+~~~~~~~~~~
+
 Let us simplify the model problem for a while and set :math:`{\alpha}`,
 choose :math:`f(u)=u^2`, and have Dirichlet conditions at
 both ends such that we have a very simple
@@ -1842,6 +1852,9 @@ finite difference counterpart :math:`u_i^2`.
 
 .. index:: product approximation technique
 
+
+Finite element approximation of functions of :math:`u`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since we already expand :math:`u` as :math:`\sum_jc_j{\varphi}_j` we may use the
 same approximation for nonlinearities. More precisely, we have
@@ -1896,7 +1909,8 @@ equation. We have
          \int_0^L (\sum_j f(u_j){\varphi}_j){\varphi}_i{\, \mathrm{d}x}
         = \sum_j \left(\int_0^L {\varphi}_i{\varphi}_j{\, \mathrm{d}x}\right) f(u_j){\thinspace .}
 
-We recognize this expression as the mass matrix times the
+We recognize this expression as the mass matrix :math:`M`
+(:math:`\int{\varphi}_i{\varphi}_j{\, \mathrm{d}x}`) times the
 vector :math:`f=(f(u_0),f(u_1),\ldots,)`: :math:`Mf`. The associated terms
 in the difference equations are
 
@@ -1950,9 +1964,12 @@ Applying the Trapezoidal rule gives
 
 
 .. math::
-        \int_0^L f(\sum_k u_k{\varphi}_k(x)){\varphi}_i(x){\, \mathrm{d}x}
-        \approx h\left( \frac{1}{2} f(u_0){\varphi}_i(0) + \frac{1}{2} f(u_N){\varphi}_i(L)
-        + \sum_{j=1}^{N-1} f(u_j){\varphi}_i(x_{j})\right) = hf(u_i),
+        
+        \int_0^L f(\sum_k u_k{\varphi}_k){\varphi}_i{\, \mathrm{d}x}
+        &\approx \frac{h}{2}f(u_0){\varphi}_i(0) + \frac{h}{2}f(u_N){\varphi}_i(L)
+        + h\sum_{j=1}^{N-1} f(u_j){\varphi}_i(x_{j})\\ 
+        & = hf(u_i),
+        
 
 with a factor one half if :math:`i=0` or :math:`i=N_n`.
 
@@ -2001,14 +2018,15 @@ With finite element basis functions and P1 elements the
         \frac{1}{2h}\left(\begin{array}{rr}
         1 & -1\\ 
         -1 & 1
-        \end{array}\right),\quad t=0,1,
+        \end{array}\right),\quad t=0, 1,
         
 
-where :math:`i=q(e,r)`, :math:`j=q(e,s)`, and :math:`k=q(e,t)`. The
+with :math:`r,s,t=0,1` are indices over local degrees of
+freedom (:math:`i=q(e,r)`, :math:`j=q(e,s)`, and :math:`k=q(e,t)`). The
 sum :math:`\sum_k L_{i,j,k}{\alpha}(u_k)` at the cell level becomes
 :math:`\sum_{t=0}^1 L_{r,s,t}^{(e)}{\alpha}(\tilde u_t)`, where :math:`\tilde u_t`
-is :math:`u(x_{q(e,t)})` (the value of :math:`u` at local node number :math:`t` in
-cell number :math:`e`). The element matrix becomes
+is :math:`u(x_{q(e,t)})`, i.e., the value of :math:`u` at local node number :math:`t` in
+cell number :math:`e`. The element matrix becomes
 
 
 .. _Eq:nonlin:alglevel:1D:fe:Laplace:Ae:
@@ -2194,10 +2212,21 @@ The associated Jacobian becomes
         
         J_{i,j} = \frac{\partial F_i}{\partial c_j}
          =
-        \int_0^L \frac{\partial}{\partial c_j}\left(
+        \int_0^L \frac{\partial}{\partial c_j}(
         {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k)
         (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i' -
-        f(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_i\right){\, \mathrm{d}x}\nonumber
+        f(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_i){\, \mathrm{d}x}\nonumber
+        
+
+
+
+.. math::
+          
+        =
+        \int_0^L
+        ({\alpha}'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j
+        (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i'
+        + {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j'{\psi}_i'){\, \mathrm{d}x} - \nonumber
         
 
 
@@ -2209,12 +2238,7 @@ The associated Jacobian becomes
 .. math::
    :label: nonlin:alglevel:1D:fe:Newton:Jij
           
-        =
-        \int_0^L \left(
-        {\alpha}'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j
-        (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i'
-        + {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j'{\psi}_i'
-        - f'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j{\psi}_i\right){\, \mathrm{d}x}{\thinspace .}
+        \quad \int_0^L f'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j{\psi}_i{\, \mathrm{d}x}{\thinspace .}
         
         
 
@@ -2223,7 +2247,7 @@ In the above derivation we have used the important result
 
 .. math::
         
-        \frac{\partial}{\partial c_j} \sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k = {\psi}_j{\thinspace .}
+        \frac{\partial}{\partial c_j} \sum_{k}c_k{\psi}_k = {\psi}_j{\thinspace .}
         
 
 
@@ -2260,16 +2284,22 @@ With this notation we have
         {\alpha}'(u_{-}){\psi}_j
         (u_{-}){\psi}_i'
         + {\alpha}(u_{-}){\psi}_j'{\psi}_i'
-        - f'(u_{-}){\psi}_j{\psi}_i\right){\, \mathrm{d}x}{\thinspace .}
+        - f'(u_{-}){\psi}_j{\psi}_i\right){\, \mathrm{d}x},\quad i,j\in{\mathcal{I}_s}{\thinspace .}
         
         
 
-Most computer programs requires the user to define :math:`F_i` and
+Most computer programs require the user to define :math:`F_i` and
 :math:`J_{i,j}`, but many programs have a gallery of models with
 predefined PDE problems and associated :math:`F_i` and :math:`J_{i,j}`
-available. Some programs, like "FEniCS": "http:fenicsproject.org",
+available. Some programs, like `FEniCS <http://fenicsproject.org>`_,
 are capable of automatically deriving :math:`J_{i,j}` if :math:`F_i`
 is specified.
+
+Multi-dimensional PDE problems
+==============================
+
+Finite element discretization
+-----------------------------
 
 The derivation of :math:`F_i` and :math:`J_{i,j}` in the 1D model problem
 is easily generalized to multi-dimensional problems.
@@ -2400,8 +2430,13 @@ with :math:`u` and :math:`u_{-}` is: the unknown is always :math:`u` and
 linearization by inserting known (previously computed) values
 is a matter of adding an underscore.
 One can take great advantage of this quick notation in
-software.
+software [Ref2]_.
 
+Finite difference discretization
+--------------------------------
+
+Continuation methods
+--------------------
 
 .. _nonlin:exer:
 
@@ -2637,4 +2672,16 @@ Filename: ``nonlin_1D_Bratu_fe.pdf``.
 Bibliography
 ============
 
-BIBFILE: ../papers.pub
+.. [Ref1]
+   **C. T. Kelley**. *Iterative Methods for Linear and Nonlinear Equations*,
+   SIAM,
+   1995.
+
+.. [Ref2]
+   **M. Mortensen, H. P. Langtangen and G. N. Wells**. A FEniCS-Based Programming Framework for Modeling Turbulent Flow by the Reynolds-Averaged Navier-Stokes Equations,
+   *Advances in Water Resources*,
+   34(9),
+   `doi: 10.1016/j.advwatres.2011.02.013 <http://dx.doi.org/10.1016/j.advwatres.2011.02.013>`_,
+   2011.
+
+
