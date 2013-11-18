@@ -1,0 +1,2640 @@
+.. Automatically generated reST file from Doconce source
+   (https://github.com/hplgit/doconce/)
+
+Nonlinear differential equation problems
+========================================
+
+:Author: Hans Petter Langtangen
+:Date: Nov 18, 2013
+
+Note: **PRELIMINARY VERSION**
+
+
+
+
+
+
+
+
+
+
+.. Solving nonlinear differential equations
+
+
+
+Linear versus nonlinear
+=======================
+
+In a linear differential equation, the unknown :math:`u` and its derivatives
+do not appear in products with themselves. All equations where this
+property is not fulfilled, are nonlinear. For example, in
+
+
+.. math::
+         u'(t) = -a(t)u(t) + b(t),
+
+the unknown :math:`u(t)` do not appear in products with :math:`u` or :math:`u'` and this
+ODE is therefore linear, while in
+
+
+.. math::
+         u'(t) = a(t)u(t)(1 - u(t)/M(t)),
+
+there is a product :math:`u(t)^2` on the right-hand side making this ODE
+nonlinear. Also,
+
+
+.. math::
+         u'' + \frac{\ell}{g}\sin(u) =0,
+
+is nonlinear because :math:`\sin(u)` contains products of :math:`u`,
+
+
+.. math::
+         \sin(u) = u - \frac{1}{3} u^3 + \ldots
+
+
+Nonlinear differential equations pose no additional difficulty if the
+product terms involve already computed values (known) values of the
+unknown and its derivatives. In time-dependent problems, the type
+of time discretization can therefore eliminate the need for special
+treatment of nonlinear terms. However, if new unknown quantities of
+the solution enter product terms, the algebraic equations arising from
+the discretization will have nonlinear terms, and special methods for
+nonlinear algebraic equations must be invoked, such as Newton and
+Picard methods. A series of forthcoming examples will explain when
+nonlinearities pose difficulties and how these are resolved.
+
+.. _nonlin:timediscrete:logistic:
+
+Basic examples using the logistic equation
+==========================================
+
+Consider the (scaled) logistic equation
+
+
+.. _Eq:nonlin:timediscrete:logistic:eq:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:eq
+        
+        u'(t) = u(t)(1 - u(t)) {\thinspace .}
+        
+        
+
+This is a nonlinear differential equation which will be solved by
+different strategies in the following.
+A time discretization of :eq:`nonlin:timediscrete:logistic:eq`
+will either lead to a linear algebraic equation or a nonlinear
+algebraic equation at each time level.
+In the former case, the time discretization method transforms
+the nonlinear ODE into linear subproblems at each time level. However,
+when the time discretization leads to nonlinear algebraic equations, we
+need to *linearize* these, meaning that we either approximate the
+nonlinear equation by a linear one, or we construct a sequence of
+linear equations whose solutions (hopefully) converge to the solution
+of the nonlinear equation. Examples will demonstrate how this is done.
+
+
+.. _nonlin:timediscrete:logistic:FE:
+
+Linearization by explicit time discretization
+---------------------------------------------
+
+
+.. index::
+   single: linearization; explicit time integration
+
+
+A Forward Euler
+method to solve :eq:`nonlin:timediscrete:logistic:eq` results in
+
+
+.. math::
+         \frac{u^{n+1} - u^n}{\Delta t} = u^n(1 - u^n),
+
+which is a *linear* algebraic
+equation for the unknown value :math:`u^{n+1}`. Therefore,
+the nonlinearity in the original equation poses no difficulty
+in the discrete algebraic equation.
+Any other explicit scheme in time will also give only linear
+algebraic equations
+to solve. For example, a typical 2nd-order Runge-Kutta method
+for :eq:`nonlin:timediscrete:logistic:eq` reads,
+
+
+.. math::
+        
+        u^* &= u^n + \Delta t u^n(1 - u^n),\\ 
+        u^{n+1} &= u^n + \Delta t \frac{1}{2} \left(
+        u^n(1 - u^n) + u^*(1 - u^*))
+        \right){\thinspace .}
+        
+
+The first step is linear in the unknown :math:`u^*`. Then :math:`u^*` is computed
+and known in the next step, which is linear in the unknown :math:`u^{n+1}` .
+
+
+.. _nonlin:timediscrete:logistic:roots:
+
+Exact solution of nonlinear equations
+-------------------------------------
+
+Switching to a Backward Euler scheme for
+:eq:`nonlin:timediscrete:logistic:eq`,
+
+
+.. _Eq:nonlin:timediscrete:logistic:eq:BE:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:eq:BE
+        
+        \frac{u^{n} - u^{n-1}}{\Delta t} = u^n(1 - u^n),
+        
+        
+
+results in a nonlinear algebraic equation for the unknown value :math:`u^n`.
+The equation is of quadratic type:
+
+
+.. math::
+         \Delta t (u^n)^2 + (1-\Delta t)u^n - u^{n-1} = 0{\thinspace .} 
+
+We shall now introduce a shorter and cleaner notation for nonlinear
+algebraic equation that appear at a given time level. The notation
+gets rid of the superscript that indicates the time level and
+is motivated by how we will program the solution method for
+the algebraic equation, especially in more advanced
+differential equation problems. The unknown
+in the algebraic equation is denoted by :math:`u`, while :math:`u_1` is
+the value of the unknown at the previous time level, and in general :math:`u_\ell`
+is the value of the unknown :math:`\ell` levels back in time.
+The quadratic equation for the unknown :math:`u^n` in
+:eq:`nonlin:timediscrete:logistic:eq:BE` can then be written
+
+
+.. _Eq:nonlin:timediscrete:logistic:eq:F:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:eq:F
+        
+        F(u) = \Delta t u^2 + (1-\Delta t)u - u_1 = 0{\thinspace .}
+        
+        
+
+This equation can easily be solved analytically:
+
+
+.. _Eq:nonlin:timediscrete:logistic:eq:roots:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:eq:roots
+        
+        u = \frac{1}{2\Delta t}
+        \left(-1-\Delta t \pm \sqrt{(1-\Delta t)^2 - 4\Delta t u_1}\right)
+        {\thinspace .}
+        
+        
+
+Here we encounter a fundamental challenge in nonlinear problems:
+the equation has more than one solution. How do we pick the right
+solution? In the present simple case we can expand the square root
+in a series in :math:`\Delta t` and truncate after the linear term since
+the Backward Euler scheme will introduce an error proportional to
+:math:`\Delta t` anyway. Using ``sympy`` we find the following Taylor series
+expansions of the roots:
+
+
+        >>> import sympy as sp
+        >>> dt, u_1, u = sp.symbols('dt u_1 u')
+        >>> r1, r2 = sp.solve(dt*u**2 + (1-dt)*u - u_1, u)  # find roots
+        >>> r1
+        (dt - sqrt(dt**2 + 4*dt*u_1 - 2*dt + 1) - 1)/(2*dt)
+        >>> r2
+        (dt + sqrt(dt**2 + 4*dt*u_1 - 2*dt + 1) - 1)/(2*dt)
+        >>> print r1.series(dt, 0, 2)
+        -1/dt + 1 - u_1 + dt*(u_1**2 - u_1) + O(dt**2)
+        >>> print r2.series(dt, 0, 2)
+        u_1 + dt*(-u_1**2 + u_1) + O(dt**2)
+
+We see that the ``r1`` root, corresponding to
+a minus sign in front of the square root in
+:eq:`nonlin:timediscrete:logistic:eq:roots`,
+behaves as :math:`1/\Delta t` and will therefore
+blow up as :math:`\Delta t\rightarrow 0`! Only the ``r2`` root is of
+relevance in this case.
+
+.. _nonlin:timediscrete:logistic:Picard:
+
+Linearization by Picard iteration
+---------------------------------
+
+
+.. index:: Picard iteration
+
+.. index:: successive substitutions
+
+
+.. index:: fixed-point iteration
+
+
+.. index::
+   single: linearization; Picard iteration
+
+
+.. index::
+   single: linearization; successive substitutions
+
+
+.. index::
+   single: linearization; fixed-point iteration
+
+
+Let us write :eq:`nonlin:timediscrete:logistic:eq:F` in a
+more compact form
+
+
+.. math::
+         F(u) = au^2 + bu + c = 0,
+
+with :math:`a=\Delta t`, :math:`b=1-\Delta t`, and :math:`c=-u_1`.
+We can introduce :math:`u^2\approx u_{-}u`, where
+:math:`u_{-}` is some approximation of :math:`u`. This approximation makes
+the equation linear and hence easy to solve:
+
+
+.. math::
+         F(u)\approx\hat F(u) = au_{-}u + bu + c = 0{\thinspace .}
+
+Since the equation :math:`\hat F=0` is only approximate, the solution :math:`u`
+does not equal the exact solution :math:`{u_{\small\mbox{e}}}` of the exact
+equation :math:`F({u_{\small\mbox{e}}})=0`, but we can hope that :math:`u` is closer to
+:math:`{u_{\small\mbox{e}}}` than :math:`u_{-}`, and hence it makes sense to repeat the
+procedure, i.e., set :math:`u_{-}=u` and solve :math:`\hat F(u)=0` again.
+
+.. respect to :math:`u` again. Hopefully this iterative process leads
+
+.. to a sequence of improved approximation that quickly converge to :math:`{u_{\small\mbox{e}}}`.
+
+
+The idea of turning a nonlinear equation into a linear one by
+using an approximation :math:`u_{-}` of :math:`u` in nonlinear terms is
+a widely used approach that goes under many names:
+*fixed-point iteration*, the method of *successive substitutions*,
+*nonlinear Richardson iteration*, and *Picard iteration*.
+We will stick to the latter name.
+
+
+Picard iteration for solving the nonlinear equation
+arising from the Backward Euler discretization of the logistic
+equation can be written as
+
+
+.. math::
+         u = -\frac{c}{au_{-} + b},\quad u_{-}\ \leftarrow\ u{\thinspace .}
+
+The iteration is started with the value of the unknown at the
+previous time level: :math:`u_{-}=u_1`.
+
+Some prefer an explicit iteration counter as superscript
+in the mathematical notation. Let :math:`u^k` be the computed approximation
+to the solution in iteration :math:`k`. In iteration :math:`k+1` we want
+to solve
+
+
+.. math::
+         au^k u^{k+1} + bu^{k+1} + c = 0\quad\Rightarrow\quad u^{k+1}
+        = -\frac{c}{au^k + b},\quad k=0,1,\ldots
+
+However, we will normally apply a mathematical notation in our
+final formulas that is as close as possible to what we aim to write
+in a computer code and then we want to omit the :math:`k` superscript
+in :math:`u`.
+
+Stopping criteria  (1)
+~~~~~~~~~~~~~~~~~~~~~~
+
+The iteration method can typically be terminated when the change
+in the solution is smaller than a tolerance :math:`\epsilon_u`:
+
+
+.. math::
+         |u - u_{-}| \leq\epsilon_u,
+
+or when the residual in the equation is sufficiently small (:math:`\epsilon_r`),
+
+.. math::
+         |F(u)|= |au^2+bu + c| < \epsilon_r{\thinspace .}
+
+With :math:`\epsilon_r = 10^{-7}` we seldom need more than about 5 iterations
+when solving this logistic equation.
+
+.. _nonlin:timediscrete:logistic:geometric:mean:
+
+Linearization by a geometric mean
+---------------------------------
+
+We consider now a Crank-Nicolson discretization of
+:eq:`nonlin:timediscrete:logistic:eq`. This means that the
+time derivative is approximated by a centered
+difference,
+
+
+.. math::
+         [D_t u = u(1-u)]^{n+\frac{1}{2}},
+
+written out as
+
+
+.. _Eq:nonlin:timediscrete:logistic:geometric:mean:scheme:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:geometric:mean:scheme
+        
+        \frac{u^{n+1}-u^n}{\Delta t} = u^{n+\frac{1}{2}} -
+        (u^{n+\frac{1}{2}})^2{\thinspace .}
+        
+        
+
+The term :math:`u^{n+\frac{1}{2}}` is normally approximated by an arithmetic
+mean,
+
+
+.. math::
+         u^{n+\frac{1}{2}}\approx \frac{1}{2}(u^n + u^{n+1}),
+
+such that the scheme involves the unknown function only at the time levels
+where we actually compute it.
+The same arithmetic mean applied to the nonlinear term gives
+
+
+.. math::
+         (u^{n+\frac{1}{2}})^2\approx \frac{1}{4}(u^n + u^{n+1})^2,
+
+which is nonlinear in the unknown :math:`u^{n+1}`.
+However, using a *geometric mean* for :math:`(u^{n+\frac{1}{2}})^2`
+is a way of linearizing the nonlinear term in
+:eq:`nonlin:timediscrete:logistic:geometric:mean:scheme`:
+
+
+.. math::
+         (u^{n+\frac{1}{2}})^2\approx u^nu^{n+1}{\thinspace .}
+
+The linearized scheme for :math:`u^{n+1}` now reads
+
+
+.. math::
+         \frac{u^{n+1}-u^n}{\Delta t} =
+        \frac{1}{2}(u^n + u^{n+1}) + u^nu^{n+1},
+
+which can readily be solved:
+
+
+.. math::
+        
+        u^{n+1} = \frac{1 + \frac{1}{2}\Delta t}{1+\Delta t u^n - \frac{1}{2}\Delta t}
+        u^n{\thinspace .}
+
+This scheme can be coded directly, and since
+there is no nonlinear algebraic equation to solve by methods for those
+kind of problems we skip the simplified notation (:math:`u` for :math:`u^{n+1}`
+and :math:`u_1` for :math:`u^n`).
+
+The geometric mean approximation is often very effective to deal with
+quadratic nonlinearities. Both the arithmetic and geometric mean
+approximations have truncation errors of order :math:`\Delta t^2` and are
+therefore compatible with the truncation error of the Crank-Nicolson
+method in linear problems.
+
+Applying the operator notation for the means, the linearized Crank-Nicolson
+scheme for the logistic equation can be compactly expressed as
+
+
+.. math::
+         [D_t u = \overline{u}^{t} + \overline{u^2}^{t,g}]^{n+\frac{1}{2}}{\thinspace .}
+
+
+**Remark.**
+If we use an arithmetic instead of a geometric mean
+for the nonlinear term in
+:eq:`nonlin:timediscrete:logistic:geometric:mean:scheme`,
+we end up with a nonlinear term :math:`(u^{n+1})^2`.
+The term can be linearized as :math:`u^nu^{n+1}` and a Picard iteration
+can then be introduced. Observe that the geometric mean avoids
+an iteration.
+
+.. _nonlin:timediscrete:logistic:Newton:
+
+Newton's method  (1)
+--------------------
+
+
+The Backward Euler scheme :eq:`nonlin:timediscrete:logistic:eq:BE`
+for the logistic equation leads to a nonlinear algebraic equation
+:eq:`nonlin:timediscrete:logistic:eq:F` which we now write
+compactly as
+
+
+.. math::
+         F(u) = 0{\thinspace .}
+
+Newton's method linearize this equation by approximating :math:`F(u)` by
+its Taylor series expansion around a computed value :math:`u_{-}`
+and keeping only the linear part:
+
+
+.. math::
+        
+        F(u) &= F(u_{-}) + F'(u_{-})(u - u_{-}) + {\frac{1}{2}}F''(u_{-})(u-u_{-})^2
+        +\cdots\\ 
+        & \approx F(u_{-}) + F'(u_{-})(u - u_{-}) = \hat F(u){\thinspace .}
+        
+
+The linear equation :math:`\hat F(u)=0` has the solution
+
+
+.. math::
+         u = u_{-} - \frac{F(u_{-})}{F'(u_{-})}{\thinspace .}
+
+Expressed with an iteration index on the unknown, Newton's method takes
+on the more familiar mathematical form
+
+
+.. math::
+         u^{k+1} = u^k - \frac{F(u^k)}{F'(u^k)},\quad k=0,1,\ldots
+
+
+Application of Newton's method to the logistic equation discretized
+by the Backward Euler method is straightforward
+as we have
+
+
+.. math::
+         F(u) = au^2 + bu + c,\quad a=\Delta t,\ b = 1-\Delta t,\ c=-u_1,
+
+and then
+
+
+.. math::
+         F'(u) = 2au + b{\thinspace .}
+
+The iteration method becomes
+
+
+.. _Eq:nonlin:timediscrete:logistic:Newton:alg1:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:Newton:alg1
+        
+        u = u_{-} + \frac{au_{-}^2 + bu_{-} + c}{2au_{-} + b},\quad
+        u_{-}\ \leftarrow u{\thinspace .}
+        
+        
+
+At each time level, we start the iteration by setting :math:`u_{-}=u_1`.
+Stopping criteria as listed for Picard iteration can be used also
+for Newton's method.
+
+An alternative mathematical form, where we write out :math:`a`, :math:`b`, and :math:`c`,
+and use a time level counter and an iteration counter :math:`k`, takes
+the form
+
+
+.. _Eq:nonlin:timediscrete:logistic:Newton:alg2:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:Newton:alg2
+        
+        u^{n,k+1} = u^{n,k} +
+        \frac{\Delta t (u^{n,k})^2 + (1-\Delta t)u^{n,k} - u^{n-1}}
+        {2\Delta t u^{n,k} + 1 - \Delta t},\quad u^{n,0}=u^{n-1},\quad k=0,1,\ldots
+        
+        
+
+The implementation is much closer to :eq:`nonlin:timediscrete:logistic:Newton:alg1` than to :eq:`nonlin:timediscrete:logistic:Newton:alg2`, but
+the latter is better aligned with the established mathematical
+notation used in the literature.
+
+.. _nonlin:timediscrete:logistic:relaxation:
+
+Relaxation
+----------
+
+
+.. index:: relaxation (nonlinear equations)
+
+
+One iteration in Newton's method or
+Picard iteration consists of solving a linear problem :math:`\hat F(u)=0`.
+Sometimes convergence problems arise because the new solution :math:`u`
+of :math:`\hat F(u)=0` is "too far away" from the previously computed
+solution :math:`u_{-}`. A remedy is to introduce a relaxation, meaning that
+we first solve :math:`\hat F(u^*)=0` for an intermediate value :math:`u^*` and
+then we take :math:`u` as a weighted mean of what we had, :math:`u_{-}`, and
+what our linearized equation :math:`\hat F=0` suggests, :math:`u^*`:
+
+
+.. math::
+         u = \omega u^* + (1-\omega) u_{-},
+
+before proceeding with the next iteration. The parameter :math:`\omega`
+is known as the *relaxation parameter* and a choice :math:`\omega < 1`
+may prevent divergent iterations.
+
+Relaxation in Newton's method can be directly incorporated
+in the basic iteration formula:
+
+
+.. math::
+         u = u_{-} - \omega \frac{F(u_{-})}{F'(u_{-})}{\thinspace .}
+
+
+Implementation and experiments
+------------------------------
+
+The program `logistic.py <http://tinyurl.com/jvzzcfn/nonlin/logistic.py>`_ contains
+implementations of all the methods described above.
+Below is an extract of the file showing how the Picard and Newton
+methods are implemented for a Backward Euler discretization of
+the logistic equation.
+
+
+.. code-block:: python
+
+        def BE_logistic(u0, dt, Nt, choice='Picard', eps_r=1E-3, omega=1):
+            u = np.zeros(Nt+1)
+            u[0] = u0
+            for n in range(1, Nt+1):
+                a = dt; b = 1 - dt; c = -u[n-1]
+                if choice == 'Picard':
+        
+                    def F(u):
+                        return a*u**2 + b*u + c
+        
+                    u_ = u[n-1]
+                    k = 0
+                    while abs(F(u_)) > eps_r:
+                        u_ = omega*(-c/(a*u_ + b)) + (1-omega)*u_
+                        k += 1
+                    u[n] = u_
+                elif choice == 'Newton':
+        
+                    def F(u):
+                        return a*u**2 + b*u + c
+        
+                    def dF(u):
+                        return 2*a*u + b
+        
+                    u_ = u[n-1]
+                    k = 0
+                    while abs(F(u_)) > eps_r:
+                        u_ = u_ - F(u_)/dF(u_)
+                        k += 1
+                    u[n] = u_
+            return u
+
+
+The Crank-Nicolson method utilizing a linearization based on the
+geometric mean gives a simpler algorithm:
+
+
+.. code-block:: python
+
+        def CN_logistic(u0, dt, N):
+            u = np.zeros(N+1)
+            u[0] = u0
+            for n in range(0,N):
+                u[n+1] = (1 + 0.5*dt)/(1 + dt*u[n] - 0.5*dt)*u[n]
+            return u
+
+
+Experiments with this program reveal the relative performance
+of the methods as summarized in the table below.
+The Picard and Newton columns reflect the typical number of
+iterations with these methods before the curve starts to flatten out
+and the number of iterations is significantly reduced since
+the solution of the nonlinear algebraic equation is very close to
+the starting value for the iterations (the solution at the previous
+time level). Increasing :math:`\Delta t` moves the starting value further
+away from the solution of the nonlinear equation and one expects
+an increase in the number of iterations. Picard iteration is
+very much more sensitive to the size of :math:`\Delta t` than Newton's method.
+The tolerance :math:`\epsilon_r` in residual-based
+stopping criterion takes on a low and high value in the experiments.
+
+==================  ==================  ==================  ==================  
+ :math:`\Delta t`   :math:`\epsilon_r`        Picard              Newton        
+==================  ==================  ==================  ==================  
+:math:`0.2`         :math:`10^{-7}`                      5                   2  
+:math:`0.2`         :math:`10^{-3}`                      2                   1  
+:math:`0.4`         :math:`10^{-7}`                     12                   3  
+:math:`0.4`         :math:`10^{-3}`                      4                   2  
+:math:`0.8`         :math:`10^{-7}`                     58                   3  
+:math:`0.8`         :math:`10^{-3}`                      4                   2  
+==================  ==================  ==================  ==================  
+
+**Remark.**
+The simple Crank-Nicolson method with a geometric mean for the quadratic
+nonlinearity gives even visually more accurate solutions than the
+Backward Euler discretization. Even with a tolerance of :math:`\epsilon_r=10^{-3}`,
+all the methods for treating the nonlinearities in the Backward Euler
+discretization gives graphs that cannot be distinguished. So for
+accuracy in this problem, the time discretization is much more crucial
+than :math:`\epsilon_r`. Ideally, one should estimate the error in the
+time discretization, as the solution progresses, and set :math:`\epsilon_r`
+accordingly.
+
+.. _nonlin:ode:generic:
+
+Generalization to a general nonlinear ODE
+-----------------------------------------
+
+Let us see how the various methods in the previous sections
+can be applied to the more generic model
+
+
+.. _Eq:nonlin:ode:generic:model:
+
+.. math::
+   :label: nonlin:ode:generic:model
+        
+        u' = f(u, t),
+        
+        
+
+where :math:`f` is a nonlinear function of :math:`u`.
+
+Explicit time discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Methods like the Forward Euler scheme, Runge-Kutta methods,
+Adams-Bashforth methods all evaluate :math:`f` at time levels where
+:math:`u` is already computed, so nonlinearities in :math:`f` do not
+pose any difficulties.
+
+Backward Euler discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Approximating :math:`u'` by a backward difference leads to a Backward Euler
+scheme, which can be written as
+
+
+.. math::
+         F(u^n) = u^{n} - \Delta t f(u^n, t_n) - u^{n-1}=0,
+
+or alternatively
+
+
+.. math::
+         F(u) = u - \Delta t f(u, t_n) - u_1 = 0{\thinspace .}
+
+A simple Picard iteration, not knowing anything about the nonlinear
+structure of :math:`f`, must approximate :math:`f(u,t_n)` by :math:`f(u_{-},t_n)`:
+
+
+.. math::
+         \hat F(u) = u - \Delta t f(u_{-},t_n) - u_1{\thinspace .}
+
+The iteration starts with :math:`u_{-}=u_1` and proceeds with repeating
+
+
+.. math::
+         u^* = \Delta t f(u_{-},t_n) + u_1,\quad u = \omega u^* + (1-\omega)u_{-},
+        \quad u_{-}\ \leftarrow\ u,
+
+until a stopping criterion is fulfilled.
+
+Newton's method requires the computation of the derivative
+
+
+.. math::
+         F'(u) = 1 - \Delta t\frac{\partial f}{\partial u}(u,t_n){\thinspace .}
+
+Starting with the solution at the previous time level, :math:`u_{-}=u_1`,
+we can just use the standard formula
+
+
+.. math::
+        
+        u = u_{-} - \omega \frac{F(u_{-})}{F'(u_{-})}
+        = u_ -\omega \frac{u_1 + \Delta t f(u_,t_{n})}{1 - \Delta t
+        \frac{\partial}{\partial u}f(u_,t_n)}
+        {\thinspace .}
+        
+
+
+The geometric mean trick cannot be used unless we know that :math:`f` has
+a special structure with quadratic expressions in :math:`u`.
+
+Crank-Nicolson discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The standard Crank-Nicolson scheme with arithmetic mean approximation of
+:math:`f` takes the form
+
+
+.. math::
+         \frac{u^{n+1} - u^n}{\Delta t} = \frac{1}{2}(f(u^{n+1}, t_{n+1})
+        + f(u^n, t_n){\thinspace .}
+
+Introducing :math:`u` for the unknown :math:`u^{n+1}` and :math:`u_1` for :math:`u^n`, we
+see that the scheme leads to a nonlinear algebraic equation
+
+
+.. math::
+         F(u) = u + \Delta t{\frac{1}{2}}f(u,t_{n+1}) +
+        \Delta t{\frac{1}{2}}f(u_1,t_{n+1}) = 0{\thinspace .}
+
+A Picard iteration scheme must in general employ the linearization,
+
+
+.. math::
+         \hat F(u) = u + \Delta t{\frac{1}{2}}f(u_{-},t_{n+1}) +
+        \Delta t{\frac{1}{2}}f(u_1,t_{n+1}),
+
+while Newton's method can apply the general formula,  but we need
+to derive
+
+
+.. math::
+         F'(u)= 1 + \frac{1}{2}\Delta t\frac{\partial f}{\partial u}(u,t_{n+1}){\thinspace .}
+
+
+.. What about pendulum sin(u) as u/u_ sin(u_)? Check in odespy if it
+
+.. converges faster (should be able to store the no of Newton and
+
+.. Picard iterations in the classes and poll afterwards). It the trick
+
+.. pays off, describe it here. Can odespy be used here? That is, can we
+
+.. provide the linearization? No...?
+
+
+.. _nonlin:systems:alg:
+
+Systems of nonlinear algebraic equations
+========================================
+
+Now we assume that some time discretization of a system of ODEs, or a PDE,
+leads to a *system* of nonlinear algebraic equations, written
+compactly as
+
+
+.. math::
+         F(u) = 0,
+
+or with some special structure that often appear in real applications, e.g.,
+
+
+.. math::
+         A(u)u = b(u){\thinspace .}
+
+Here, :math:`u` is a vector of unknowns :math:`u=(u_0,\ldots,u_N)`, and
+:math:`F` is a vector function: :math:`F=(F_0,\ldots,F_N)`. Similarly, :math:`A(u)`
+is an :math:`(N+1)\times (N+1)` matrix function of :math:`u` and :math:`b` is a vector
+function: :math:`b=(b_0,\ldots,b_N)`.
+
+.. _nonlin:systems:alg:Picard:
+
+Picard iteration  (1)
+---------------------
+
+We cannot apply Picard iteration to nonlinear equations unless there is
+some special structure. For :math:`A(u)u=b(u)` we can linearize the
+product :math:`A(u)u` to :math:`A(u_{-})u` and :math:`b(u)` as :math:`b(u_{-})`.
+That is, we use the most previously
+computed approximation in :math:`A` and :math:`b` to arrive at a *linear system* for
+:math:`u`:
+
+
+.. math::
+         A(u_{-})u = b(u_{-}){\thinspace .}
+
+A relaxed iteration takes the form
+
+
+.. math::
+         A(u_{-})u^* = b(u_{-}),\quad u = \omega u^* + (1-\omega)u_{-}{\thinspace .}
+
+In other words, we solve a system of nonlinear algebraic equations as
+a sequence of linear systems.
+
+
+.. admonition:: Algorithm for relaxed Picard iteration
+
+   Given :math:`A(u)u=b(u)` and an initial guess :math:`u_{-}`, iterate until convergence:
+   
+   1. solve :math:`A(u_{-})u^* = b(u_{-})` with respect to :math:`u^*`
+   
+   2. :math:`u = \omega u^* + (1-\omega) u_{-}`
+   
+   3. :math:`u_{-}\ \leftarrow\ u_{-}`
+
+
+.. The iteration is stopped when the
+
+.. change in the unknown, :math:`|u - u_{-}|`, or the residual, :math:`|A(u)u-b|`,
+
+.. is sufficiently small.
+
+
+.. _nonlin:systems:alg:Newton:
+
+Newton's method  (2)
+--------------------
+
+The natural starting point for Newton's method is the general
+nonlinear vector equation :math:`F(u)=0`.
+As for a scalar equation, the idea is to Taylor expand :math:`F`
+around a known value :math:`u_{-}` and just keep the linear
+terms. The multi-variate Taylor expansion has its two first
+terms as
+
+
+.. math::
+         F(u_{-}) + J(u_{-}) \cdot (u - u_{-}),
+
+where :math:`J` is the *Jacobian* of :math:`F`, defined by
+
+
+.. math::
+         J_{i,j} = \frac{\partial F_i}{\partial u_j}{\thinspace .}
+
+So, the original nonlinear system is approximated by
+
+
+.. math::
+         \hat F(u) = F(u_{-}) + J(u_{-}) \cdot (u - u_{-})=0,
+
+which is linear in :math:`u` and can be solved in a two-step procedure:
+first solve :math:`J\delta u = -F(u_{-})` with respect to the vector :math:`\delta u`
+and then update :math:`u = u_{-} + \delta u`.
+A relaxation parameter can easily be incorporated:
+
+
+.. math::
+         u = \omega(u_{-} +\delta u)
+        + (1-\omega)u_{-} = \omega_{-}  + \omega\delta u{\thinspace .}
+        
+
+
+
+.. admonition:: Algorithm for Newton's method
+
+   Given :math:`F(u)=0` and an initial guess :math:`u_{-}`, iterate until convergence:
+   
+   1. solve :math:`J\delta u = -F(u_{-})` with respect to :math:`\delta u`
+   
+   2. :math:`u = u_{-} + \omega)\delta u`
+   
+   3. :math:`u_{-}\ \leftarrow\ u_{-}`
+
+
+For the special system with structure :math:`A(u)u=b(b)`,
+:math:`F_i = \sum_k A_{i,k}(u)u_k - b_i`, and
+
+
+.. math::
+        
+        J_{i,j} = \sum_k \frac{\partial A_{i,k}}{\partial u_j}u_k
+        + A_{i,j} -
+        \frac{\partial b_i}{\partial u_j}{\thinspace .}
+        
+
+We realize that the Jacobian needed in Newton's method consists of
+:math:`A(u_{-})` as in the Picard iteration plus two additional terms
+arising from the differentiation. Using the notation :math:`A'(u)` for
+:math:`\partial A/\partial u` (a quantity with three indices: :math:`\partial
+A_{i,k}/\partial u_j`), and :math:`b'(u)` for :math:`\partial b/\partial u` (a
+quantity with two indices: :math:`\partial b_i/\partial u_j`), we can write
+the linear system to be solved as
+
+
+.. math::
+         (A + A'u + b')\delta u = -Au + b,
+
+or
+
+
+.. math::
+         (A(u_{-}) + A'(u_{-})u_{-} + b'(u_{i}))\delta u
+        = -A(u_{-})u_{-} + b(u_{-}){\thinspace .}
+
+Rearranging the terms demonstrates the difference from the system
+solved in each Picard iteration:
+
+
+.. math::
+         \underbrace{A(u_{-})(u_{-}+\delta u) - b(u_{-})}_{\hbox{Picard system}}
+        + \gamma (A'(u_{-})u_{-} + b'(u_{i}))\delta u
+        = 0{\thinspace .}
+
+Here we have inserted a parameter :math:`\gamma` such that :math:`\gamma=0`
+gives the Picard system and :math:`\gamma=1` gives the Newton system.
+Such a parameter can be handy in software to easily switch between
+the methods.
+
+
+.. _nonlin:systems:alg:terminate:
+
+Stopping criteria  (2)
+----------------------
+
+Let :math:`||\cdot||` be the standard Eucledian vector norm. Four termination
+criteria are much in use:
+
+ * Absolute change in solution: :math:`||u - u_{-}||\leq \epsilon_u`
+
+ * Relative change in solution: :math:`||u - u_{-}||\leq \epsilon_u ||u_0||`,
+   where :math:`u_0` denotes the start value of :math:`u_{-}` in the iteration
+
+ * Absolute residual: :math:`||F(u)|| \leq \epsilon_r`
+
+ * Relative residual: :math:`||F(u)|| \leq \epsilon_r ||F(u_0)||`
+
+To prevent divergent iterations to run forever,
+one terminates the iterations when
+the current number of iterations :math:`k` exceeds a maximum value :math:`k_{\max}`.
+
+The relative criteria are most used since they are not sensitive to
+the characteristic size of :math:`u`. Nevertheless, the relative criteria
+can be misleading when the initial start value for the iteration is
+very close to the solution, since an unnecessary reduction in
+the error measure is enforced. In such cases the absolute criteria
+work better. It is common to combine the absolute and relative measures
+of the size of the residual,
+as in
+
+
+.. math::
+        
+        ||F(u)|| \leq \epsilon_{rr} ||F(u_0)|| + \epsilon_{ra},
+        
+
+where :math:`\epsilon_{rr}` is the tolerance in the relative criterion
+and :math:`\epsilon_{ra}` is the tolerance in the absolute criterion.
+With a very good initial guess for the iteration
+(typically the solution of a differential
+equation at the previous time level), the term :math:`||F(u_0)||` is small
+and :math:`\epsilon_{ra}` is the dominating tolerance. Otherwise,
+:math:`\epsilon_{rr} ||F(u_0)||` and the relative criterion dominates.
+
+With the change in solution as criterion we can formulate and combined
+absolute and relative measure of the change in the solution:
+
+
+.. math::
+        
+        ||\delta u|| \leq \epsilon_{ur} ||u_0|| + \epsilon_{ua},
+        
+
+
+The ultimate termination criterion, combining the residual and
+the change in solution tests with a test on the maximum number
+of iterations allow, can be expressed as
+
+
+.. math::
+        
+        ||F(u)|| \leq \epsilon_{rr} ||F(u_0)|| + \epsilon_{ra}
+        \hbox{ or }
+        ||\delta u|| \leq \epsilon_{ur} ||u_0|| + \epsilon_{ua}
+        \hbox{ or }
+        k>k_{\max}{\thinspace .}
+        
+
+
+
+.. _nonlin:systems:alg:SI:
+
+Example: A nonlinear ODE model from epidemiology
+------------------------------------------------
+
+The simplest model spreading of a disease, such as a flu, takes
+the form of a :math:`2\times 2` ODE system
+
+
+.. math::
+        
+        S' = -\beta SI,
+        
+
+
+
+.. math::
+          
+        I' = \beta SI - \nu I,
+        
+
+where :math:`S(t)` is the number of people who can get ill (susceptibles)
+and :math:`I(t)` is the number of people who are ill (infected).
+The constants :math:`\beta >0` and :math:`\nu >0` must be given along with
+initial conditions :math:`S(0)` and :math:`I(0)`.
+
+Implicit time discretization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Crank-Nicolson scheme leads to a :math:`2\times 2` system of nonlinear
+algebraic equations in the unknowns :math:`S^{n+1}` and :math:`I^{n+1}`:
+
+
+.. math::
+        
+        \frac{S^{n+1}-S^n}{\Delta t} = -\beta [SI]^{n+\frac{1}{2}}
+        \approx -\frac{\beta}{2}(S^nI^n + S^{n+1}I^{n+1}),
+        
+
+
+
+.. math::
+          
+        \frac{I^{n+1}-I^n}{\Delta t} = \beta [SI]^{n+\frac{1}{2}} -
+        \nu I^{n+\frac{1}{2}}
+        \approx \frac{\beta}{2}(S^nI^n + S^{n+1}I^{n+1}) -
+        \frac{\nu}{2}(I^n + I^{n+1}){\thinspace .}
+        
+
+Introducing :math:`S` for :math:`S^{n+1}`, :math:`S_1` for :math:`S^n`, :math:`I` for :math:`I^{n+1}`,
+:math:`I_1` for :math:`I^n`, we can rewrite the system as
+
+
+.. _Eq:nonlin:systems:alg:SI:CN:FS:
+
+.. math::
+   :label: nonlin:systems:alg:SI:CN:FS
+        
+        F_S(S,I) = S - S_1 +
+        \frac{1}{2}\Delta t\beta(S_1I_1 + SI) = 0,
+        
+        
+        
+
+
+
+.. _Eq:nonlin:systems:alg:SI:CN:FI:
+
+.. math::
+   :label: nonlin:systems:alg:SI:CN:FI
+          
+        F_I(S,I) = I - I_1 -
+        \frac{1}{2}\Delta t\beta(S_1I_1 + SI) -
+        \frac{1}{2}\Delta t\nu(I_1 + I) =0{\thinspace .}
+        
+        
+
+
+
+A Picard iteration
+~~~~~~~~~~~~~~~~~~
+
+We assume that we have approximations :math:`S_{-}` and :math:`I_{-}` to :math:`S` and :math:`I`.
+A way of linearizing the only nonlinear term :math:`SI` is to write
+:math:`I_{-}S` in the :math:`F_S=0` equation and :math:`S_{-}I` in the :math:`F_I=0` equation,
+which also decouples the equations. Solving the resulting linear
+equations with respect to the unknowns :math:`S` and :math:`I` gives
+
+
+.. math::
+        
+        S &= \frac{S_1 - \frac{1}{2}\Delta t\beta S_1I_1}
+        {1 + \frac{1}{2}\Delta t\beta I_{-}},
+        \\ 
+        I &= \frac{I_1 + \frac{1}{2}\Delta t\beta S_1I_1}
+        {1 - \frac{1}{2}\Delta t\beta S_{-} + \nu}{\thinspace .}
+        
+
+The solutions :math:`S` and :math:`I` are stored in :math:`S_{-}` and :math:`I_{-}` and
+a new iteration is carried out.
+
+Newton's method  (3)
+~~~~~~~~~~~~~~~~~~~~
+
+The nonlinear system
+:eq:`nonlin:systems:alg:SI:CN:FS`-:eq:`nonlin:systems:alg:SI:CN:FI`
+can be written as :math:`F(u)=0` with :math:`F=(F_S,F_I)` and :math:`u=(S,I)`.  The
+Jacobian becomes
+
+
+.. math::
+         J = \left(\begin{array}{cc}
+        \frac{\partial}{\partial S} F_S & \frac{\partial}{\partial I}F_S\\ 
+        \frac{\partial}{\partial S} F_I & \frac{\partial}{\partial I}F_I
+        \end{array}\right)
+        = \left(\begin{array}{cc}
+        1 + \frac{1}{2}\Delta t\beta I & \frac{1}{2}\Delta t\beta\\ 
+        - \frac{1}{2}\Delta t\beta S & 1 - \frac{1}{2}\Delta t\beta I -
+        \frac{1}{2}\Delta t\nu
+        \end{array}\right)
+        {\thinspace .}
+        
+        The Newton system to be solved in each iteration is then
+        
+        !bt
+        
+        &
+        \left(\begin{array}{cc}
+        1 + \frac{1}{2}\Delta t\beta I_{-} & \frac{1}{2}\Delta t\beta S_{-}\\ 
+        - \frac{1}{2}\Delta t\beta S_{-} & 1 - \frac{1}{2}\Delta t\beta I_{-} -
+        \frac{1}{2}\Delta t\nu
+        \end{array}\right)
+        \left(\begin{array}{c}
+        \delta S\\ 
+        \delta I
+        \end{array}\right)
+        =\\ 
+        & \qquad\qquad
+        \left(\begin{array}{c}
+        S_{-} - S_1 + \frac{1}{2}\Delta t\beta(S_1I_1 + S_{-}I_{-})\\ 
+        I_{-} - I_1 - \frac{1}{2}\Delta t\beta(S_1I_1 + S_{-}I_{-}) -
+        \frac{1}{2}\Delta t\nu(I_1 + I_{-})
+        \end{array}\right)
+        
+
+
+.. _nonlin:pdelevel:
+
+Linearization at the PDE level
+==============================
+
+The attention is now turned
+to nonlinear partial differential equations (PDEs)
+and application of the techniques explained for ODEs.
+The model problem is a nonlinear diffusion equation
+
+
+.. _Eq:nonlin:pdelevel:model:pde:
+
+.. math::
+   :label: nonlin:pdelevel:model:pde
+        
+        \frac{\partial u}{\partial t} = \nabla\cdot ({\alpha}(u)\nabla u) + f(u),\quad
+        \boldsymbol{x}\in\Omega,\ t\in (0,T],
+        
+        
+        
+
+
+
+.. _Eq:nonlin:pdelevel:model:Neumann:
+
+.. math::
+   :label: nonlin:pdelevel:model:Neumann
+          
+        -{\alpha}(u)\frac{\partial u}{\partial n} = g,\quad \boldsymbol{x}\in\partial\Omega_N,\ 
+        t\in (0,T],
+        
+        
+        
+
+
+
+.. _Eq:nonlin:pdelevel:model:Dirichlet:
+
+.. math::
+   :label: nonlin:pdelevel:model:Dirichlet
+          
+        u = u_0,\quad \boldsymbol{x}\in\partial\Omega_D,\ t\in (0,T]{\thinspace .}
+        
+        
+
+
+.. _nonlin:pdelevel:explicit:
+
+Explicit time integration
+-------------------------
+
+The nonlinearities in the PDE are trivial to deal with if we choose
+an explicit time integration method
+for :eq:`nonlin:pdelevel:model:pde`, such as the Forward Euler method:
+
+
+.. math::
+         D_t^+ u = \nabla\cdot ({\alpha}(u)\nabla u) + f(u)]^n,
+
+which leads to a linear equation in the unknown :math:`u^{n+1}`:
+
+
+.. math::
+         \frac{u^{n+1} - u^n}{\Delta t} = \nabla\cdot ({\alpha}(u^n)\nabla u^n)
+        + f(u^n){\thinspace .}
+
+
+.. BC
+
+
+.. _nonlin:pdelevel:Picard:
+
+Picard iteration  (2)
+---------------------
+
+A Backward Euler scheme for :eq:`nonlin:pdelevel:model:pde`
+reads
+
+
+.. math::
+         D_t^- u = \nabla\cdot ({\alpha}(u)\nabla u) + f(u)]^n{\thinspace .}
+
+Written out,
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE
+        
+        \frac{u^{n} - u^{n-1}}{\Delta t} = \nabla\cdot ({\alpha}(u^n)\nabla u^n)
+        + f(u^n)
+        
+        
+
+This is a nonlinear, stationary PDE for the unknown function :math:`u^n(\boldsymbol{x})`.
+We introduce a Picard iteration with :math:`k` as iteration counter.
+A typical linearization of the :math:`\nabla\cdot{\alpha}(u^n)\nabla u^n` term
+in iteration :math:`k+1` is to use the previously computed :math:`u^{n,k}`
+approximation in the diffusion coefficient: :math:`{\alpha}(u^{n,k})`.
+The nonlinear source term is treated similarly: :math:`f(u^{n,k})`.
+The unknown function :math:`u^{n,k+1}` then fulfills the linear PDE
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Picard:k:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Picard:k
+        
+        \frac{u^{n,k} - u^{n-1}}{\Delta t} = \nabla\cdot ({\alpha}(u^{n,k})
+        \nabla u^{n,k+1})
+        + f(u^{n,k}){\thinspace .}
+        
+        
+
+The initial guess for the Picard iteration at this time level can be
+taken as the solution at the previous time level: :math:`u^{n,0}=u^{n-1}`.
+
+We can alternatively apply the notation where :math:`u` corresponds to
+the unknown we want to solve for, i.e., :math:`u^{n,k+1}`, let :math:`u_{-}`
+be the most recently computed value, :math:`u^{n,k}`, and let
+:math:`u_1` denote the unknown function at the previous time level, :math:`u^{n-1}`.
+The PDE to be solved in a Picard iteration then looks like
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Picard:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Picard
+        
+        \frac{u - u_1}{\Delta t} = \nabla\cdot ({\alpha}(u_{-})
+        \nabla u)
+        + f(u_{-}){\thinspace .}
+        
+        
+
+At the beginning of the iteration we set :math:`u_{-}=u_1`.
+
+.. _nonlin:pdelevel:Newton:
+
+Newton's method  (4)
+--------------------
+
+At time level :math:`n` we have to solve the stationary PDE
+:eq:`nonlin:pdelevel:pde:BE`, this time with Newton's method.
+Normally, Newton's method is defined for systems of *algebraic equations*,
+but the idea of the method can be applied at the PDE level too.
+
+Let :math:`u^{n,k}` be an approximation to :math:`u^n`. We seek a
+better approximation on
+the form
+
+
+.. _Eq:nonlin:pdelevel:Newton:ansatz:
+
+.. math::
+   :label: nonlin:pdelevel:Newton:ansatz
+        
+        u^{n} = u^{n,k} + \delta u{\thinspace .}
+        
+        
+
+The idea is to insert :eq:`nonlin:pdelevel:Newton:ansatz` in
+:eq:`nonlin:pdelevel:pde:BE`, Taylor expand the nonlinearities
+and only keep the terms that are
+linear in :math:`\delta u`. Then we can solve a linear PDE for
+the correction :math:`\delta u` and use :eq:`nonlin:pdelevel:Newton:ansatz`
+to find a new approximation :math:`u^{n,k+1}=u^{n,k}+\delta u` to :math:`u^{n}`.
+
+Inserting :eq:`nonlin:pdelevel:Newton:ansatz` in
+:eq:`nonlin:pdelevel:pde:BE` gives
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Newton1:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Newton1
+        
+        \frac{u^{n,k} +\delta u - u^{n-1}}{\Delta t} =
+        \nabla\cdot ({\alpha}(u^{n,k} + \delta u)\nabla (u^{n,k}+\delta u))
+        + f(u^{n,k}+\delta u)
+        
+        
+
+We can Taylor expand :math:`{\alpha}(u^{n,k} + \delta u)` and
+:math:`f(u^{n,k}+\delta u)`:
+
+
+.. math::
+        
+        {\alpha}(u^{n,k} + \delta u) & = {\alpha}(u^{n,k}) + \frac{d{\alpha}}{du}(u^{n,k})
+        \delta u + {\mathcal{O}(\delta u^2)}\approx {\alpha}(u^{n,k}) + {\alpha}'(u^{n,k})\delta u,\\ 
+        f(u^{n,k}+\delta u) &=  f(u^{n,k}) + \frac{df}{du}(u^{n,k})\delta u
+        + {\mathcal{O}(\delta u^2)}\approx f(u^{n,k}) + f'(u^{n,k})\delta u{\thinspace .}
+        
+
+Inserting the linear approximations of :math:`{\alpha}` and :math:`f` in
+:eq:`nonlin:pdelevel:pde:BE:Newton1` results in
+
+
+.. math::
+        
+        \frac{u^{n,k} +\delta u - u^{n-1}}{\Delta t} =
+        \nabla\cdot ({\alpha}(u^{n,k})\nabla u^{n,k}) + f(u^{m,k}) + \nonumber
+        
+
+
+
+.. math::
+          
+        \quad \nabla\cdot ({\alpha}(u^{n,k})\nabla \delta u)
+        + \nabla\cdot ({\alpha}'(u^{n,k})\delta u\nabla u^{n,k}) + \nonumber
+        
+
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Newton2:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Newton2
+          
+        \quad \nabla\cdot ({\alpha}'(u^{n,k})\delta u\nabla \delta u)
+        + f'(u^{n,k})\delta u
+        
+        
+
+The term :math:`{\alpha}'(u^{n,k})\delta u\nabla \delta u` is :math:`{\mathcal{O}(\delta u^2)}`
+and therefore omitted. Reorganizing the equation gives a PDE
+for :math:`\delta u` that we can write in short form as
+
+
+.. math::
+         \delta F(\delta u; u^{n,k}) = -F(u^{n,k}),
+
+where
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Newton2:F:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Newton2:F
+        
+        F(u^{n,k}) = \frac{u^{n,k} - u^{n-1}}{\Delta t} -
+        \nabla\cdot ({\alpha}(u^{n,k})\nabla u^{n,k}) + f(u^{n,k}),
+        
+        
+
+
+
+.. math::
+          
+        \delta F(\delta u; u^{n,k}) =
+        - \frac{1}{\Delta t}\delta u +
+        \nabla\cdot ({\alpha}(u^{n,k})\nabla \delta u) + \nonumber
+        
+
+
+
+.. math::
+          
+        \quad \nabla\cdot ({\alpha}'(u^{n,k})\delta u\nabla u^{n,k})
+        + f'(u^{n,k})\delta u{\thinspace .}
+        
+
+Note that :math:`\delta F` is a linear function of :math:`\delta u`, and
+:math:`F` contains only terms that are known, such that
+the PDE for :math:`\delta u` is indeed linear.
+
+The form :math:`\delta F = -F` resembles the Newton system :math:`J\delta u =-F`
+for systems of algebraic equations, with :math:`\delta F` as :math:`J\delta u`.
+The unknown vector in a linear system of algebraic equations enters
+the system as a matrix-vector product (:math:`J\delta u`), while at
+the PDE level we have a linear differential operator instead
+(:math:`\delta F`).
+
+We can rewrite the PDE for :math:`\delta u` in a slightly different way too
+if we define :math:`u^{n,k} + \delta u` as :math:`u^{n,k+1}`.
+
+
+.. math::
+        
+         \frac{u^{n,k+1} - u^{n-1}}{\Delta t} =
+        \nabla\cdot ({\alpha}(u^{n,k})\nabla u^{n,k+1}) + f(u^{n,k}) + \nonumber
+        
+
+
+
+.. math::
+          
+        \qquad  \nabla\cdot ({\alpha}'(u^{n,k})\delta u\nabla u^{n,k})
+        + f'(u^{n,k})\delta u{\thinspace .}
+        
+
+Note that the first line is the same PDE as arise in the Picard
+iteration, while the remaining terms arise from the differentiations
+that are an inherent ingredient in Newton's method.
+
+For coding we want to introduce :math:`u_{-}` for :math:`u^{n,k}` and
+:math:`u_1` for :math:`u^{n-1}`. The formulas for :math:`F` and :math:`\delta F`
+are then
+
+
+.. _Eq:nonlin:pdelevel:pde:BE:Newton2:F2:
+
+.. math::
+   :label: nonlin:pdelevel:pde:BE:Newton2:F2
+        
+        F(u_{-}) = \frac{u_{-} - u_1}{\Delta t} -
+        \nabla\cdot ({\alpha}(u_{-})\nabla u_{-}) + f(u_{-}),
+        
+        
+
+
+
+.. math::
+          
+        \delta F(\delta u; u_{-}) =
+        - \frac{1}{\Delta t}\delta u +
+        \nabla\cdot ({\alpha}(u_{-})\nabla \delta u) + \nonumber
+        
+
+
+
+.. math::
+          
+        \quad \nabla\cdot ({\alpha}'(u_{-})\delta u\nabla u_{-})
+        + f'(u_{-})\delta u{\thinspace .}
+        
+
+The form that orders the PDE as the Picard iteration terms plus
+the Newton method's derivative terms becomes
+
+
+.. math::
+        
+         \frac{u - u_1}{\Delta t} =
+        \nabla\cdot ({\alpha}(u_{-})\nabla u) + f(u_{-}) + \nonumber
+        
+
+
+
+.. math::
+          
+        \qquad  \nabla\cdot ({\alpha}'(u_{-})\delta u\nabla u_{-})
+        + f'(u_{-})\delta u{\thinspace .}
+        
+
+
+
+
+.. _nonlin:alglevel:1D:
+
+Discretization of 1D problems
+=============================
+
+the section :ref:`nonlin:pdelevel` presents methods for linearizing
+time-discrete PDEs directly prior to discretization in space.  We can
+alternatively carry out the discretization in space and of the
+time-discrete nonlinear PDE problem and get a system of nonlinear
+algebraic equations, which can be solved by Picard iteration or
+Newton's method as treated in the section :ref:`nonlin:systems:alg`.
+This latter approach will now be described in detail.
+
+We shall work with the 1D problem
+
+
+.. _Eq:nonlin:alglevel:1D:pde:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde
+        
+        -({\alpha}(u)u')' + au = f(u),\quad x\in (0,L),
+        \quad {\alpha}(u(0))u'(0) = C,\ u(L)=0
+        {\thinspace .}
+        
+        
+
+This problem is of the same nature as those arising from implicit
+time integration of a nonlinear diffusion PDE as outlined in
+the section :ref:`nonlin:pdelevel:Picard` (set :math:`a=1/\Delta t` and let
+:math:`f(u)` incorporate the nonlinear source term as well as
+known terms with the time-dependent unknown function at the previous
+time level).
+
+.. _nonlin:alglevel:1D:fd:
+
+Finite difference discretizations
+---------------------------------
+
+The nonlinearity in
+the differential equation :eq:`nonlin:alglevel:1D:pde` poses no more
+difficulty than a variable coefficient in :math:`({\alpha}(x)u')'`.
+We can therefore use a standard approach to discretizing the Laplace
+term with a variable coefficient:
+
+
+.. math::
+         [-D_x\overline{{\alpha}}^x D_x u +au = f]_i{\thinspace .}
+
+Writing this out for a uniform mesh with points :math:`x_i=i\Delta x`,
+:math:`i=0,\ldots,N_x`, leads to
+
+
+.. _Eq:nonlin:alglevel:1D:fd:deq0:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:deq0
+        
+        -\frac{1}{\Delta x^2}
+        \left({\alpha}_{i+\frac{1}{2}}(u_{i+1}-u_i) -
+        {\alpha}_{i-\frac{1}{2}}(u_{i}-u_{i-1})\right)
+        + au_i = f(u_i){\thinspace .}
+        
+        
+
+This equation is valid at all the mesh points :math:`i=0,1,\ldots,N_x-1`.
+At :math:`i=N_x` we have the Dirichlet condition :math:`u_i=0`.
+The only difference from the case with :math:`({\alpha}(x)u')'` and :math:`f(x)` is that
+now :math:`{\alpha}` and :math:`f` are functions of :math:`u` and not only on :math:`x`:
+:math:`({\alpha}(u(x))u')'` and :math:`f(u(x))`.
+
+The quantity :math:`{\alpha}_{i+\frac{1}{2}}`, evaluated between two mesh points,
+needs a comment. Since :math:`{\alpha}` depends on :math:`u` and :math:`u` is only known
+at the mesh points, we need to express :math:`{\alpha}_{i+\frac{1}{2}}` in
+terms of :math:`u_i` and :math:`u_{i+1}`. For this purpose we use an arithmetic
+mean, although a harmonic mean is also common in this context if
+:math:`{\alpha}` features large jumps.
+There are two choices of arithmetic means:
+
+
+.. _Eq:nonlin:alglevel:1D:fd:dfc:mean:u:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:dfc:mean:u
+        
+        {\alpha}_{i+\frac{1}{2}} \approx
+        {\alpha}(\frac{1}{2}(u_i + u_{i+1}) =
+        [{\alpha}(\overline{u}^x)]^{i+\frac{1}{2}},
+        
+        
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fd:dfc:mean:dfc:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:dfc:mean:dfc
+          
+        {\alpha}_{i+\frac{1}{2}} \approx
+        \frac{1}{2}({\alpha}(u_i) + {\alpha}(u_{i+1})) = [\overline{{\alpha}(u)}^x]^{i+\frac{1}{2}}
+        
+        
+
+Equation :eq:`nonlin:alglevel:1D:fd:deq0` with
+the latter approximation then looks like
+
+
+.. math::
+        
+        -\frac{1}{2\Delta x^2}
+        \left(({\alpha}(u_i)+{\alpha}(u_{i+1}))(u_{i+1}-u_i) -
+        ({\alpha}(u_{i-1})+{\alpha}(u_{i}))(u_{i}-u_{i-1})\right)\nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fd:deq:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:deq
+          
+        \qquad + au_i = f(u_i){\thinspace .}
+        
+        
+
+
+At mesh point :math:`i=0` we have the boundary condition :math:`{\alpha}(u)u'=C`,
+which is discretized by
+
+
+.. math::
+         [{\alpha}(u)D_{2x}u = C]_0,
+
+meaning
+
+
+.. _Eq:nonlin:alglevel:1D:fd:Neumann:x0:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:Neumann:x0
+        
+        {\alpha}(u_0)\frac{u_{1} - u_{-1}}{2\Delta x} = C{\thinspace .}
+        
+        
+
+The fictitious value :math:`u_{-1}` can be eliminated with the aid
+of :eq:`nonlin:alglevel:1D:fd:deq` for :math:`i=0`.
+Formally, :eq:`nonlin:alglevel:1D:fd:deq` should be solved with
+respect to :math:`u_{i-1}` and that value (:math:`for i=0`) should be inserted in
+:eq:`nonlin:alglevel:1D:fd:Neumann:x0`, but it is algebraically
+much easier to do it the other way around. Alternatively, one can
+use a ghost cell :math:`[-\Delta x,0]` and update the :math:`u_{-1}` value
+in the ghost cell according to :eq:`nonlin:alglevel:1D:fd:Neumann:x0`
+after every Picard or Newton iteration. Such an approach means that
+we use a known :math:`u_{-1}` value in :eq:`nonlin:alglevel:1D:fd:deq`
+from the previous iteration.
+
+The nonlinear algebraic equations :eq:`nonlin:alglevel:1D:fd:deq` are
+of the form :math:`A(u)u = b(u)` with
+
+
+.. math::
+        
+        A_{i,i} &= \frac{1}{2\Delta x^2}(-{\alpha}(u_{i-1}) + 2{\alpha}(u_{i})
+        -{\alpha}(u_{i+1})) + a,\\ 
+        A_{i,i-1} &= -\frac{1}{2\Delta x^2}({\alpha}(u_{i-1}) + {\alpha}(u_{i})),\\ 
+        A_{i,i+1} &= -\frac{1}{2\Delta x^2}({\alpha}(u_{i}) + {\alpha}(u_{i+1})),\\ 
+        b_i &= f(u_i){\thinspace .}
+        
+
+The obvious Picard iteration scheme is to use previously computed
+values of :math:`u_i` in :math:`A(u)` and :math:`b(u)`, as described more in detail in
+the section :ref:`nonlin:systems:alg`.
+
+Newton's method requires computation of the Jacobian. Here it means
+that we need to differentiate :math:`F(u)=A(u)u - b(u)` with respect to
+:math:`u_0,u_1,\ldots,u_{N_x-1}`. Nonlinear equation number :math:`i` has
+the structure
+
+
+.. math::
+         F_i = A_{i,i-1}(u_{i-1},u_i)u_{i-1} +
+        A_{i,i}(u_{i-1},u_i,u_{i+1})u_i +
+        A_{i,i+1}(u_i, u_{i+1})u_{i+1} - b_i(u_i){\thinspace .}
+
+The Jacobian becomes
+
+
+.. math::
+        
+        J_{i,i} &= \frac{\partial F_i}{\partial u_i}
+        = \frac{\partial A_{i,i-1}}{\partial u_i}u_{i-1}
+        + \frac{\partial A_{i,i}}{\partial u_i}u_i
+        - \frac{\partial b_i}{\partial u_i}
+        + A_{i,i}
+        + \frac{\partial A_{i,i+1}}{\partial u_i}u_{i+1}
+        - \frac{\partial b_i}{\partial u_{i}}\\ 
+        &=
+        \frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_i)u_{i-1}
+        +2{\alpha}'(u_i)u_{i}
+        +(-{\alpha}(u_{i-1}) + 2{\alpha}(u_i) - {\alpha}(u_{i+1})) + 2a\Delta x^2
+        -{\alpha}'(u_{i})u_{i+1})
+        - b'(u_i),\\ 
+        J_{i,i-1} &= \frac{\partial F_i}{\partial u_{i-1}}
+        = \frac{\partial A_{i,i-1}}{\partial u_{i-1}}u_{i-1}
+        + A_{i-1,i}
+        + \frac{\partial A_{i,i}}{\partial u_{i-1}}u_i
+        - \frac{\partial b_i}{\partial u_{i-1}}\\ 
+        &=
+        \frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_{i-1})u_{i-1} - (dfc(u_{i-1}) + {\alpha}(u_i))
+        + {\alpha}'(u_{i-1})u_i),\\ 
+        J_{i,i+1} &= \frac{\partial A_{i,i+1}}{\partial u_{i-1}}u_{i+1}
+        + A_{i+1,i} +
+        \frac{\partial A_{i,i}}{\partial u_{i+1}}u_i
+        - \frac{\partial b_i}{\partial u_{i+1}}
+        &=\frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_{i+1})u_{i+1} - (dfc(u_{i}) + {\alpha}(u_{i+1}))
+        + {\alpha}'(u_{i+1})u_i){\thinspace .}
+        {\thinspace .}
+        
+
+The explicit expression for nonlinear equation number :math:`i`,
+:math:`F_i(u_0,u_1,\ldots)`, arises from moving all terms in
+:eq:`nonlin:alglevel:1D:fd:deq` to the left-hand side. Then we have
+:math:`J_{i,j}` and :math:`F_i` (modulo the boundary conditions) and can implement
+Newton's method.
+
+We have seen, and can see from the present example, that the
+linear system in Newton's method contains all the terms present
+in the system that arises in the Picard iteration method.
+The extra terms in Newton's method can be multiplied by a factor
+such that it is easy to program one linear system and set this
+factor to 0 or 1 to generate the Picard or Newton system.
+
+.. Remark: Neumann cond at x=L and Dirichlet at x=0 leads to different
+
+.. numbering of unknowns and u at mesh points. Must address this
+
+.. in a remark and treat it properly in diffu.
+
+
+
+
+.. _nonlin:alglevel:1D:fe:
+
+Finite element discretizations
+------------------------------
+
+For the finite element discretization we first need to derive the
+variational problem. Let :math:`V` be an appropriate function space
+with basis functions :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`. Because of the
+Dirichlet condition at :math:`x=L` we require :math:`{\psi}_i(L)=0`, :math:`i\in{\mathcal{I}_s}`.
+Using Galerkin's method,
+we multiply the differential equation by any :math:`v\in V`, integrate
+terms with second-order derivatives by parts, and insert the
+Neumann condition at :math:`x=0`. The variational problem is then:
+find :math:`u\in V` such that
+
+
+.. _Eq:nonlin:alglevel:1D:pde:varform:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde:varform
+        
+        \int_0^L {\alpha}(u)u'v'{\, \mathrm{d}x} = \int_0^L f(u)v{\, \mathrm{d}x} - Cv(0),\quad \forall v\in V{\thinspace .}
+        
+        
+
+The :math:`u` function is mean to be an approximation :math:`u=\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j`.
+To derive the algebraic equations we also demand the above equations
+to hold for :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`. The result is
+
+
+.. math::
+        
+        \int_0^L {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k)
+        {\psi}_j'{\psi}_i'{\, \mathrm{d}x} = \int_0^L f{\psi}_i{\, \mathrm{d}x} - Cv(0),\quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+
+
+
+.. admonition:: Fundamental integration problem
+
+   Methods that use the Galerkin or weighted residual principle
+   face a fundamental difficulty in nonlinear
+   problems: how can we integrate a terms like
+   :math:`\int_0^L {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k){\psi}_k){\psi}_i'{\psi}_j'{\, \mathrm{d}x}`
+   and :math:`\int_0^L f(\sum_{k\in{\mathcal{I}_s}}c_k){\psi}_k){\psi}_i{\, \mathrm{d}x}`
+   when we do not
+   the :math:`c_k` coefficients in the argument of the :math:`{\alpha}` function?
+   We must resort to numerical integration or the group finite element method.
+
+
+.. _nonlin:alglevel:1D:fe:group:
+
+The group finite element method
+-------------------------------
+
+Let us simplify the model problem for a while and set :math:`{\alpha}`,
+choose :math:`f(u)=u^2`, and have Dirichlet conditions at
+both ends such that we have a very simple
+nonlinear problem :math:`-u''=u^2`. The variational form is then
+
+
+.. math::
+         \int_0^L u'v'{\, \mathrm{d}x} = \int_0^L u^2v{\, \mathrm{d}x},\quad\forall v\in V{\thinspace .}
+
+The term with :math:`u'v'` is well known so the only new feature is
+the term :math:`\int u^2v{\, \mathrm{d}x}`. With :math:`v={\psi}_i` and :math:`u=\sum_jc_j{\psi}_j`,
+this term becomes
+
+
+.. math::
+         \int_0^L (\sum_kc_k{\psi}_k)^2{\psi}_i{\, \mathrm{d}x}{\thinspace .}
+
+Using finite elements, :math:`{\psi}_i={\varphi}_i`, of P1 type, one
+can show that :math:`\int u^2v{\, \mathrm{d}x}` gives rise to the following terms in
+the algebraic equations:
+
+
+.. math::
+         \frac{h}{12}(u_{i-1}^2 + 2u_i(u_{i-1} + u_{i+1}) + 6u_i^2
+        + u_{i+1}^2,
+
+written with :math:`u_i=u(x_{i})=c_i` to better illustrate the
+difference equation in terms of :math:`u` values.
+Obviously, even :math:`u^2` gives rise to a complicated term,
+especially when compared to the
+finite difference counterpart :math:`u_i^2`.
+
+
+.. index:: group finite element method
+
+
+.. index:: product approximation technique
+
+
+Since we already expand :math:`u` as :math:`\sum_jc_j{\varphi}_j` we may use the
+same approximation for nonlinearities. More precisely, we have
+in general
+
+
+.. math::
+         u = \sum_{j\in{I_b}} U_j{\varphi}_j(x)
+        + \sum_{j\in{\mathcal{I}_s}}c_j{\varphi}_{\nu(j)},\quad c_j = u(x_{\nu(j)}),
+
+where :math:`{I_b}` is the index set consisting of the numbers of the nodes
+subject to a Dirichlet condition,
+:math:`u(x_{j})=U_j`, and :math:`{\mathcal{I}_s}=\{0,1,\ldots,\}` are
+the indices of the unknowns in the resulting linear system.
+
+We can now approximate :math:`f` in a similar way,
+
+
+.. math::
+        
+        f(u)\approx \sum_{j\in{I_b}} f(u_j){\varphi}_j
+        + \sum_{j\in{\mathcal{I}_s}} f(u_{\nu(j)}){\psi}_{\nu(j)}(x),
+        
+
+using :math:`u_j` as a notation for the value of the finite element function
+:math:`u` at node :math:`x_{j}`.
+The expression for :math:`f` is actually a sum of :math:`f(u_j){\varphi}_j` over all nodes
+so we can avoid distinguishing between Dirichlet nodes and the
+rest and just write
+
+
+.. math::
+        
+        f(u) \approx \sum_{j=0}^{N_n} f(u_j){\varphi}_j(x){\thinspace .}
+        
+
+This approximation is known as the *group finite element method*
+or the *product approximation* technique.
+
+The main advantage of the group finite element method is for
+deriving difference equations in nonlinear problems. Computer programs
+will always integrate :math:`\int f(u){\varphi}_i{\, \mathrm{d}x}` numerically and use
+an existing approximation of :math:`u` in :math:`f(u)` such that the integrand
+can be sampled at any spatial point.
+
+Let use the group finite element method to derive the terms in
+the difference equation corresponding to :math:`f(u)` in the differential
+equation. We have
+
+
+.. math::
+         \int_0^L (\sum_j f(u_j){\varphi}_j){\varphi}_i{\, \mathrm{d}x}
+        = \sum_j \left(\int_0^L {\varphi}_i{\varphi}_j{\, \mathrm{d}x}\right) f(u_j){\thinspace .}
+
+We recognize this expression as the mass matrix times the
+vector :math:`f=(f(u_0),f(u_1),\ldots,)`: :math:`Mf`. The associated terms
+in the difference equations are
+
+
+.. math::
+         \frac{h}{6}(f(u_{i-1}) + 4f(u_i) + f(u_{i+1})){\thinspace .}
+
+We may lump the mass matrix through integration with the Trapezoidal
+rule. In that case the :math:`f(u)` term in the differential equation
+gives rise to a single term :math:`hf(u_i)`, just as in the finite difference
+method.
+
+
+.. _nonlin:alglevel:1D:fe:f:
+
+Numerical integration of nonlinear terms
+----------------------------------------
+
+We can apply numerical integration directly to a term like
+
+
+.. math::
+        \int_0^L f(\sum_k c_k{\psi}_k(x)){\psi}_i(x){\, \mathrm{d}x},
+
+as long as we have some coefficients :math:`c_k` from some previous iterations
+such that :math:`\sum_k c_k{\psi}_k(x)` can be evaluated for some :math:`x`.
+
+Choosing finite element basis functions, we have
+:math:`{\psi}_i={\varphi}_{\nu(i)}`, but in the present model problem :math:`\nu(i)=i`
+with a left-to-right numbering. The integral above is the written as
+
+
+.. math::
+        \int_0^L f(\sum_k u_k{\varphi}_k(x)){\varphi}_i(x){\, \mathrm{d}x},
+
+where we have used that :math:`c_k=u(x_{k})=u_k` for a node point :math:`x_{k}`.
+Replacing :math:`c_k` by :math:`u_k` makes it easier to interpret the resulting
+algebraic equations as finite difference approximations.
+
+Let us now apply an integration rule that samples the
+integrand at the node points only. The motivation is that
+the basis functions :math:`{\varphi}_i` vanish at all such points except
+at :math:`x_{i}`. For example,
+
+
+.. math::
+         \sum_k u_k{\varphi}_k(x_{j}) = u_j,
+
+and :math:`{\varphi}_i(x_{j})=\delta_{ij}=0` if :math:`i\neq j` and unity otherwise.
+Applying the Trapezoidal rule gives
+
+
+.. math::
+        \int_0^L f(\sum_k u_k{\varphi}_k(x)){\varphi}_i(x){\, \mathrm{d}x}
+        \approx h\left( \frac{1}{2} f(u_0){\varphi}_i(0) + \frac{1}{2} f(u_N){\varphi}_i(L)
+        + \sum_{j=1}^{N-1} f(u_j){\varphi}_i(x_{j})\right) = hf(u_i),
+
+with a factor one half if :math:`i=0` or :math:`i=N_n`.
+
+The conclusion is that it suffices to use the Trapezoidal rule if
+one wants to derive the difference equations in the finite element
+method and make them similar to those arising in the finite difference
+method.
+
+.. _nonlin:alglevel:1D:fe:Laplace:
+
+Finite element discretization of a variable coefficient Laplace term
+--------------------------------------------------------------------
+
+Turning back to the model problem :eq:`nonlin:alglevel:1D:pde`, it
+remains to calculate the contribution of the :math:`({\alpha} u')'`
+and boundary terms
+to the difference equations. The integral in the variational form
+corresponding to :math:`({\alpha} u')'` is
+
+
+.. math::
+         \int_0^L {\alpha}(\sum_k c_k{\psi}_k){\psi}_i'{\psi}_j'{\, \mathrm{d}x}{\thinspace .}
+
+Numerical integration utilizing a value of :math:`\sum_k c_k{\psi}_k` from
+a previous iteration must in general be used to compute the integral.
+
+The group finite element method can be used to precompute the
+integral and also give some analytical insight:
+
+
+.. math::
+        
+        \int_0^L {\alpha}(\sum_k c_k{\psi}_k){\psi}_i'{\psi}_j'{\, \mathrm{d}x}
+        \approx
+        \sum_k \left(\underbrace{\int_0^L {\psi}_k{\psi}_i'{\psi}_j'{\, \mathrm{d}x}}_{L_{i,j,k}}\right) {\alpha}(u_k)
+        = \sum_k L_{i,j,k}{\alpha}(u_k){\thinspace .}
+        
+
+With finite element basis functions and P1 elements the
+:math:`L_{i,j,k}` quantity can be computed at the cell level by hand as
+
+
+.. math::
+        
+        L_{r,s,t}^{(e)} =
+        \frac{1}{2h}\left(\begin{array}{rr}
+        1 & -1\\ 
+        -1 & 1
+        \end{array}\right),\quad t=0,1,
+        
+
+where :math:`i=q(e,r)`, :math:`j=q(e,s)`, and :math:`k=q(e,t)`. The
+sum :math:`\sum_k L_{i,j,k}{\alpha}(u_k)` at the cell level becomes
+:math:`\sum_{t=0}^1 L_{r,s,t}^{(e)}{\alpha}(\tilde u_t)`, where :math:`\tilde u_t`
+is :math:`u(x_{q(e,t)})` (the value of :math:`u` at local node number :math:`t` in
+cell number :math:`e`). The element matrix becomes
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:Ae:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:Ae
+        
+        \frac{1}{2} ({\alpha}(\tilde u_0) + {\alpha}(\tilde u_1))
+        \frac{1}{h}\left(\begin{array}{rr}
+        1 & -1\\ 
+        -1 & 1
+        \end{array}\right){\thinspace .}
+        
+        
+
+The assembly of such element matrices with constant :math:`h` results in
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:diffeq:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:diffeq
+        
+        \frac{1}{h}\left(\frac{1}{2}({\alpha}(u_i) + {\alpha}(u_{i+1}))(u_{i+1}-u_i)
+        -  \frac{1}{2}({\alpha}(u_{i-1}) + {\alpha}(u_{i}))(u_{i}-u_{i-1})\right),
+        
+        
+
+which is nothing but the standard finite difference discretization
+of :math:`({\alpha}(u)u')'` with an arithmetic mean of :math:`{\alpha}(u)` (and a
+factor :math:`h` because of the integration in the finite element method).
+
+Instead of using the group finite element method and exact integration
+we can turn to the Trapezoidal rule for computing
+:math:`\int_0^L {\alpha}(\sum_k u_k{\varphi}_k){\varphi}_i'{\varphi}_j'{\, \mathrm{d}x}` at
+the cell level:
+
+
+.. math::
+        
+        \int_{-1}^1 {\alpha}(\sum_{t=0}^1
+        \tilde u_t{\tilde{\varphi}}_t)\frac{2}{h}\frac{d{\tilde{\varphi}}_r}{dX}
+        \frac{2}{h}\frac{d{\tilde{\varphi}}_s}{dX}\frac{h}{2}dX
+        = \frac{1}{2h}(-1)^r(-1)^s \int_{-1}^1 {\alpha}(\sum_{t=0}^1 u_t{\tilde{\varphi}}_t(X))dX
+        \nonumber
+        
+
+
+
+.. math::
+          
+         \approx \frac{1}{2h}(-1)^r(-1)^s(
+        \sum_{t=0}^1{\tilde{\varphi}}_t(-1)\tilde u_t + \sum_{t=0}^1{\tilde{\varphi}}_t(1)\tilde u_t)
+        \nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:Ae:Trapez:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:Ae:Trapez
+          
+        = \frac{1}{2h}(-1)^r(-1)^s({\alpha}(\tilde u_0) + {\alpha}(tilde u_1)){\thinspace .}
+        
+        
+
+The element matrix in :eq:`nonlin:alglevel:1D:fe:Laplace:Ae:Trapez`
+is identical to the one in
+:eq:`nonlin:alglevel:1D:fe:Laplace:Ae`, showing that the
+group finite element method and Trapezoidal integration are
+equivalent with the standard finite discretization of a
+nonlinear Laplace term.
+
+The final term in the variational form is the Neumann condition
+at the boundary: :math:`Cv(0)=C{\varphi}_i(0)=C\delta_{i0}` since only
+:math:`i=0` will give :math:`{\varphi}_i(0)\neq 0`.
+
+
+.. admonition:: Summary
+
+   For the equation
+   
+   
+   .. math::
+            -({\alpha}(u)u')' = f(u),
+   
+   P1 finite elements results in difference equations where
+   
+    * the term :math:`-({\alpha}(u)u')'` becomes :math:`-h[D_x\overline{{\alpha}(u)}^xD_x u]_i`
+      if the group finite element method or Trapezoidal integration is applied,
+   
+    * :math:`f(u)` becomes :math:`hf(u_i)` with Trapezoidal integration or the
+      "mass matrix" representation :math:`h[f(u) - \frac{h}{6}D_xD_x f(u)]_i`
+      if computed by a group finite element method.
+
+
+As we have the nonlinear difference equations available in the finite
+element, a Picard or Newton method can be defined as shown for
+the finite difference method.
+Nevertheless, the general situation is that we have not assembled
+finite difference-style equations by hand and the linear system
+in the Picard or Newton method must therefore be defined
+directly through the variational form, as shown next.
+
+.. _nonlin:alglevel:1D:fe:Picard:
+
+Picard iteration defined from the variational form
+--------------------------------------------------
+
+We address again the problem :eq:`nonlin:alglevel:1D:pde` with
+variational form :eq:`nonlin:alglevel:1D:pde:varform`.
+Our aim is to define a Picard iteration based on this variational
+form. The idea is to use a previously computed :math:`u` value in
+the nonlinear functions :math:`{\alpha}(u)` and :math:`f(u)`. Let :math:`u_{-}` be
+the available approximation to :math:`u` from the previous iteration.
+The variational form to be used for Picard iteration is then
+
+
+.. _Eq:nonlin:alglevel:1D:pde:varform:Picard:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde:varform:Picard
+        
+        \int_0^L {\alpha}(u_{-})u'v'{\, \mathrm{d}x} = \int_0^L f(u_{-})v{\, \mathrm{d}x} -
+        Cv(0),\quad \forall v\in V{\thinspace .}
+        
+        
+
+This is a linear problem :math:`a(u,v)=L(v)` with bilinear and linear forms
+
+
+.. math::
+         a(u,v) = \int_0^L {\alpha}(u_{-})u'v'{\, \mathrm{d}x},\quad
+        L(v) = \int_0^L f(u_{-})v{\, \mathrm{d}x} - Cv(0){\thinspace .}
+
+The linear system is computed the standard way from this variational problem.
+
+.. _nonlin:alglevel:1D:fe:Newton:
+
+Newton's method derived from the variational form
+-------------------------------------------------
+
+Application of Newton's method to the nonlinear variational
+form :eq:`nonlin:alglevel:1D:pde:varform` arising from
+the problem :eq:`nonlin:alglevel:1D:pde` requires identification
+of the nonlinear algebraic equations :math:`F_i(c_0,\ldots,c_N)=0`, :math:`i\in{\mathcal{I}_s}`,
+and the Jacobian :math:`J_{i,j}=\partial F_i/\partial c_j` for
+:math:`i,j\in{\mathcal{I}_s}`.
+
+The equations :math:`F_i` follows from the variational form
+
+
+.. math::
+        
+        \int_0^L {\alpha}(u)u'v'{\, \mathrm{d}x} = \int_0^L f(u)v{\, \mathrm{d}x} - Cv(0),\quad \forall v\in V,
+        
+
+by choosing :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`, and setting
+:math:`u=\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j`, maybe with a boundary function, depending
+on how Dirichlet conditions are to be incorporated. Without a
+boundary function we get
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Fi:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Fi
+        
+        F_i =
+        \int_0^L\left(
+        {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k)
+        (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i' -
+        f(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_i\right){\, \mathrm{d}x} -
+        C{\psi}_i(0),\quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+        
+
+The associated Jacobian becomes
+
+
+.. math::
+        
+        J_{i,j} = \frac{\partial F_i}{\partial c_j}
+         =
+        \int_0^L \frac{\partial}{\partial c_j}\left(
+        {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k)
+        (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i' -
+        f(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_i\right){\, \mathrm{d}x}\nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Jij
+          
+        =
+        \int_0^L \left(
+        {\alpha}'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j
+        (\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j'){\psi}_i'
+        + {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j'{\psi}_i'
+        - f'(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_j{\psi}_i\right){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+In the above derivation we have used the important result
+
+
+.. math::
+        
+        \frac{\partial}{\partial c_j} \sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k = {\psi}_j{\thinspace .}
+        
+
+
+When forming :math:`F_i` and :math:`J_{i,j}` in a program from the variational
+forms we use a previously computed :math:`u`, denoted by :math:`u_{-}` for
+the sums :math:`\sum_k c_k{\psi}_k` in the above expressions.
+With this notation we have
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Fi2:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Fi2
+        
+        F_i =
+        \int_0^L\left(
+        {\alpha}(u_{-})u_{-}'{\psi}_i' -
+        f(u_{-}i_k){\psi}_i\right){\, \mathrm{d}x} -
+        C{\psi}_i(0),\quad i\in{\mathcal{I}_s},
+        
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Jij
+          
+        J_{i,j} =
+        \int_0^L \left(
+        {\alpha}'(u_{-}){\psi}_j
+        (u_{-}){\psi}_i'
+        + {\alpha}(u_{-}){\psi}_j'{\psi}_i'
+        - f'(u_{-}){\psi}_j{\psi}_i\right){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+Most computer programs requires the user to define :math:`F_i` and
+:math:`J_{i,j}`, but many programs have a gallery of models with
+predefined PDE problems and associated :math:`F_i` and :math:`J_{i,j}`
+available. Some programs, like "FEniCS": "http:fenicsproject.org",
+are capable of automatically deriving :math:`J_{i,j}` if :math:`F_i`
+is specified.
+
+The derivation of :math:`F_i` and :math:`J_{i,j}` in the 1D model problem
+is easily generalized to multi-dimensional problems.
+For example, Backward Euler discretization of the
+PDE
+
+
+.. math::
+         u_t = \nabla\cdot({\alpha}(u)\nabla u) + f(u),
+
+gives the nonlinear time-discrete PDEs
+
+
+.. math::
+         u^n - \Delta t\nabla\cdot({\alpha}(u^n)\nabla u^n) + f(u^n) = u^{n-1},
+
+or with :math:`u^n` simply as :math:`u` and :math:`u^{n-1}` as :math:`u_1`,
+
+
+.. math::
+         u - \Delta t\nabla\cdot({\alpha}(u^n)\nabla u) - \Delta t f(u) = u_1{\thinspace .}
+
+The variational form, assuming homogeneous Neumann conditions
+for simplicity, becomes
+
+
+.. _Eq:nonlin:alglevel:dD:fe:varform:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:varform
+        
+        \int_\Omega (uv + \Delta t{\alpha}(u)\nabla u\cdot\nabla v
+        - \Delta t f(u)v - u_1v){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+The nonlinear algebraic equations follow from setting :math:`v={\psi}_i`
+and using the representation :math:`u=\sum_kc_k{\psi}_k`, which we
+just write as
+
+
+.. _Eq:nonlin:alglevel:dD:fe:Fi:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:Fi
+        
+        F_i =
+        \int_\Omega (u{\psi}_i + \Delta t{\alpha}(u)\nabla u\cdot\nabla {\psi}_i
+        - \Delta t f(u){\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+Picard iteration needs a linearization where we use
+the most recent approximation :math:`u_{-}` to :math:`u` in
+:math:`{\alpha}` and :math:`f`:
+
+
+.. _Eq:nonlin:alglevel:dD:fe:Fi:Picard:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:Fi:Picard
+        
+        F_i \approx \hat F_i =
+        \int_\Omega (u_{-}{\psi}_i + \Delta t{\alpha}(u_{-})\nabla u\cdot\nabla {\psi}_i
+        - \Delta t f(u_{-}){\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+The equations :math:`\hat F_i=0` are now linear and we can easily derive
+a linear system for :math:`\left\{ {c}_i \right\}_{i\in{\mathcal{I}_s}}` by inserting :math:`u=\sum_jc_j{\psi}_j`.
+
+In Newton's method we need to evaluate :math:`F_i` with the known value
+:math:`u_{-}` for :math:`u`:
+
+
+.. _Eq:nonlin:alglevel:dD:fe:Fi:Newton:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:Fi:Newton
+        
+        F_i \approx \hat F_i =
+        \int_\Omega (u_{-}{\psi}_i + \Delta t{\alpha}(u_{-})
+        \nabla u_{-}\cdot\nabla {\psi}_i
+        - \Delta t f(u_{-}){\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+The Jacobian is obtained by differentiating
+:eq:`nonlin:alglevel:dD:fe:Fi` and using :math:`\partial u/\partial c_j={\psi}_j`:
+
+
+.. _Eq:nonlin:alglevel:dD:fe:Jij:
+
+.. _Eq:nonlin:alglevel:dD:fe:Jij:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:Jij
+        
+        J_{i,j} = \frac{\partial F_i}{\partial c_j} =
+        \int_\Omega ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u){\psi}_j
+        \nabla u\cdot\nabla {\psi}_i +
+        \Delta t{\alpha}(u)\nabla{\psi}_j\cdot\nabla{\psi}_i
+        - \Delta t f'(u){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+The evaluation of :math:`J_{i,j}` applies the known approximation :math:`u_{-}`
+for :math:`u`:
+
+
+.. _Eq:nonlin:alglevel:dD:fe:Jij:
+
+.. _Eq:nonlin:alglevel:dD:fe:Jij:
+
+.. math::
+   :label: nonlin:alglevel:dD:fe:Jij
+        
+        J_{i,j} =
+        \int_\Omega ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u_{-}){\psi}_j
+        \nabla u_{-}\cdot\nabla {\psi}_i +
+        \Delta t{\alpha}(u_{-})\nabla{\psi}_j\cdot\nabla{\psi}_i
+        - \Delta t f'(u_{-}){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+        
+        
+
+Hopefully, these example also show how convenient the notation
+with :math:`u` and :math:`u_{-}` is: the unknown is always :math:`u` and
+linearization by inserting known (previously computed) values
+is a matter of adding an underscore.
+One can take great advantage of this quick notation in
+software.
+
+
+.. _nonlin:exer:
+
+Exercises
+=========
+
+
+
+.. --- begin exercise ---
+
+
+.. _nonlin:exer:vib:geometric:mean:
+
+Problem 1: Linearize a nonlinear vibration ODE
+----------------------------------------------
+
+Consider a nonlinear vibration problem
+
+
+.. math::
+        
+        mu'' + bu'|u'| + s(u) = F(t),
+        
+
+where :math:`m>0` is a constant,
+:math:`b\geq 0` is a constant, :math:`s(u)` a possibly nonlinear function
+of :math:`u`, and :math:`F(t)` is a prescribed function. Such models arise
+from Newton's second law of motion
+in mechanical vibration problems where :math:`s(u)` is a spring or
+restoring force, :math:`mu''` is mass times acceleration, and
+:math:`bu'|u'|` models water or air drag.
+
+Approximate :math:`u''` by a centered finite difference :math:`D_tD_t u`,
+and use a centered difference :math:`D_t u` for :math:`u'` as well.
+Observe then that :math:`s(u)` does not contribute to making the
+resulting algebraic equation at a time level nonlinear.
+Use a geometric mean to linearize the quadratic nonlinearity arising
+from the term :math:`bu'|u'|`.
+
+.. 2DO: b) Newmark scheme
+
+.. derive it logically and connect it to the centered diff scheme
+
+.. ma + bv|v| + s(u) = F(t), v'=a, u'=v (staggered is natural,
+
+.. v at n+1/2 and a and u at n). Should be in vib first
+
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _nonlin:exer:1D:1pu2:fem:
+
+Problem 2: Discretize a 1D problem with a nonlinear coefficient
+---------------------------------------------------------------
+
+We consider the problem
+
+
+.. _Eq:nonlin:exer:1D:1pu2:fem:pde:
+
+.. math::
+   :label: nonlin:exer:1D:1pu2:fem:pde
+        
+        ((1 + u^2)u')' = 1,\quad x\in (0,1),\quad u(0)=u(1)=0{\thinspace .}
+        
+        
+
+
+
+**a)**
+Discretize :eq:`nonlin:exer:1D:1pu2:fem:pde` by a centered
+finite difference method on a uniform mesh.
+
+**b)**
+Discretize :eq:`nonlin:exer:1D:1pu2:fem:pde` by a finite
+element method with P1 of equal length.
+Use the Trapezoidal method to compute all integrals.
+Set up the resulting matrix system.
+
+Filename: ``nonlin_1D_coeff_discretize.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _nonlin:exer:1D:1pu2:PicardNewton:
+
+Problem 3: Linearize a 1D problem with a nonlinear coefficient
+--------------------------------------------------------------
+
+We have a two-point boundary value problem
+
+
+.. _Eq:nonlin:exer:1D:1pu2:PicardNewton:pde:
+
+.. math::
+   :label: nonlin:exer:1D:1pu2:PicardNewton:pde
+        
+        ((1 + u^2)u')' = 1,\quad x\in (0,1),\quad u(0)=u(1)=0{\thinspace .}
+        
+        
+
+
+
+**a)**
+Construct a Picard iteration method for :eq:`nonlin:exer:1D:1pu2:PicardNewton:pde`
+without discretizing in space.
+
+**b)**
+Apply Newton's method to :eq:`nonlin:exer:1D:1pu2:PicardNewton:pde`
+without discretizing in space.
+
+**c)**
+Discretize :eq:`nonlin:exer:1D:1pu2:PicardNewton:pde` by a centered finite
+difference scheme. Construct a Picard method for the resulting
+system of nonlinear algebraic equations.
+
+**d)**
+Discretize :eq:`nonlin:exer:1D:1pu2:PicardNewton:pde` by a centered finite
+difference scheme. Define the system of nonlinear algebraic equations,
+calculate the Jacobian, and set up Newton's method for solving the system.
+
+Filename: ``nonlin_1D_coeff_linearize.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _nonlin:exer:1D:fu:discretize:fd:
+
+Problem 4: Finite differences for the 1D Bratu problem
+------------------------------------------------------
+
+We address the so-called Bratu problem
+
+
+.. _Eq:nonlin:exer:1D:fu:discretize:fd:pde:
+
+.. math::
+   :label: nonlin:exer:1D:fu:discretize:fd:pde
+        
+        u'' + \lambda e^u=0,\quad x\in (0,1),\quad u(0)=u(1)=0,
+        
+        
+
+where :math:`\lambda` is a given parameter and :math:`u` is a function of :math:`x`.
+This is a widely used model problem for nonlinear differential equations.
+The problem :eq:`nonlin:exer:1D:fu:discretize:fd:pde` has an
+exact solution
+
+
+.. math::
+         u(x) = -2\ln\left(\frac{\cosh((x-\frac{1}{2})\theta/2)}{\cosh(\theta/4)}\right),
+
+where :math:`\theta` solves
+
+
+.. math::
+         \theta = \sqrt{2\lambda}\cosh(\theta/4){\thinspace .}
+
+There are two solutions of :eq:`nonlin:exer:1D:fu:discretize:fd:pde` for
+:math:`0<\lambda <\lambda_c`, while for :math:`\lambda >\lambda_c` there are no solutions.
+There is one unique solution for :math:`\lambda = \lambda_c`. The critical
+value :math:`\lambda_c` solves
+
+
+.. math::
+         1 = \sqrt{2\lambda_c}\frac{1}{4}\sinh(\theta(\lambda_c)/4){\thinspace .}
+
+A numerical value is :math:`\lambda_c = 3.513830719`.
+
+
+**a)**
+Discretize :eq:`nonlin:exer:1D:fu:discretize:fd:pde` by a
+centered finite difference method.
+
+**b)**
+Set up the nonlinear equations :math:`F_i(u_0,u_1,\ldots,u_{N_x})=0`
+from a). Calculate the associated Jacobian.
+
+Filename: ``nonlin_1D_Bratu_fd.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+
+.. --- begin exercise ---
+
+
+.. _nonlin:exer:1D:fu:discretize:fe:
+
+Problem 5: Finite elements for the 1D Bratu problem
+---------------------------------------------------
+
+We address the same 1D Bratu problem as described in
+:ref:`nonlin:exer:1D:fu:discretize:fd`.
+
+
+**a)**
+Discretize (:ref:`nonlin:exer:1D:fu:discretize:fe`) by a finite element
+method using a uniform mesh with P1 elements. Use a group
+finite element method for the :math:`e^u` term.
+
+**b)**
+Set up the nonlinear equations :math:`F_i(u_0,u_1,\ldots,u_{N_x})=0`
+from a). Calculate the associated Jacobian.
+
+Filename: ``nonlin_1D_Bratu_fe.pdf``.
+
+.. --- end exercise ---
+
+
+
+Bibliography
+============
+
+BIBFILE: ../papers.pub

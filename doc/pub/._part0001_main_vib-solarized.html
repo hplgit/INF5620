@@ -341,7 +341,7 @@ $$
 \newcommand{\I}{\boldsymbol{I}}
 \newcommand{\T}{\boldsymbol{T}}
 
-% Unit vectors
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
 \newcommand{\ii}{\boldsymbol{i}}
 \newcommand{\jj}{\boldsymbol{j}}
 \newcommand{\kk}{\boldsymbol{k}}
@@ -349,36 +349,31 @@ $$
 \newcommand{\ith}{\boldsymbol{i}_{\theta}}
 \newcommand{\iz}{\boldsymbol{i}_z}
 
-% Index sets
 \newcommand{\Ix}{\mathcal{I}_x}
 \newcommand{\Iy}{\mathcal{I}_y}
 \newcommand{\Iz}{\mathcal{I}_z}
 \newcommand{\It}{\mathcal{I}_t}
-\newcommand{\If}{\mathcal{I}}     % for FEM
-\newcommand{\Ifd}{\mathcal{I}_d}  % for FEM
+\newcommand{\If}{\mathcal{I}_s}     % for FEM
+\newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
 \newcommand{\setb}[1]{#1^0}    % set begin
 \newcommand{\sete}[1]{#1^{-1}} % set end
-%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
-%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
-%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
 \newcommand{\setl}[1]{#1^-}
 \newcommand{\setr}[1]{#1^+}
 \newcommand{\seti}[1]{#1^i}
+\newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
 
-% Finite elements
 \newcommand{\basphi}{\varphi}
 \newcommand{\baspsi}{\psi}
 \newcommand{\refphi}{\tilde\basphi}
 \newcommand{\psib}{\boldsymbol{\psi}}
 \newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
 \newcommand{\xno}[1]{x_{#1}}
-%\newcommand{\xno}[1]{x^{(#1)}}
 \newcommand{\Xno}[1]{X_{(#1)}}
 \newcommand{\yno}[1]{y_{#1}}
 \newcommand{\Yno}[1]{Y_{(#1)}}
 \newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
 
-% FEniCS commands
 \newcommand{\dX}{\, \mathrm{d}X}
 \newcommand{\dx}{\, \mathrm{d}x}
 \newcommand{\ds}{\, \mathrm{d}s}
@@ -537,7 +532,7 @@ Here, \( u'|u'| \) is to be computed at time \( t_n \). We can introduce
 a <em>geometric mean</em>, defined by
 
 <p>
-$$ (w^2)^n \approx w^{n-1/2}w^{n+1/2},$$
+$$ (w^2)^n \approx w^{n-\half}w^{n+\half},$$
 
 for some quantity \( w \) depending on time. The error in the geometric mean
 approximation is \( \Oof{\Delta t^2} \), the same as in the
@@ -545,7 +540,7 @@ approximation \( u''\approx D_tD_tu \). With \( w=u' \) it follows
 that
 
 <p>
-$$ [u'|u'|]^n \approx u'(t_n+\frac{1}{2})|u'(t_n-\frac{1}{2})|\tp$$
+$$ [u'|u'|]^n \approx u'(t_n+\half)|u'(t_n-\half)|\tp$$
 
 The next step is to approximate
 \( u' \) at \( t_{n\pm 1/2} \), but here a centered difference can be used:
@@ -553,7 +548,7 @@ The next step is to approximate
 <p>
 $$
 \begin{equation}
-u'(t_{n+1/2})\approx [D_t u]^{n+1/2},\quad u'(t_{n-1/2})\approx [D_t u]^{n-1/2}
+u'(t_{n+1/2})\approx [D_t u]^{n+\half},\quad u'(t_{n-1/2})\approx [D_t u]^{n-\half}
 \tp
 \tag{37}
 \end{equation}
@@ -565,7 +560,7 @@ We then get
 $$
 \begin{equation}
 [u'|u'|]^n
-\approx [D_tu]^{n+1/2}|[D_tu]^{n-1/2}| = \frac{u^{n+1}-u^n}{\Delta t}
+\approx [D_tu]^{n+\half}|[D_tu]^{n-\half}| = \frac{u^{n+1}-u^n}{\Delta t}
 \frac{|u^n-u^{n-1}|}{\Delta t}
 \tp
 \end{equation}
@@ -906,13 +901,13 @@ $$
 
 It is natural to introduce a staggered mesh (see the section <a href="._part0000_main_vib-solarized.html#vib:model2x2:staggered">The Euler-Cromer scheme on a staggered mesh</a>) and seek \( u \) at mesh points \( t_n \) (the numerical value is
 denoted by \( u^n \)) and \( v \) between mesh points at \( t_{n+1/2} \) (the numerical
-value is denoted by \( v^{n+1/2} \)).
+value is denoted by \( v^{n+\half} \)).
 A centered difference approximation to <a href="#mjx-eqn-41">(41)</a>-<a href="#mjx-eqn-42">(42)</a> can then be written in operator notation as
 
 <p>
 $$
 \begin{align}
-\lbrack D_t u &= v\rbrack^{n-1/2},
+\lbrack D_t u &= v\rbrack^{n-\half},
 \tag{43} \\ 
 \lbrack D_tv &= m^{-1}\left(F(t) - f(v) - s(u)\right)\rbrack^n\tp
 \tag{44}
@@ -924,28 +919,28 @@ Written out,
 <p>
 $$
 \begin{align}
-\frac{u^n - u^{n-1}}{\Delta t} &= v^{n-\frac{1}{2}},
+\frac{u^n - u^{n-1}}{\Delta t} &= v^{n-\half},
 \tag{45} \\ 
-\frac{v^{n+\frac{1}{2}} - v^{n-\frac{1}{2}}}{\Delta t}
+\frac{v^{n+\half} - v^{n-\half}}{\Delta t}
 &= m^{-1}\left(F^n - f(v^n) - s(u^n)\right)\tp
 \tag{46}
 \end{align}
 $$
 
 With linear damping, \( f(v)=bv \), we can use an arithmetic mean
-for \( f(v^n) \): \( f(v^n)\approx = \frac{1}{2}(f(v^{n-1/2}) +
-f(v^{n+1/2})) \). The system
+for \( f(v^n) \): \( f(v^n)\approx = \half(f(v^{n-\half}) +
+f(v^{n+\half})) \). The system
 <a href="#mjx-eqn-45">(45)</a>-<a href="#mjx-eqn-46">(46)</a>
-can then be solved with respect to the unknowns \( u^n \) and \( v^{n+1/2} \):
+can then be solved with respect to the unknowns \( u^n \) and \( v^{n+\half} \):
 
 <p>
 $$
 \begin{align}
-u^n & = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+u^n & = u^{n-1} + {\Delta t}v^{n-\half},
 \tag{47} \\ 
-v^{n+\frac{1}{2}} &= \left(1 + \frac{b}{2m}\Delta t\right)^{-1}\left(
-v^{n-\frac{1}{2}} + {\Delta t}
-m^{-1}\left(F^n - \frac{1}{2}f(v^{n-\frac{1}{2}}) - s(u^n)\right)\right)\tp
+v^{n+\half} &= \left(1 + \frac{b}{2m}\Delta t\right)^{-1}\left(
+v^{n-\half} + {\Delta t}
+m^{-1}\left(F^n - {\half}f(v^{n-\half}) - s(u^n)\right)\right)\tp
 \tag{48}
 \end{align}
 $$
@@ -953,17 +948,17 @@ $$
 
 <p>
 In case of quadratic damping, \( f(v)=b|v|v \), we can use a geometric mean:
-\( f(v^n)\approx b|v^{n-1/2}|v^{n+1/2} \). Inserting this approximation
+\( f(v^n)\approx b|v^{n-\half}|v^{n+\half} \). Inserting this approximation
 in <a href="#mjx-eqn-45">(45)</a>-<a href="#mjx-eqn-46">(46)</a> and
-solving for the unknowns \( u^n \) and \( v^{n+1/2} \) results in
+solving for the unknowns \( u^n \) and \( v^{n+\half} \) results in
 
 <p>
 $$
 \begin{align}
-u^n & = u^{n-1} + {\Delta t}v^{n-\frac{1}{2}},
+u^n & = u^{n-1} + {\Delta t}v^{n-\half},
 \tag{49} \\ 
-v^{n+\frac{1}{2}} &= (1 + \frac{b}{m}|v^{n-1/2}|\Delta t)^{-1}\left(
-v^{n-\frac{1}{2}} + {\Delta t}
+v^{n+\half} &= (1 + \frac{b}{m}|v^{n-\half}|\Delta t)^{-1}\left(
+v^{n-\half} + {\Delta t}
 m^{-1}\left(F^n - s(u^n)\right)\right)\tp
 \tag{50}
 \end{align}
@@ -979,7 +974,7 @@ $$
 \begin{align}
 u^0 &= I,
 \tag{51}\\ 
-v^{\frac{1}{2}} &= V - \frac{1}{2}\Delta t\omega^2I
+v^\half &= V - \half\Delta t\omega^2I
 \tag{52}\tp
 \end{align}
 $$
@@ -1025,26 +1020,26 @@ sketch of the program <code>vib_undamped_verify_mms.py</code>:
 <p>
 
 <!-- code=python (from !bc pycod) typeset with pygments style "perldoc" -->
-<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">sm</span>
-V, t, I, w, dt = sm.symbols(<span style="color: #CD5555">&#39;V t I w dt&#39;</span>)  <span style="color: #228B22"># global symbols</span>
+<div class="highlight" style="background: #eeeedd"><pre style="line-height: 125%"><span style="color: #8B008B; font-weight: bold">import</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">as</span> <span style="color: #008b45; text-decoration: underline">sp</span>
+V, t, I, w, dt = sp.symbols(<span style="color: #CD5555">&#39;V t I w dt&#39;</span>)  <span style="color: #228B22"># global symbols</span>
 f = <span style="color: #658b00">None</span>  <span style="color: #228B22"># global variable for the source term in the ODE</span>
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">ode_source_term</span>(u):
     <span style="color: #CD5555">&quot;&quot;&quot;Return the terms in the ODE that the source term</span>
 <span style="color: #CD5555">    must balance, here u&#39;&#39; + w**2*u.</span>
 <span style="color: #CD5555">    u is symbolic Python function of t.&quot;&quot;&quot;</span>
-    <span style="color: #8B008B; font-weight: bold">return</span> sm.diff(u(t), t, t) + w**<span style="color: #B452CD">2</span>*u(t)
+    <span style="color: #8B008B; font-weight: bold">return</span> sp.diff(u(t), t, t) + w**<span style="color: #B452CD">2</span>*u(t)
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">residual_discrete_eq</span>(u):
     <span style="color: #CD5555">&quot;&quot;&quot;Return the residual of the discrete eq. with u inserted.&quot;&quot;&quot;</span>
     R = ...
-    <span style="color: #8B008B; font-weight: bold">return</span> sm.simplify(R)
+    <span style="color: #8B008B; font-weight: bold">return</span> sp.simplify(R)
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">residual_discrete_eq_step1</span>(u):
     <span style="color: #CD5555">&quot;&quot;&quot;Return the residual of the discrete eq. at the first</span>
 <span style="color: #CD5555">    step with u inserted.&quot;&quot;&quot;</span>
     R = ...
-    <span style="color: #8B008B; font-weight: bold">return</span> sm.simplify(R)
+    <span style="color: #8B008B; font-weight: bold">return</span> sp.simplify(R)
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">DtDt</span>(u, dt):
     <span style="color: #CD5555">&quot;&quot;&quot;Return 2nd-order finite difference for u_tt.</span>
@@ -1061,11 +1056,11 @@ f = <span style="color: #658b00">None</span>  <span style="color: #228B22"># glo
 <span style="color: #CD5555">    &quot;&quot;&quot;</span>
     <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;=== Testing exact solution: %s ===&#39;</span> % u
     <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&quot;Initial conditions u(0)=%s, u&#39;(0)=%s:&quot;</span> % \ 
-          (u(t).subs(t, <span style="color: #B452CD">0</span>), sm.diff(u(t), t).subs(t, <span style="color: #B452CD">0</span>))
+          (u(t).subs(t, <span style="color: #B452CD">0</span>), sp.diff(u(t), t).subs(t, <span style="color: #B452CD">0</span>))
 
     <span style="color: #228B22"># Method of manufactured solution requires fitting f</span>
     <span style="color: #8B008B; font-weight: bold">global</span> f  <span style="color: #228B22"># source term in the ODE</span>
-    f = sm.simplify(ode_lhs(u))
+    f = sp.simplify(ode_lhs(u))
 
     <span style="color: #228B22"># Residual in discrete equations (should be 0)</span>
     <span style="color: #8B008B; font-weight: bold">print</span> <span style="color: #CD5555">&#39;residual step1:&#39;</span>, residual_discrete_eq_step1(u)
@@ -1188,7 +1183,7 @@ computing \( u^1 \), one can use a Taylor polynomial with three terms
 for \( u^1 \):
 
 <p>
-$$ u(t_1) \approx u(0) + u'(0)\Delta t + \frac{1}{2}u''(0)\Delta t^2$$
+$$ u(t_1) \approx u(0) + u'(0)\Delta t + {\half}u''(0)\Delta t^2$$
 
 With \( u''=-\omega^2 u \) and \( u'(0)=0 \), show that this method also leads to
 <a href="._part0000_main_vib-solarized.html#mjx-eqn-8">(8)</a>. Generalize the condition on \( u'(0) \) to
@@ -1259,7 +1254,7 @@ Filename: <code>vib_plot_fd_exp_error.py</code>.
 <p>
 We consider the ODE problem \( u'' + \omega^2u=0 \), \( u(0)=I \), \( u'(0)=V \),
 for \( t\in (0,T] \). The total energy of the solution
-\( E(t)=\frac{1}{2}(u')^2 + \frac{1}{2}\omega^2 u^2 \) should stay
+\( E(t)=\half(u')^2 + \half\omega^2 u^2 \) should stay
 constant.
 The error in energy can be computed as explained in
 the section <a href="._part0000_main_vib-solarized.html#vib:model1:energy">Enegy considerations</a>.

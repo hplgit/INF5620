@@ -46,7 +46,7 @@ def visualize(u, t):
     savefig('vib2.eps')
 
 import nose.tools as nt
-import sympy as sm
+import sympy as sp
 
 def test_constant():
     """Verify a constant solution."""
@@ -67,24 +67,24 @@ def test_constant():
 
 def lhs_eq(t, m, b, s, u, damping='linear'):
     """Return lhs of differential equation as sympy expression."""
-    v = sm.diff(u, t)
+    v = sp.diff(u, t)
     if damping == 'linear':
-        return m*sm.diff(u, t, t) + b*v + s(u)
+        return m*sp.diff(u, t, t) + b*v + s(u)
     else:
-        return m*sm.diff(u, t, t) + b*v*sm.Abs(v) + s(u)
+        return m*sp.diff(u, t, t) + b*v*sp.Abs(v) + s(u)
 
 def test_quadratic():
     """Verify a quadratic solution."""
     I = 1.2; V = 3; m = 2; b = 0.9
     s = lambda u: 4*u
-    t = sm.Symbol('t')
+    t = sp.Symbol('t')
     dt = 0.2
     T = 2
 
     q = 2  # arbitrary constant
     u_exact = I + V*t + q*t**2
-    exact_solution = sm.lambdify(t, u_exact, modules='numpy')
-    F = sm.lambdify(t, lhs_eq(t, m, b, s, u_exact, 'linear'))
+    exact_solution = sp.lambdify(t, u_exact, modules='numpy')
+    F = sp.lambdify(t, lhs_eq(t, m, b, s, u_exact, 'linear'))
     u1, t1 = solver(I, V, m, b, s, F, dt, T, 'linear')
     difference = abs(exact_solution(t1) - u1).max()
     nt.assert_almost_equal(difference, 0, places=13)
@@ -92,8 +92,8 @@ def test_quadratic():
     # In the quadratic damping case, u_exact must be linear
     # in order exactly recover this solution
     u_exact = I + V*t
-    exact_solution = sm.lambdify(t, u_exact, modules='numpy')
-    F = sm.lambdify(t, lhs_eq(t, m, b, s, u_exact, 'quadratic'))
+    exact_solution = sp.lambdify(t, u_exact, modules='numpy')
+    F = sp.lambdify(t, lhs_eq(t, m, b, s, u_exact, 'quadratic'))
     u2, t2 = solver(I, V, m, b, s, F, dt, T, 'quadratic')
     difference = abs(exact_solution(t2) - u2).max()
     nt.assert_almost_equal(difference, 0, places=13)
@@ -124,11 +124,11 @@ def test_mms():
     """Use method of manufactured solutions."""
     m = 4.; b = 1
     w = 1.5
-    t = sm.Symbol('t')
-    u_exact = 3*sm.exp(-0.2*t)*sm.cos(1.2*t)
-    exact_solution = sm.lambdify(t, u_exact, modules='numpy')
+    t = sp.Symbol('t')
+    u_exact = 3*sp.exp(-0.2*t)*sp.cos(1.2*t)
+    exact_solution = sp.lambdify(t, u_exact, modules='numpy')
     I = u_exact.subs(t, 0)
-    V = sm.diff(u_exact, t).subs(t, 0)
+    V = sp.diff(u_exact, t).subs(t, 0)
     s = lambda u: u**3
     dt = 0.2
     T = 6
@@ -137,14 +137,14 @@ def test_mms():
     # Run grid refinements and compute exact error
     for i in range(5):
         F_formula = lhs_eq(t, m, b, s, u_exact, 'linear')
-        F = sm.lambdify(t, F_formula)
+        F = sp.lambdify(t, F_formula)
         u1, t1 = solver(I, V, m, b, s, F, dt, T, 'linear')
         error = sqrt(sum((exact_solution(t1) - u1)**2)*dt)
         errors_linear.append((dt, error))
 
         F_formula = lhs_eq(t, m, b, s, u_exact, 'quadratic')
-        #print sm.latex(F_formula, mode='plain')
-        F = sm.lambdify(t, F_formula)
+        #print sp.latex(F_formula, mode='plain')
+        F = sp.lambdify(t, F_formula)
         u2, t2 = solver(I, V, m, b, s, F, dt, T, 'quadratic')
         error = sqrt(sum((exact_solution(t2) - u2)**2)*dt)
         errors_quadratic.append((dt, error))

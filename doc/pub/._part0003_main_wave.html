@@ -918,7 +918,7 @@ A lot of test examples are also included in the program:
    typical initial shape of a guitar string.</li>
  <li> A sinusoidal variation of \( u \) at \( x=0 \) and either \( u=0 \) or
    \( u_x=0 \) at \( x=L \).</li>
- <li> An exact analytical solution \( u(x,t)=\cos(m\pi t/L)\sin(\frac{1}{2}m\pi x/L) \), which can be used for convergence rate tests.</li>
+ <li> An exact analytical solution \( u(x,t)=\cos(m\pi t/L)\sin({\half}m\pi x/L) \), which can be used for convergence rate tests.</li>
 </ul>
 </div>
 <h3>Alternative implementation via ghost cells <a name="wave:pde1:Neumann:ghost"></a></h3>
@@ -1144,26 +1144,26 @@ $$
 and use a centered derivative around \( x=x_i \) for the derivative of \( \phi \):
 $$
 \left[\frac{\partial\phi}{\partial x}\right]^n_i
-\approx \frac{\phi_{i+\frac{1}{2}} - \phi_{i-\frac{1}{2}}}{\Delta x}
+\approx \frac{\phi_{i+\half} - \phi_{i-\half}}{\Delta x}
 = [D_x\phi]^n_i
 \tp 
 $$
 
 Then discretize
 $$
-\phi_{i+\frac{1}{2}}  = q_{i+\frac{1}{2}}
-\left[\frac{\partial u}{\partial x}\right]^n_{i+\frac{1}{2}}
-\approx q_{i+\frac{1}{2}} \frac{u^n_{i+1} - u^n_{i}}{\Delta x}
-= [q D_x u]_{i+\frac{1}{2}}^n
+\phi_{i+\half}  = q_{i+\half}
+\left[\frac{\partial u}{\partial x}\right]^n_{i+\half}
+\approx q_{i+\half} \frac{u^n_{i+1} - u^n_{i}}{\Delta x}
+= [q D_x u]_{i+\half}^n
 \tp 
 $$
 
 Similarly,
 $$
-\phi_{i-\frac{1}{2}}  = q_{i-\frac{1}{2}}
-\left[\frac{\partial u}{\partial x}\right]^n_{i-\frac{1}{2}}
-\approx q_{i-\frac{1}{2}} \frac{u^n_{i} - u^n_{i-1}}{\Delta x}
-= [q D_x u]_{i-\frac{1}{2}}^n
+\phi_{i-\half}  = q_{i-\half}
+\left[\frac{\partial u}{\partial x}\right]^n_{i-\half}
+\approx q_{i-\half} \frac{u^n_{i} - u^n_{i-1}}{\Delta x}
+= [q D_x u]_{i-\half}^n
 \tp 
 $$
 
@@ -1174,8 +1174,8 @@ $$
 \frac{\partial}{\partial x}\left( q(x)
 \frac{\partial u}{\partial x}\right)\right]^n_i
 \approx \frac{1}{\Delta x^2}
-\left( q_{i+\frac{1}{2}} \left({u^n_{i+1} - u^n_{i}}\right)
-- q_{i-\frac{1}{2}} \left({u^n_{i} - u^n_{i-1}}\right)\right)
+\left( q_{i+\half} \left({u^n_{i+1} - u^n_{i}}\right)
+- q_{i-\half} \left({u^n_{i} - u^n_{i-1}}\right)\right)
 \tag{28}
 \tp 
 \end{equation}
@@ -1210,8 +1210,8 @@ when discretizing such a term.
 
 <p>
 If \( q \) is a known function of \( x \), we can easily evaluate
-\( q_{i+\frac{1}{2}} \) simply as \( q(x_{i+\frac{1}{2}}) \) with
-\( x_{i+\frac{1}{2}} = x_i + \frac{1}{2}\Delta x \).
+\( q_{i+\half} \) simply as \( q(x_{i+\half}) \) with
+\( x_{i+\half} = x_i + \half\Delta x \).
 However, in many cases \( c \), and hence \( q \),
 is only known as a discrete function, often at the mesh points \( x_i \).
 Evaluating \( q \) between two mesh points \( x_i \) and \( x_{i+1} \) can then
@@ -1220,16 +1220,16 @@ be done by averaging in three ways:
 <p>
 $$
 \begin{align}
-q_{i+\frac{1}{2}} &\approx
-\frac{1}{2}\left( q_{i} + q_{i+1}\right) =
+q_{i+\half} &\approx
+\half\left( q_{i} + q_{i+1}\right) =
 [\overline{q}^{x}]_i,
 \quad &\hbox{(arithmetic mean)}
 \tag{30}\\ 
-q_{i+\frac{1}{2}} &\approx
+q_{i+\half} &\approx
 2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1},
 \quad &\hbox{(harmonic mean)}
 \tag{31}\\ 
-q_{i+\frac{1}{2}} &\approx
+q_{i+\half} &\approx
 \left(q_{i}q_{i+1}\right)^{1/2},
 \quad &\hbox{(geometric mean)}
 \tag{32}
@@ -1255,11 +1255,11 @@ From this notation we immediately see what kind of differences that
 each term is approximated with. The notation \( \overline{q}^{x} \)
 also specifies that the variable coefficient is approximated by
 an arithmetic mean, the definition being
-\( [\overline{q}^{x}]_{i+\frac{1}{2}}=(q_i+q_{i+1})/2 \).
+\( [\overline{q}^{x}]_{i+\half}=(q_i+q_{i+1})/2 \).
 With the notation \( [D_xq D_x u]^n_i \),
 we specify that \( q \) is evaluated directly, as a function,
 between the mesh points:
-\( q(x_{i-\frac{1}{2}}) \) and \( q(x_{i+\frac{1}{2}}) \).
+\( q(x_{i-\half}) \) and \( q(x_{i+\half}) \).
 
 <p>
 Before any implementation, it remains to solve
@@ -1270,8 +1270,8 @@ $$
 \begin{align}
 u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\ 
 &\quad \left(\frac{\Delta x}{\Delta t}\right)^2 \left(
-\frac{1}{2}(q_{i} + q_{i+1})(u_{i+1}^n - u_{i}^n) -
-\frac{1}{2}(q_{i} + q_{i-1})(u_{i}^n - u_{i-1}^n)\right)
+\half(q_{i} + q_{i+1})(u_{i+1}^n - u_{i}^n) -
+\half(q_{i} + q_{i-1})(u_{i}^n - u_{i-1}^n)\right)
 + \nonumber\\ 
 & \quad \Delta t^2 f^n_i
 \tp 
@@ -1318,12 +1318,12 @@ $$
 \begin{align}
 u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\ 
 &\quad \left(\frac{\Delta x}{\Delta t}\right)^2 \left(
-q_{i+\frac{1}{2}}(u_{i-1}^n - u_{i}^n) -
-q_{i-\frac{1}{2}}(u_{i}^n - u_{i-1}^n)\right)
+q_{i+\half}(u_{i-1}^n - u_{i}^n) -
+q_{i-\half}(u_{i}^n - u_{i-1}^n)\right)
 + \nonumber\\ 
 & \quad \Delta t^2 f^n_i\\ 
 &= - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2
-(q_{i+\frac{1}{2}} + q_{i-\frac{1}{2}})(u_{i-1}^n - u_{i}^n) +
+(q_{i+\half} + q_{i-\half})(u_{i-1}^n - u_{i}^n) +
 \Delta t^2 f^n_i\\ 
 &\approx - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2
 2q_{i}(u_{i-1}^n - u_{i}^n) + \Delta t^2 f^n_i
@@ -1337,7 +1337,7 @@ Here we used the approximation
 <p>
 $$
 \begin{align}
-q_{i+\frac{1}{2}} + q_{i-\frac{1}{2}} &=
+q_{i+\half} + q_{i-\half} &=
 q_i + \left(\frac{dq}{dx}\right)_i \Delta x
 + \left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + \cdots
 +\nonumber\\ 
@@ -1356,9 +1356,9 @@ An alternative derivation may apply the arithmetic mean of \( q \) in
 <a href="#mjx-eqn-34">(34)</a>, leading to the term
 
 <p>
-$$ (q_i + \frac{1}{2}(q_{i+1}+q_{i-1}))(u_{i-1}^n-u_i^n)\tp$$
+$$ (q_i + \half(q_{i+1}+q_{i-1}))(u_{i-1}^n-u_i^n)\tp$$
 
-Since \( \frac{1}{2}(q_{i+1}+q_{i-1}) = q_i + {\cal O}(\Delta x^2) \),
+Since \( \half(q_{i+1}+q_{i-1}) = q_i + {\cal O}(\Delta x^2) \),
 we end up with \( 2q_i(u_{i-1}^n-u_i^n) \) for \( i=N_x \) as we did above.
 
 <p>
@@ -1372,12 +1372,12 @@ $$
 \begin{align}
 u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\ 
 &\quad \left(\frac{\Delta x}{\Delta t}\right)^2 \left(
-q_{i+\frac{1}{2}}(u_{i-1}^n - u_{i}^n) -
-q_{i-\frac{1}{2}}(u_{i}^n - u_{i-1}^n)\right)
+q_{i+\half}(u_{i-1}^n - u_{i}^n) -
+q_{i-\half}(u_{i}^n - u_{i-1}^n)\right)
 + \nonumber\\ 
 & \quad \Delta t^2 f^n_i\\ 
 &= - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta x}{\Delta t}\right)^2
-2q_{i-\frac{1}{2}}(u_{i-1}^n - u_{i}^n) +
+2q_{i-\half}(u_{i-1}^n - u_{i}^n) +
 \Delta t^2 f^n_i
 \tp 
 \tag{36}
@@ -1530,7 +1530,7 @@ gives the scheme
 <p>
 $$
 \begin{equation}
-u^{n+1}_i = (1 + \frac{1}{2}b\Delta t)^{-1}((\frac{1}{2}b\Delta t -1)
+u^{n+1}_i = (1 + {\half}b\Delta t)^{-1}(({\half}b\Delta t -1)
 u^{n-1}_i + 2u^n_i + C^2
 \left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right) + \Delta t^2 f^n_i),
 \tag{40}
@@ -1946,12 +1946,12 @@ A fourth technique is to view the scheme as
 
 <p>
 $$ [D_tD_tu]^n_i = \frac{1}{\Delta x}\left(
-[qD_xu]_{i+\frac{1}{2}}^n - [qD_xu]_{i-\frac{1}{2}}^n\right)
+[qD_xu]_{i+\half}^n - [qD_xu]_{i-\half}^n\right)
 + [f]_i^n,$$
 
-and place the boundary at \( x_{i+\frac{1}{2}} \), \( i=N_x \), instead of
+and place the boundary at \( x_{i+\half} \), \( i=N_x \), instead of
 exactly at the physical boundary. With this idea,
-we can just set \( [qD_xu]_{i+\frac{1}{2}}^n=0 \). Derive the complete scheme
+we can just set \( [qD_xu]_{i+\half}^n=0 \). Derive the complete scheme
 using this technique. The implementation of the boundary condition at
 \( L-\Delta x/2 \) is \( \Oof{\Delta x^2} \) accurate, but the interesting question
 is what impact the movement of the boundary has on the convergence
