@@ -5,7 +5,7 @@ Nonlinear differential equation problems
 ========================================
 
 :Author: Hans Petter Langtangen
-:Date: Nov 18, 2013
+:Date: Nov 20, 2013
 
 Note: **VERY PRELIMINARY VERSION** (expect typos and mathematical errors)
 
@@ -22,48 +22,51 @@ Note: **VERY PRELIMINARY VERSION** (expect typos and mathematical errors)
 
 
 
-Linear versus nonlinear
-=======================
 
-In a linear differential equation, the unknown :math:`u` and its derivatives
-do not appear in products with themselves. All equations where this
-property is not fulfilled, are nonlinear. For example, in
+In a linear differential equation all terms involving the unknown functions
+are linear in the unknown functions or their derivatives. Linear here means that
+the unknown function or a derivative of it is multiplied by a number or
+a known function. All other differential equations are non-linear.
+The easiest way to see if an equation is nonlinear is to spot nonlinear terms
+where the unknown functions or their derivatives are multiplied by
+each other. For example, in
 
 
 .. math::
          u'(t) = -a(t)u(t) + b(t),
 
-the unknown :math:`u(t)` do not appear in products with :math:`u` or :math:`u'` and this
-ODE is therefore linear, while in
+the terms involving the unknown function :math:`u` are linear: :math:`u'` contains
+the derivative of the unknown function multiplied by unity, and :math:`au` contains
+the unknown function multiplied by a known function.
+However,
+
+.. math::
+         u'(t) = u(t)(1 - u(t)),
+
+is nonlinear because of the term :math:`-u^2` where the unknown function is
+multiplied by itself. Also
 
 
 .. math::
-         u'(t) = a(t)u(t)(1 - u(t)/M(t)),
+         \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} = 0,
 
-there is a product :math:`u(t)^2` on the right-hand side making this ODE
-nonlinear. Also,
+is nonlinear because of the term :math:`uu_x` where the unknown
+function appears in a product with itself or one if its derivatives.
+Another example of a nonlinear equation is
 
 
 .. math::
-         u'' + \frac{\ell}{g}\sin(u) =0,
+         u'' + \sin(u) =0,
 
-is nonlinear because :math:`\sin(u)` contains products of :math:`u`,
+because :math:`\sin(u)` contains products of :math:`u`,
 
 
 .. math::
          \sin(u) = u - \frac{1}{3} u^3 + \ldots
 
 
-Nonlinear differential equations pose no additional difficulty if the
-product terms involve already computed values (known) values of the
-unknown and its derivatives. In time-dependent problems, the type
-of time discretization can therefore eliminate the need for special
-treatment of nonlinear terms. However, if new unknown quantities of
-the solution enter product terms, the algebraic equations arising from
-the discretization will have nonlinear terms, and special methods for
-nonlinear algebraic equations must be invoked, such as Newton and
-Picard methods. A series of forthcoming examples will explain when
-nonlinearities pose difficulties and how these are resolved.
+A series of forthcoming examples will explain who to tackle
+nonlinear differential equations with various techniques.
 
 .. _nonlin:timediscrete:logistic:
 
@@ -88,12 +91,11 @@ A time discretization of :eq:`nonlin:timediscrete:logistic:eq`
 will either lead to a linear algebraic equation or a nonlinear
 algebraic equation at each time level.
 In the former case, the time discretization method transforms
-the nonlinear ODE into linear subproblems at each time level. However,
+the nonlinear ODE into linear subproblems at each time level, and
+the solution is straightforward to find. However,
 when the time discretization leads to nonlinear algebraic equations, we
-need to *linearize* these, meaning that we either approximate the
-nonlinear equation by a linear one, or we construct a sequence of
-linear equations whose solutions (hopefully) converge to the solution
-of the nonlinear equation. Examples will demonstrate how this is done.
+cannot (except in very rare cases) solve these without turning to
+approximate, iterative solution methods
 
 
 .. _nonlin:timediscrete:logistic:FE:
@@ -160,15 +162,15 @@ The equation is of quadratic type:
 .. math::
          \Delta t (u^n)^2 + (1-\Delta t)u^n - u^{n-1} = 0{\thinspace .} 
 
-We shall now introduce a shorter and cleaner notation for nonlinear
+We shall now introduce a shorter and often cleaner notation for nonlinear
 algebraic equation that appear at a given time level. The notation
 gets rid of the superscript that indicates the time level and
 is motivated by how we will program the solution method for
-the algebraic equation, especially in more advanced
+the algebraic equation, especially in more advanced partial
 differential equation problems. The unknown
 in the algebraic equation is denoted by :math:`u`, while :math:`u_1` is
-the value of the unknown at the previous time level, and in general :math:`u_\ell`
-is the value of the unknown :math:`\ell` levels back in time.
+the value of the unknown at the previous time level (in general :math:`u_\ell`
+is the value of the unknown :math:`\ell` levels back in time).
 The quadratic equation for the unknown :math:`u^n` in
 :eq:`nonlin:timediscrete:logistic:eq:BE` can then be written
 
@@ -178,11 +180,11 @@ The quadratic equation for the unknown :math:`u^n` in
 .. math::
    :label: nonlin:timediscrete:logistic:eq:F
         
-        F(u) = \Delta t u^2 + (1-\Delta t)u - u_1 = 0{\thinspace .}
+        F(u) = \Delta t u^2 + (1-\Delta t)u - u_1 = 0,
         
         
 
-This equation can easily be solved analytically:
+and the solution is
 
 
 .. _Eq:nonlin:timediscrete:logistic:eq:roots:
@@ -196,8 +198,9 @@ This equation can easily be solved analytically:
         
         
 
-Here we encounter a fundamental challenge in nonlinear problems:
-the equation has more than one solution. How do we pick the right
+Here we encounter a fundamental challenge with nonlinear
+algebraic equations:
+the equation may have more than one solution. How do we pick the right
 solution? In the present simple case we can expand the square root
 in a series in :math:`\Delta t` and truncate after the linear term since
 the Backward Euler scheme will introduce an error proportional to
@@ -224,10 +227,28 @@ behaves as :math:`1/\Delta t` and will therefore
 blow up as :math:`\Delta t\rightarrow 0`! Only the ``r2`` root is of
 relevance in this case.
 
+Linearization
+-------------
+
+When the time integration of an ODE results in a nonlinear algebraic
+equation, we must normally find its solution by defining a sequence
+of linear equations and hope that the solutions of these linear equations
+converge to the desired solution of the nonlinear algebraic equation.
+Usually this means solving the linear equation repeatedly in an
+iterative fashion.
+Sometimes the nonlinear equation is just approximated by a linear equation
+and no iteration is carried out.
+
+Constructing a linear equation from a nonlinear one requires
+*linearization* of each nonlinear term. This can be done manually
+as in Picard iteration, or fully algorithmically as in Newton's method.
+Examples will best illustrate how to linearize nonlinear problems.
+
+
 .. _nonlin:timediscrete:logistic:Picard:
 
-Linearization by Picard iteration
----------------------------------
+Picard iteration  (1)
+---------------------
 
 
 .. index:: Picard iteration
@@ -258,9 +279,10 @@ more compact form
          F(u) = au^2 + bu + c = 0,
 
 with :math:`a=\Delta t`, :math:`b=1-\Delta t`, and :math:`c=-u_1`.
-We can introduce :math:`u^2\approx u_{-}u`, where
-:math:`u_{-}` is some approximation of :math:`u`. This approximation makes
-the equation linear and hence easy to solve:
+Let :math:`u_{-}` an available approximation of the unknown :math:`u`.
+Then we can linearize the term :math:`u^2` by writing
+:math:`u_{-}u`. The resulting equation, :math:`\hat F(u)=0`, is linear
+and hence easy to solve:
 
 
 .. math::
@@ -269,7 +291,7 @@ the equation linear and hence easy to solve:
 Since the equation :math:`\hat F=0` is only approximate, the solution :math:`u`
 does not equal the exact solution :math:`{u_{\small\mbox{e}}}` of the exact
 equation :math:`F({u_{\small\mbox{e}}})=0`, but we can hope that :math:`u` is closer to
-:math:`{u_{\small\mbox{e}}}` than :math:`u_{-}`, and hence it makes sense to repeat the
+:math:`{u_{\small\mbox{e}}}` than :math:`u_{-}` is, and hence it makes sense to repeat the
 procedure, i.e., set :math:`u_{-}=u` and solve :math:`\hat F(u)=0` again.
 
 .. respect to :math:`u` again. Hopefully this iterative process leads
@@ -803,7 +825,7 @@ of these methods, can be found in Kelley [Ref1]_.
 
 .. _nonlin:systems:alg:Picard:
 
-Picard iteration  (1)
+Picard iteration  (2)
 ---------------------
 
 We cannot apply Picard iteration to nonlinear equations unless there is
@@ -1231,7 +1253,7 @@ which leads to a linear equation in the unknown :math:`u^{n+1}`:
 
 .. _nonlin:pdelevel:Picard:
 
-Picard iteration  (2)
+Picard iteration  (3)
 ---------------------
 
 A Backward Euler scheme for :eq:`nonlin:pdelevel:model:pde`
@@ -1814,7 +1836,7 @@ The group finite element method
 Motivation
 ~~~~~~~~~~
 
-Let us simplify the model problem for a while and set :math:`{\alpha}`,
+Let us simplify the model problem for a while and set :math:`{\alpha}` constant,
 choose :math:`f(u)=u^2`, and have Dirichlet conditions at
 both ends such that we have a very simple
 nonlinear problem :math:`-u''=u^2`. The variational form is then
@@ -2138,12 +2160,13 @@ Picard iteration defined from the variational form
 --------------------------------------------------
 
 We address again the problem :eq:`nonlin:alglevel:1D:pde` with
+the corresponding
 variational form :eq:`nonlin:alglevel:1D:pde:varform`.
 Our aim is to define a Picard iteration based on this variational
 form. The idea is to use a previously computed :math:`u` value in
 the nonlinear functions :math:`{\alpha}(u)` and :math:`f(u)`. Let :math:`u_{-}` be
 the available approximation to :math:`u` from the previous iteration.
-The variational form to be used for Picard iteration is then
+The linear variational form for Picard iteration is then
 
 
 .. _Eq:nonlin:alglevel:1D:pde:varform:Picard:
@@ -2163,7 +2186,7 @@ This is a linear problem :math:`a(u,v)=L(v)` with bilinear and linear forms
          a(u,v) = \int_0^L {\alpha}(u_{-})u'v'{\, \mathrm{d}x},\quad
         L(v) = \int_0^L f(u_{-})v{\, \mathrm{d}x} - Cv(0){\thinspace .}
 
-The linear system is computed the standard way from this variational problem.
+The associated linear system is computed the standard way.
 
 .. _nonlin:alglevel:1D:fe:Newton:
 
@@ -2391,18 +2414,24 @@ The Jacobian is obtained by differentiating
 :eq:`nonlin:alglevel:dD:fe:Fi` and using :math:`\partial u/\partial c_j={\psi}_j`:
 
 
+.. math::
+        
+        J_{i,j} = \frac{\partial F_i}{\partial c_j} =
+        \int_\Omega  ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u){\psi}_j
+        \nabla u\cdot\nabla {\psi}_i +
+        \Delta t{\alpha}(u)\nabla{\psi}_j\cdot\nabla{\psi}_i - \nonumber
+        
+
+
+
 .. _Eq:nonlin:alglevel:dD:fe:Jij:
 
 .. _Eq:nonlin:alglevel:dD:fe:Jij:
 
 .. math::
    :label: nonlin:alglevel:dD:fe:Jij
-        
-        J_{i,j} = \frac{\partial F_i}{\partial c_j} =
-        \int_\Omega ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u){\psi}_j
-        \nabla u\cdot\nabla {\psi}_i +
-        \Delta t{\alpha}(u)\nabla{\psi}_j\cdot\nabla{\psi}_i
-        - \Delta t f'(u){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+          
+        \ \Delta t f'(u){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
         
         
 
@@ -2410,18 +2439,24 @@ The evaluation of :math:`J_{i,j}` applies the known approximation :math:`u_{-}`
 for :math:`u`:
 
 
+.. math::
+        
+        J_{i,j} =
+        \int_\Omega  ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u_{-}){\psi}_j
+        \nabla u_{-}\cdot\nabla {\psi}_i +
+        \Delta t{\alpha}(u_{-})\nabla{\psi}_j\cdot\nabla{\psi}_i - \nonumber
+        
+
+
+
 .. _Eq:nonlin:alglevel:dD:fe:Jij:
 
 .. _Eq:nonlin:alglevel:dD:fe:Jij:
 
 .. math::
    :label: nonlin:alglevel:dD:fe:Jij
-        
-        J_{i,j} =
-        \int_\Omega ({\psi}_j{\psi}_i + \Delta t{\alpha}'(u_{-}){\psi}_j
-        \nabla u_{-}\cdot\nabla {\psi}_i +
-        \Delta t{\alpha}(u_{-})\nabla{\psi}_j\cdot\nabla{\psi}_i
-        - \Delta t f'(u_{-}){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
+          
+        \ \Delta t f'(u_{-}){\psi}_j{\psi}_i - u_1{\psi}_i){\, \mathrm{d}x}{\thinspace .}
         
         
 
@@ -2447,10 +2482,47 @@ Exercises
 
 .. --- begin exercise ---
 
+.. _nonlin:exer:lin:vs:nonlin:
+
+Problem 1: Determine if equations are nonlinear or not
+------------------------------------------------------
+
+Classify each term in the following equations as linear or nonlinear.
+Assume that :math:`a` and :math:`b` are unknown
+numbers and that :math:`u` and :math:`v` are unknown functions.
+All other symbols are known quantities.
+
+1. :math:`b^2 = 1`
+
+2. :math:`a+b = 1`, :math:`a-2b = 0`
+
+3. :math:`mu'' + \beta |u'|u' + cu = F(t)`
+
+4. :math:`u_t = {\alpha} u_{xx}`
+
+5. :math:`u_{tt} = c^2\nabla^2 u`
+
+6. :math:`u_t = \nabla\cdot({\alpha}(u)\nabla u) + f(x,y)`
+
+7. :math:`u_t + f(u)_x = 0`
+
+8. :math:`\boldsymbol{u}_t + \boldsymbol{u}\cdot\nabla \boldsymbol{u} = -\nabla p + r\nabla^2\boldsymbol{u}`, :math:`\nabla\cdot\boldsymbol{u} = 0`
+   (:math:`\boldsymbol{u}` is a vector field)
+
+9. :math:`u' = f(u,t)`
+
+10. :math:`\nabla^2 u = \lambda e^u`
+
+.. --- end exercise ---
+
+
+
+
+.. --- begin exercise ---
 
 .. _nonlin:exer:vib:geometric:mean:
 
-Problem 1: Linearize a nonlinear vibration ODE
+Problem 2: Linearize a nonlinear vibration ODE
 ----------------------------------------------
 
 Consider a nonlinear vibration problem
@@ -2490,13 +2562,80 @@ from the term :math:`bu'|u'|`.
 
 
 
+.. --- begin exercise ---
+
+.. _nonlin:exer:sparsity:Jacobian:
+
+Exercise 3: Find the sparsity of the Jacobian
+---------------------------------------------
+
+Consider a typical nonlinear Laplace term like
+:math:`\nabla\cdot{\alpha}(u)\nabla u` discretized by centered finite differences.
+Explain why the Jacobian corresponding to this term has the same
+sparsity pattern as the matrix associated with the corresponding linear
+term :math:`{\alpha}\nabla^2 u`.
+
+.. --- begin hint in exercise ---
+
+**Hint.**
+Set up the unknowns that enter the difference stencil and find the
+sparsity of the Jacobian that arise from the stencil.
+
+.. --- end hint in exercise ---
+Filename: ``nonlin_sparsity_Jacobian.pdf``.
+
+.. --- end exercise ---
+
+
+
 
 .. --- begin exercise ---
 
+.. _nonlin:exer:Newton:linear:
+
+Exercise 4: Newton's method for linear problems
+-----------------------------------------------
+
+Suppose we have a linear system :math:`F(u) = Au- b=0`. Apply Newton's method
+to this system, and show that the method converges in one iteration.
+Filename: ``nonlin_Newton_linear.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+.. --- begin exercise ---
+
+.. _nonlin:exer:grad:pow:term:
+
+Exercise 5: Differentiate a highly nonlinear term
+-------------------------------------------------
+
+The operator :math:`\nabla\cdot({\alpha}(u)\nabla u)` with
+:math:`{\alpha}(u) = ||\nabla u||^q` appears in several physical problems,
+especially flow of Non-Newtonian fluids. In a Newton method one
+has to carry out the differentiation :math:`\partial{\alpha}(u)/\partial c_j`,
+for :math:`u=\sum_kc_k{\psi}_k`. Show that
+
+
+.. math::
+         {\partial\over\partial u_j} ||\nabla u||^q =
+        q||\nabla  u||^{q-2}\nabla u\cdot
+        \nabla{\psi}_j{\thinspace .} 
+
+Filename: ``nonlin_differentiate.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+.. --- begin exercise ---
 
 .. _nonlin:exer:1D:1pu2:fem:
 
-Problem 2: Discretize a 1D problem with a nonlinear coefficient
+Problem 6: Discretize a 1D problem with a nonlinear coefficient
 ---------------------------------------------------------------
 
 We consider the problem
@@ -2530,13 +2669,11 @@ Filename: ``nonlin_1D_coeff_discretize.pdf``.
 
 
 
-
 .. --- begin exercise ---
-
 
 .. _nonlin:exer:1D:1pu2:PicardNewton:
 
-Problem 3: Linearize a 1D problem with a nonlinear coefficient
+Problem 7: Linearize a 1D problem with a nonlinear coefficient
 --------------------------------------------------------------
 
 We have a two-point boundary value problem
@@ -2578,13 +2715,11 @@ Filename: ``nonlin_1D_coeff_linearize.pdf``.
 
 
 
-
 .. --- begin exercise ---
-
 
 .. _nonlin:exer:1D:fu:discretize:fd:
 
-Problem 4: Finite differences for the 1D Bratu problem
+Problem 8: Finite differences for the 1D Bratu problem
 ------------------------------------------------------
 
 We address the so-called Bratu problem
@@ -2600,7 +2735,8 @@ We address the so-called Bratu problem
         
 
 where :math:`\lambda` is a given parameter and :math:`u` is a function of :math:`x`.
-This is a widely used model problem for nonlinear differential equations.
+This is a widely used model problem for studying numerical
+methods for nonlinear differential equations.
 The problem :eq:`nonlin:exer:1D:fu:discretize:fd:pde` has an
 exact solution
 
@@ -2615,8 +2751,8 @@ where :math:`\theta` solves
          \theta = \sqrt{2\lambda}\cosh(\theta/4){\thinspace .}
 
 There are two solutions of :eq:`nonlin:exer:1D:fu:discretize:fd:pde` for
-:math:`0<\lambda <\lambda_c`, while for :math:`\lambda >\lambda_c` there are no solutions.
-There is one unique solution for :math:`\lambda = \lambda_c`. The critical
+:math:`0<\lambda <\lambda_c` and no solution for :math:`\lambda >\lambda_c`.
+For :math:`\lambda = \lambda_c` there is one unique solution. The critical
 value :math:`\lambda_c` solves
 
 
@@ -2641,13 +2777,11 @@ Filename: ``nonlin_1D_Bratu_fd.pdf``.
 
 
 
-
 .. --- begin exercise ---
-
 
 .. _nonlin:exer:1D:fu:discretize:fe:
 
-Problem 5: Finite elements for the 1D Bratu problem
+Problem 9: Finite elements for the 1D Bratu problem
 ---------------------------------------------------
 
 We address the same 1D Bratu problem as described in
@@ -2667,6 +2801,96 @@ Filename: ``nonlin_1D_Bratu_fe.pdf``.
 
 .. --- end exercise ---
 
+
+
+
+.. --- begin exercise ---
+
+.. _nonlin:exer:dD:heat:nonlinear:c:a:
+
+Problem 10: Derive the Newton system from a variational form
+------------------------------------------------------------
+
+We study the multi-dimensional heat conduction PDE
+
+
+.. math::
+         \varrho c(T) T_t = \nabla\cdot (k(T)\nabla T)
+
+in a spatial domain :math:`\Omega`, with a nonlinear Robin boundary condition
+
+
+.. math::
+         -k(T)\frac{\partial T}{\partial n} = h(T)(T-T_s(t)),
+
+at the boundary :math:`\partial\Omega`.
+The primary unknown is the temperature :math:`T`, :math:`\varrho` is the density
+of the solid material, :math:`c(T)` is the heat capacity, :math:`k(T)` is
+the heat conduction, :math:`h(T)` is a heat transfer coefficient, and
+:math:`T_s(T)` is a possibly time-dependent temperature of the surroundings.
+
+
+**a)**
+Use a Backward Euler or Crank-Nicolson time discretization and
+derive the variational form for the spatial problem to be solved
+at each time level.
+
+**b)**
+Define a Picard iteration method from the variational form at
+a time level.
+
+**c)**
+Derive expressions for the matrix and the right-hand side of the
+equation system that arises from applying Newton's method to
+the variational form at a time level.
+
+**d)**
+Apply the Backward Euler or Crank-Nicolson scheme in time first.
+Derive a Newton method at the PDE level. Make a variational
+form of the resulting PDE at a time level.
+
+Filename: ``nonlin_heat_Newton.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+.. --- begin exercise ---
+
+.. _nonlin:exer:1D:heat:nonlinear:c:a:
+
+Problem 11: Derive algebraic equations for nonlinear 1D heat conduction
+-----------------------------------------------------------------------
+
+Consider a 1D heat conduction PDE
+
+
+.. math::
+         \varrho c(T) T_t = (k(T)T_x)_x,
+
+where :math:`\varrho` is the density of the solid material, :math:`c(T)` is
+the heat capacity, :math:`T` is the temperature, and :math:`k(T)` is the
+heat conduction coefficient.
+
+
+
+Use a uniform finite element mesh, P1 elements, and the group finite
+element method to derive the algebraic equations arising from the
+heat conduction PDE
+
+
+**a)**
+Discretize the PDE by a finite difference method. Use either a
+Backward Euler or Crank-Nicolson scheme in time.
+
+**b)**
+Derive the matrix and right-hand side of a Newton method applied
+to the discretized PDE.
+
+Filename: ``nonlin_1D_heat_PDE.pdf``.
+
+.. --- end exercise ---
 
 
 Bibliography
