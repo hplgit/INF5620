@@ -5,7 +5,7 @@ Nonlinear differential equation problems
 ========================================
 
 :Author: Hans Petter Langtangen
-:Date: Nov 20, 2013
+:Date: Nov 25, 2013
 
 Note: **VERY PRELIMINARY VERSION** (expect typos and mathematical errors)
 
@@ -333,6 +333,10 @@ final formulas that is as close as possible to what we aim to write
 in a computer code and then we want to omit the :math:`k` superscript
 in :math:`u`.
 
+
+.. index:: stopping criteria (nonlinear problems)
+
+
 Stopping criteria  (1)
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -350,6 +354,38 @@ or when the residual in the equation is sufficiently small (:math:`\epsilon_r`),
 
 With :math:`\epsilon_r = 10^{-7}` we seldom need more than about 5 iterations
 when solving this logistic equation.
+
+
+.. index:: single Picard iteration technique
+
+
+A single Picard iteration
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Instead of iterating until a stopping criterion is fulfilled, one may
+iterate a specific number of times. Just one Picard iteration is
+popular as this corresponds to the intuitive idea of approximating
+a nonlinear term like :math:`(u^n)^2` by :math:`u^{n-1}u^n`. That is, one just
+applies a known value for the unknown at the previous time level
+in nonlinear terms. The corresponding time discretization reads
+
+
+.. _Eq:nonlin:timediscrete:logistic:BE:Picard:1it:
+
+.. math::
+   :label: nonlin:timediscrete:logistic:BE:Picard:1it
+        
+        \frac{u^{n} - u^{n-1}}{\Delta t} = u^n(1 - u^{n-1}){\thinspace .}
+        
+        
+
+This is obviously an approximation and does not correspond to
+a "pure" finite difference method where the equation is sampled at
+a point and derivatives replaced by differences. The best
+interpretation of the scheme :eq:`nonlin:timediscrete:logistic:BE:Picard:1it`
+is a Backward Euler difference combined with a single Picard iteration
+at each time level, using the value at the previous time level as
+start for the Picard iteration.
 
 .. _nonlin:timediscrete:logistic:geometric:mean:
 
@@ -425,8 +461,9 @@ and :math:`u_1` for :math:`u^n`).
 The geometric mean approximation is often very effective to deal with
 quadratic nonlinearities. Both the arithmetic and geometric mean
 approximations have truncation errors of order :math:`\Delta t^2` and are
-therefore compatible with the truncation error of the Crank-Nicolson
-method in linear problems.
+therefore compatible with the truncation error of the
+centered difference approximation for :math:`U'` in the Crank-Nicolson
+method.
 
 Applying the operator notation for the means, the linearized Crank-Nicolson
 scheme for the logistic equation can be compactly expressed as
@@ -441,9 +478,8 @@ If we use an arithmetic instead of a geometric mean
 for the nonlinear term in
 :eq:`nonlin:timediscrete:logistic:geometric:mean:scheme`,
 we end up with a nonlinear term :math:`(u^{n+1})^2`.
-The term can be linearized as :math:`u^nu^{n+1}` and a Picard iteration
-can then be introduced. Observe that the geometric mean avoids
-an iteration.
+The term can be linearized as :math:`u^nu^{n+1}` in a Picard iteration approach.
+Observe that the geometric mean avoids any iteration.
 
 .. _nonlin:timediscrete:logistic:Newton:
 
@@ -453,14 +489,14 @@ Newton's method  (1)
 
 The Backward Euler scheme :eq:`nonlin:timediscrete:logistic:eq:BE`
 for the logistic equation leads to a nonlinear algebraic equation
-:eq:`nonlin:timediscrete:logistic:eq:F` which we now write
-compactly as
+:eq:`nonlin:timediscrete:logistic:eq:F`. Now we write any nonlinear
+algebraic equation in the general and compact form
 
 
 .. math::
          F(u) = 0{\thinspace .}
 
-Newton's method linearize this equation by approximating :math:`F(u)` by
+Newton's method linearizes this equation by approximating :math:`F(u)` by
 its Taylor series expansion around a computed value :math:`u_{-}`
 and keeping only the linear part:
 
@@ -514,11 +550,11 @@ The iteration method becomes
         
 
 At each time level, we start the iteration by setting :math:`u_{-}=u_1`.
-Stopping criteria as listed for Picard iteration can be used also
+Stopping criteria as listed for the Picard iteration can be used also
 for Newton's method.
 
 An alternative mathematical form, where we write out :math:`a`, :math:`b`, and :math:`c`,
-and use a time level counter and an iteration counter :math:`k`, takes
+and use a time level counter :math:`n` and an iteration counter :math:`k`, takes
 the form
 
 
@@ -551,16 +587,16 @@ Picard iteration consists of solving a linear problem :math:`\hat F(u)=0`.
 Sometimes convergence problems arise because the new solution :math:`u`
 of :math:`\hat F(u)=0` is "too far away" from the previously computed
 solution :math:`u_{-}`. A remedy is to introduce a relaxation, meaning that
-we first solve :math:`\hat F(u^*)=0` for an intermediate value :math:`u^*` and
+we first solve :math:`\hat F(u^*)=0` for a suggested value :math:`u^*` and
 then we take :math:`u` as a weighted mean of what we had, :math:`u_{-}`, and
 what our linearized equation :math:`\hat F=0` suggests, :math:`u^*`:
 
 
 .. math::
-         u = \omega u^* + (1-\omega) u_{-},
+         u = \omega u^* + (1-\omega) u_{-}{\thinspace .}
 
-before proceeding with the next iteration. The parameter :math:`\omega`
-is known as the *relaxation parameter* and a choice :math:`\omega < 1`
+The parameter :math:`\omega`
+is known as a *relaxation parameter*, and a choice :math:`\omega < 1`
 may prevent divergent iterations.
 
 Relaxation in Newton's method can be directly incorporated
@@ -657,7 +693,7 @@ stopping criterion takes on a low and high value in the experiments.
 
 **Remark.**
 The simple Crank-Nicolson method with a geometric mean for the quadratic
-nonlinearity gives even visually more accurate solutions than the
+nonlinearity gives visually more accurate solutions than the
 Backward Euler discretization. Even with a tolerance of :math:`\epsilon_r=10^{-3}`,
 all the methods for treating the nonlinearities in the Backward Euler
 discretization gives graphs that cannot be distinguished. So for
@@ -689,7 +725,7 @@ where :math:`f` is a nonlinear function of :math:`u`.
 Explicit time discretization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Methods like the Forward Euler scheme, Runge-Kutta methods,
+Explicit ODE methods like the Forward Euler scheme, Runge-Kutta methods,
 Adams-Bashforth methods all evaluate :math:`f` at time levels where
 :math:`u` is already computed, so nonlinearities in :math:`f` do not
 pose any difficulties.
@@ -739,7 +775,7 @@ we can just use the standard formula
 .. math::
         
         u = u_{-} - \omega \frac{F(u_{-})}{F'(u_{-})}
-        = u_ -\omega \frac{u_1 + \Delta t f(u_,t_{n})}{1 - \Delta t
+        = u_ - \omega \frac{u_1 + \Delta t f(u_,t_{n})}{1 - \Delta t
         \frac{\partial}{\partial u}f(u_,t_n)}
         {\thinspace .}
         
@@ -757,29 +793,29 @@ The standard Crank-Nicolson scheme with arithmetic mean approximation of
 
 .. math::
          \frac{u^{n+1} - u^n}{\Delta t} = \frac{1}{2}(f(u^{n+1}, t_{n+1})
-        + f(u^n, t_n){\thinspace .}
+        + f(u^n, t_n)){\thinspace .}
 
 Introducing :math:`u` for the unknown :math:`u^{n+1}` and :math:`u_1` for :math:`u^n`, we
-see that the scheme leads to a nonlinear algebraic equation
+can write the scheme as a nonlinear algebraic equation
 
 
 .. math::
-         F(u) = u + \Delta t{\frac{1}{2}}f(u,t_{n+1}) +
-        \Delta t{\frac{1}{2}}f(u_1,t_{n+1}) = 0{\thinspace .}
+         F(u) = u - u_1 - \Delta t{\frac{1}{2}}f(u,t_{n+1}) -
+        \Delta t{\frac{1}{2}}f(u_1,t_{n}) = 0{\thinspace .}
 
 A Picard iteration scheme must in general employ the linearization,
 
 
 .. math::
-         \hat F(u) = u + \Delta t{\frac{1}{2}}f(u_{-},t_{n+1}) +
-        \Delta t{\frac{1}{2}}f(u_1,t_{n+1}),
+         \hat F(u) = u - u_1 - \Delta t{\frac{1}{2}}f(u_{-},t_{n+1}) -
+        \Delta t{\frac{1}{2}}f(u_1,t_{n}),
 
 while Newton's method can apply the general formula,  but we need
 to derive
 
 
 .. math::
-         F'(u)= 1 + \frac{1}{2}\Delta t\frac{\partial f}{\partial u}(u,t_{n+1}){\thinspace .}
+         F'(u)= 1 - \frac{1}{2}\Delta t\frac{\partial f}{\partial u}(u,t_{n+1}){\thinspace .}
 
 
 .. What about pendulum sin(u) as u/u_ sin(u_)? Check in odespy if it
@@ -798,29 +834,32 @@ to derive
 Systems of nonlinear algebraic equations
 ========================================
 
-Now we assume that some time discretization of a system of ODEs, or a PDE,
-leads to a *system* of nonlinear algebraic equations, written
+Implicit time discretization methods for a system of ODEs, or a PDE,
+lead to *systems* of nonlinear algebraic equations, written
 compactly as
 
 
 .. math::
          F(u) = 0,
 
-or with some special structure that often appear in real applications, e.g.,
+where :math:`u` is a vector of unknowns :math:`u=(u_0,\ldots,u_N)`, and
+:math:`F` is a vector function: :math:`F=(F_0,\ldots,F_N)`.
+Sometimes the equation system has a special structure because of the
+underlying problem, e.g.,
 
 
 .. math::
-         A(u)u = b(u){\thinspace .}
+         A(u)u = b(u),
 
-Here, :math:`u` is a vector of unknowns :math:`u=(u_0,\ldots,u_N)`, and
-:math:`F` is a vector function: :math:`F=(F_0,\ldots,F_N)`. Similarly, :math:`A(u)`
-is an :math:`(N+1)\times (N+1)` matrix function of :math:`u` and :math:`b` is a vector
+with :math:`A(u)` as
+an :math:`(N+1)\times (N+1)` matrix function of :math:`u` and :math:`b` as a vector
 function: :math:`b=(b_0,\ldots,b_N)`.
 
 We shall next explain how Picard iteration and Newton's method
 can be applied to systems like :math:`F(u)=0` and :math:`A(u)u=b(u)`.
 The exposition has a focus on ideas and practical computations.
-More theoretical considerations, including convergence properties
+More theoretical considerations, including quite general results
+on convergence properties
 of these methods, can be found in Kelley [Ref1]_.
 
 .. _nonlin:systems:alg:Picard:
@@ -829,7 +868,8 @@ Picard iteration  (2)
 ---------------------
 
 We cannot apply Picard iteration to nonlinear equations unless there is
-some special structure. For :math:`A(u)u=b(u)` we can linearize the
+some special structure. For the commonly arising case
+:math:`A(u)u=b(u)` we can linearize the
 product :math:`A(u)u` to :math:`A(u_{-})u` and :math:`b(u)` as :math:`b(u_{-})`.
 That is, we use the most previously
 computed approximation in :math:`A` and :math:`b` to arrive at a *linear system* for
@@ -857,7 +897,7 @@ a sequence of linear systems.
    
    2. :math:`u = \omega u^* + (1-\omega) u_{-}`
    
-   3. :math:`u_{-}\ \leftarrow\ u_{-}`
+   3. :math:`u_{-}\ \leftarrow\ u`
 
 
 .. The iteration is stopped when the
@@ -874,10 +914,10 @@ Newton's method  (2)
 
 The natural starting point for Newton's method is the general
 nonlinear vector equation :math:`F(u)=0`.
-As for a scalar equation, the idea is to Taylor expand :math:`F`
-around a known value :math:`u_{-}` and just keep the linear
-terms. The multi-variate Taylor expansion has its two first
-terms as
+As for a scalar equation, the idea is to approximate :math:`F`
+around a known value :math:`u_{-}` by a linear function :math:`\hat F`,
+calculated from the first two terms of a Taylor expansion of
+:math:`F`. In the multi-variate case these two terms become
 
 
 .. math::
@@ -916,11 +956,16 @@ A relaxation parameter can easily be incorporated:
    
    2. :math:`u = u_{-} + \omega)\delta u`
    
-   3. :math:`u_{-}\ \leftarrow\ u_{-}`
+   3. :math:`u_{-}\ \leftarrow\ u`
 
 
-For the special system with structure :math:`A(u)u=b(b)`,
-:math:`F_i = \sum_k A_{i,k}(u)u_k - b_i`, and
+For the special system with structure :math:`A(u)u=b(u)`,
+
+
+.. math::
+         F_i = \sum_k A_{i,k}(u)u_k - b_i(u),
+
+and
 
 
 .. math::
@@ -955,7 +1000,7 @@ solved in each Picard iteration:
 
 .. math::
          \underbrace{A(u_{-})(u_{-}+\delta u) - b(u_{-})}_{\hbox{Picard system}}
-        + \gamma (A'(u_{-})u_{-} + b'(u_{i}))\delta u
+        +\, \gamma (A'(u_{-})u_{-} + b'(u_{i}))\delta u
         = 0{\thinspace .}
 
 Here we have inserted a parameter :math:`\gamma` such that :math:`\gamma=0`
@@ -968,6 +1013,10 @@ the methods.
 
 Stopping criteria  (2)
 ----------------------
+
+
+.. index:: stopping criteria (nonlinear problems)
+
 
 Let :math:`||\cdot||` be the standard Eucledian vector norm. Four termination
 criteria are much in use:
@@ -1145,7 +1194,9 @@ Jacobian becomes
 
 
 .. math::
-         J = \left(\begin{array}{cc}
+        
+        \renewcommand*{\arraystretch}{2}
+        J = \left(\begin{array}{cc}
         \frac{\partial}{\partial S} F_S & \frac{\partial}{\partial I}F_S\\ 
         \frac{\partial}{\partial S} F_I & \frac{\partial}{\partial I}F_I
         \end{array}\right)
@@ -1160,6 +1211,7 @@ Jacobian becomes
         
         !bt
         
+        \renewcommand*{\arraystretch}{1.5}
         &
         \left(\begin{array}{cc}
         1 + \frac{1}{2}\Delta t\beta I_{-} & \frac{1}{2}\Delta t\beta S_{-}\\ 
@@ -1179,6 +1231,11 @@ Jacobian becomes
         \end{array}\right)
         
 
+
+**Remark.**
+For this particular system explicit time integration methods work very
+well. The 4-th order Runge-Kutta method is an excellent
+balance between high accuracy, high efficiency, and simplicity.
 
 .. _nonlin:pdelevel:
 
@@ -1225,6 +1282,17 @@ The model problem is a nonlinear diffusion equation
         u = u_0,\quad \boldsymbol{x}\in\partial\Omega_D,\ t\in (0,T]{\thinspace .}
         
         
+
+
+Our aim is to discretize the problem in time and then present
+techniques for linearizing the time-discrete PDE problem "at the PDE
+level" such that we transform the nonlinear stationary PDE problems at
+each time level into a sequence of linear PDE problems, which can be
+solved using any method for linear PDEs. This strategy avoids the
+solution systems of nonlinear algebraic equations.  In the section :ref:`nonlin:alglevel:1D` we shall take the opposite (and more common)
+approach: discretize the nonlinear problem in time and space first,
+and then solve the resulting nonlinear algebraic equations at each
+time level by the methods of the section :ref:`nonlin:systems:alg`.
 
 
 .. _nonlin:pdelevel:explicit:
@@ -1290,7 +1358,7 @@ The unknown function :math:`u^{n,k+1}` then fulfills the linear PDE
 .. math::
    :label: nonlin:pdelevel:pde:BE:Picard:k
         
-        \frac{u^{n,k} - u^{n-1}}{\Delta t} = \nabla\cdot ({\alpha}(u^{n,k})
+        \frac{u^{n,k+1} - u^{n-1}}{\Delta t} = \nabla\cdot ({\alpha}(u^{n,k})
         \nabla u^{n,k+1})
         + f(u^{n,k}){\thinspace .}
         
@@ -1300,10 +1368,10 @@ The initial guess for the Picard iteration at this time level can be
 taken as the solution at the previous time level: :math:`u^{n,0}=u^{n-1}`.
 
 We can alternatively apply the notation where :math:`u` corresponds to
-the unknown we want to solve for, i.e., :math:`u^{n,k+1}`, let :math:`u_{-}`
-be the most recently computed value, :math:`u^{n,k}`, and let
-:math:`u_1` denote the unknown function at the previous time level, :math:`u^{n-1}`.
-The PDE to be solved in a Picard iteration then looks like
+the unknown we want to solve for, i.e., :math:`u^{n,k+1}` above, let :math:`u_{-}`
+be the most recently computed value, :math:`u^{n,k}` above, and let
+:math:`u_1` denote the unknown function at the previous time level, :math:`u^{n-1}`
+above. The PDE to be solved in a Picard iteration then looks like
 
 
 .. _Eq:nonlin:pdelevel:pde:BE:Picard:
@@ -1317,7 +1385,8 @@ The PDE to be solved in a Picard iteration then looks like
         
         
 
-At the beginning of the iteration we set :math:`u_{-}=u_1`.
+At the beginning of the iteration we start with the value from the
+previous time level: :math:`u_{-}=u_1`.
 
 .. _nonlin:pdelevel:Newton:
 
@@ -2473,6 +2542,52 @@ Finite difference discretization
 Continuation methods
 --------------------
 
+
+.. index:: continuation method
+
+
+Picard iteration or Newton's method may diverge when solving PDEs with
+severe nonlinearities. Relaxation with :math:`\omega <1`
+may help, but in highly nonlinear problems it can be
+necessary to introduce a *continuation parameter* :math:`\Lambda` in
+the problem: :math:`\Lambda =0` gives a version of the
+problem that is easy to solve, while
+:math:`\Lambda =1` is the target problem. The idea is then
+to increase :math:`\Lambda` in steps, :math:`\Lambda_0=0 ,\Lambda_1 <\cdots <\Lambda_n=1`,
+and use the solution from the problem with :math:`\Lambda_{i-1}` as
+initial guess for the iterations in the problem corresponding
+to :math:`\Lambda_i`.
+
+The continuation method is easiest to understand through an example.
+Suppose we intend to solve
+
+
+.. math::
+         -\nabla\cdot\left( ||\nabla u||^q\nabla u\right) = f, 
+
+which is an equation modeling the flow of a non-Newtonian fluid through
+i channel or pipe. For :math:`q=0` we have the Poisson equation (corresponding
+to a Newtonian fluid) and the problem is linear. A typical
+value for pseudo-plastic fluids may be :math:`q_n=-0.8`. We can introduce
+the continuation parameter :math:`\Lambda\in [0,1]` such that
+:math:`q=q_n\Lambda`. Let :math:`\{\Lambda_\ell\}_{\ell=0}^n` be the sequence of
+:math:`\Lambda` values in :math:`[0,1]`, with corresponding :math:`q` values
+:math:`\{q_\ell\}_{\ell=0}^n`. We can then solve a sequence of problems
+
+
+.. math::
+        
+        -\nabla\cdot\left( ||\nabla u||^q_\ell\nabla u^\ell\right) = f,\quad
+        \ell = 0,\ldots,n,
+
+where the initial guess for iterating on :math:`u^{\ell}` is the
+previously computed solution :math:`u^{\ell-1}`. If a particular :math:`\Lambda_\ell`
+leads to convergence problems, one may try a smaller
+increase in :math:`\Lambda`:
+:math:`\Lambda_* = \frac{1}{2} (\Lambda_{\ell-1}+\Lambda_\ell)`,
+and repeat halving the step in :math:`\Lambda` until convergence is reestablished.
+
+
 .. _nonlin:exer:
 
 Exercises
@@ -2889,6 +3004,60 @@ Derive the matrix and right-hand side of a Newton method applied
 to the discretized PDE.
 
 Filename: ``nonlin_1D_heat_PDE.pdf``.
+
+.. --- end exercise ---
+
+
+
+
+.. --- begin exercise ---
+
+.. _nonlin:exer:continuation:1DnNflow:
+
+Problem 12: Investigate a 1D problem with a continuation method
+---------------------------------------------------------------
+
+
+.. index:: continuation method
+
+
+Flow of a pseudo-plastic power-law fluid between two flat plates can be
+modeled by
+
+
+.. math::
+         \frac{d}{dx}\left(\mu_0\left\vert\frac{du}{dx}\right\vert^{n-1}
+        \frac{du}{dx}\right) = -\beta,\quad u'(0)=0,\ u(H) = 0,
+
+where :math:`\beta>0` and :math:`\mu_0>0` are constants.
+A target value of :math:`n` may be :math:`n=0.2`.
+
+
+**a)**
+Formulate a Picard iteration method directly for the differential
+equation problem.
+
+**b)**
+Perform a finite difference discretization of the problem in
+each Picard iteration. Implement a solver that can compute :math:`u`
+on a mesh. Verify that the solver gives an exact solution for :math:`n=1`
+on a uniform mesh regardless of the cell size.
+
+**c)**
+Given a sequence of decreasing :math:`n` values, solve the problem for each
+:math:`n` using the solution for the previous :math:`n` as initial guess for
+the Picard iteration. This is called a continuation method.
+Experiment with :math:`n=(1,0.6,0.2)` and :math:`n=(1,0.9,0.8,\ldots,0.2)`
+and make a table of the number of Picard iterations versus :math:`n`.
+
+**d)**
+Derive a Newton method at the differential equation level and
+discretize the resulting linear equations in each Newton iteration
+with the finite difference method.
+
+**e)**
+Investigate if Newton's method has better convergence properties than
+Picard iteration, both in combination with a continuation method.
 
 .. --- end exercise ---
 
