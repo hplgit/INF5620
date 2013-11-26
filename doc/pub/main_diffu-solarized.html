@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
 <meta name="description" content="Finite difference methods for diffusion processes">
 <meta name="keywords" content="stationary solution,explicit discretization methods,implicit discretization methods,amplification factor">
 
 
 
 <style type="text/css">
+    /* solarized style */
     body {
       margin:5;
       padding:0;
@@ -71,14 +72,11 @@ Automatically generated HTML file from Doconce source
                2,
                'diffu:pde1:impl:sparse',
                'diffu:pde1:impl:sparse'),
-              (' The $\\theta$ Rule ',
+              (' The $\\theta$ rule ',
                2,
                'diffu:pde1:theta',
                'diffu:pde1:theta'),
-              (' The Laplace and Poisson equation as the steady state limit ',
-               2,
-               None,
-               '___sec6'),
+              (' The Laplace and Poisson equation ', 2, None, '___sec6'),
               (' Extensions ', 2, None, '___sec7'),
               (' Analysis of schemes for the diffusion equation ',
                1,
@@ -91,40 +89,41 @@ Automatically generated HTML file from Doconce source
               (' Similarity solution ', 3, None, '___sec10'),
               (' Solution for a Gaussian pulse ', 3, None, '___sec11'),
               (' Solution for a sine component ', 3, None, '___sec12'),
+              (' Analysis of discrete equations ', 2, None, '___sec13'),
               (' Analysis of the finite difference schemes ',
                2,
                'diffu:pde1:analysis',
                'diffu:pde1:analysis'),
-              (' Stability ', 3, None, '___sec14'),
-              (' Accuracy ', 3, None, '___sec15'),
+              (' Stability ', 3, None, '___sec15'),
+              (' Accuracy ', 3, None, '___sec16'),
               (' Analysis of the Forward Euler scheme ',
                2,
                'diffu:pde1:analysis:FE',
                'diffu:pde1:analysis:FE'),
-              (' Stability ', 3, None, '___sec17'),
-              (' Accuracy ', 3, None, '___sec18'),
+              (' Stability ', 3, None, '___sec18'),
+              (' Accuracy ', 3, None, '___sec19'),
               (' Analysis of the Backward Euler scheme ',
                2,
                'diffu:pde1:analysis:BE',
                'diffu:pde1:analysis:BE'),
-              (' Stability ', 3, None, '___sec20'),
+              (' Stability ', 3, None, '___sec21'),
               (' Analysis of the Crank-Nicolson scheme ',
                2,
                'diffu:pde1:analysis:CN',
                'diffu:pde1:analysis:CN'),
-              (' Stability ', 3, None, '___sec22'),
+              (' Stability ', 3, None, '___sec23'),
               (' Summary of accuracy of amplification factors ',
                2,
                None,
-               '___sec23'),
+               '___sec24'),
               (' Exercise 1: Use an analytical solution to formulate a 1D test ',
                2,
                None,
-               '___sec24'),
+               '___sec25'),
               (' Exercise 2: Use an analytical solution to formulate a 2D test ',
                2,
                None,
-               '___sec25')]}
+               '___sec26')]}
 end of tocinfo -->
 
 <body>
@@ -134,7 +133,7 @@ end of tocinfo -->
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: {
-     equationNumbers: {  autoNumber: "AMS"  },
+     equationNumbers: {  autoNumber: "none"  },
      extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js"]
   }
 });
@@ -148,11 +147,14 @@ MathJax.Hub.Config({
 
 <!-- newcommands_keep.tex -->
 $$
-\newcommand{\uex}{u_{\small\mbox{e}}}
-\newcommand{\Aex}{A_{\small\mbox{e}}}
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
 \newcommand{\half}{\frac{1}{2}}
 \newcommand{\halfi}{{1/2}}
-\newcommand{\ts}{\thinspace .}
+\newcommand{\tp}{\thinspace .}
 
 \newcommand{\Ddt}[1]{\frac{D #1}{dt}}
 \newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
@@ -161,7 +163,7 @@ $$
 
 \newcommand{\xpoint}{\boldsymbol{x}}
 \newcommand{\normalvec}{\boldsymbol{n}}
-\newcommand{\Oof}[1]{{\cal O}(#1)}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
 
 \newcommand{\x}{\boldsymbol{x}}
 \newcommand{\X}{\boldsymbol{X}}
@@ -179,7 +181,7 @@ $$
 \newcommand{\I}{\boldsymbol{I}}
 \newcommand{\T}{\boldsymbol{T}}
 
-% Unit vectors
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
 \newcommand{\ii}{\boldsymbol{i}}
 \newcommand{\jj}{\boldsymbol{j}}
 \newcommand{\kk}{\boldsymbol{k}}
@@ -187,34 +189,31 @@ $$
 \newcommand{\ith}{\boldsymbol{i}_{\theta}}
 \newcommand{\iz}{\boldsymbol{i}_z}
 
-% Index sets
-\newcommand{\Ix}{{\cal I}_x}
-\newcommand{\Iy}{{\cal I}_y}
-\newcommand{\Iz}{{\cal I}_z}
-\newcommand{\It}{{\cal I}_t}
-\newcommand{\setb}[1]{{#1}^0}    % set begin
-\newcommand{\sete}[1]{{#1}^{-1}} % set end
-%\newcommand{\setl}[1]{#1\setminus\{\set1{#1}\}}
-%\newcommand{\setr}[1]{#1\setminus\{\set0{#1}\}}
-%\newcommand{\seti}[1]{#1\setminus\{\set0{#1},\set1{#1}\}}
-\newcommand{\setl}[1]{{#1}^-}
-\newcommand{\setr}[1]{{#1}^+}
-\newcommand{\seti}[1]{{#1}^i}
+\newcommand{\Ix}{\mathcal{I}_x}
+\newcommand{\Iy}{\mathcal{I}_y}
+\newcommand{\Iz}{\mathcal{I}_z}
+\newcommand{\It}{\mathcal{I}_t}
+\newcommand{\If}{\mathcal{I}_s}     % for FEM
+\newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+\newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
 
-% Finite elements
 \newcommand{\basphi}{\varphi}
 \newcommand{\baspsi}{\psi}
 \newcommand{\refphi}{\tilde\basphi}
 \newcommand{\psib}{\boldsymbol{\psi}}
 \newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
 \newcommand{\xno}[1]{x_{#1}}
-%\newcommand{\xno}[1]{x^{(#1)}}
 \newcommand{\Xno}[1]{X_{(#1)}}
 \newcommand{\yno}[1]{y_{#1}}
 \newcommand{\Yno}[1]{Y_{(#1)}}
 \newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
 
-% FEniCS commands
 \newcommand{\dX}{\, \mathrm{d}X}
 \newcommand{\dx}{\, \mathrm{d}x}
 \newcommand{\ds}{\, \mathrm{d}s}
@@ -252,7 +251,7 @@ $$
 <center>[1] <b>Center for Biomedical Computing, Simula Research Laboratory</b></center>
 <center>[2] <b>Department of Informatics, University of Oslo</b></center>
 <p>
-<center><h4>Jun 19, 2013</h4></center> <!-- date -->
+<center><h4>Nov 26, 2013</h4></center> <!-- date -->
 <p>
 Note: <b>VERY PRELIMINARY VERSION</b>
 
@@ -264,27 +263,28 @@ Note: <b>VERY PRELIMINARY VERSION</b>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:FE"> Forward Euler scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:BE"> Backward Euler Scheme </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:impl:sparse"> Sparse matrix implementation </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:theta"> The \( \theta \) Rule </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec6"> The Laplace and Poisson equation as the steady state limit </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:theta"> The \( \theta \) rule </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec6"> The Laplace and Poisson equation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#___sec7"> Extensions </a><br>
 <a href="#diffu:pde1:analysis"> Analysis of schemes for the diffusion equation </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:analysis:uex"> Properties of the solution </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec10"> Similarity solution </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec11"> Solution for a Gaussian pulse </a><br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec12"> Solution for a sine component </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec13"> Analysis of discrete equations </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:analysis"> Analysis of the finite difference schemes </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec14"> Stability </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec15"> Accuracy </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec15"> Stability </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec16"> Accuracy </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:analysis:FE"> Analysis of the Forward Euler scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec17"> Stability </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec18"> Accuracy </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec18"> Stability </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec19"> Accuracy </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:analysis:BE"> Analysis of the Backward Euler scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec20"> Stability </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec21"> Stability </a><br>
 &nbsp; &nbsp; &nbsp; <a href="#diffu:pde1:analysis:CN"> Analysis of the Crank-Nicolson scheme </a><br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec22"> Stability </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec23"> Summary of accuracy of amplification factors </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec24"> Exercise 1: Use an analytical solution to formulate a 1D test </a><br>
-&nbsp; &nbsp; &nbsp; <a href="#___sec25"> Exercise 2: Use an analytical solution to formulate a 2D test </a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="#___sec23"> Stability </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec24"> Summary of accuracy of amplification factors </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec25"> Exercise 1: Use an analytical solution to formulate a 1D test </a><br>
+&nbsp; &nbsp; &nbsp; <a href="#___sec26"> Exercise 2: Use an analytical solution to formulate a 2D test </a><br>
 
 <h2>The 1D diffusion equation  <a name="___sec0"></a></h2>
 
@@ -358,17 +358,17 @@ $$
 \begin{align}
 \frac{\partial u}{\partial t} &=
 \alpha \frac{\partial^2 u}{\partial x^2}, \quad x\in (0,L),\ t\in (0,T]
-\label{diffu:pde1}\\
+\tag{1}\\
 u(x,0) &= I(x), \quad  x\in [0,L]
-\label{diffu:pde1:ic:u}\\
+\tag{2}\\
 u(0,t) & = 0, \quad  t>0,
-\label{diffu:pde1:bc:0}\\
-u(L,t) & = 0, \quad  t>0\thinspace .
-\label{diffu:pde1:bc:L}
+\tag{3}\\
+u(L,t) & = 0, \quad  t>0\tp
+\tag{4}
 \end{align}
 $$
 
-Equation \eqref{diffu:pde1} is known as a one-dimensional
+Equation <a href="#mjx-eqn-1">(1)</a> is known as a one-dimensional
 <em>diffusion equation</em>, also often referred to as a
 <em>heat equation</em>. With only a first-order derivative in time,
 only one <em>initial condition</em> is needed, while the second-order
@@ -377,11 +377,11 @@ The parameter \( \alpha \) must be given and is referred to as the
 <em>diffusion coefficient</em>.
 
 <p>
-Diffusion equations like \eqref{diffu:pde1} have a wide range of
+Diffusion equations like <a href="#mjx-eqn-1">(1)</a> have a wide range of
 applications throughout physical, biological, and financial sciences.
 One of the most common applications is propagation of heat, where
 \( u(x,t) \) represents the temperature of some substance at point \( x \) and
-time \( t \). the section ref{diffu:app} goes into several widely occurring
+time \( t \). The section ref{diffu:app} goes into several widely occurring
 applications.
 
 <h3>Forward Euler scheme <a name="diffu:pde1:FE"></a></h3>
@@ -400,12 +400,12 @@ and
 
 <p>
 $$
-\begin{equation*} t_n=n\Delta t,\quad n=0,\ldots,N_t \thinspace . \end{equation*}
+\begin{equation*} t_n=n\Delta t,\quad n=0,\ldots,N_t \tp  \end{equation*}
 $$
 
 Moreover, \( u^n_i \) denotes the mesh function that
 approximates \( u(x_i,t_n) \) for \( i=0,\ldots,N_x \) and \( n=0,\ldots,N_t \).
-Requiring the PDE \eqref{diffu:pde1} to be fulfilled at a mesh point \( (x_i,t_n) \)
+Requiring the PDE <a href="#mjx-eqn-1">(1)</a> to be fulfilled at a mesh point \( (x_i,t_n) \)
 leads to the equation
 
 <p>
@@ -413,7 +413,7 @@ $$
 \begin{equation}
 \frac{\partial}{\partial t} u(x_i, t_n) =
 \alpha\frac{\partial^2}{\partial x^2} u(x_i, t_n),
-\label{diffu:pde1:step2}
+\tag{5}
 \end{equation}
 $$
 
@@ -425,8 +425,8 @@ space:
 <p>
 $$
 \begin{equation}
-[D_t^+ u = \alpha D_xD_x u]^n_i \thinspace .
-\label{diffu:pde1:step3a}
+[D_t^+ u = \alpha D_xD_x u]^n_i \tp
+\tag{6}
 \end{equation}
 $$
 
@@ -435,8 +435,8 @@ Written out,
 <p>
 $$
 \begin{equation}
-\frac{u^{n+1}_i-u^n_i}{\Delta t} = \alpha \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
-\label{diffu:pde1:step3b}
+\frac{u^{n+1}_i-u^n_i}{\Delta t} = \alpha \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \tp
+\tag{7}
 \end{equation}
 $$
 
@@ -444,15 +444,15 @@ We have turned the PDE into algebraic equations, also often called
 discrete equations. The key property of the equations is that they
 are algebraic, which makes them easy to solve.
 As usual, we anticipate that \( u^n_i \) is already computed such that
-\( u^{n+1}_i \) is the only unknown in \eqref{diffu:pde1:step3b}.
+\( u^{n+1}_i \) is the only unknown in <a href="#mjx-eqn-7">(7)</a>.
 Solving with respect to this unknown is easy:
 
 <p>
 $$
 \begin{equation}
 u^{n+1}_i = u^n_i + \alpha\frac{\Delta t}{\Delta x^2}\left(
-u^{n}_{i+1} - 2u^n_i + u^n_{i-1}\right) \thinspace .
-\label{diffu:pde1:step4}
+u^{n}_{i+1} - 2u^n_i + u^n_{i-1}\right) \tp
+\tag{8}
 \end{equation}
 $$
 
@@ -467,7 +467,7 @@ The computational algorithm then becomes
  <li> for \( n=0,1,\ldots,N_t \):</li>
 
 <ol>
-   <li> apply \eqref{diffu:pde1:step4} for all the internal
+   <li> apply <a href="#mjx-eqn-8">(8)</a> for all the internal
       spatial points \( i=1,\ldots,N_x-1 \)</li>
    <li> set the boundary values
       \( u^{n+1}_i=0 \) for \( i=0 \) and \( i=N_x \)</li>
@@ -507,14 +507,14 @@ for n in range(0, Nt):
 <h3>Backward Euler Scheme <a name="diffu:pde1:BE"></a></h3>
 
 <p>
-We now apply a backward difference in time in \eqref{diffu:pde1:step2},
+We now apply a backward difference in time in <a href="#mjx-eqn-5">(5)</a>,
 but the same central difference in space:
 
 <p>
 $$
 \begin{equation}
 [D_t^- u = D_xD_x u]^n_i,
-\label{diffu:pde1:step3aBE}
+\tag{9}
 \end{equation}
 $$
 
@@ -523,8 +523,8 @@ which written out reads
 <p>
 $$
 \begin{equation}
-\frac{u^{n}_i-u^{n-1}_i}{\Delta t} = \alpha\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \thinspace .
-\label{diffu:pde1:step3bBE}
+\frac{u^{n}_i-u^{n-1}_i}{\Delta t} = \alpha\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} \tp
+\tag{10}
 \end{equation}
 $$
 
@@ -532,7 +532,7 @@ Now we assume \( u^{n-1}_i \) is computed, but all quantities at the "new"
 time level \( n \) are unknown. This time it is not possible to solve
 with respect to \( u_i^{n} \) because this value couples to its neighbors
 in space, \( u^n_{i-1} \) and \( u^n_{i+1} \), which are also unknown.
-Let us examine this fact for the case when \( N_x=3 \). Equation \eqref{diffu:pde1:step3bBE} written for \( i=1,\ldots,Nx-1= 1,2 \) becomes
+Let us examine this fact for the case when \( N_x=3 \). Equation <a href="#mjx-eqn-10">(10)</a> written for \( i=1,\ldots,Nx-1= 1,2 \) becomes
 
 <p>
 $$
@@ -553,7 +553,7 @@ $$
 - \alpha\frac{\Delta t}{\Delta x^2} u^{n}_{1} +
 \left(1+  2\alpha\frac{\Delta t}{\Delta x^2}\right) u^{n}_2
   &= u^{n-1}_2
-\thinspace .
+\tp
 \end{align}
 $$
 
@@ -570,7 +570,7 @@ are more comprehensive to code since they require
 the solution of coupled equations, i.e., a matrix system, at each time level.
 
 <p>
-In the general case, \eqref{diffu:pde1:step3bBE} gives rise to
+In the general case, <a href="#mjx-eqn-10">(10)</a> gives rise to
 a coupled \( (Nx-1)\times (Nx-1) \) system of algebraic equations for
 all the unknown \( u^n_i \) at the interior spatial points \( i=1,\ldots,Nx-1 \).
 Collecting the unknowns on the left-hand side, and
@@ -583,13 +583,13 @@ C = \alpha\frac{\Delta t}{\Delta x^2},
 \end{equation}
 $$
 
-\eqref{diffu:pde1:step3bBE} can be written
+<a href="#mjx-eqn-10">(10)</a> can be written
 
 <p>
 $$
 \begin{equation}
 - Cu^n_{i-1} + \left(1+  2C\right) u^{n}_i - Cu^n_{i+1} = u_{i-1}^{n-1},
-\label{diffu:pde1:step4BE}
+\tag{11}
 \end{equation}
 $$
 
@@ -599,14 +599,14 @@ One can either view these equations as a system for where the
 unknown, or we may append the boundary values \( u^n_0 \) and \( u^n_{N_x} \)
 to the system. In the latter case, all \( u^n_i \) for \( i=0,\ldots,N_x \)
 are unknown and we must add the boundary equations to
-the \( N_x-1 \) equations in \eqref{diffu:pde1:step4BE}:
+the \( N_x-1 \) equations in <a href="#mjx-eqn-11">(11)</a>:
 
 <p>
 $$
 \begin{align}
 u_0^n &= 0,label{diffu:pde1:step4BE:BC:0}\\
-u_{N_x}^n &= 0\thinspace .
-\label{diffu:pde1:step4BE:BC:L}
+u_{N_x}^n &= 0\tp
+\tag{13}
 \end{align}
 $$
 
@@ -614,8 +614,8 @@ $$
 <p>
 A coupled system of algebraic equations can be written on matrix form,
 and this is important if we want to call up ready-made software for
-solving the system.  The equations \eqref{diffu:pde1:step4BE}
-and \eqref{diffu:pde1:step4BE:BC:0}--\eqref{diffu:pde1:step4BE:BC:L}
+solving the system.  The equations <a href="#mjx-eqn-11">(11)</a>
+and <a href="#mjx-eqn-12">(12)</a>--<a href="#mjx-eqn-13">(13)</a>
 correspond to the matrix equation
 
 <p>
@@ -647,7 +647,7 @@ A_{1,0} & A_{1,1} & 0 & \ddots &   & &  & &  \vdots \\
 0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & A_{N_x,N_x-1} & A_{N_x,N_x}
 \end{array}
 \right)
-\label{diffu:pde1:matrix:sparsity}
+\tag{14}
 \end{equation}
 $$
 
@@ -671,7 +671,7 @@ $$
 A_{0,0} &= 1,\\
 A_{0,1} &= 0,\\
 A_{N_x,N_x-1} &= 0,\\
-A_{N_x,N_x} &= 1\thinspace .
+A_{N_x,N_x} &= 1\tp
 \end{align}
 $$
 
@@ -698,7 +698,7 @@ $$
 \begin{align}
 b_0 &= 0,\\
 b_i &= u^{n-1}_i,\quad i=1,\ldots,N_x-1,\\
-b_{N_x} &= 0 \thinspace . \end{align}
+b_{N_x} &= 0 \tp  \end{align}
 $$
 
 
@@ -749,7 +749,7 @@ for n in range(0, Nt):
 <h3>Sparse matrix implementation <a name="diffu:pde1:impl:sparse"></a></h3>
 
 <p>
-We have seen from \eqref{diffu:pde1:matrix:sparsity} that the matrix \( A \)
+We have seen from <a href="#mjx-eqn-14">(14)</a> that the matrix \( A \)
 is tridiagonal. The code segment above used a full, dense matrix
 representation of \( A \), which stores a lot of values we know are zero
 beforehand, and worse, the solution algorithm computes with all these zeros.
@@ -804,17 +804,27 @@ The <code>scipy.sparse.linalg.spsolve</code> function utilizes the sparse storag
 structure of <code>A</code> and performs in this case a very efficient Gaussian
 elimination solve.
 
-<h3>The \( \theta \) Rule <a name="diffu:pde1:theta"></a></h3>
+<h3>The \( \theta \) rule <a name="diffu:pde1:theta"></a></h3>
 
 <p>
 The \( \theta \) rule provides a family of finite difference approximations
-in time. Applied to the 1D diffusion problem we have
+in time:
+
+<p>
+
+<ul>
+ <li> \( \theta=0 \) gives the Forward Euler scheme in time</li>
+ <li> \( \theta=1 \) gives the Backward Euler scheme in time</li>
+ <li> \( \theta=\half \) gives the Crank-Nicolson scheme in time</li>
+</ul>
+
+Applied to the 1D diffusion problem we have
 
 <p>
 $$ \frac{u^{n+1}_i-u^n_i}{\Delta t} =
 \alpha\left( \theta \frac{u^{n+1}_{i+1} - 2u^{n+1}_i + u^{n+1}_{i-1}}{\Delta x^2}
 + (1-\theta) \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2}\right)
-\thinspace .
+\tp
 $$
 
 This scheme also leads to a matrix system with entries \( 1+2C\theta \) on
@@ -823,10 +833,10 @@ The right-hand side entry \( b_i \) is
 
 <p>
 $$ b_i = u^n_{i} + C(1-\theta)
-\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2}\thinspace .
+\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2}\tp
 $$
 
-<h3>The Laplace and Poisson equation as the steady state limit  <a name="___sec6"></a></h3>
+<h3>The Laplace and Poisson equation  <a name="___sec6"></a></h3>
 
 <p>
 The Laplace equation, \( \nabla^2 u = 0 \), or the Poisson equation,
@@ -834,10 +844,16 @@ The Laplace equation, \( \nabla^2 u = 0 \), or the Poisson equation,
 engineering. We can solve 1D variants of the Laplace equations with the listed
 software, because we can interpret \( u_{xx}=0 \) as the limiting solution
 of \( u_t = \alpha u_{xx} \) when \( u \) reach a steady state limit where
-\( u_t=0 \). Technically in a program, we just take one large time step,
+\( u_t\rightarrow 0 \).
+Similarly, Poisson's equation \( -u_{xx}=f \) arises from solving
+\( u_t = u_{xx} + f \) and letting \( t\rightarrow \) so \( u_t\rightarrow 0 \).
+
+<p>
+Technically in a program, we can simulate \( t\rightarrow\infty \)
+by just taking one large time step,
 or equivalently, set \( \alpha \) to a large value. All we need is to have
 \( C \) large. As \( C\rightarrow\infty \), we can from the schemes see that
-we get
+the limiting discrete equation becomes
 
 <p>
 $$ \frac{u^{n+1}_{i+1} - 2u^{n+1}_i + u^{n+1}_{i-1}}{\Delta x^2} = 0,$$
@@ -856,12 +872,26 @@ pseudo time variable.
 <h3>Extensions  <a name="___sec7"></a></h3>
 
 <p>
+These extensions are performed exactly as for a wave equation as they
+only affect the spatial derivatives (which are the same as in the
+wave equation).
+
+<p>
 
 <ul>
  <li> Variable coefficients</li>
  <li> Neumann and Robin conditions</li>
  <li> 2D and 3D</li>
 </ul>
+
+Future versions of this document will for completeness and
+independence of the wave equation document feature info on the three
+points. The Robin condition is new, but straightforward to handle:
+
+<p>
+$$ -\dfc\frac{\partial u}{\partial n} = h_T(u-U_s),\quad
+[-\dfc D_x u = h_T(u-U_s)]^n_i
+$$
 
 <h2>Analysis of schemes for the diffusion equation  <a name="___sec8"></a></h2>
 <a name="diffu:pde1:analysis"></a>
@@ -876,18 +906,20 @@ by an equation like
 $$
 \begin{equation}
 u_t = \alpha u_{xx},
-\label{diffu:pde1:eq}
+\tag{15}
 \end{equation}
 $$
 
 is that the
 initial shape \( u(x,0)=I(x) \) spreads out in space with time,
 along with a decaying amplitude.
+Three different examples will illustrate the spreading of \( u \) in
+space and the decay in time.
 
 <h4>Similarity solution  <a name="___sec10"></a></h4>
 
 <p>
-The diffusion equation \eqref{diffu:pde1:eq} admits solutions
+The diffusion equation <a href="#mjx-eqn-15">(15)</a> admits solutions
 that depend on \( \eta = (x-c)/\sqrt{4\alpha t} \) for a given value
 of \( c \). One particular solution
 is
@@ -895,8 +927,8 @@ is
 <p>
 $$
 \begin{equation}
-u(x,t) = a\mbox{erf}(\eta) + b,
-\label{diffu:pdf1:erf:sol}
+u(x,t) = a\,\mbox{erf}(\eta) + b,
+\tag{16}
 \end{equation}
 $$
 
@@ -906,7 +938,7 @@ where
 $$
 \begin{equation}
 \mbox{erf}(\eta) = \frac{2}{\sqrt{\pi}}\int_0^\eta e^{-\zeta^2}d\zeta,
-\label{diffu:analysis:erf:def}
+\tag{17}
 \end{equation}
 $$
 
@@ -923,7 +955,7 @@ $$
 \mbox{erf}(0) &=0,\\
 \mbox{erf}(2) &=0.99532227,\\
 \mbox{erf}(3) &=0.99997791
-\thinspace .
+\tp
 \end{align*}
 $$
 
@@ -931,31 +963,32 @@ $$
 <p>
 As \( t\rightarrow 0 \), the error function approaches a step function centered
 at \( x=c \). For a diffusion problem posed on the unit interval \( [0,1] \),
-we may choose the step at \( x=1/2 \) (meaning \( c=1/2 \)), \( a=-1/2 \), \( b=1/2 \),
+we may choose the step at \( x=1/2 \) (meaning \( c=1/2 \)), \( a=-1/2 \), \( b=1/2 \).
+Then
 
 <p>
 $$
 \begin{equation}
-u(x,t) = \frac{1}{2}\left(1 -
-\mbox{erf}\left(\frac{x-\frac{1}{2}}{\sqrt{4\alpha t}}\right)\right) =
-\frac{1}{2}\mbox{erfc}\left(\frac{x-\frac{1}{2}}{\sqrt{4\alpha t}}\right),
-\label{diffu:analysis:pde1:step:erf:sol}
+u(x,t) = \half\left(1 -
+\mbox{erf}\left(\frac{x-\half}{\sqrt{4\alpha t}}\right)\right) =
+\half\mbox{erfc}\left(\frac{x-\half}{\sqrt{4\alpha t}}\right),
+\tag{18}
 \end{equation}
 $$
 
 where we have introduced the <em>complementary error function</em>
 \( \mbox{erfc}(\eta) = 1-\mbox{erf}(\eta) \).
-The solution \eqref{diffu:analysis:pde1:step:erf:sol}
+The solution <a href="#mjx-eqn-18">(18)</a>
 implies the boundary conditions
 
 <p>
 $$
 \begin{align}
-u(0,t) &= \frac{1}{2}\left(1 - \mbox{erf}\left(\frac{-1/2}{\sqrt{4\alpha t}}\right)\right),
-\label{diffu:analysis:pde1:p1:erf:uL} \\
-u(1,t) &= \frac{1}{2}\left(1 - \mbox{erf}\left(\frac{1/2}{\sqrt{4\alpha t}}\right)\right)
-\label{diffu:analysis:pde1:p1:erf:uR}
-\thinspace .
+u(0,t) &= \half\left(1 - \mbox{erf}\left(\frac{-1/2}{\sqrt{4\alpha t}}\right)\right),
+\tag{19} \\
+u(1,t) &= \half\left(1 - \mbox{erf}\left(\frac{1/2}{\sqrt{4\alpha t}}\right)\right)
+\tag{20}
+\tp
 \end{align}
 $$
 
@@ -971,18 +1004,18 @@ Gaussian function as solution:
 <p>
 $$
 \begin{equation}
-u(x,t) = \frac{1}{\sqrt{4\pi\alpha t}} e^{-\frac{(x-c)^2}{4\alpha t}}
-\label{diffu:pde1:sol:Gaussian}
-\thinspace .
+u(x,t) = \frac{1}{\sqrt{4\pi\alpha t}} \exp{\left({-\frac{(x-c)^2}{4\alpha t}}\right)}
+\tag{21}
+\tp
 \end{equation}
 $$
 
 At \( t=0 \) this is a Dirac delta function, so for computational
 purposes one must start to view the solution at some time \( t=t_\epsilon>0 \).
-Replacing \( t \) by \( t_\epsilon +t \) in \eqref{diffu:pde1:sol:Gaussian}
+Replacing \( t \) by \( t_\epsilon +t \) in <a href="#mjx-eqn-21">(21)</a>
 makes it easy to operate with a (new) \( t \) that starts at \( t=0 \)
 with an initial condition with a finite width.
-The important feature of \eqref{diffu:pde1:sol:Gaussian} is that
+The important feature of <a href="#mjx-eqn-21">(21)</a> is that
 the standard deviation \( \sigma \) of a sharp initial Gaussian pulse
 increases in time according to \( \sigma = \sqrt{2\alpha t} \), making
 the pulse diffuse and flatten out.
@@ -994,25 +1027,25 @@ the pulse diffuse and flatten out.
 <h4>Solution for a sine component  <a name="___sec12"></a></h4>
 
 <p>
-For example, \eqref{diffu:pde1:eq}
+For example, <a href="#mjx-eqn-15">(15)</a>
 admits a solution of the form
 
 <p>
 $$
 \begin{equation}
-u(x,t) = Qe^{-at}\sin\left( kx\right),
-\label{diffu:pde1:sol1}
-\thinspace  .
+u(x,t) = Qe^{-at}\sin\left( kx\right)
+\tag{22}
+\tp
 \end{equation}
 $$
 
 The parameters \( Q \) and \( k \) can be freely chosen, while
-inserting \eqref{diffu:pde1:sol1} in \eqref{diffu:pde1:eq} gives the constraint
+inserting <a href="#mjx-eqn-22">(22)</a> in <a href="#mjx-eqn-15">(15)</a> gives the constraint
 
 <p>
 $$
 \begin{equation*} a = -\alpha k^2
-\thinspace .
+\tp
 \end{equation*}
 $$
 
@@ -1025,8 +1058,7 @@ faster dampened than slow oscillations in space, corresponding to small
 \( k \). This feature leads to a smoothing of the initial condition with time.
 
 <p>
-The following examples illustrates the damping properties of the
-diffusion equation. We consider the problem
+The following examples illustrates the damping properties of <a href="#mjx-eqn-22">(22)</a>. We consider the specific problem
 
 <p>
 $$
@@ -1034,20 +1066,20 @@ $$
 u_t &= u_{xx},\quad x\in (0,1),\ t\in (0,T],\\
 u(0,t) &= u(1,t) = 0,\quad t\in (0,T],\\
 u(x,0) & = \sin (\pi x) + 0.1\sin(100\pi x)
-\thinspace .
+\tp
 \end{align*}
 $$
 
 The initial condition has been chosen such that adding
-two solutions like \eqref{diffu:pde1:sol1} constructs
+two solutions like <a href="#mjx-eqn-22">(22)</a> constructs
 an analytical solution to the problem:
 
 <p>
 $$
 \begin{equation}
 u(x,t) = e^{-\pi^2 t}\sin (\pi x) + 0.1e^{-\pi^2 10^4 t}\sin (100\pi x)
-\label{diffu:pde1:sol2}
-\thinspace .
+\tag{23}
+\tp
 \end{equation}
 $$
 
@@ -1056,7 +1088,7 @@ rapid oscillations \( \sin (100\pi x) \) and the very much slower damping of the
 slowly varying \( \sin (\pi x) \) term. After about \( t=0.5\cdot10^{-4} \) the rapid
 oscillations do not have a visible amplitude, while we have to wait
 until \( t\sim 0.5 \) before the amplitude of the long wave \( \sin (\pi x) \)
-becomes invisible.
+becomes very small.
 
 <p>
 <center> <!-- figure -->
@@ -1068,18 +1100,63 @@ becomes invisible.
 <p>
 <!-- x/sqrt(t) solution, kernel with integral -->
 
+<h3>Analysis of discrete equations  <a name="___sec13"></a></h3>
+
 <p>
-The relevance of studying the behavior of a particular solution of the form
-\eqref{diffu:pde1:sol1} is related to a Fourier representation of
-the solution. We first express the initial condition as a Fourier series
+A counterpart to <a href="#mjx-eqn-22">(22)</a> is the complex representation
+of the same function:
+
+<p>
+$$ u(x,t) = Qe^{-at}e^{ikx},$$
+
+where \( i=\sqrt{-1} \) is the imaginary unit.
+We can add such functions, often referred to as wave components,
+to make a Fourier representation
+of a general solution of the diffusion equation:
 
 <p>
 $$
 \begin{equation}
-I(x) \approx \sum_{k\in K} b_k e^{ikx},
+u(x,t) \approx \sum_{k\in K} b_k e^{-\alpha k^2t}e^{ikx},
+\tag{24}
 \end{equation}
 $$
 
+where \( K \) is a set of an infinite number of \( k \) values needed to construct
+the solution. In practice, however, the series is truncated and
+\( K \) is a finite set of \( k \) values
+need build a good approximate solution.
+Note that <a href="#mjx-eqn-23">(23)</a> is a special case of
+<a href="#mjx-eqn-24">(24)</a> where \( K=\{\pi, 100\pi\} \), \( b_{\pi}=1 \),
+and \( b_{100\pi}=0.1 \).
+
+<p>
+The amplitudes \( b_k \) of the individual Fourier waves must be determined
+from the initial condition. At \( t=0 \) we have \( u\approx\sum_kb_k\exp{(ikx)} \)
+and find \( K \) and \( b_k \) such that
+
+<p>
+$$
+\begin{equation}
+I(x) \approx \sum_{k\in K} b_k e^{ikx}\tp
+\end{equation}
+$$
+
+(The relevant formulas for \( b_k \) come from Fourier analysis, or
+equivalently, a least-squares method for approximating \( I(x) \)
+in a function space with basis \( \exp{(ikx)} \).)
+
+<p>
+Much insight about the behavior of numerical methods can be obtained
+by investigating how a wave component \( \exp{(-\alpha k^2 t)}\exp{(ikx)} \)
+is treated by the numerical scheme. It appears that such wave
+components are also solutions of the schemes, but the damping
+factor \( \exp{(-\alpha k^2 t)} \) varies among the schemes.
+To ease the forthcoming algebra, we write the amplification factor
+as \( A^n \). The exact damping factor is \( \Aex = \exp{(-\alpha k^2\Delta t)} \).
+
+<p>
+[[[[
 where \( i=\sqrt{-1} \) and \( K \) is a set of \( k \) values needed to build
 \( I(x) \) with sufficient accuracy from basic sinusoidal components
 \( e^{ikx} \).  Instead of using a specific sine or cosine function for
@@ -1087,25 +1164,6 @@ the spatial variation, we use a complex exponential function to ease
 the hand calculations later.  Letting \( K \) contain infinitely many \( k \)
 values makes the sum converge to \( I(x) \) under reasonable assumptions
 on the smoothness of \( I(x) \).
-
-<p>
-The corresponding
-solution \( u \) can now be expressed as
-
-<p>
-$$
-\begin{equation}
-u(x,t) \approx \sum_{k\in K} b_k e^{-\alpha k^2t}e^{ikx},
-\label{diffu:pde1:u:Fourier}
-\thinspace .
-\end{equation}
-$$
-
-
-<p>
-Note that \eqref{diffu:pde1:sol2} is a special case of
-\eqref{diffu:pde1:u:Fourier} where \( K=\{\pi, 100\pi\} \), \( b_{\pi}=1 \),
-and \( b_{100\pi}=0.1 \).
 
 <h3>Analysis of the finite difference schemes <a name="diffu:pde1:analysis"></a></h3>
 
@@ -1115,7 +1173,7 @@ can be built as a linear combination of basic components
 
 <p>
 $$
-\begin{equation*} e^{-\alpha k^2t}e^{ikx} \thinspace . \end{equation*}
+\begin{equation*} e^{-\alpha k^2t}e^{ikx} \tp  \end{equation*}
 $$
 
 A fundamental question is whether such components are also solutions of
@@ -1128,13 +1186,13 @@ We therefore look for numerical solutions of the form
 $$
 \begin{equation}
 u^n_q = A^n e^{ikq\Delta x} = A^ne^{ikx},
-\label{diffu:pde1:analysis:uni}
+\tag{25}
 \end{equation}
 $$
 
 where \( A \) must be determined by inserting the component into an actual scheme.
 
-<h4>Stability  <a name="___sec14"></a></h4>
+<h4>Stability  <a name="___sec15"></a></h4>
 
 <p>
 The exact wave component decays according to \( \exp{(-\alpha k^2t)} \).
@@ -1144,11 +1202,11 @@ solution as well. However, if
 time level, and we get stable, non-physical oscillations in the numerical
 solutions that are not present in the exact solution.
 
-<h4>Accuracy  <a name="___sec15"></a></h4>
+<h4>Accuracy  <a name="___sec16"></a></h4>
 
 <p>
 To determine how accurately a finite difference scheme treats one
-wave component \eqref{diffu:pde1:analysis:uni}, we see that the basic
+wave component <a href="#mjx-eqn-25">(25)</a>, we see that the basic
 deviation from the exact solution is reflected in how well
 \( A^n \) approximates \( \exp{(-\alpha k^2t)}=\exp{(-\alpha k^2 n\Delta t)} \),
 or how well the numerical amplification factor
@@ -1170,10 +1228,10 @@ be written as
 
 <p>
 $$
-\begin{equation*} [D_t^+ u = \alpha D_xD_x u]^n_q\thinspace . \end{equation*}
+\begin{equation*} [D_t^+ u = \alpha D_xD_x u]^n_q\tp  \end{equation*}
 $$
 
-Inserting a wave component \eqref{diffu:pde1:analysis:uni}
+Inserting a wave component <a href="#mjx-eqn-25">(25)</a>
 in the scheme demands calculating the terms
 
 <p>
@@ -1184,7 +1242,7 @@ and
 <p>
 $$ A^nD_xD_x [e^{ikx}]_q = A^n\left( - e^{ikq\Delta x}\frac{4}{\Delta x^2}
 \sin^2\left(\frac{k\Delta x}{2}\right)\right)
-\thinspace . $$
+\tp  $$
 
 Inserting these terms in the discrete equation and
 dividing by \( A^n e^{ikq\Delta x} \) leads to
@@ -1213,7 +1271,7 @@ where \( C \) is a constant introduced for convenience:
 $$
 \begin{equation}
 C = \frac{\alpha\Delta t}{\Delta x^2}
-\thinspace .
+\tp
 \end{equation}
 $$
 
@@ -1224,11 +1282,11 @@ $$
 \begin{equation}
 u^n_q = \left(1 -4C\sin^2\left(
 \frac{k\Delta x}{2}\right)\right)^ne^{ikq\Delta x}
-\thinspace .
+\tp
 \end{equation}
 $$
 
-<h4>Stability  <a name="___sec17"></a></h4>
+<h4>Stability  <a name="___sec18"></a></h4>
 
 <p>
 We easily see that \( A\leq 1 \). However, the \( A \) can be less than \( -1 \),
@@ -1237,7 +1295,7 @@ to growth of a numerical wave component. The criterion \( A\geq -1 \) implies
 
 <p>
 $$ 4C\sin^2 (p/2)\leq 2
-\thinspace . $$
+\tp  $$
 
 The worst case is when \( \sin^2 (p/2)=1 \), so a sufficient criterion for
 stability is
@@ -1245,7 +1303,7 @@ stability is
 <p>
 $$
 \begin{equation}
-C\leq \frac{1}{2},
+C\leq {\half},
 \end{equation}
 $$
 
@@ -1254,26 +1312,26 @@ or expressed as a condition on \( \Delta t \):
 <p>
 $$
 \begin{equation}
-\Delta t\leq \frac{\Delta x^2}{2\alpha}\thinspace .
+\Delta t\leq \frac{\Delta x^2}{2\alpha}\tp
 \end{equation}
 $$
 
-Note that halving the spatial mesh size, \( \Delta x \rightarrow \frac{1}{2}
+Note that halving the spatial mesh size, \( \Delta x \rightarrow {\half}
 \Delta x \), requires \( \Delta t \) to be reduced by a factor of \( 1/4 \).
 The method hence becomes very expensive for fine spatial meshes.
 
 <p>
 <!-- 2DO: verification based on exact solutions -->
 
-<h4>Accuracy  <a name="___sec18"></a></h4>
+<h4>Accuracy  <a name="___sec19"></a></h4>
 
 <p>
 Since \( A \) is expressed in terms of \( C \) and the parameter we now call
-\( p=k\Delta x \), we also express \( \Aex \) by \( C \) and \( p \):
+\( p=k\Delta x/2 \), we also express \( \Aex \) by \( C \) and \( p \):
 
 <p>
-$$ \Aex = \exp{(-\alpha k^2\Delta t)} = \exp{(-Cp^2)}
-\thinspace .$$
+$$ \Aex = \exp{(-\alpha k^2\Delta t)} = \exp{(-4Cp^2)}
+\tp $$
 
 Computing
 the Taylor series expansion of \( A/\Aex \) in terms of \( C \)
@@ -1286,7 +1344,7 @@ can easily be done with aid of <code>sympy</code>:
     <span style="color: #8B008B; font-weight: bold">return</span> exp(-C*p**<span style="color: #B452CD">2</span>)
 
 <span style="color: #8B008B; font-weight: bold">def</span> <span style="color: #008b45">A_FE</span>(C, p):
-    <span style="color: #8B008B; font-weight: bold">return</span> <span style="color: #B452CD">1</span> - <span style="color: #B452CD">4</span>*C*sin(p/<span style="color: #B452CD">2</span>)**<span style="color: #B452CD">2</span>
+    <span style="color: #8B008B; font-weight: bold">return</span> <span style="color: #B452CD">1</span> - <span style="color: #B452CD">4</span>*C*sin(p)**<span style="color: #B452CD">2</span>
 
 <span style="color: #8B008B; font-weight: bold">from</span> <span style="color: #008b45; text-decoration: underline">sympy</span> <span style="color: #8B008B; font-weight: bold">import</span> *
 C, p = symbols(<span style="color: #CD5555">&#39;C p&#39;</span>)
@@ -1297,18 +1355,18 @@ A_err_FE = A_FE(C, p)/A_exact(C, p)
 The result is
 
 <p>
-$$ \frac{A}{\Aex} = 1 - 4 C \sin^{2}(p/2) + C p^{2} - 4 C^{2} p^{2} \sin^{2}(p/2) + \frac{1}{2} C^{2} p^{4} + \cdots
+$$ \frac{A}{\Aex} = 1 - 4 C \sin^{2}p + 2C p^{2} - 16C^{2} p^{2} \sin^{2}p + 8 C^{2} p^{4} + \cdots
 $$
 
-Recalling that \( C=\alpha\Delta t/\Delta x \), \( p=k\Delta x \), and that
-\( \sin^2(p/2)\leq 1 \), we
+Recalling that \( C=\alpha\Delta t/\Delta x \), \( p=k\Delta x/2 \), and that
+\( \sin^2p\leq 1 \), we
 realize that the dominating error terms are at most
 
 <p>
 $$ 1 - 4\alpha \frac{\Delta t}{\Delta x^2} +
 \alpha\Delta t - 4\alpha^2\Delta t^2
 + \alpha^2 \Delta t^2\Delta x^2 + \cdots
-\thinspace .
+\tp
 $$
 
 <h3>Analysis of the Backward Euler scheme <a name="diffu:pde1:analysis:BE"></a></h3>
@@ -1321,7 +1379,7 @@ $$
 \begin{equation*} [D_t^- u = \alpha D_xD_x u]^n_q,\end{equation*}
 $$
 
-and inserting a wave component \eqref{diffu:pde1:analysis:uni},
+and inserting a wave component <a href="#mjx-eqn-25">(25)</a>,
 leads to calculations similar to those arising from the Forward Euler scheme,
 but since
 
@@ -1343,9 +1401,9 @@ and then
 <p>
 $$
 \begin{equation}
-A = \left(1  + 4C\sin^2(p/2)\right)^{-1}
-\label{diffu:pde1:analysis:BE:A}
-\thinspace .
+A = \left(1  + 4C\sin^2p\right)^{-1}
+\tag{26}
+\tp
 \end{equation}
 $$
 
@@ -1354,15 +1412,15 @@ The complete numerical solution can be written
 <p>
 $$
 \begin{equation}
-u^n_q = \left(1  + 4C\sin^2 (p/2)\right)^{-n}
-e^{ikq\Delta x} \thinspace .
+u^n_q = \left(1  + 4C\sin^2 p\right)^{-n}
+e^{ikq\Delta x} \tp
 \end{equation}
 $$
 
-<h4>Stability  <a name="___sec20"></a></h4>
+<h4>Stability  <a name="___sec21"></a></h4>
 
 <p>
-We see from \eqref{diffu:pde1:analysis:BE:A} that \( 0<A<1 \), which means
+We see from <a href="#mjx-eqn-26">(26)</a> that \( 0<A<1 \), which means
 that all numerical wave components are stable and non-oscillatory
 for any \( \Delta t >0 \).
 
@@ -1379,17 +1437,17 @@ or
 <p>
 $$ [D_t u]^{n+\half}_q = \half\alpha\left( [D_xD_x u]^{n}_q +
 [D_xD_x u]^{n+1}_q\right)
-\thinspace .
+\tp
 $$
 
-Inserting \eqref{diffu:pde1:analysis:uni} in the time derivative approximation
+Inserting <a href="#mjx-eqn-25">(25)</a> in the time derivative approximation
 leads to
 
 <p>
 $$ [D_t A^n e^{ikq\Delta x}]^{n+\half} = A^{n+\half} e^{ikq\Delta x}\frac{A^{\half}-A^{-\half}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t}
-\thinspace .$$
+\tp $$
 
-Inserting \eqref{diffu:pde1:analysis:uni} in the other terms
+Inserting <a href="#mjx-eqn-25">(25)</a> in the other terms
 and dividing by
 \( A^ne^{ikq\Delta x} \) gives the relation
 
@@ -1405,8 +1463,8 @@ and after some more algebra,
 <p>
 $$
 \begin{equation}
-A = \frac{ 1 - 2C\sin^2(p/2)}{1 + 2C\sin^2(p/2)}
-\thinspace .
+A = \frac{ 1 - 2C\sin^2p}{1 + 2C\sin^2p}
+\tp
 \end{equation}
 $$
 
@@ -1415,20 +1473,20 @@ The exact numerical solution is hence
 <p>
 $$
 \begin{equation}
-u^n_q = \left(\frac{ 1 - 2C\sin^2(p/2)}{1 + 2C\sin^2(p/2)}\right)^ne^{ikp\Delta x}
-\thinspace .
+u^n_q = \left(\frac{ 1 - 2C\sin^2p}{1 + 2C\sin^2p}\right)^ne^{ikp\Delta x}
+\tp
 \end{equation}
 $$
 
-<h4>Stability  <a name="___sec22"></a></h4>
+<h4>Stability  <a name="___sec23"></a></h4>
 
 <p>
 The criteria \( A>-1 \) and \( A<1 \) are fulfilled for any \( \Delta t >0 \).
 
-<h3>Summary of accuracy of amplification factors  <a name="___sec23"></a></h3>
+<h3>Summary of accuracy of amplification factors  <a name="___sec24"></a></h3>
 
 <p>
-We can plot the various amplification factors against \( p=k\Delta x \) for
+We can plot the various amplification factors against \( p=k\Delta x/2 \) for
 different choices of the \( C \) parameter. Figures <a href="#diffu:pde1:fig:A:err:C20">2</a>,
 <a href="#diffu:pde1:fig:A:err:C0.5">3</a>, and <a href="#diffu:pde1:fig:A:err:C0.1">4</a>
 show how long and small waves are damped by the various schemes compared
@@ -1468,9 +1526,9 @@ These waves will manifest themselves as high frequency
 oscillatory noise in the solution.
 
 <p>
-A value \( p=\pi/2 \) corresponds to
+A value \( p=\pi/4 \) corresponds to
 four mesh points per wave length of \( e^{ikx} \), while
-\( p=\pi \) implies only two points per wave length, which is the smallest number
+\( p=\pi/2 \) implies only two points per wave length, which is the smallest number
 of points we can have to represent the wave on the mesh.
 
 <p>
@@ -1485,10 +1543,10 @@ Run \( C=... \)...
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 1: Use an analytical solution to formulate a 1D test  <a name="___sec24"></a></h3>
+<h3>Exercise 1: Use an analytical solution to formulate a 1D test  <a name="___sec25"></a></h3>
 
 <p>
-This exercise explores the exact solution \eqref{diffu:pde1:sol:Gaussian}.
+This exercise explores the exact solution <a href="#mjx-eqn-21">(21)</a>.
 We shall formulate a diffusion problem in half of the domain for
 half of the Gaussian pulse. Then we shall investigate the
 impact of using an incorrect boundary condition, which we in
@@ -1497,7 +1555,7 @@ through finite boundaries undisturbed.
 
 <p>
 <b>a)</b>
-The solution \eqref{diffu:pde1:sol:Gaussian} is seen to be symmetric
+The solution <a href="#mjx-eqn-21">(21)</a> is seen to be symmetric
 at \( x=c \), because \( \partial u/\partial x =0 \) always vanishes for
 \( x=c \). Use this property to formulate a complete initial boundary
 value problem in 1D involving the diffusion equation \( u_t=\alpha u_{xx} \)
@@ -1527,7 +1585,7 @@ Animate the evolution of the error and make a curve plot of
 the error measure
 
 <p>
-$$ E(t)=\sqrt{\frac{\int_0^L e^2dx}{\int_0^L udx}}\thinspace .$$
+$$ E(t)=\sqrt{\frac{\int_0^L e^2dx}{\int_0^L udx}}\tp $$
 
 Is this a suitable error measure for the present problem?
 
@@ -1548,7 +1606,7 @@ $$ \frac{d}{dt}\int_{0}^L u(x,t)dx = 0,$$
 implying that \( \int_0^Ludx \) must be constant in time, and therefore
 
 <p>
-$$ \int_{0}^L u(x,t)dx = \int_{0}^LI(x)dx\thinspace .$$
+$$ \int_{0}^L u(x,t)dx = \int_{0}^LI(x)dx\tp $$
 
 The integral of the initial pulse is 1.
 
@@ -1561,7 +1619,7 @@ is to use a cooling law
 $$
 \begin{equation}
 -\alpha u_x = q(u - u_S),
-\label{diffu:pde1:Gaussian:xL:cooling}
+\tag{27}
 \end{equation}
 $$
 
@@ -1571,11 +1629,11 @@ the surrounding temperature in the medium outside of \( [0,L] \).
 the \( u_x=0 \) condition from the previous subexercise that is
 qualitatively wrong for large \( t \).)
 Develop a diffusion problem for the error in the solution using
-\eqref{diffu:pde1:Gaussian:xL:cooling} as boundary condition.
+<a href="#mjx-eqn-27">(27)</a> as boundary condition.
 Assume one can take \( u_S=0 \) "outside the domain"
 as \( u\rightarrow 0 \) for \( x\rightarrow\infty \).
 Find a function \( q=q(t) \) such that the exact solution
-obeys the condition \eqref{diffu:pde1:Gaussian:xL:cooling}.
+obeys the condition <a href="#mjx-eqn-27">(27)</a>.
 Test some constant values of \( q \) and animate how the corresponding
 error function behaves. Also compute \( E(t) \) curves as suggested in
 subexercise b).
@@ -1589,10 +1647,10 @@ Filename: <code>diffu_symmetric_gaussian.py</code>.
 <p>
 <!-- --- begin exercise --- -->
 
-<h3>Exercise 2: Use an analytical solution to formulate a 2D test  <a name="___sec25"></a></h3>
+<h3>Exercise 2: Use an analytical solution to formulate a 2D test  <a name="___sec26"></a></h3>
 
 <p>
-Generalize \eqref{diffu:pde1:sol:Gaussian} to multi dimensions by
+Generalize <a href="#mjx-eqn-21">(21)</a> to multi dimensions by
 assuming that one-dimensional solutions can be multiplied to solve
 \( u_t = \alpha\nabla^2 u \).
 Use this solution to formulate a 2D test case where the peak of

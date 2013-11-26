@@ -95,7 +95,7 @@ def plot_u(u, x, t, n):
     plot(x, u, 'r-', axis=[0, L, umin, umax], title='t=%f' % t[n])
 
     # Pause the animation initially, otherwise 0.2 s between frames
-    if t[n] == 0:
+    if n == 0:
         time.sleep(2)
     else:
         time.sleep(0.2)
