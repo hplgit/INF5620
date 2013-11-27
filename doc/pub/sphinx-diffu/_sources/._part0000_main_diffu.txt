@@ -5,7 +5,7 @@ Finite difference methods for diffusion processes
 =================================================
 
 :Author: Hans Petter Langtangen
-:Date: Nov 26, 2013
+:Date: Nov 27, 2013
 
 Note: **VERY PRELIMINARY VERSION**
 
@@ -1019,17 +1019,9 @@ by investigating how a wave component :math:`\exp{(-\alpha k^2 t)}\exp{(ikx)}`
 is treated by the numerical scheme. It appears that such wave
 components are also solutions of the schemes, but the damping
 factor :math:`\exp{(-\alpha k^2 t)}` varies among the schemes.
-To ease the forthcoming algebra, we write the amplification factor
-as :math:`A^n`. The exact damping factor is :math:`{A_{\small\mbox{e}}} = \exp{(-\alpha k^2\Delta t)}`.
-
-[[[[
-where :math:`i=\sqrt{-1}` and :math:`K` is a set of :math:`k` values needed to build
-:math:`I(x)` with sufficient accuracy from basic sinusoidal components
-:math:`e^{ikx}`.  Instead of using a specific sine or cosine function for
-the spatial variation, we use a complex exponential function to ease
-the hand calculations later.  Letting :math:`K` contain infinitely many :math:`k`
-values makes the sum converge to :math:`I(x)` under reasonable assumptions
-on the smoothness of :math:`I(x)`.
+To ease the forthcoming algebra, we write the damping factor
+as :math:`A^n`. The exact amplification factor corresponding to :math:`A`
+is :math:`{A_{\small\mbox{e}}} = \exp{(-\alpha k^2\Delta t)}`.
 
 
 .. _diffu:pde1:analysis:
@@ -1060,14 +1052,15 @@ We therefore look for numerical solutions of the form
         
         
 
-where :math:`A` must be determined by inserting the component into an actual scheme.
+where the amplification factor :math:`A`
+must be determined by inserting the component into an actual scheme.
 
 Stability  (1)
 ~~~~~~~~~~~~~~
 
-The exact wave component decays according to :math:`\exp{(-\alpha k^2t)}`.
+The exact amplification factor is :math:`{A_{\small\mbox{e}}}=\exp{(-\alpha^2 k^2\Delta t)}`.
 We should therefore require :math:`|A| < 1` to have a decaying numerical
-solution as well. However, if
+solution as well. If
 :math:`-1\leq A<0`, :math:`A^n` will change sign from time level to
 time level, and we get stable, non-physical oscillations in the numerical
 solutions that are not present in the exact solution.
@@ -1082,10 +1075,8 @@ Accuracy  (1)
 To determine how accurately a finite difference scheme treats one
 wave component :eq:`diffu:pde1:analysis:uni`, we see that the basic
 deviation from the exact solution is reflected in how well
-:math:`A^n` approximates :math:`\exp{(-\alpha k^2t)}=\exp{(-\alpha k^2 n\Delta t)}`,
-or how well the numerical amplification factor
-:math:`A` approximates the exact amplification factor
-:math:`{A_{\small\mbox{e}}} = \exp{(-\alpha k^2 \Delta t)}`.
+:math:`A^n` approximates :math:`{A_{\small\mbox{e}}}^n`,
+or how well :math:`A` approximates :math:`{A_{\small\mbox{e}}}`.
 
 .. We shall in particular investigate the error :math:`{A_{\small\mbox{e}}} - A` in the
 
@@ -1144,7 +1135,7 @@ and consequently
         \frac{k\Delta x}{2}\right),
         
 
-where :math:`C` is a constant introduced for convenience:
+where
 
 
 .. math::
@@ -1219,7 +1210,7 @@ can easily be done with aid of ``sympy``:
 .. code-block:: python
 
         def A_exact(C, p):
-            return exp(-C*p**2)
+            return exp(-4*C*p**2)
         
         def A_FE(C, p):
             return 1 - 4*C*sin(p)**2
