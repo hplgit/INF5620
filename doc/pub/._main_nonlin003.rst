@@ -1,0 +1,1002 @@
+.. !split
+
+.. _nonlin:alglevel:1D:
+
+Discretization of nonlinear differential equations
+==================================================
+
+the section :ref:`nonlin:pdelevel` presents methods for linearizing
+time-discrete PDEs directly prior to discretization in space.  We can
+alternatively carry out the discretization in space and of the
+time-discrete nonlinear PDE problem and get a system of nonlinear
+algebraic equations, which can be solved by Picard iteration or
+Newton's method as presented in the section :ref:`nonlin:systems:alg`.
+This latter approach will now be described in detail.
+
+We shall work with the 1D problem
+
+
+.. _Eq:nonlin:alglevel:1D:pde:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde
+        
+        -({\alpha}(u)u')' + au = f(u),\quad x\in (0,L),
+        \quad {\alpha}(u(0))u'(0) = C,\ u(L)=0
+        {\thinspace .}
+        
+        
+
+This problem is of the same nature as those arising from implicit
+time integration of a nonlinear diffusion PDE as outlined in
+the section :ref:`nonlin:pdelevel:Picard` (set :math:`a=1/\Delta t` and let
+:math:`f(u)` incorporate the nonlinear source term as well as
+known terms with the time-dependent unknown function at the previous
+time level).
+
+.. _nonlin:alglevel:1D:fd:
+
+Finite difference discretizations
+---------------------------------
+
+Discretization
+~~~~~~~~~~~~~~
+
+The nonlinearity in
+the differential equation :eq:`nonlin:alglevel:1D:pde` poses no more
+difficulty than a variable coefficient, as in :math:`({\alpha}(x)u')'`.
+We can therefore use a standard approach to discretizing the Laplace
+term with a variable coefficient:
+
+
+.. math::
+         [-D_x{\alpha} D_x u +au = f]_i{\thinspace .}
+
+Writing this out for a uniform mesh with points :math:`x_i=i\Delta x`,
+:math:`i=0,\ldots,N_x`, leads to
+
+
+.. _Eq:nonlin:alglevel:1D:fd:deq0:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:deq0
+        
+        -\frac{1}{\Delta x^2}
+        \left({\alpha}_{i+\frac{1}{2}}(u_{i+1}-u_i) -
+        {\alpha}_{i-\frac{1}{2}}(u_{i}-u_{i-1})\right)
+        + au_i = f(u_i){\thinspace .}
+        
+        
+
+This equation is valid at all the mesh points :math:`i=0,1,\ldots,N_x-1`.
+At :math:`i=N_x` we have the Dirichlet condition :math:`u_i=0`.
+The only difference from the case with :math:`({\alpha}(x)u')'` and :math:`f(x)` is that
+now :math:`{\alpha}` and :math:`f` are functions of :math:`u` and not only on :math:`x`:
+:math:`({\alpha}(u(x))u')'` and :math:`f(u(x))`.
+
+The quantity :math:`{\alpha}_{i+\frac{1}{2}}`, evaluated between two mesh points,
+needs a comment. Since :math:`{\alpha}` depends on :math:`u` and :math:`u` is only known
+at the mesh points, we need to express :math:`{\alpha}_{i+\frac{1}{2}}` in
+terms of :math:`u_i` and :math:`u_{i+1}`. For this purpose we use an arithmetic
+mean, although a harmonic mean is also common in this context if
+:math:`{\alpha}` features large jumps.
+There are two choices of arithmetic means:
+
+
+.. _Eq:nonlin:alglevel:1D:fd:dfc:mean:u:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:dfc:mean:u
+        
+        {\alpha}_{i+\frac{1}{2}} \approx
+        {\alpha}(\frac{1}{2}(u_i + u_{i+1}) =
+        [{\alpha}(\overline{u}^x)]^{i+\frac{1}{2}},
+        
+        
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fd:dfc:mean:dfc:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:dfc:mean:dfc
+          
+        {\alpha}_{i+\frac{1}{2}} \approx
+        \frac{1}{2}({\alpha}(u_i) + {\alpha}(u_{i+1})) = [\overline{{\alpha}(u)}^x]^{i+\frac{1}{2}}
+        
+        
+
+Equation :eq:`nonlin:alglevel:1D:fd:deq0` with
+the latter approximation then looks like
+
+
+.. math::
+        
+        -\frac{1}{2\Delta x^2}
+        \left(({\alpha}(u_i)+{\alpha}(u_{i+1}))(u_{i+1}-u_i) -
+        ({\alpha}(u_{i-1})+{\alpha}(u_{i}))(u_{i}-u_{i-1})\right)\nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fd:deq:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:deq
+          
+        \qquad\qquad + au_i = f(u_i),
+        
+        
+
+or written more compactly,
+
+
+.. math::
+         [-D_x\overline{{\alpha}}^x D_x u +au = f]_i{\thinspace .}
+
+
+At mesh point :math:`i=0` we have the boundary condition :math:`{\alpha}(u)u'=C`,
+which is discretized by
+
+
+.. math::
+         [{\alpha}(u)D_{2x}u = C]_0,
+
+meaning
+
+
+.. _Eq:nonlin:alglevel:1D:fd:Neumann:x0:
+
+.. math::
+   :label: nonlin:alglevel:1D:fd:Neumann:x0
+        
+        {\alpha}(u_0)\frac{u_{1} - u_{-1}}{2\Delta x} = C{\thinspace .}
+        
+        
+
+The fictitious value :math:`u_{-1}` can be eliminated with the aid
+of :eq:`nonlin:alglevel:1D:fd:deq` for :math:`i=0`.
+Formally, :eq:`nonlin:alglevel:1D:fd:deq` should be solved with
+respect to :math:`u_{i-1}` and that value (for :math:`i=0`) should be inserted in
+:eq:`nonlin:alglevel:1D:fd:Neumann:x0`, but it is algebraically
+much easier to do it the other way around. Alternatively, one can
+use a ghost cell :math:`[-\Delta x,0]` and update the :math:`u_{-1}` value
+in the ghost cell according to :eq:`nonlin:alglevel:1D:fd:Neumann:x0`
+after every Picard or Newton iteration. Such an approach means that
+we use a known :math:`u_{-1}` value in :eq:`nonlin:alglevel:1D:fd:deq`
+from the previous iteration.
+
+Solution of algebraic equations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The nonlinear algebraic equations :eq:`nonlin:alglevel:1D:fd:deq` are
+of the form :math:`A(u)u = b(u)` with
+
+
+.. math::
+        
+        A_{i,i} &= \frac{1}{2\Delta x^2}(-{\alpha}(u_{i-1}) + 2{\alpha}(u_{i})
+        -{\alpha}(u_{i+1})) + a,\\ 
+        A_{i,i-1} &= -\frac{1}{2\Delta x^2}({\alpha}(u_{i-1}) + {\alpha}(u_{i})),\\ 
+        A_{i,i+1} &= -\frac{1}{2\Delta x^2}({\alpha}(u_{i}) + {\alpha}(u_{i+1})),\\ 
+        b_i &= f(u_i){\thinspace .}
+        
+
+The matrix :math:`A(u)` is tridiagonal: :math:`A_{i,j}=0` for :math:`j>1+1` and :math:`j<i-1`.
+The obvious Picard iteration scheme is to use previously computed
+values of :math:`u_i` in :math:`A(u)` and :math:`b(u)`, as described more in detail in
+the section :ref:`nonlin:systems:alg`.
+
+Newton's method requires computation of the Jacobian. Here it means
+that we need to differentiate :math:`F(u)=A(u)u - b(u)` with respect to
+:math:`u_0,u_1,\ldots,u_{N_x-1}`. Nonlinear equation number :math:`i` has
+the structure
+
+
+.. math::
+         F_i = A_{i,i-1}(u_{i-1},u_i)u_{i-1} +
+        A_{i,i}(u_{i-1},u_i,u_{i+1})u_i +
+        A_{i,i+1}(u_i, u_{i+1})u_{i+1} - b_i(u_i){\thinspace .}
+
+The Jacobian becomes
+
+
+.. math::
+        
+        J_{i,i} &= \frac{\partial F_i}{\partial u_i}
+        = \frac{\partial A_{i,i-1}}{\partial u_i}u_{i-1}
+        + \frac{\partial A_{i,i}}{\partial u_i}u_i
+        - \frac{\partial b_i}{\partial u_i}
+        + A_{i,i}
+        + \frac{\partial A_{i,i+1}}{\partial u_i}u_{i+1}
+        - \frac{\partial b_i}{\partial u_{i}}\\ 
+        &=
+        \frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_i)u_{i-1}
+        +2{\alpha}'(u_i)u_{i}
+        +(-{\alpha}(u_{i-1}) + 2{\alpha}(u_i) - {\alpha}(u_{i+1}))) +\\ 
+        &\quad a
+        -\frac{1}{2\Delta x^2}{\alpha}'(u_{i})u_{i+1})
+        - b'(u_i),\\ 
+        J_{i,i-1} &= \frac{\partial F_i}{\partial u_{i-1}}
+        = \frac{\partial A_{i,i-1}}{\partial u_{i-1}}u_{i-1}
+        + A_{i-1,i}
+        + \frac{\partial A_{i,i}}{\partial u_{i-1}}u_i
+        - \frac{\partial b_i}{\partial u_{i-1}}\\ 
+        &=
+        \frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_{i-1})u_{i-1} - ({\alpha}(u_{i-1}) + {\alpha}(u_i))
+        + {\alpha}'(u_{i-1})u_i),\\ 
+        J_{i,i+1} &= \frac{\partial A_{i,i+1}}{\partial u_{i-1}}u_{i+1}
+        + A_{i+1,i} +
+        \frac{\partial A_{i,i}}{\partial u_{i+1}}u_i
+        - \frac{\partial b_i}{\partial u_{i+1}}\\ 
+        &=\frac{1}{2\Delta x^2}(
+        -{\alpha}'(u_{i+1})u_{i+1} - ({\alpha}(u_{i}) + {\alpha}(u_{i+1}))
+        + {\alpha}'(u_{i+1})u_i){\thinspace .}
+        {\thinspace .}
+        
+
+The explicit expression for nonlinear equation number :math:`i`,
+:math:`F_i(u_0,u_1,\ldots)`, arises from moving all terms in
+:eq:`nonlin:alglevel:1D:fd:deq` to the left-hand side. Then we have
+:math:`J_{i,j}` and :math:`F_i` (modulo the boundary conditions) and can implement
+Newton's method.
+
+We have seen, and can see from the present example, that the
+linear system in Newton's method contains all the terms present
+in the system that arises in the Picard iteration method.
+The extra terms in Newton's method can be multiplied by a factor
+such that it is easy to program one linear system and set this
+factor to 0 or 1 to generate the Picard or Newton system.
+
+.. Remark: Neumann cond at x=L and Dirichlet at x=0 leads to different
+
+.. numbering of unknowns and u at mesh points. Must address this
+
+.. in a remark and treat it properly in diffu.
+
+
+
+
+.. _nonlin:alglevel:1D:fe:
+
+Finite element discretizations
+------------------------------
+
+For the finite element discretization we first need to derive the
+variational problem. Let :math:`V` be an appropriate function space
+with basis functions :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`. Because of the
+Dirichlet condition at :math:`x=L` we require :math:`{\psi}_i(L)=0`, :math:`i\in{\mathcal{I}_s}`.
+Using Galerkin's method,
+we multiply the differential equation by any :math:`v\in V`, integrate
+terms with second-order derivatives by parts, and insert the
+Neumann condition at :math:`x=0`. The variational problem is then:
+find :math:`u\in V` such that
+
+
+.. _Eq:nonlin:alglevel:1D:pde:varform:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde:varform
+        
+        \int_0^L {\alpha}(u)u'v'{\, \mathrm{d}x} + \int_0^L auv{\, \mathrm{d}x} =
+        \int_0^L f(u)v{\, \mathrm{d}x} - Cv(0),\quad \forall v\in V{\thinspace .}
+        
+        
+
+To derive the algebraic equations we also demand the above equations
+to hold for :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`, and we set
+:math:`u=\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j`. The result is
+
+
+.. math::
+        
+        \sum_{j\in{\mathcal{I}_s}}\left(
+        \int_0^L {\alpha}(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k)
+        {\psi}_j'{\psi}_i'{\, \mathrm{d}x}\right)c_j =
+        \int_0^L f(\sum_{k\in{\mathcal{I}_s}}c_k{\psi}_k){\psi}_i{\, \mathrm{d}x} -
+        C{\psi}_i(0),\quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+
+
+Remark
+~~~~~~
+
+Fundamental integration problem
+Methods that use the Galerkin or weighted residual principle
+face a fundamental difficulty in nonlinear
+problems: how can we integrate a terms like
+:math:`\int_0^L {\alpha}(\sum_{k}c_k{\psi}_k){\psi}_i'{\psi}_j'{\, \mathrm{d}x}`
+and :math:`\int_0^L f(\sum_{k}c_k{\psi}_k){\psi}_i{\, \mathrm{d}x}`
+when we do not know
+the :math:`c_k` coefficients in the argument of the :math:`{\alpha}` function?
+We can resort to numerical integration, provided an approximate
+:math:`\sum_kc_k{\psi}_k` can be used for the argument :math:`u` in :math:`f` and :math:`{\alpha}`.
+If we want to derive the structure of the nonlinear algebraic
+equations, we need to apply numerical integration based on the
+nodes only and/or the group finite element method.
+
+
+.. _nonlin:alglevel:1D:fe:group:
+
+The group finite element method
+-------------------------------
+
+Finite element notation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Let us simplify the model problem for a while and set :math:`a=0`, :math:`{\alpha}=1`,
+:math:`f(u)=u^2`, and have Dirichlet conditions at both ends such that we
+get a very simple nonlinear problem :math:`-u''=u^2`. The variational form
+is then
+
+
+.. math::
+         \int_0^L u'v'{\, \mathrm{d}x} = \int_0^L u^2v{\, \mathrm{d}x},\quad\forall v\in V{\thinspace .}
+
+The term with :math:`u'v'` is well known so the only new feature is
+the term :math:`\int u^2v{\, \mathrm{d}x}`.
+
+Introduction of finite element basis functions :math:`{\varphi}_i` means setting
+
+
+.. math::
+         {\psi}_i = {\varphi}_{\nu(i)},\quad i\in{\mathcal{I}_s},
+
+where degree of freedom number :math:`\nu(j)` in the mesh corresponds to
+unknown number :math:`j`. When the degrees of freedom are just the function
+values at nodes, we have that :math:`c_j=u(x_{\nu(j)})=u_{\nu(j)}`, i.e., the value of
+:math:`u` at node number :math:`\nu(j)`.
+The finite element expansion for :math:`u`
+is now
+
+
+.. math::
+         u = \sum_{j\in{I_b}} U_j{\varphi}_j + \sum_{j\in{\mathcal{I}_s}}{\varphi}_{\nu(j)}u_{\nu(j)},
+
+with the :math:`U_j` quantities being prescribed Dirichlet values at some nodes
+with numbers in the index :math:`{I_b}`. Instead of the :math:`\nu(j)` indices
+in the sum :math:`\sum_{j\in{\mathcal{I}_s}}{\varphi}_{\nu(j)}u_{\nu(j)}`, we just write
+:math:`\sum_{j}{\varphi}_ju_j`. This is possible by saying that :math:`j` runs over
+a transformed index set:
+:math:`\{\nu(0),\nu(1),\ldots,\nu(N)\}`. In the following we drop the
+boundary term :math:`\sum_j U_j{\varphi}_j` and write
+:math:`u = \sum_j{\varphi}_j u_j`. The replacement of :math:`c_j` by :math:`u_j` as explained
+is motivated by simpler interpretation of the nonlinear algebraic
+equations as a finite difference scheme.
+
+Integrating nonlinear functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Consider the term :math:`\int u^2v{\, \mathrm{d}x}` in the variational formulation
+with :math:`v={\varphi}_i` and :math:`u=\sum_k{\varphi}_ku_k`:
+
+
+.. math::
+         \int_0^L (\sum_ku_k{\varphi}_k)^2{\varphi}_i{\, \mathrm{d}x}{\thinspace .}
+
+Evaluating this integral for P1 elements (see :ref:`nonlin:exer:fu:fem:int`) results in the expression
+
+
+.. math::
+         \frac{h}{12}(u_{i-1}^2 + 2u_i(u_{i-1} + u_{i+1}) + 6u_i^2
+        + u_{i+1}^2,
+
+to be compared with the simple value :math:`u_i^2` that would arise in
+a finite difference discretization. More complicated :math:`f(u)` functions
+give rise to much more lengthy expressions, if it is possible to
+carry out the integral symbolically.
+
+
+.. index:: group finite element method
+
+
+.. index:: product approximation technique
+
+
+Finite element approximation of functions of :math:`u`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since we already expand :math:`u` as :math:`\sum_j{\varphi}_ju_j` we may use the
+same approximation for nonlinearities. That is, any function can be
+expanded as a sum of basis functions times the function values.
+In particular,
+
+
+.. math::
+        
+        f(u)\approx \sum_{j\in{I_b}} {\varphi}_jf(u_j)
+        + \sum_{j} {\psi}_{j}(x)f(u_j),
+        
+
+where the first sum contain :math:`f` values at the boundary where :math:`u` has
+Dirichlet conditions and the other sum is over the node values :math:`j`
+where :math:`u` is unknown. However, for :math:`f` there is no reason two have
+two summations as we do not need to distinguish between the nodes where
+:math:`u` are known or unknown. Therefore, we can collapse the two
+sums into one (over all nodes, :math:`j=0,\ldots,N_n`) and write
+
+
+.. math::
+        
+        f(u) \approx \sum_{j=0}^{N_n} {\varphi}_j(x)f(u_j){\thinspace .}
+        
+
+This approximation is known as the *group finite element method*
+or the *product approximation* technique.
+
+The principal advantage of the group finite element method is for
+deriving the *symbolic form* of difference equations in nonlinear problems.
+The symbolic form is useful for comparing finite element and finite
+difference equations of nonlinear differential equation problems.
+Computer programs
+will always integrate :math:`\int f(u){\varphi}_i{\, \mathrm{d}x}` numerically by using
+an existing approximation of :math:`u` in :math:`f(u)` such that the integrand
+can be sampled at any spatial point.
+
+Application
+~~~~~~~~~~~
+
+Let use the group finite element method to derive the terms in
+the difference equation corresponding to :math:`f(u)` in the differential
+equation. We have
+
+
+.. math::
+         \int_0^L f(u){\varphi}_i{\, \mathrm{d}x} \approx
+        \int_0^L (\sum_j {\varphi}_jf(u_j)){\varphi}_i{\, \mathrm{d}x}
+        = \sum_j \left(\int_0^L {\varphi}_i{\varphi}_j{\, \mathrm{d}x}\right) f(u_j){\thinspace .}
+
+We recognize this expression as the mass matrix :math:`M`, arising from
+:math:`\int{\varphi}_i{\varphi}_j{\, \mathrm{d}x}`, times the
+vector :math:`f=(f(u_0),f(u_1),\ldots,)`: :math:`Mf`. The associated terms
+in the difference equations are
+
+
+.. math::
+         \frac{h}{6}(f(u_{i-1}) + 4f(u_i) + f(u_{i+1})){\thinspace .}
+
+Occasionally, we want to interpret this expression in terms of finite
+differences and then a rewrite of this expression is convenient:
+
+
+.. math::
+         \frac{h}{6}(f(u_{i-1}) + 4f(u_i) + f(u_{i+1}))
+        = h[f(u) - \frac{h^2}{6}D_xD_x f(u)]_i{\thinspace .}
+
+We may lump the mass matrix through integration with the Trapezoidal
+rule. In that case the :math:`f(u)` term in the differential equation
+gives rise to a single term :math:`hf(u_i)`, just as in the finite difference
+method.
+
+
+.. _nonlin:alglevel:1D:fe:f:
+
+Numerical integration of nonlinear terms
+----------------------------------------
+
+Let us reconsider a term :math:`\int f(u)v{\, \mathrm{d}x}` as treated in the previous
+section, but now we want to integrate this term numerically.
+Such an approach can lead to easy-to-interpret formulas if we apply
+a numerical integration rule that samples the integrand at the node
+points.
+
+The term in question takes the form
+
+
+.. math::
+         \int_0^L f(\sum_k u_k{\varphi}_k){\varphi}_i{\, \mathrm{d}x}{\thinspace .}
+
+Evaluation of the integrand at a node :math:`x_{\ell}` leads to a
+collapse of the sum :math:`\sum_k u_k{\varphi}_k` to one term because
+
+
+.. math::
+         \sum_k u_k{\varphi}_k(x_{\ell}) = u_\ell{\thinspace .}
+
+
+
+.. math::
+         f(\sum_k u_k\underbrace{{\varphi}_k(x_{\ell})}_{\delta_{k\ell}})
+        \underbrace{{\varphi}_i(x_{\ell})}_{\delta_{i\ell}}
+        = f(u_\ell)\delta_{i\ell},
+
+where we have used the Kronecker delta :math:`\delta_{ij}=0` if :math:`i\neq j` and
+:math:`\delta_{ij}=1` if :math:`i=j`.
+
+Considering the Trapezoidal rule for integration, we have
+
+
+
+.. math::
+        
+        \int_0^L f(\sum_k u_k{\varphi}_k)(x){\varphi}_i(x){\, \mathrm{d}x}
+        \approx h\sum_{\ell=0}^{N_n} f(u_\ell)\delta_{i\ell} - \mathcal{C}\\ 
+        = hf(u_i){\thinspace .}
+        
+
+The term :math:`\mathcal{C}` contains the evaluations of the integrand
+at the ends with weight :math:`\frac{1}{2}`, needed to make a true Trapezoidal rule.
+The answer :math:`hf(u_i)` must therefore be multiplied by :math:`\frac{1}{2}` if
+:math:`i=0` or :math:`i=N_n`.
+(:math:`\mathcal{C} = \frac{h}{2}f(u_0){\varphi}_i(0) + \frac{h}{2}f(u_{N_n}){\varphi}_i(L)`.)
+
+One can easily use the Trapezoidal rule on the reference cell and
+assemble the contributions. It is a bit more work in this context,
+but working on the reference cell is safer as that approach is
+guaranteed to handle discontinuous derivatives of finite element
+functions correctly.
+
+The conclusion is that it suffices to use the Trapezoidal rule if
+one wants to derive the difference equations in the finite element
+method and make them similar to those arising in the finite difference
+method. The Trapezoidal rule has sufficient accuracy for P1 elements, but
+for P2 elements one should turn to Simpson's rule.
+
+.. _nonlin:alglevel:1D:fe:Laplace:
+
+Finite element discretization of a variable coefficient Laplace term
+--------------------------------------------------------------------
+
+Turning back to the model problem :eq:`nonlin:alglevel:1D:pde`, it
+remains to calculate the contribution of the :math:`({\alpha} u')'`
+and boundary terms
+to the difference equations. The integral in the variational form
+corresponding to :math:`({\alpha} u')'` is
+
+
+.. math::
+         \int_0^L {\alpha}(\sum_k c_k{\psi}_k){\psi}_i'{\psi}_j'{\, \mathrm{d}x}{\thinspace .}
+
+Numerical integration utilizing a value of :math:`\sum_k c_k{\psi}_k` from
+a previous iteration must in general be used to compute the integral.
+Now our aim is to integrate symbolically, as much as we can, to obtain
+some insight into how the finite element method approximates
+this term.
+
+To be able to derive symbolic expressions, we either turn to
+the group finite element method or numerical integration in the
+node points. Finite element basis functions :math:`{\varphi}_i` are used,
+we set :math:`{\alpha}(u)\approx \sum_k\alpha(u_k){\varphi}_k`, and then
+we write
+
+
+
+.. math::
+        
+        \int_0^L {\alpha}(\sum_k c_k{\varphi}_k){\varphi}_i'{\varphi}_j'{\, \mathrm{d}x}
+        \approx
+        \sum_k (\underbrace{\int_0^L {\varphi}_k{\varphi}_i'{\varphi}_j'{\, \mathrm{d}x}}_{L_{i,j,k}})
+        {\alpha}(u_k) = \sum_k L_{i,j,k}{\alpha}(u_k){\thinspace .}
+        
+
+Further calculations are now easiest to carry out in the reference
+cell. With P1 elements we can compute
+:math:`L_{i,j,k}` for the two :math:`k` values that are relevant on the reference
+cell. Turning to local indices, one gets
+
+
+.. math::
+        
+        L_{r,s,t}^{(e)} =
+        \frac{1}{2h}\left(\begin{array}{rr}
+        1 & -1\\ 
+        -1 & 1
+        \end{array}\right),\quad t=0, 1,
+        
+
+where :math:`r,s,t=0,1` are indices over local degrees of
+freedom in the reference cell
+(:math:`i=q(e,r)`, :math:`j=q(e,s)`, and :math:`k=q(e,t)`). The
+sum :math:`\sum_k L_{i,j,k}{\alpha}(u_k)` at the cell level becomes
+:math:`\sum_{t=0}^1 L_{r,s,t}^{(e)}{\alpha}(\tilde u_t)`, where :math:`\tilde u_t`
+is :math:`u(x_{q(e,t)})`, i.e., the value of :math:`u` at local node number :math:`t` in
+cell number :math:`e`. The element matrix becomes
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:Ae:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:Ae
+        
+        \frac{1}{2} ({\alpha}(\tilde u_0) + {\alpha}(\tilde u_1))
+        \frac{1}{h}\left(\begin{array}{rr}
+        1 & -1\\ 
+        -1 & 1
+        \end{array}\right){\thinspace .}
+        
+        
+
+As usual, we employ
+a left-to-right numbering of cells and nodes.
+Row number :math:`i` in the global matrix gets contributions from
+the first row of the element matrix in cell :math:`i-1` and the last
+row of the element matrix in cell :math:`i`.
+In cell number :math:`i-1` the sum
+:math:`{\alpha}(\tilde u_0) + {\alpha}(\tilde u_1)` corresponds to
+:math:`{\alpha}(u_{i-1}) + {\alpha}(u_i)`. The same becomes
+:math:`{\alpha}(u_{i}) + {\alpha}(u_{i+1})` in cell number :math:`i`.
+We can with this insight assemble the contributions to row number :math:`i`
+in the global matrix:
+
+
+.. math::
+         \frac{1}{2h}(-({\alpha}(u_{i-1}) + {\alpha}(u_i)),\quad
+        {\alpha}(u_{i-1}) + 2{\alpha}(u_i) + {\alpha}(u_{i+1}),\quad
+        {\alpha}(u_{i}) + {\alpha}(u_{i+1})){\thinspace .}
+        
+
+Multiplying by the vector of unknowns :math:`u_i` results in
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:diffeq:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:diffeq
+        
+        -\frac{1}{h}(\frac{1}{2}({\alpha}(u_i) + {\alpha}(u_{i+1}))(u_{i+1}-u_i)
+        -  \frac{1}{2}({\alpha}(u_{i-1}) + {\alpha}(u_{i}))(u_{i}-u_{i-1})),
+        
+        
+
+which is nothing but the standard finite difference discretization
+of :math:`-({\alpha}(u)u')'` with an arithmetic mean of :math:`{\alpha}(u)` (and a
+factor :math:`h` because of the integration in the finite element method).
+
+Instead of using the group finite element method and exact integration
+we can turn to the Trapezoidal rule for computing
+:math:`\int_0^L {\alpha}(\sum_k u_k{\varphi}_k){\varphi}_i'{\varphi}_j'{\, \mathrm{d}x}`, again at
+the cell level since that is most convenient:
+
+
+.. math::
+        
+        \int_{-1}^1 {\alpha}(\sum_{t=0}^1
+        \tilde u_t{\tilde{\varphi}}_t)\frac{2}{h}\frac{d{\tilde{\varphi}}_r}{dX}
+        \frac{2}{h}\frac{d{\tilde{\varphi}}_s}{dX}\frac{h}{2}dX
+        = \frac{1}{2h}(-1)^r(-1)^s \int_{-1}^1 {\alpha}(\sum_{t=0}^1 u_t{\tilde{\varphi}}_t(X))dX
+        \nonumber
+        
+
+
+
+.. math::
+          
+         \approx \frac{1}{2h}(-1)^r(-1)^s(
+        \sum_{t=0}^1{\tilde{\varphi}}_t(-1)\tilde u_t + \sum_{t=0}^1{\tilde{\varphi}}_t(1)\tilde u_t)
+        \nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Laplace:Ae:Trapez:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Laplace:Ae:Trapez
+          
+        = \frac{1}{2h}(-1)^r(-1)^s({\alpha}(\tilde u_0) + {\alpha}(\tilde u_1)){\thinspace .}
+        
+        
+
+The element matrix in :eq:`nonlin:alglevel:1D:fe:Laplace:Ae:Trapez`
+is identical to the one in
+:eq:`nonlin:alglevel:1D:fe:Laplace:Ae`, showing that the
+group finite element method and Trapezoidal integration are
+equivalent with a standard finite discretization of a
+nonlinear Laplace term :math:`({\alpha}(u)u')'` using an arithmetic mean for
+:math:`{\alpha}`: :math:`[D_x\overline{x}D_xu]_i`.
+
+We might comment on integration in the physical coordinate system too.
+The common Trapezoidal rule in the section :ref:`nonlin:alglevel:1D:fe:f`
+cannot be used to integrate derivatives like :math:`{\varphi}_i'`, because
+the formula is derived under the assumption of a continuous integrand.
+One must instead use the more basic version of the Trapezoidal rule
+where all the trapezoids are summed up. This is straightforward, but
+I think it is even more straightforward to apply the Trapezoidal
+rule on the reference cell and assemble the contributions.
+
+The term :math:`\int auv{\, \mathrm{d}x}` in the variational form is linear and gives
+these terms in the algebraic equations:
+
+
+.. math::
+         \frac{ah}{6}(u_{i-1} + 4u_i + u_{i+1})
+        = ah[u - \frac{h^2}{6}D_xD_x u]_i{\thinspace .}
+
+The final term in the variational form is the Neumann condition
+at the boundary: :math:`Cv(0)=C{\varphi}_i(0)`. With a left-to-right numbering
+only :math:`i=0` will give a contribution :math:`Cv(0)=C\delta_{i0}` (since
+:math:`{\varphi}_i(0)\neq 0` only for :math:`i=0`).
+
+
+.. admonition:: Summary
+
+   For the equation
+   
+   
+   .. math::
+            -({\alpha}(u)u')' +au = f(u),
+   
+   P1 finite elements results in difference equations where
+   
+    * the term :math:`-({\alpha}(u)u')'` becomes :math:`-h[D_x\overline{{\alpha}(u)}^xD_x u]_i`
+      if the group finite element method or Trapezoidal integration is applied,
+   
+    * :math:`f(u)` becomes :math:`hf(u_i)` with Trapezoidal integration or the
+      "mass matrix" representation :math:`h[f(u) - \frac{h}{6}D_xD_x f(u)]_i`
+      if computed by a group finite element method,
+   
+    * :math:`au` leads to the "mass matrix" form :math:`ah[u - \frac{h}{6}D_xD_x u]_i`.
+
+
+
+
+
+As we now have explicit expressions for
+the nonlinear difference equations also in the finite
+element method, a Picard or Newton method can be defined as shown for
+the finite difference method.
+Nevertheless, the general situation is that we have not assembled
+finite difference-style equations by hand and the linear system
+in the Picard or Newton method must therefore be defined
+directly through the variational form, as shown next.
+
+.. _nonlin:alglevel:1D:fe:Picard:
+
+Picard iteration defined from the variational form
+--------------------------------------------------
+
+We address again the problem :eq:`nonlin:alglevel:1D:pde` with
+the corresponding
+variational form :eq:`nonlin:alglevel:1D:pde:varform`.
+Our aim is to define a Picard iteration based on this variational
+form without any attempt to compute integrals symbolically as in
+the previous three sections.
+The idea  in Picard iteration is to use a previously computed :math:`u` value in
+the nonlinear functions :math:`{\alpha}(u)` and :math:`f(u)`. Let :math:`u_{-}` be
+the available approximation to :math:`u` from the previous iteration.
+The linearized variational form for Picard iteration is then
+
+
+.. _Eq:nonlin:alglevel:1D:pde:varform:Picard:
+
+.. math::
+   :label: nonlin:alglevel:1D:pde:varform:Picard
+        
+        \int_0^L ({\alpha}(u_{-})u'v' + auv){\, \mathrm{d}x} = \int_0^L f(u_{-})v{\, \mathrm{d}x} -
+        Cv(0),\quad \forall v\in V{\thinspace .}
+        
+        
+
+This is a linear problem :math:`a(u,v)=L(v)` with bilinear and linear forms
+
+
+.. math::
+         a(u,v) = \int_0^L ({\alpha}(u_{-})u'v' + auv){\, \mathrm{d}x},\quad
+        L(v) = \int_0^L f(u_{-})v{\, \mathrm{d}x} - Cv(0){\thinspace .}
+
+The associated linear system is computed the standard way.
+Technically, we are back to solving :math:`-({\alpha}(x)u')' + au=f(x)`.
+
+.. _nonlin:alglevel:1D:fe:Newton:
+
+Newton's method defined from the variational form
+-------------------------------------------------
+
+Application of Newton's method to the nonlinear variational
+form :eq:`nonlin:alglevel:1D:pde:varform` arising from
+the problem :eq:`nonlin:alglevel:1D:pde` requires identification
+of the nonlinear algebraic equations :math:`F_i(c_0,\ldots,c_N)=0`, :math:`i\in{\mathcal{I}_s}`,
+and the Jacobian :math:`J_{i,j}=\partial F_i/\partial c_j` for
+:math:`i,j\in{\mathcal{I}_s}`.
+
+The equations :math:`F_i=0` follows from the variational form
+
+
+.. math::
+        
+        \int_0^L ({\alpha}(u)u'v' + auv){\, \mathrm{d}x} =
+        \int_0^L f(u)v{\, \mathrm{d}x} - Cv(0),\quad \forall v\in V,
+        
+
+by choosing :math:`v={\psi}_i`, :math:`i\in{\mathcal{I}_s}`, and setting
+:math:`u=\sum_{j\in{\mathcal{I}_s}}c_j{\psi}_j`, maybe with a boundary function
+to incorporate Dirichlet conditions.
+
+.. provided we sum over all degrees
+
+.. of freedom and incorporate Dirichlet boundary condition in the
+
+.. final linear systems. Alternatively, we can eliminate the
+
+.. Dirichlet conditions from the algebraic systems and
+
+.. use a boundary function in combination with a sum over
+
+.. the truly unknown degrees of freedom of :math:`u` (:math:`\sum_jc_j{\varphi}_{\nu(j)}`).
+
+.. We choose the former approach here since the indices look nicer in
+
+.. the coming derivations.
+
+
+With :math:`v={\psi}_i` we have
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Fi:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Fi
+        
+        F_i =
+        \int_0^L ({\alpha}(u)u'{\psi}_i' + au{\psi}_i -
+        f(u){\psi}_i){\, \mathrm{d}x} + C{\psi}_i(0)=0,\quad i\in{\mathcal{I}_s}{\thinspace .}
+        
+        
+
+In the differentiations leading to the Jacobian we will frequently use
+the results
+
+
+.. math::
+         \frac{\partial u}{\partial c_j} = \frac{\partial}{\partial c_j}
+        \sum_kc_k{\psi}_k = {\psi}_j,\quad
+        \frac{\partial u'}{\partial c_j} = \frac{\partial}{\partial c_j}
+        \sum_kc_k{\psi}_k' = {\psi}_j'{\thinspace .}
+
+The derivation of the Jacobian goes as
+
+
+.. math::
+        
+        J_{i,j} = \frac{\partial F_i}{\partial c_j}
+         = \int_0^L \frac{\partial}{\partial c_j}
+        ({\alpha}(u)u'{\psi}_i' + au{\psi}_i -
+        f(u){\psi}_i){\, \mathrm{d}x}\nonumber
+        
+
+
+
+.. math::
+          
+        =
+        \int_0^L
+        (({\alpha}'(u)\frac{\partial u}{\partial c_j}u' +
+        {\alpha}(u)\frac{\partial u'}{\partial c_j}){\psi}_i'
+        + a\frac{\partial u}{\partial c_j}{\psi}_i -
+        f'(u)\frac{\partial u}{\partial c_j}{\psi}_i){\, \mathrm{d}x}\nonumber
+        
+
+
+
+.. math::
+          
+        =
+        \int_0^L
+        (({\alpha}'(u){\psi}_ju' +
+        {\alpha}(u){\psi}_j'{\psi}_i'
+        + a{\psi}_j{\psi}_i -
+        f'(u){\psi}_j{\psi}_i){\, \mathrm{d}x}\nonumber
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Jij
+          
+        =
+        \int_0^L
+        ({\alpha}'(u)u'{\psi}_i'{\psi}_j +
+        {\alpha}(u){\psi}_i'{\psi}_j'
+        + (a - f(u)){\psi}_i{\psi}_j){\, \mathrm{d}x}
+        
+        
+
+
+When calculating the right-hand side vector :math:`F_i` and the coefficient
+matrix :math:`J_{i,j}` in the linear system to be solved in each Newton
+iteration, one must use
+a previously computed :math:`u`, denoted by :math:`u_{-}`, for
+the :math:`u` in :eq:`nonlin:alglevel:1D:fe:Newton:Fi` and
+:eq:`nonlin:alglevel:1D:fe:Newton:Jij`.
+With this notation we have
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Fi2:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Fi2
+        
+        F_i =
+        \int_0^L\left(
+        {\alpha}(u_{-})u_{-}'{\psi}_i' +
+        (a-f(u_{-})){\psi}_i\right){\, \mathrm{d}x} -
+        C{\psi}_i(0),\quad i\in{\mathcal{I}_s},
+        
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Jij
+          
+        J_{i,j} =
+        \int_0^L
+        ({\alpha}'(u_{-})u_{-}'{\psi}_i'{\psi}_j +
+        {\alpha}(u_{-}){\psi}_i'{\psi}_j'
+        + (a - f(u_{-})){\psi}_i{\psi}_j){\, \mathrm{d}x},
+        \quad i,j\in{\mathcal{I}_s}{\thinspace .}
+        
+        
+
+These expressions can be used for any basis :math:`\left\{ {{\psi}}_i \right\}_{i\in{\mathcal{I}_s}}`.
+Choosing finite element functions for :math:`{\psi}_i`, one will
+normally want to compute the integral contribution cell by cell,
+working in a reference cell. To this end, we restrict the
+integration to one cell and transform the cell to :math:`[-1,1]`.
+The formulas :eq:`nonlin:alglevel:1D:fe:Newton:Fi2` and
+:eq:`nonlin:alglevel:1D:fe:Newton:Jij` then change to
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Fi2:e:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Fi2:e
+        
+        \tilde F_r^{(e)} =
+        \int_{-1}^1\left(
+        {\alpha}(\tilde u_{-})\tilde u_{-}'{\tilde{\varphi}}_r' +
+        (a-f(\tilde u_{-})){\tilde{\varphi}}_r\right)\det J{\, \mathrm{d}X} -
+        C{\tilde{\varphi}}_r(0),
+        
+        
+
+
+
+.. _Eq:nonlin:alglevel:1D:fe:Newton:Jij:e:
+
+.. math::
+   :label: nonlin:alglevel:1D:fe:Newton:Jij:e
+          
+        \tilde J_{r,s}^{(e)} =
+        \int_{-1}^1
+        ({\alpha}'(\tilde u_{-})\tilde u_{-}'{\tilde{\varphi}}_r'{\tilde{\varphi}}_s +
+        {\alpha}(\tilde u_{-}){\tilde{\varphi}}_r'{\tilde{\varphi}}_s'
+        + (a - f(\tilde u_{-})){\tilde{\varphi}}_r{\tilde{\varphi}}_s)\det J{\, \mathrm{d}X},
+        
+        
+
+with :math:`r,s\in{I_d}` runs over the local degrees of freedom.
+In the above formulas,
+:math:`\tilde u_{-}(X)=\sum_r \tilde c_{-r}{\tilde{\varphi}}_r(X)` is the
+finite element expansion of :math:`u_{-}` over the current cell.
+
+Many finite element programs require the user to provide :math:`F_i` and
+:math:`J_{i,j}`. Some programs, like `FEniCS <http://fenicsproject.org>`_,
+are capable of automatically deriving :math:`J_{i,j}` if :math:`F_i`
+is specified.
+
+Dirichlet conditions
+~~~~~~~~~~~~~~~~~~~~
+
+Incorporation of the Dirichlet values by assembling contributions from
+all degrees of freedom and then modifying the linear system can be
+obviously be applied to Picard iteration as that method involves
+a standard linear system. In the Newton system, however, the unknown
+is a correction :math:`\delta u` to the solution. Dirichlet conditions
+are implemented by inserting them in the initial guess :math:`u_{-}`
+for the Newton iteration and implementing :math:`\delta u_i =0` for
+all known degrees of freedom. The manipulation of the linear system
+follows exactly the algorithm in the linear problems, the only
+difference being that the known values are zero.
+
