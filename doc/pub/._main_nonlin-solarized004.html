@@ -205,9 +205,14 @@ Automatically generated HTML file from Doconce source
                'nonlin:alglevel:1D:fe:Newton'),
               (' Dirichlet conditions ', 3, None, '___sec42'),
               (' Multi-dimensional PDE problems ', 1, None, '___sec43'),
-              (' Finite element discretization ', 2, None, '___sec44'),
-              (' Finite difference discretization ', 2, None, '___sec45'),
-              (' Continuation methods ', 2, None, '___sec46'),
+              (' Finite element discretization ',
+               2,
+               'nonlin:alglevel:dD:fe',
+               'nonlin:alglevel:dD:fe'),
+              (' Non-homogeneous Neumann conditions ', 3, None, '___sec45'),
+              (' Robin conditions ', 3, None, '___sec46'),
+              (' Finite difference discretization ', 2, None, '___sec47'),
+              (' Continuation methods ', 2, None, '___sec48'),
               (' Exercises ', 1, 'nonlin:exer', 'nonlin:exer'),
               (' Problem 1: Determine if equations are nonlinear or not ',
                2,
@@ -261,7 +266,7 @@ Automatically generated HTML file from Doconce source
                2,
                'nonlin:exer:continuation:1DnNflow',
                'nonlin:exer:continuation:1DnNflow'),
-              (' Bibliography ', 1, None, '___sec61')]}
+              (' Bibliography ', 1, None, '___sec63')]}
 end of tocinfo -->
 
 <body>
@@ -376,7 +381,7 @@ $$
 
 <h2>Multi-dimensional PDE problems  <a name="___sec43"></a></h2>
 
-<h3>Finite element discretization  <a name="___sec44"></a></h3>
+<h3>Finite element discretization <a name="nonlin:alglevel:dD:fe"></a></h3>
 
 <p>
 The derivation of \( F_i \) and \( J_{i,j} \) in the 1D model problem
@@ -385,7 +390,12 @@ For example, Backward Euler discretization of the
 PDE
 
 <p>
-$$ u_t = \nabla\cdot(\dfc(u)\nabla u) + f(u),$$
+$$
+\begin{equation}
+u_t = \nabla\cdot(\dfc(u)\nabla u) + f(u),
+\tag{40}
+\end{equation}
+$$
 
 gives the nonlinear time-discrete PDEs
 
@@ -405,7 +415,7 @@ $$
 \begin{equation}
 \int_\Omega (uv + \Delta t\dfc(u)\nabla u\cdot\nabla v
 - \Delta t f(u)v - u_1v)\dx\tp
-\tag{40}
+\tag{41}
 \end{equation}
 $$
 
@@ -419,7 +429,7 @@ $$
 F_i =
 \int_\Omega (u\baspsi_i + \Delta t\dfc(u)\nabla u\cdot\nabla \baspsi_i
 - \Delta t f(u)\baspsi_i - u_1\baspsi_i)\dx\tp
-\tag{41}
+\tag{42}
 \end{equation}
 $$
 
@@ -431,9 +441,9 @@ the most recent approximation \( u_{-} \) to \( u \) in
 $$
 \begin{equation}
 F_i \approx \hat F_i =
-\int_\Omega (u_{-}\baspsi_i + \Delta t\dfc(u_{-})\nabla u\cdot\nabla \baspsi_i
+\int_\Omega (u\baspsi_i + \Delta t\dfc(u_{-})\nabla u\cdot\nabla \baspsi_i
 - \Delta t f(u_{-})\baspsi_i - u_1\baspsi_i)\dx\tp
-\tag{42}
+\tag{43}
 \end{equation}
 $$
 
@@ -452,12 +462,12 @@ F_i \approx \hat F_i =
 \int_\Omega (u_{-}\baspsi_i + \Delta t\dfc(u_{-})
 \nabla u_{-}\cdot\nabla \baspsi_i
 - \Delta t f(u_{-})\baspsi_i - u_1\baspsi_i)\dx\tp
-\tag{43}
+\tag{44}
 \end{equation}
 $$
 
 The Jacobian is obtained by differentiating
-<a href="#mjx-eqn-41">(41)</a> and using \( \partial u/\partial c_j=\baspsi_j \):
+<a href="#mjx-eqn-42">(42)</a> and using \( \partial u/\partial c_j=\baspsi_j \):
 
 <p>
 $$
@@ -467,7 +477,7 @@ J_{i,j} = \frac{\partial F_i}{\partial c_j} =
 \nabla u\cdot\nabla \baspsi_i +
 \Delta t\dfc(u)\nabla\baspsi_j\cdot\nabla\baspsi_i - \nonumber\\ 
 &\ \Delta t f'(u)\baspsi_j\baspsi_i - u_1\baspsi_i)\dx\tp
-\tag{45}
+\tag{46}
 \end{align}
 $$
 
@@ -483,7 +493,7 @@ J_{i,j} =
 \nabla u_{-}\cdot\nabla \baspsi_i +
 \Delta t\dfc(u_{-})\nabla\baspsi_j\cdot\nabla\baspsi_i - \nonumber\\ 
 &\ \Delta t f'(u_{-})\baspsi_j\baspsi_i - u_1\baspsi_i)\dx\tp
-\tag{45}
+\tag{46}
 \end{align}
 $$
 
@@ -494,7 +504,69 @@ is a matter of adding an underscore.
 One can take great advantage of this quick notation in
 software <a href="._main_nonlin-solarized005.html#Mortensen_et_al_2011">[2]</a>.
 
-<h3>Finite difference discretization  <a name="___sec45"></a></h3>
+<h4>Non-homogeneous Neumann conditions  <a name="___sec45"></a></h4>
+
+<p>
+A natural physical flux condition for the PDE <a href="#mjx-eqn-40">(40)</a>
+takes the form of a non-homogeneous Neumann condition
+
+<p>
+$$
+\begin{equation}
+-\dfc(u)\frac{\partial u}{\partial u} = g,\quad\x\in\partial\Omega_N,
+\tag{47}
+\end{equation}
+$$
+
+where \( g \) is a prescribed function and \( \partial\Omega_N \) is a part
+of the boundary of the domain \( \Omega \). From integrating
+\( \int_\Omega\nabla\cdot(\dfc\nabla u)\dx \) by parts, we get a boundary term
+
+<p>
+$$
+\begin{equation}
+\int_{\partial\Omega_N}\dfc(u)\frac{\partial u}{\partial u}\ds\tp
+\tag{48}
+\end{equation}
+$$
+
+Inserting the condition <a href="#mjx-eqn-47">(47)</a> into
+this term results in an integral over prescribed values: \( -\int_{\partial\Omega_N}gv\ds \). The nonlinearity in the \( \dfc(u) \) coefficient condition
+<a href="#mjx-eqn-47">(47)</a> therefore does not contribute with
+a nonlinearity in the variational form.
+
+<h4>Robin conditions  <a name="___sec46"></a></h4>
+
+<p>
+Heat conduction problems often apply a kind of Newton's cooling law,
+also known as a Robin condition, at the boundary:
+
+<p>
+$$
+\begin{equation}
+-\dfc(u)\frac{\partial u}{\partial u} = h_T(u)(u-T_s(t)),\quad\x\in\partial\Omega_R,
+\tag{49}
+\end{equation}
+$$
+
+where \( h_T(u) \) is a heat transfer coefficient between the body (\( \Omega \))
+and its surroundings, \( T_s \) is the temperature of the surroundings,
+and \( \partial\Omega_R \) is a part of the boundary where this Robin
+condition applies. The boundary integral
+<a href="#mjx-eqn-48">(48)</a> now becomes
+
+<p>
+$$ \int_{\partial\Omega_R}h_T(u)(u-T_s(T))v\ds,$$
+
+by replacing \( \dfc(u)\partial u/\partial u \) by \( h_T(u-T_s) \).
+Often, \( h_T(u) \) can be taken as constant, and then the boundary
+term is linear in \( u \), otherwise it is nonlinear and contributes
+to the Jacobian in a Newton method.
+Linearization in a Picard method will typically use a known value
+in \( h_T \), but keep the \( u \) in \( u-T_s \) as unknown:
+\( h_T(u_{-})(u-T_s(t)) \).
+
+<h3>Finite difference discretization  <a name="___sec47"></a></h3>
 
 <p>
 A typical diffusion equation
@@ -608,7 +680,7 @@ Inserting \( u_{-} \) for \( u \) in the \( J \) formula and then
 forming \( J\delta u=-F \) gives the linear system to be solved
 in each Newton iteration.
 
-<h3>Continuation methods  <a name="___sec46"></a></h3>
+<h3>Continuation methods  <a name="___sec48"></a></h3>
 
 <p>
 Picard iteration or Newton's method may diverge when solving PDEs with
