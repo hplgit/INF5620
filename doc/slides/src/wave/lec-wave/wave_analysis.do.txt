@@ -1,0 +1,478 @@
+!split
+======= Analysis of the difference equations =======
+label{wave:pde1:analysis}
+
+!split
+===== Properties of the solution of the wave equation =====
+label{wave:pde1:properties}
+idx{wave equation!1D, analytical properties}
+
+!bt
+\begin{equation*} \frac{\partial^2 u}{\partial t^2} =
+c^2 \frac{\partial^2 u}{\partial x^2}
+\end{equation*}
+!et
+
+Solutions:
+
+!bt
+\begin{equation}
+u(x,t) = g_R(x-ct) + g_L(x+ct),
+label{wave:pde1:gensol}
+\end{equation}
+!et
+
+If $u(x,0)=I(x)$ and $u_t(x,0)=0$:
+
+!bt
+\begin{equation}
+u(x,t) = \half I(x-ct) + \half I(x+ct)
+label{wave:pde1:gensol2}
+\end{equation}
+!et
+
+Two waves: one traveling to the right and one to the left
+
+!split
+===== Demo of the splitting of $I(x)$ into two waves =====
+
+# #if FORMAT in ("html", "sphinx")
+MOVIE: [mov-wave/demo_BC_gaussian/movie.ogg]
+# #endif
+
+!split
+===== Effect of variable wave velocity =====
+
+A wave propagates perfectly ($C=1$) and hits a medium with 1/4 of
+the wave velocity. A part of the wave is reflected and the rest
+is transmitted.
+
+# #if FORMAT not in ("pdflatex", "latex")
+MOVIE: [mov-wave/pulse1_in_two_media/movie.ogg, width=500]
+# #else
+FIGURE: [fig-wave/pulse1_in_two_media, width=800]
+# #endif
+
+
+!split
+===== What happens here? =====
+
+We have just changed the initial condition...
+
+# #if FORMAT not in ("pdflatex", "latex")
+MOVIE: [mov-wave/pulse2_in_two_media/movie.ogg, width=500]
+# #else
+FIGURE: [fig-wave/pulse2_in_two_media, width=800]
+# #endif
+
+
+
+!split
+===== Representation of waves as sum of sine/cosine waves =====
+
+Build $I(x)$ of wave components $e^{ikx} = \cos kx + i\sin kx$:
+
+!bt
+\begin{equation} I(x) \approx \sum_{k\in K} b_k e^{ikx}
+label{wave:Fourier:I}
+\end{equation}
+!et
+
+ * $k$ is the frequency of a component ($\lambda = 2\pi/k$ corresponding wave length)
+ * $K$ is some set of all $k$ needed to approximate $I(x)$ well
+ * $b_k$ must be computed (Fourier coefficients)
+
+Since $u(x,t)=\half I(x-ct) + \half I(x+ct)$:
+
+!bt
+\begin{equation}
+u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
++ \half \sum_{k\in K} b_k e^{ik(x + ct)}
+label{wave:Fourier:u1}
+\end{equation}
+!et
+
+Our interest: one component $e^{i(kx -\omega t)}$, $\omega = kc$
+
+!split
+===== Analysis of the finite difference scheme =====
+label{wave:pde1:analysis}
+idx{wave equation!1D, exact numerical solution}
+
+A similar discrete $u^n_q = e^{i(kx_q - \tilde\omega t_n)}$ solves
+
+!bt
+\begin{equation}
+[D_tD_t u = c^2 D_xD_x u]^n_q
+label{wave:pde1:analysis:scheme}
+\end{equation}
+!et
+
+Note: different frequency $\tilde\omega\neq\omega$
+
+ * How accurate is $\tilde\omega$ compared to $\omega$?
+ * What about the wave amplitude?
+
+!split
+===== Preliminary results =====
+
+!bt
+\begin{equation*}
+[D_tD_t e^{i\omega t}]^n = -\frac{4}{\Delta t^2}\sin^2\left(
+\frac{\omega\Delta t}{2}\right)e^{i\omega n\Delta t}
+\end{equation*}
+!et
+
+By $\omega\rightarrow k$,
+$t\rightarrow x$, $n\rightarrow q$) it follows that
+
+!bt
+\begin{equation*}
+[D_xD_x e^{ikx}]_q = -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x}
+\end{equation*}
+!et
+
+!split
+===== Numerical wave propagation (1) =====
+
+Inserting a basic wave component $u=e^{i(kx_q-\tilde\omega t_n)}$ in
+the scheme (ref{wave:pde1:analysis:scheme}) requires computation of
+
+!bt
+\begin{align}
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_tD_t e^{-i\tilde\omega t}\rbrack^ne^{ikq\Delta x}\nonumber\\ &= -\frac{4}{\Delta t^2}\sin^2\left(
+\frac{\tilde\omega\Delta t}{2}\right)e^{-i\tilde\omega n\Delta t}e^{ikq\Delta x}\\
+\lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_xD_x e^{ikx}\rbrack_q e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
+\frac{k\Delta x}{2}\right)e^{ikq\Delta x}e^{-i\tilde\omega n\Delta t}   \end{align}
+!et
+
+!split
+===== Numerical wave propagation (2) =====
+
+The complete scheme,
+
+!bt
+\begin{equation*}
+\lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q
+\end{equation*}
+!et
+
+leads to an equation for $\tilde\omega$:
+
+!bt
+\begin{equation}
+\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C^2\sin^2\left(\frac{k\Delta x}{2}\right),
+label{wave:pde1:analysis:sineq1}
+\end{equation}
+!et
+where $C = \frac{c\Delta t}{\Delta x}$ is the Courant number
+
+!split
+===== Numerical wave propagation (3) =====
+
+Taking the square root of (ref{wave:pde1:analysis:sineq1}):
+
+!bt
+\begin{equation}
+\sin\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C\sin\left(\frac{k\Delta x}{2}\right),
+label{wave:pde1:analysis:sineq2}
+\end{equation}
+!et
+
+ * Exact $\omega$ is real
+ * Look for a real solution $\tilde\omega$ of (ref{wave:pde1:analysis:sineq2})
+ * Then the sine functions are in $[-1,1]$
+ * Lef-hand side in $[-1,1]$ requires $C\leq 1$
+
+idx{stability criterion}
+idx{wave equation!1D, stability}
+
+Stability criterion
+!bt
+\begin{equation}
+C = \frac{c\Delta t}{\Delta x} \leq 1
+label{wave:pde1:stability}
+\end{equation}
+!et
+
+!split
+===== Why $C\leq 1$ is a stability criterion =====
+
+Assume $C>1$. Then
+
+!bt
+\[
+\underbrace{\sin\left(\frac{\tilde\omega\Delta t}{2}\right)}{>1} = C\sin\left(\frac{k\Delta x}{2}\right)
+\]
+!et
+
+ * $|\sin x| >1$ implies complex $x$
+ * Here: complex $\tilde\omega = \tilde\omega_r \pm i\tilde\omega_i$
+ * One $\tilde\omega_i < 0$ gives $\exp(i\cdot i\tilde\omega_i) =
+   \exp (\tilde\omega_i)$ and exponential growth
+
+!split
+===== Numerical dispersion relation =====
+
+ * How close is $\tilde\omega$ to $\omega$?
+ * Can solve for an explicit formula for $\tilde\omega$
+
+!bt
+\begin{equation}
+\tilde\omega = \frac{2}{\Delta t}
+\sin^{-1}\left( C\sin\left(\frac{k\Delta x}{2}\right)\right)
+label{wave:pde1:disprel}
+\end{equation}
+!et
+
+ * $\omega = kc$ is the *analytical dispersion relation*
+ * $\tilde\omega = \tilde\omega(k, c, \Delta x, \Delta t)$ is the
+   *numerical dispersion relation*
+ * Speed of waves: $c=\omega/k$, $\tilde c = \tilde\omega/k$
+ * The numerical wave component has a wrong, mesh-dependent speed
+
+!split
+===== The special case $C=1$ =====
+
+ * For $C=1$, $\tilde\omega = \omega$
+ * The numerical solution is exact (at the mesh points)!
+ * The only requirement is constant $c$
+
+!split
+===== Computing the error in wave velocity =====
+
+ * Introduce $p=k\Delta x/2$
+ * $p$ measures no of mesh points in space
+   per wave length in space
+ * Study error in wave velocity through $\tilde c/c$ as function of $p$
+
+!bt
+\begin{equation*}
+r(C, p) = \frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),
+\quad C\in (0,1],\ p\in (0,\pi/2]
+\end{equation*}
+!et
+
+!split
+===== Visualizing the error in wave velocity =====
+
+
+!bc cod
+def r(C, p):
+    return 2/(C*p)*asin(C*sin(p))
+!ec
+
+FIGURE: [fig-wave/disprel, width=600, frac=0.9]
+
+Note: the shortest
+waves have the largest error, and short waves move too
+slowly.
+
+!split
+===== Taylor expanding the error in wave velocity =====
+
+
+For small $p$, Taylor expand $\tilde\omega$ as polynomial in $p$:
+
+!bc py
+>>> C, p = symbols('C p')
+>>> rs = r(C, p).series(p, 0, 7)
+>>> print rs
+1 - p**2/6 + p**4/120 - p**6/5040 + C**2*p**2/6 -
+C**2*p**4/12 + 13*C**2*p**6/720 + 3*C**4*p**4/40 -
+C**4*p**6/16 + 5*C**6*p**6/112 + O(p**7)
+
+>>> # Factorize each term and drop the remainder O(...) term
+>>> rs_factored = [factor(term) for term in rs.lseries(p)]
+>>> rs_factored = sum(rs_factored)
+>>> print rs_factored
+p**6*(C - 1)*(C + 1)*(225*C**4 - 90*C**2 + 1)/5040 +
+p**4*(C - 1)*(C + 1)*(3*C - 1)*(3*C + 1)/120 +
+p**2*(C - 1)*(C + 1)/6 + 1
+!ec
+
+Leading error term is $\frac{1}{6}(C^2-1)p^2$ or
+
+!bt
+\begin{equation}
+\frac{1}{6}\left(\frac{k\Delta x}{2}\right)^2(C^2-1)
+= \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right) =
+\Oof{\Delta t^2, \Delta x^2}
+\end{equation}
+!et
+
+!split
+===== Example on effect of wrong wave velocity (1) =====
+
+Smooth wave, few short waves (small $k$) in $I(x)$:
+
+# #if FORMAT not in ("pdflatex", "latex")
+MOVIE: [mov-wave/pulse1_in_two_media/movie.ogg, width=500]
+# #else
+FIGURE: [fig-wave/pulse1_in_two_media, width=800]
+# #endif
+
+!split
+===== Example on effect of wrong wave velocity (1) =====
+
+Not so smooth wave, significant short waves (small $k$) in $I(x)$:
+
+# #if FORMAT not in ("pdflatex", "latex")
+MOVIE: [mov-wave/pulse2_in_two_media/movie.ogg, width=500]
+# #else
+FIGURE: [fig-wave/pulse2_in_two_media, width=800]
+# #endif
+
+!split
+===== Extending the analysis to 2D (and 3D) =====
+label{wave:pde1:analysis:2D3D}
+
+!bt
+\[ u(x,y,t) = g(k_xx + k_yy - \omega t) \]
+!et
+
+is a typically solution of
+
+!bt
+\[ u_{tt} = c^2(u_{xx} + u_{yy}) \]
+!et
+
+Can build solutions by adding complex Fourier components
+of the form
+
+!bt
+\[
+e^{i(k_xx + k_yy - \omega t)}
+\]
+!et
+
+!split
+===== Discrete wave components in 2D =====
+
+!bt
+\begin{equation}
+\lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{q,r}
+label{wave:pde1:analysis:scheme2D}
+\end{equation}
+!et
+
+This equation admits a Fourier component
+
+!bt
+\begin{equation}
+u^n_{q,r} = e^{i(k_x q\Delta x + k_y r\Delta y
+- \tilde\omega n\Delta t)}
+label{wave:pde1:analysis:numsol2D}
+\end{equation}
+!et
+
+Inserting the expression and using formulas from the 1D analysis:
+
+!bt
+\begin{equation}
+\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+= C_x^2\sin^2 p_x
++ C_y^2\sin^2 p_y, \end{equation}
+!et
+
+where
+
+!bt
+\[ C_x = \frac{c^2\Delta t^2}{\Delta x^2},\quad
+C_y = \frac{c^2\Delta t^2}{\Delta y^2}, \quad
+p_x = \frac{k_x\Delta x}{2},\quad
+p_y = \frac{k_y\Delta y}{2}
+\]
+!et
+
+!split
+===== Stability criterion in 2D =====
+
+Rreal-valued $\tilde\omega$ requires
+
+!bt
+\begin{equation}
+C_x^2 + C_y^2 \leq 1
+label{wave:pde1:analysis:2DstabC}
+\end{equation}
+!et
+
+or
+
+!bt
+\begin{equation}
+\Delta t \leq \frac{1}{c} \left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2}\right)^{-\halfi}
+label{wave:pde1:analysis:2Dstab}
+\end{equation}
+!et
+
+!split
+===== Stability criterion in 3D =====
+
+!bt
+\begin{equation}
+\Delta t \leq \frac{1}{c}\left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
+\end{equation}
+!et
+
+For $c^2=c^2(\xpoint)$ we must use
+the worst-case value $\bar c = \sqrt{\max_{\xpoint\in\Omega} c^2(\xpoint)}$
+and a safety factor $\beta\leq 1$:
+
+!bt
+\begin{equation}
+\Delta t \leq \beta \frac{1}{\bar c}
+\left( \frac{1}{\Delta x^2} +
+\frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
+\end{equation}
+!et
+
+!split
+===== Numerical dispersion relation in 2D (1) =====
+
+!bt
+\[
+\tilde\omega = \frac{2}{\Delta t}\sin^{-1}\left(
+\left( C_x^2\sin^2 p_x + C_y^2\sin^ p_y\right)^\half\right)
+\]
+!et
+
+For visualization, introduce $\theta$:
+
+!bt
+\[ k_x = k\sin\theta,\quad k_y=k\cos\theta,
+\quad p_x=\half kh\cos\theta,\quad p_y=\half kh\sin\theta\]
+!et
+
+Also: $\Delta x=\Delta y=h$. Then $C_x=C_y=c\Delta t/h\equiv C$.
+
+Now $\tilde\omega$ depends on
+
+  * $C$ reflecting the number cells a wave is displaced during a time step
+  * $kh$ reflecting the number of cells per wave length in space
+  * $\theta$ expressing the direction of the wave
+
+!split
+===== Numerical dispersion relation in 2D (2) =====
+
+!bt
+\[ \frac{\tilde c}{c} = \frac{1}{Ckh}
+\sin^{-1}\left(C\left(\sin^2 ({\half}kh\cos\theta)
++ \sin^2({\half}kh\sin\theta) \right)^\half\right)
+\]
+!et
+
+Can make color contour plots of $1-\tilde c/c$ in
+*polar coordinates* with $\theta$ as the angular coordinate and
+$kh$ as the radial coordinate.
+
+!split
+===== Numerical dispersion relation in 2D (3) =====
+
+FIGURE: [fig-wave/disprel2D, width=800]
+
