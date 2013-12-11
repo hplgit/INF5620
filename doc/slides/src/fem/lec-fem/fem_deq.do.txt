@@ -1,0 +1,3126 @@
+!split
+======= Differential equation models =======
+label{fem:deq:1D:models}
+
+Our aim is to extend the ideas for approximating $f$ by $u$, or solving
+
+!bt
+\[ u = f \]
+!et
+
+to real differential equations like[[[
+
+!bt
+\[ -u'' + bu = f,\quad u(0)=1,\ u'(L)=D \]
+!et
+
+
+Three methods are addressed:
+
+ o least squares
+ o Galerkin/projection
+ o collocation (interpolation)
+
+Method 2 will be totally dominating!
+
+!split
+===== Abstract differential equation =====
+
+!bt
+\begin{equation}
+\mathcal{L}(u) = 0,\quad x\in\Omega  \end{equation}
+!et
+
+Examples (1D problems):
+
+!bt
+\begin{align}
+\mathcal{L}(u) &= \frac{d^2u}{dx^2} - f(x),
+label{fem:deq:1D:L1}\\
+\mathcal{L}(u) &= \frac{d}{dx}\left(\dfc(x)\frac{du}{dx}\right) + f(x),
+label{fem:deq:1D:L2}\\
+\mathcal{L}(u) &= \frac{d}{dx}\left(\dfc(u)\frac{du}{dx}\right) - au + f(x),
+label{fem:deq:1D:L3}\\
+\mathcal{L}(u) &= \frac{d}{dx}\left(\dfc(u)\frac{du}{dx}\right) + f(u,x)
+label{fem:deq:1D:L4}
+\end{align}
+!et
+
+!split
+===== Abstract boundary conditions =====
+
+!bt
+\begin{equation}
+{\cal B}_0(u)=0,\ x=0,\quad {\cal B}_1(u)=0,\ x=L
+\end{equation}
+!et
+
+Examples:
+
+!bt
+\begin{align}
+\mathcal{B}_i(u) &= u - g,\quad &\hbox{Dirichlet condition}\\
+\mathcal{B}_i(u) &= -\dfc \frac{du}{dx} - g,\quad &\hbox{Neumann condition}\\
+\mathcal{B}_i(u) &= -\dfc \frac{du}{dx} - h(u-g),\quad &\hbox{Robin condition}
+\end{align}
+!et
+
+!split
+===== Reminder about notation =====
+
+ * $\uex(x)$ is the symbol for the *exact* solution
+   of $\mathcal{L}(\uex)=0$
+ * $u(x)$ denotes an *approximate* solution
+ * We seek $u\in V$
+ * $V = \hbox{span}\{ \baspsi_0(x),\ldots,\baspsi_N(x)\}$, $V$ has basis $\sequencei{\baspsi}$
+ * $\If =\{0,\ldots,N\}$ is an index set
+ * $u(x) = \sum_{j\in\If} c_j\baspsi_j(x)$
+ * Inner product: $(u,v) = \int_\Omega uv\dx$
+ * Norm: $||u||=\sqrt{(u,u)}$
+
+
+!split
+===== New topics =====
+
+Much is similar to approximating a function (solving $u=f$), but
+two new topics are needed:
+
+ * Variational formulation of the differential equation problem
+   (including integration by parts)
+ * Handling of boundary conditions
+
+
+!split
+===== Residual-minimizing principles =====
+label{fem:deq:1D:residual:min}
+
+ * When solving $u=f$ we knew the error $e=f-u$ and could
+   use principles for minimizing the error
+ * When solving $\mathcal{L}(\uex)=0$ we do not know $\uex$ and
+   cannot work with the error $e=\uex - u$
+ * We only have the *error in the equation*: the residual $R$
+
+Inserting $u=\sum_jc_j\baspsi_j$ in $\mathcal{L}=0$ gives
+a residual
+
+!bt
+\begin{equation}
+R = \mathcal{L}(u) = \mathcal{L}(\sum_j c_j \baspsi_j) \neq 0
+\end{equation}
+!et
+
+Goal: minimize $R$ wrt $\sequencei{c}$ (and hope it makes a small $e$ too)
+
+!bt
+\[ R=R(c_0,\ldots,c_N; x)\]
+!et
+
+!split
+===== The least squares method =====
+
+Idea: minimize
+
+!bt
+\begin{equation}
+E = ||R||^2 = (R,R) = \int_{\Omega} R^2 dx
+\end{equation}
+!et
+
+Minimization wrt $\sequencei{c}$ implies
+
+
+!bt
+\begin{equation}
+\frac{\partial E}{\partial c_i} =
+\int_{\Omega} 2R\frac{\partial R}{\partial c_i} dx = 0\quad
+\Leftrightarrow\quad (R,\frac{\partial R}{\partial c_i})=0,\quad
+i\in\If
+label{fem:deq:1D:LS:eq1}
+\end{equation}
+!et
+
+$N+1$ equations for $N+1$ unknowns $\sequencei{c}$
+
+!split
+===== The Galerkin method =====
+
+Idea: make $R$ orthogonal to $V$,
+
+!bt
+\begin{equation}
+(R,v)=0,\quad \forall v\in V
+label{fem:deq:1D:Galerkin0}
+\end{equation}
+!et
+
+This implies
+
+!bt
+\begin{equation}
+(R,\baspsi_i)=0,\quad i\in\If
+label{fem:deq:1D:Galerkin}
+\end{equation}
+!et
+
+$N+1$ equations for $N+1$ unknowns $\sequencei{c}$
+
+!split
+===== The Method of Weighted Residuals =====
+
+Generalization of the Galerkin method: demand $R$
+orthogonal to some space $W$, possibly $W\neq V$:
+
+!bt
+\begin{equation}
+(R,v)=0,\quad \forall v\in W
+label{fem:deq:1D:WRM0}
+\end{equation}
+!et
+
+If $\{w_0,\ldots,w_N\}$ is a basis for $W$:
+
+!bt
+\begin{equation}
+(R,w_i)=0,\quad i\in\If
+label{fem:deq:1D:WRM}
+\end{equation}
+!et
+
+ * $N+1$ equations for $N+1$ unknowns $\sequencei{c}$
+ * Weighted residual with $w_i = \partial R/\partial c_i$ gives
+   least squares
+
+!split
+===== Terminology: test and trial Functions =====
+
+idx{trial function} idx{test function} idx{trial space} idx{test space}
+
+ * $\baspsi_j$ used in $\sum_jc_j\baspsi_j$ is called *trial function*
+ * $\baspsi_i$ or $w_i$ used as weight in Galerkin's method is called *test function*
+
+!split
+===== The collocation method =====
+
+Idea: demand $R=0$ at $N+1$ points
+
+!bt
+\begin{equation}
+R(\xno{i}; c_0,\ldots,c_N)=0,\quad i\in\If
+label{fem:deq:1D:collocation}
+\end{equation}
+!et
+
+Note: The collocation method is a weighted residual method with
+delta functions as weights
+
+!bt
+\[ 0 = \int_\Omega R(x;c_0,\ldots,c_N)
+\delta(x-\xno{i})\dx = R(\xno{i}; c_0,\ldots,c_N)\]
+!et
+
+!bt
+\begin{equation}
+\hbox{property of } \delta(x):\quad
+\int_{\Omega} f(x)\delta (x-\xno{i}) dx = f(\xno{i}),\quad \xno{i}\in\Omega
+label{fem:deq:1D:Dirac}
+\end{equation}
+!et
+
+
+FIGURE: [fig-fem/delta_func_weight, width=200 frac=0.3]
+
+!split
+======= Examples on using the principles =======
+label{fem:deq:1D:ex:sines}
+
+!bblock Goal
+Exemplify the least squares, Galerkin, and collocation methods
+in a simple 1D problem with global basis functions.
+!eblock
+
+!split
+===== The first model problem =====
+
+!bt
+\begin{equation}
+-u''(x) = f(x),\quad x\in\Omega=[0,L],\quad u(0)=0,\ u(L)=0
+label{fem:deq:1D:model1b}
+\end{equation}
+!et
+
+Basis functions:
+
+!bt
+\begin{equation}
+\baspsi_i(x) = \sinL{i},\quad i\in\If
+label{fem:deq:1D:ex:sines:psi}
+\end{equation}
+!et
+
+The residual:
+
+!bt
+\begin{align}
+R(x;c_0,\ldots,c_N) &= u''(x) + f(x),\nonumber\\
+&= \frac{d^2}{dx^2}\left(\sum_{j\in\If} c_j\baspsi_j(x)\right)
++ f(x),\nonumber\\
+&= -\sum_{j\in\If} c_j\baspsi_j''(x) + f(x)
+label{fem:deq:1D:ex:sines:res}
+\end{align}
+!et
+
+!split
+===== Boundary conditions =====
+
+Since $u(0)=u(L)=0$ we must ensure that
+all $\baspsi_i(0)=\baspsi_i(L)=0$. Then
+
+!bt
+\[ u(0) = \sum_jc_j\baspsi_j(0) = 0,\quad u(L) = \sum_jc_j\baspsi_j(L) \]
+!et
+
+ * $u$ known: Dirichlet boundary condition
+ * $u'$ known: Neumann boundary condition
+ * Must have $\baspsi_i=0$ where Dirichlet conditions apply
+
+
+
+!split
+===== The least squares method; principle =====
+
+!bt
+\[
+(R,\frac{\partial R}{\partial c_i}) = 0,\quad i\in\If
+\]
+!et
+
+!bt
+\begin{equation}
+\frac{\partial R}{\partial c_i} =
+\frac{\partial}{\partial c_i}
+\left(\sum_{j\in\If} c_j\baspsi_j''(x) + f(x)\right)
+= \baspsi_i''(x)  \end{equation}
+!et
+
+Because:
+!bt
+\[
+\frac{\partial}{\partial c_i}\left(c_0\baspsi_0'' + c_1\baspsi_1'' + \cdots +
+c_{i-1}\baspsi_{i-1}'' + \color{blue}{c_i\baspsi_{i}''} + c_{i+1}\baspsi_{i+1}''
++ \cdots + c_N\baspsi_N'' \right) = \baspsi_{i}''
+\]
+!et
+
+!split
+===== The least squares method; equation system =====
+
+!bt
+\begin{equation}
+(\sum_j c_j \baspsi_j'' + f,\baspsi_i'')=0,\quad i\in\If
+\end{equation}
+!et
+
+Rearrangement:
+
+!bt
+\begin{equation}
+\sum_{j\in\If}(\baspsi_i'',\baspsi_j'')c_j = -(f,\baspsi_i''),\quad i\in\If  \end{equation}
+!et
+
+This is a linear system
+
+!bt
+\begin{equation*} \sum_{j\in\If}A_{i,j}c_j = b_i,\quad i\in\If
+\end{equation*}
+!et
+with
+
+!bt
+\begin{align}
+A_{i,j} &= (\baspsi_i'',\baspsi_j'')\nonumber\\
+& = \pi^4(i+1)^2(j+1)^2L^{-4}\int_0^L \sinL{i}\sinL{j}\, dx\nonumber\\
+&= \left\lbrace
+\begin{array}{ll} {1\over2}L^{-3}\pi^4(i+1)^4 & i=j  \\ 0, & i\neq j
+\end{array}\right.
+\\
+b_i &= -(f,\baspsi_i'') = (i+1)^2\pi^2L^{-2}\int_0^Lf(x)\sinL{i}\, dx
+\end{align}
+!et
+
+!split
+===== Orthogonality of the basis functions gives diagonal matrix =====
+
+Useful property:
+
+!bt
+\begin{equation}
+\int\limits_0^L \sinL{i}\sinL{j}\, dx = \delta_{ij},\quad
+\quad\delta_{ij} = \left\lbrace
+\begin{array}{ll} \half L & i=j  \\ 0, & i\neq j
+\end{array}\right.
+\end{equation}
+!et
+
+$\Rightarrow\ (\baspsi_i'',\baspsi_j'') = \delta_{ij}$, i.e.,
+diagonal $A_{i,j}$, and we can easily solve for $c_i$:
+
+!bt
+\begin{equation}
+c_i = \frac{2L}{\pi^2(i+1)^2}\int_0^Lf(x)\sinL{i}\, dx
+label{fem:deq:1D:ex:sines:solution}
+\end{equation}
+!et
+
+!split
+===== Least squares method; solution =====
+
+Let's `sympy` do the work ($f(x)=2$):
+
+!bc pycod
+from sympy import *
+import sys
+
+i, j = symbols('i j', integer=True)
+x, L = symbols('x L')
+f = 2
+a = 2*L/(pi**2*(i+1)**2)
+c_i = a*integrate(f*sin((i+1)*pi*x/L), (x, 0, L))
+c_i = simplify(c_i)
+print c_i
+!ec
+
+!bt
+\begin{equation}
+c_i = 4 \frac{L^{2} \left(\left(-1\right)^{i} + 1\right)}{\pi^{3}
+\left(i^{3} + 3 i^{2} + 3 i + 1\right)},\quad
+u(x) = \sum_{k=0}^{N/2} \frac{8L^2}{\pi^3(2k+1)^3}\sinL{2k}\tp
+\end{equation}
+!et
+
+Fast decay: $c_2 = c_0/27$, $c_4=c_0/125$ - only one term might be good enough:
+
+!bt
+\begin{equation*} u(x) \approx \frac{8L^2}{\pi^3}\sin\left(\pi\frac{x}{L}\right)\tp  \end{equation*}
+!et
+
+!split
+===== The Galerkin method; principle =====
+
+$R=u''+f$:
+
+!bt
+\begin{equation*}
+(u''+f,v)=0,\quad \forall v\in V,
+\end{equation*}
+!et
+or
+
+!bt
+\begin{equation}
+(u'',v) = -(f,v),\quad\forall v\in V  \end{equation}
+!et
+
+This is a *variational formulation* of the differential equation problem.
+
+$\forall v\in V$ means for all basis functions:
+
+!bt
+\begin{equation}
+(\sum_{j\in\If} c_j\baspsi_j'', \baspsi_i)=-(f,\baspsi_i),\quad i\in\If  \end{equation}
+!et
+
+!split
+===== The Galerkin method; solution =====
+
+Since $\baspsi_i''\propto \baspsi_i$,
+Galerkin's method gives the same linear system and the same solution
+as the least squares method (in this particular example).
+
+!split
+===== The collocation method =====
+
+$R=0$ (i.e.,the differential equation) must be satisfied at $N+1$ points:
+
+!bt
+\begin{equation}
+-\sum_{j\in\If} c_j\baspsi_j''(\xno{i}) = f(\xno{i}),\quad i\in\If
+\end{equation}
+!et
+
+This is a linear system $\sum_j A_{i,j}=b_i$ with entries
+
+!bt
+\begin{equation*} A_{i,j}=-\baspsi_j''(\xno{i})=
+(j+1)^2\pi^2L^{-2}\sin\left((j+1)\pi \frac{x_i}{L}\right),
+\quad b_i=2
+\end{equation*}
+!et
+
+Choose: $N=0$, $x_0=L/2$
+
+!bt
+\[ c_0=2L^2/\pi^2 \]
+!et
+
+!split
+===== Comparison of the methods =====
+
+ * Exact solution: $u(x)=x(L-x)$
+ * Galerkin or least squares ($N=0$): $u(x)=8L^2\pi^{-3}\sin (\pi x/L)$
+ * Collocation method ($N=0$): $u(x)=2L^2\pi^{-2}\sin (\pi x/L)$.
+ * Max error in Galerkin/least sq.: $-0.008L^2$
+ * Max error in collocation: $0.047L^2$
+
+!split
+======= Useful techniques =======
+
+!split
+===== Integration by parts =====
+label{fem:deq:1D:varform}
+
+idx{integration by parts}
+
+Second-order derivatives will hereafter be integrated by parts
+
+!bt
+\begin{align}
+\int_0^L u''(x)v(x) dx &= - \int_0^Lu'(x)v'(x)dx
++ [vu']_0^L\nonumber\\
+&= - \int_0^Lu'(x)v'(x) dx
++ u'(L)v(L) - u'(0)v(0)
+label{fem:deq:1D:intbyparts}
+\end{align}
+!et
+
+Motivation:
+
+ * Lowers the order of derivatives
+ * Gives more symmetric forms (incl. matrices)
+ * Enables easy handling of Neumann boundary conditions
+ * Finite element basis functions $\basphi_i$ have discontinuous
+   derivatives (at cell boundaries) and are not suited for
+   terms with $\basphi_i''$
+
+
+===== Boundary function; principles =====
+label{fem:deq:1D:essBC:Bfunc}
+
+ * What about nonzero Dirichlet conditions? Say $u(L)=D$
+ * We always require $\baspsi_i(L)=0$ (i.e., $\baspsi_i=0$ where Dirichlet conditions applies)
+ * Problem: $u(L) = \sum_j c_j\baspsi_j(L)=\sum_j c_j\cdot 0=0\neq D$ - always
+ * Solution: $u(x) = B(x) + \sum_j c_j\baspsi_j(x)$
+ * $B(x)$: user-constructed boundary function that fulfills the Dirichlet
+   conditions
+ * If $u(L)=D$, $B(L)=D$
+ * No restrictions of how $B(x)$ varies in the interior of $\Omega$
+
+!split
+===== Boundary function; example (1) =====
+
+Dirichlet conditions: $u(0)=C$ and $u(L)=D$. Choose for example
+
+!bt
+\[ B(x) = \frac{1}{L}(C(L-x) + Dx):\qquad B(0)=C,\ B(L)=D  \]
+!et
+
+!bt
+\begin{equation}
+u(x) = B(x) + \sum_{j\in\If} c_j\baspsi_j(x),
+label{fem:deq:1D:essBC:Bfunc:u1}
+\end{equation}
+!et
+
+!bt
+\[ u(0) = B(0)= C,\quad u(L) = B(L) = D \]
+!et
+
+!split
+===== Boundary function; example (2) =====
+
+Dirichlet condition: $u(L)=D$. Choose for example
+
+!bt
+\[ B(x) = D:\qquad B(L)=D  \]
+!et
+
+!bt
+\begin{equation}
+u(x) = B(x) + \sum_{j\in\If} c_j\baspsi_j(x),
+label{fem:deq:1D:essBC:Bfunc:u1}
+\end{equation}
+!et
+
+!bt
+\[ u(L) = B(L) = D \]
+!et
+
+!split
+===== Impact of the boundary function on the space where we seek the solution =====
+
+ * $\sequencei{\baspsi}$ is a basis for $V$
+ * $\sum_{j\in\If}c_j\baspsi_j(x)\in V$
+ * But $u\not\in V$!
+ * Reason: say $u(0)=C$ and $u\in V$ (any $v\in V$ has $v(0)=C$, then
+   $2u\not\in V$ because $2u(0)=2C$
+ * When $u(x) = B(x) + \sum_{j\in\If}c_j\baspsi_j(x)$, $B \neq 0$,
+   $B\not\in V$ (in general) and
+   $u\not\in V$, but $(u-B)\in V$ since $\sum_{j}c_j\baspsi_j\in V$
+
+
+!split
+===== Abstract notation for variational formulations =====
+label{fem:deq:1D:varform:abstract}
+
+The finite element literature (and much FEniCS documentation)
+applies an abstract notation for the variational formulation:
+
+!bblock
+Find $(u-B)\in V$ such that
+
+!bt
+\[ a(u,v) = L(v)\quad \forall v\in V \]
+!et
+!eblock
+
+!split
+===== Example on abstract notation =====
+
+!bt
+\[ -u''=f, \quad u'(0)=C,\ u(L)=D,\quad u=D + \sum_jc_j\baspsi_j\]
+!et
+
+Variational formulation:
+
+!bt
+\[
+\int_{\Omega} u' v'dx = \int_{\Omega} fvdx\quad - v(0)C
+\hbox{or}\quad (u',v') = (f,v) - v(0)C
+\quad\forall v\in V
+\]
+!et
+
+Abstract formulation: finn $(u-B)\in V$ such that
+
+!bt
+\[ a(u,v) = L(v)\quad \forall v\in V\]
+!et
+
+We identify
+
+!bt
+\[ a(u,v) = (u',v'),\quad L(v) = (f,v) -v(0)C  \]
+!et
+
+!split
+===== Bilinear and linear forms =====
+
+ * $a(u,v)$ is a *bilinear form*
+ * $L(v)$ is a *linear form*
+
+Linear form means
+
+!bt
+\[ L(\alpha_1 v_1 + \alpha_2 v_2)
+=\alpha_1 L(v_1) + \alpha_2 L(v_2),
+\]
+!et
+
+Bilinear form means
+!bt
+\begin{align*}
+a(\alpha_1 u_1 + \alpha_2 u_2, v) &= \alpha_1 a(u_1,v) + \alpha_2 a(u_2, v),
+\\
+a(u, \alpha_1 v_1 + \alpha_2 v_2) &= \alpha_1 a(u,v_1) + \alpha_2 a(u, v_2)
+\end{align*}
+!et
+
+In nonlinear problems: Find $(u-B)\in V$ such that $F(u;v)=0\ \forall v\in V$
+
+!split
+===== The linear system associated with abstract form =====
+
+!bt
+\[ a(u,v) = L(v)\quad \forall v\in V\quad\Leftrightarrow\quad
+a(u,\baspsi_i) = L(\baspsi_i)\quad i\in\If\]
+!et
+
+We can now derive the corresponding linear system once and for all:
+
+!bt
+\[  a(\sum_{j\in\If} c_j \baspsi_j,\baspsi_i)c_j = L(\baspsi_i)\quad i\in\If\]
+!et
+
+Because of linearity,
+
+!bt
+\[ \sum_{j\in\If} \underbrace{a(\baspsi_j,\baspsi_i)}_{A_{i,j}}c_j =
+\underbrace{L(\baspsi_i)}_{b_i}\quad i\in\If\]
+!et
+
+!bblock
+Given $a(u,v)$ and $L(v)$ in a problem, we can immediately generate
+the linear system:
+
+!bt
+\[ A_{i,j} = a(\baspsi_j,\baspsi_i),\quad
+b_i = L(\baspsi_i) \]
+!et
+!eblock
+
+!split
+===== Equivalence with minimization problem =====
+
+If $a(u,v)=a(v,u)$,
+
+!bt
+\[ a(u,v)=L(v)\quad\forall v\in V,\]
+!et
+
+is equivalent to minimizing the functional
+
+!bt
+\[ F(v) = {\half}a(v,v) - L(v) \]
+!et
+over all functions $v\in V$. That is,
+
+!bt
+\[ F(u)\leq F(v)\quad \forall v\in V\tp \]
+!et
+
+ * Much used in the early days of finite elements
+ * Still much used in structural analysis and elasticity
+ * Not as general as Galerkin's method (since $a(u,v)=a(v,u)$)
+
+!split
+======= Examples on variational formulations =======
+label{fem:deq:1D:varform:ex}
+
+!bblock Goal
+Derive variational formulations for many prototype differential
+equations in 1D that include
+
+ * variable coefficients
+ * mixed Dirichlet and Neumann conditions
+ * nonlinear coefficients
+
+!eblock
+
+!split
+===== Variable coefficient; problem =====
+
+!bt
+\begin{equation}
+-\frac{d}{dx}\left( \dfc(x)\frac{du}{dx}\right) = f(x),\quad x\in\Omega =[0,L],\
+u(0)=C,\ u(L)=D
+\end{equation}
+!et
+
+ * Variable coefficient $\dfc(x)$
+ * *Nonzero* Dirichlet conditions at $x=0$ *and* $x=L$
+ * Must have $\baspsi_i(0)=\baspsi_i(L)=0$
+ * $V = \hbox{span}\{\baspsi_0,\ldots,\baspsi_N\}$
+ * $v\in V$: $v(0)=v(L)=0$
+
+!bt
+\[
+u(x) = B(x) + \sum_{j\in\If} c_j\baspsi_i(x)
+\]
+!et
+
+!bt
+\[ B(x) = C + \frac{1}{L}(D-C)x\]
+!et
+
+!split
+===== Variable coefficient; variational formulation (1) =====
+
+!bt
+\[ R = -\frac{d}{dx}\left( a\frac{du}{dx}\right) -f \]
+!et
+
+Galerkin's method:
+
+!bt
+\[
+(R, v) = 0,\quad \forall v\in V,
+\]
+!et
+
+or with integrals:
+
+!bt
+\[
+\int_{\Omega} \left(\frac{d}{dx}\left( \dfc\frac{du}{dx}\right) -f\right)v \dx = 0,\quad \forall v\in V \tp
+\]
+!et
+
+!split
+===== Variable coefficient; variational formulation (2) =====
+
+Integration by parts:
+
+!bt
+\[ -\int_{\Omega} \frac{d}{dx}\left( \dfc(x)\frac{du}{dx}\right) v \dx
+= \int_{\Omega} \dfc(x)\frac{du}{dx}\frac{dv}{dx}\dx -
+\left[\dfc\frac{du}{dx}v\right]_0^L
+\tp
+\]
+!et
+
+Boundary terms vanish since $v(0)=v(L)=0$
+
+!bnotice Variational formulation
+
+Find $(u-B)\in V$ such that
+
+!bt
+\[
+\int_{\Omega} \dfc(x)\frac{du}{dx}\frac{dv}{dx}dx = \int_{\Omega} f(x)vdx,\quad
+\forall v\in V,
+\]
+!et
+
+Compact notation:
+
+!bt
+\[ \underbrace{(\dfc u',v')}_{a(u,v)} = \underbrace{(f,v)}_{L(v)},
+\quad \forall v\in V \]
+!et
+!enotice
+
+
+!split
+===== Variable coefficient; linear system (the easy way) =====
+
+With
+
+!bt
+\[ a(u,v) = (\dfc u', v),\quad L(v) = (f,v) \]
+!et
+
+we can just use the formula for the linear system:
+
+!bt
+\begin{align*}
+A_{i,j} &= a(\baspsi_j,\baspsi_i) = (\dfc \baspsi_j', \baspsi_i')
+= \int_\Omega \dfc \baspsi_j' \baspsi_i'\dx =
+\int_\Omega \baspsi_i' \dfc \baspsi_j'\dx = a(\baspsi_i,\baspsi_j) = A_{j,i}\\
+b_i &= (f,\baspsi_i) = \int_\Omega f\baspsi_i\dx
+\end{align*}
+!et
+
+!split
+===== Variable coefficient; linear system (full derivation) =====
+
+$v=\baspsi_i$ and $u=B + \sum_jc_j\baspsi_j$:
+
+!bt
+\[
+(\dfc B' + \dfc \sum_{j\in\If} c_j \baspsi_j', \baspsi_i') =
+(f,\baspsi_i), \quad i\in\If \tp
+\]
+!et
+
+Reorder to form linear system:
+
+!bt
+\[ \sum_{j\in\If} (\dfc\baspsi_j', \baspsi_i')c_j  =
+(f,\baspsi_i) + (a(D-C)L^{-1}, \baspsi_i'), \quad i\in\If
+\tp
+\]
+!et
+
+This is $\sum_j A_{i,j}c_j=b_i$ with
+
+!bt
+\begin{align*}
+A_{i,j} &= (a\baspsi_j', \baspsi_i') = \int_{\Omega} \dfc(x)\baspsi_j'(x)
+\baspsi_i'(x)\dx\\
+b_i &= (f,\baspsi_i) + (a(D-C)L^{-1},\baspsi_i')=
+\int_{\Omega} \left(f(x)\baspsi_i(x) + \dfc(x)\frac{D-C}{L}\baspsi_i'(x)\right) \dx
+\end{align*}
+!et
+
+!split
+===== First-order derivative in the equation and boundary condition; problem =====
+
+!bt
+\begin{equation}
+-u''(x) + bu'(x) = f(x),\quad x\in\Omega =[0,L],\
+u(0)=C,\ u'(L)=E
+\end{equation}
+!et
+
+New features:
+
+ * first-order derivative $u'$ in the equation
+ * boundary condition with $u'$: $u'(L)=E$
+
+Initial steps:
+
+ * Must force $\baspsi_i(0)=0$ because of Dirichlet condition at $x=0$
+ * Boundary function: $B(x)=C(L-x)$ or just $B(x)=C$
+ * No requirements on $\baspsi_i(L)$ (no Dirichlet condition at $x=L$)
+
+!split
+===== First-order derivative in the equation and boundary condition; details =====
+
+!bt
+\[ u = C + \sum_{j\in\If} c_j \baspsi_i(x)\]
+!et
+
+Galerkin's method: multiply by $v$, integrate over $\Omega$, integrate
+by parts.
+
+!bt
+\[  (-u'' + bu' - f, v) = 0,\quad\forall v\in V\]
+!et
+
+!bt
+\[ (u',v') + (bu',v) = (f,v) + [u' v]_0^L, \quad\forall v\in V\]
+!et
+
+Now, $[u' v]_0^L = u'(L)v(L) = E v(L)$ because $v(0)=0$ and $u'(L)=E$:
+
+!bt
+\[ (u'v') + (bu',v) = (f,v) + Ev(L), \quad\forall v\in V\]
+!et
+
+!split
+===== First-order derivative in the equation and boundary condition; observations =====
+
+!bt
+\[ (u'v') + (bu',v) = (f,v) + Ev(L), \quad\forall v\in V,\]
+!et
+
+Important:
+
+  * The boundary term can be used to implement Neumann conditions
+  * Forgetting the boundary term implies the condition $u'=0$ (!)
+  * Such conditions are called *natural boundary conditions*
+
+!split
+===== First-order derivative in the equation and boundary condition; abstract notation =====
+
+Abstract notation:
+
+!bt
+\[ a(u,v)=L(v)\quad\forall v\in V\]
+!et
+
+Here:
+
+!bt
+\begin{align*}
+a(u,v)&=(u',v') + (bu',v)\\
+L(v)&= (f,v) + E v(L)
+\end{align*}
+!et
+
+!split
+===== First-order derivative in the equation and boundary condition; linear system =====
+
+Insert $u=C+\sum_jc_j\baspsi_j$ and $v=\baspsi_i$:
+
+!bt
+\[
+\sum_{j\in\If}
+\underbrace{((\baspsi_j',\baspsi_i') + (b\baspsi_j',\baspsi_i))}_{A_{i,j}}
+c_j =
+\underbrace{(f,\baspsi_i) + E \baspsi_i(L)}_{b_i}
+\]
+!et
+
+Observation: $A_{i,j}$ is not symmetric because of the term
+
+!bt
+\[
+(b\baspsi_j',\baspsi_i)=\int_{\Omega} b\baspsi_j'\baspsi_i dx
+ \neq \int_{\Omega} b \baspsi_i' \baspsi_jdx = (\baspsi_i',b\baspsi_j)
+\]
+!et
+
+!split
+===== Terminology: natural and essential boundary conditions =====
+
+!bt
+\[ (u',v') + (bu',v) = (f,v) + u'(L)v(L) - u'(0)v(0)\]
+!et
+
+ * Note: forgetting the boundary terms implies $u'(L)=u'(0)=0$
+   (unless prescribe a Dirichlet condition)
+ * Conditions on $u'$ are simply inserted in the variational form
+   and called *natural conditions*
+ * Conditions on $u$ at $x=0$ requires modifying $V$ (through $\baspsi_i(0)=0$)
+   and are known as *essential conditions*
+
+!bnotice Lesson learned
+It is easy to forget the boundary term when integrating by parts.
+That mistake may prescribe a condition on $u'$!
+!enotice
+
+!split
+===== Nonlinear coefficient; problem =====
+
+Problem:
+
+!bt
+\begin{equation}
+-(\dfc(u)u')' = f(u),\quad x\in [0,L],\ u(0)=0,\ u'(L)=E
+\end{equation}
+!et
+
+ * $V$: basis $\sequencei{\baspsi}$ with $\baspsi_i(0)=0$ because of $u(0)=0$
+ * How does the nonlinear coefficients $\dfc(u)$ and $f(u)$
+   impact the variational formulation?
+ * (Not much!)
+
+!split
+===== Nonlinear coefficient; variational formulation =====
+
+Galerkin: multiply by $v$, integrate, integrate by parts
+
+!bt
+\[ \int_0^L \dfc(u)\frac{du}{dx}\frac{dv}{dx}\dx =
+\int_0^L f(u)v\dx + [\dfc(u)vu']_0^L\quad\forall v\in V
+\]
+!et
+
+ * $\dfc(u(0))v(0)u'(0)=0$ since $v(0)$
+ * $\dfc(u(L))v(L)u'(L) = \dfc(u(L))v(L)E$ since $u'(L)=E$
+
+!bt
+\[ \int_0^L \dfc(u)\frac{du}{dx}\frac{dv}{dx}v\dx =
+\int_0^L f(u)v\dx + \dfc(u(L))v(L)E\quad\forall v\in V
+\]
+!et
+
+or
+
+!bt
+\[ (\dfc(u)u', v') = (f(u),v) + \dfc(u(L))v(L)E\quad\forall v\in V
+\]
+!et
+
+!split
+===== Nonlinear coefficient; where does the nonlinearity cause challenges? =====
+
+ * Abstract notation: no $a(u,v)$ and $L(v)$ because $a$ and $L$ are nonlinear
+ * Instead: $F(u;v)=0\ \forall v\in V$
+ * What about forming a linear system? We get a *nonlinear* system of
+   algebraic equations
+ * Must use methods like Picard iteration or Newton's method to solve
+   nonlinear algebraic equations
+ * But: the variational formulation was not much affected by nonlinearities
+
+
+!split
+===== Computing with Dirichlet and Neumann conditions; problem =====
+
+!bt
+\begin{equation*}
+-u''(x)=f(x),\quad x\in \Omega=[0,1],\quad u'(0)=C,\ u(1)=D
+\end{equation*}
+!et
+
+ * Use a *global* polynomial basis $\baspsi_i\sim x^i$ on $[0,1]$
+ * Because of $u(1)=D$: $\baspsi_i(1)=0$
+ * Basis: $\baspsi_i(x)=(1-x)^{i+1}$, $i\in\If$
+ * $B(x)=Dx$
+
+!split
+===== Computing with Dirichlet and Neumann conditions; details =====
+
+!bt
+\[ A_{i,j} = (\baspsi_j',\baspsi_i') = \int_{0}^1 \baspsi_i'(x)\baspsi_j'(x)dx
+= \int_0^1 (i+1)(j+1)(1-x)^{i+j} dx,
+\]
+!et
+
+Choose $f(x)=2$:
+
+!bt
+\begin{align*}
+b_i &= (2,\baspsi_i) - (D,\baspsi_i') -C\baspsi_i(0)\\
+&= \int_0^1 \left( 2(1-x)^{i+1} - D(i+1)(1-x)^i\right)dx  -C\baspsi_i(0)
+\end{align*}
+!et
+
+Can easily do the integrals with `sympy`. $N=1$:
+
+!bt
+\begin{equation*}
+\left(\begin{array}{cc}
+1 & 1\\
+1 & 4/3
+\end{array}\right)
+\left(\begin{array}{c}
+c_0\\
+c_1
+\end{array}\right)
+=
+\left(\begin{array}{c}
+-C+D+1\\
+2/3 -C + D
+\end{array}\right)
+\end{equation*}
+!et
+
+!bt
+\[ c_0=-C+D+2, \quad c_1=-1,\]
+!et
+
+!bt
+\[ u(x) = 1 -x^2 + D + C(x-1)\quad\hbox{(exact solution)} \]
+!et
+
+!split
+===== When the numerical method is exact =====
+
+Assume that apart from boundary conditions,
+$\uex$ lies in the same space $V$ as where we seek $u$:
+
+!bt
+\begin{align*}
+u &= B + F,\quad F\in V
+a(B+F, v) &= L(v)\quad\forall v\in V
+\uex & = B + E,\quad E\in V
+a(B+E, v) &= L(v)\quad\forall v\in V
+\end{align*}
+!et
+
+Subtract: $a(F-E,v)=0\ \Rightarrow\ E=F$ and $u = \uex$
+
+
+!split
+======= Computing with finite elements =======
+label{fem:deq:1D:fem1}
+
+Tasks:
+
+ * Address the model problem $-u''(x)=2$, $u(0)=u(L)=0$
+ * Uniform finite element mesh with P1 elements
+ * Show all finite element computations in detail
+
+!split
+===== Variational formulation, finite element mesh, and basis =====
+
+!bt
+\[ -u''(x) = 2,\quad x\in (0,L),\ u(0)=u(L)=0,\]
+!et
+
+Variational formulation:
+
+!bt
+\[ (u',v') = (2,v)\quad\forall v\in V  \]
+!et
+
+Since $u(0)=0$ and $u(L)=0$, we must force
+
+!bt
+\[ v(0)=v(L)=0,\quad \baspsi_i(0)=\baspsi_i(L)=0\]
+!et
+
+Use finite element basis, but exclude $\basphi_0$ and $\basphi_{N_n}$
+since these are not 0 on the boundary:
+
+!bt
+\[ \baspsi_i=\basphi_{i+1},\quad i=0,\ldots,N=N_n-2\]
+!et
+
+Introduce index mapping $\nu(j)$: $\baspsi_i = \basphi_{\nu(i)}$
+
+!bt
+\[ u = \sum_{j\in\If}c_j\basphi_{\nu(i)},\quad i=0,\ldots,N,\quad \nu(j) = j+1\]
+!et
+
+Irregular numbering: more complicated $\nu(j)$ table
+
+
+!split
+===== Computation in the global physical domain; formulas =====
+
+!bt
+\begin{equation*}
+A_{i,j}=\int_0^L\basphi_{i+1}'(x)\basphi_{j+1}'(x) dx,\quad
+b_i=\int_0^L2\basphi_{i+1}(x) dx
+\end{equation*}
+!et
+
+Many will prefer to change indices to obtain a
+$\basphi_i'\basphi_j'$ product: $i+1\rightarrow i$, $j+1\rightarrow j$
+
+!bt
+\begin{equation*}
+A_{i-1,j-1}=\int_0^L\basphi_{i}'(x)\basphi_{j}'(x) \dx,\quad
+b_{i-1}=\int_0^L2\basphi_{i}(x) \dx
+\end{equation*}
+!et
+
+!split
+===== Computation in the global physical domain; details =====
+
+FIGURE: [fig-fem/fe_mesh1D_dphi_2_3, width=400 frac=0.6]
+
+!bt
+\[ \basphi_i = \pm h^{-1} \]
+!et
+
+!bt
+\[ A_{i-1,i-1} = h^{-2}2h = 2h^{-1},\quad
+A_{i-1,i-2} = h^{-1}(-h^{-1})h = -h^{-1},\quad A_{i-1,i}=A_{i-1,i-2}\]
+!et
+
+!bt
+\[ b_{i-1} = 2({\half}h + {\half}h) = 2h\]
+!et
+
+!split
+===== Computation in the global physical domain; linear system =====
+
+!bt
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+2 & -1 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & -1 & 2
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\
+\vdots\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots\\
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+2h \\
+\vdots\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots\\
+2h
+\end{array}
+\right)
+label{fem:deq:1D:ex1:Ab:glob}
+\end{equation}
+!et
+
+!split
+===== Comparison with a finite difference discretization =====
+
+ * Recall: $c_i = u(\xno{i+1})\equiv u_{i+1}$
+ * Write out a general equation at node $i-1$, expressed by $u_i$
+
+!bt
+\begin{equation}
+-\frac{1}{h}u_{i-1} + \frac{2}{h}u_{i} - \frac{1}{h}u_{i+1} = 2h
+label{fem:deq:1D:fem:ex1}
+\end{equation}
+!et
+
+The standard finite difference method for $-u''=2$ is
+
+!bt
+\[ -\frac{1}{h^2}u_{i-1} + \frac{2}{h^2}u_{i} - \frac{1}{h^2}u_{i+1} = 2 \]
+!et
+
+!bblock
+The finite element method and the finite difference method are
+identical *in this example*.
+!eblock
+
+(Remains to study the equations involving boundary values)
+
+!split
+===== Cellwise computations; formulas =====
+label{fem:deq:1D:comp:elmwise}
+
+ * Repeat the previous example, but apply the cellwise algorithm
+ * Work with one cell at a time
+ * Transform physical cell to reference cell $X\in [-1,1]$
+
+!bt
+\begin{equation*}
+A_{i-1,j-1}^{(e)}=\int_{\Omega^{(e)}} \basphi_i'(x)\basphi_j'(x) \dx
+= \int_{-1}^1 \frac{d}{dx}\refphi_r(X)\frac{d}{dx}\refphi_s(X)
+\frac{h}{2} \dX,
+\end{equation*}
+!et
+
+!bt
+\[ \refphi_0(X)=\half(1-X),\quad\refphi_1(X)=\half(1+X)\]
+!et
+
+!bt
+\[ \frac{d\refphi_0}{dX} = -\half,\quad  \frac{d\refphi_1}{dX} = \half \]
+!et
+
+From the chain rule
+
+!bt
+\[ \frac{d\refphi_r}{dx} = \frac{d\refphi_r}{dX}\frac{dX}{dx}
+= \frac{2}{h}\frac{d\refphi_r}{dX}\]
+!et
+
+!split
+===== Cellwise computations; details =====
+
+!bt
+\begin{equation*}
+A_{i-1,j-1}^{(e)}=\int_{\Omega^{(e)}} \basphi_i'(x)\basphi_j'(x) \dx
+= \int_{-1}^1 \frac{2}{h}\frac{d\refphi_r}{dX}\frac{2}{h}\frac{d\refphi_s}{dX}
+\frac{h}{2} \dX = \tilde A_{r,s}^{(e)}
+\end{equation*}
+!et
+
+!bt
+\begin{equation*}
+b_{i-1}^{(e)} = \int_{\Omega^{(e)}} 2\basphi_i(x) \dx =
+\int_{-1}^12\refphi_r(X)\frac{h}{2} \dX = \tilde b_{r}^{(e)},
+\quad i=q(e,r),\ r=0,1
+\end{equation*}
+!et
+
+Must run through all $r,s=0,1$ and $r=0,1$ and compute each entry in
+the element matrix and vector:
+
+!bt
+\begin{equation}
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{rr}
+1 & -1\\
+-1 & 1
+\end{array}\right),\quad
+\tilde b^{(e)} = h\left(\begin{array}{c}
+1\\
+1
+\end{array}\right)\tp
+label{fem:deq:1D:ex1:Ab:elm}
+\end{equation}
+!et
+
+Example:
+
+!bt
+\[ \tilde A^{(e)}_{0,1} =
+\int_{-1}^1 \frac{2}{h}\frac{d\refphi_0}{dX}\frac{2}{h}\frac{d\refphi_1}{dX}
+\frac{h}{2} \dX
+= \frac{2}{h}(-\half)\frac{2}{h}\half\frac{h}{2} \int_{-1}^1\dX
+= -\frac{1}{h}
+\]
+!et
+
+!split
+===== Cellwise computations; details of boundary cells =====
+
+ * The boundary cells involve only one unknown
+ * $\Omega^{(0)}$: left node value known,
+   only a contribution from right node
+ * $\Omega^{(N_e)}$: right node value known,
+   only a contribution from left node
+
+For $e=0$ and $=N_e$:
+
+!bt
+\[
+\tilde A^{(e)} =\frac{1}{h}\left(\begin{array}{r}
+1
+\end{array}\right),\quad
+\tilde b^{(e)} = h\left(\begin{array}{c}
+1
+\end{array}\right)
+\]
+!et
+
+Only one degree of freedom ("node") in these cells ($r=0$ counts the only dof)
+
+!split
+===== Cellwise computations; assembly =====
+
+4 P1 elements:
+
+!bc pycod
+vertices = [0, 0.5, 1, 1.5, 2]
+cells = [[0, 1], [1, 2], [2, 3], [3, 4]]
+dof_map = [[0], [0, 1], [1, 2], [2]]       # only 1 dof in elm 0, 3
+!ec
+
+Python code for the assembly algorithm:
+
+!bc pycod
+# Ae[e][r,s]: element matrix, be[e][r]: element vector
+# A[i,j]: coefficient matrix, b[i]: right-hand side
+
+for e in range(len(Ae)):
+    for r in range(Ae[e].shape[0]):
+        for s in range(Ae[e].shape[1]):
+            A[dof_map[e,r],dof_map[e,s]] += Ae[e][i,j]
+        b[dof_map[e,r]] += be[e][i,j]
+!ec
+
+Result: same linear system as arose from computations in the physical domain
+
+!split
+===== General construction of a boundary function =====
+label{fem:deq:1D:essBC:Bfunc}
+
+  * Now we address nonzero Dirichlet conditions
+  * $B(x)$ is not always easy to construct (extend to the interior of $\Omega$),
+    especially not in 2D and 3D
+  * With finite element $\basphi_i$, $B(x)$ can be constructed in
+    a completely general way
+  * $\Ifb$: set of indices with nodes where $u$ is known
+  * $U_i$: Dirichlet value of $u$ at node $i$, $i\in\Ifb$
+
+!bt
+\begin{equation}
+B(x) = \sum_{j\in\Ifb} U_j\basphi_j(x)
+\end{equation}
+!et
+
+Suppose we have a Dirichlet condition $u(\xno{k})=U_k$, $k\in\Ifb$:
+
+!bt
+\[
+u(\xno{k}) = \sum_{j\in\Ifb} U_j\underbrace{\basphi_j(x)}_{\neq 0
+\hbox{ only for }j=k} +
+\sum_{j\in\If} c_j\underbrace{\basphi_{\nu(j)}(\xno{k})}_{=0,\ k\not\in\If}
+= U_k \]
+!et
+
+
+!split
+===== Example with two Dirichlet values; variational formulation =====
+
+!bt
+\[ -u''=2, \quad u(0)=C,\ u(L)=D  \]
+!et
+
+!bt
+\[ \int_0^L u'v'\dx = \int_0^L2v\dx\quad\forall v\in V\]
+!et
+
+!bt
+\[ (u',v') = (2,v)\quad\forall v\in V\]
+!et
+
+!split
+===== Example with two Dirichlet values; boundary function =====
+
+!bt
+\begin{equation}
+B(x) = \sum_{j\in\Ifb} U_j\basphi_j(x)
+\end{equation}
+!et
+
+Here $\Ifb = \{0,N_n\}$, $U_0=C$, $U_{N_n}=D$,
+
+!bt
+\[ \baspsi_i = \basphi_{\nu(i)}, \quad \nu(i)=i+1,\quad i\in\If =
+\{0,\ldots,N=N_n-2\} \]
+!et
+
+!bt
+\begin{equation}
+u(x) = C\basphi_0(x) + D\basphi_{N_n}(x)
++ \sum_{j\in\If}c_j\basphi_{\nu(j)}
+\end{equation}
+!et
+
+!split
+===== Example with two Dirichlet values; details =====
+
+Insert $u = B + \sum_j c_j\baspsi_j$ in variational formulation:
+
+!bt
+\[ (u',v') = (2,v)\quad\Rightarrow\quad (\sum_jc_j\baspsi_j',\baspsi_i')
+= (2-B',\baspsi_i)\quad \forall v\in V\]
+!et
+
+!bt
+\begin{align*}
+u(x) &= \underbrace{C\cdot\basphi_0 + D\basphi_{N_n}}_{B(x)}
++ \sum_{j\in\If} c_j\basphi_{j+1}\\
+&= C\cdot\basphi_0 + D\basphi_{N_n} + c_0\basphi_1 + c_1\basphi_2 +\cdots
++ c_N\basphi_{N_n-1}
+\end{align*}
+!et
+
+!bt
+\[
+A_{i-1,j-1} = \int_0^L \basphi_i'(x)\basphi_j'(x) \dx,\quad
+b_{i-1} = \int_0^L (f(x) - C\basphi_{0}'(x) - D\basphi_{N_n}'(x))
+\basphi_i(x) \dx
+\]
+!et
+for $i,j = 1,\ldots,N+1=N_n-1$.
+
+New boundary terms from $-\int B'\basphi_i\dx$: $C/2$ for $i=1$
+and $-D/2$ for $i=N_n-1$
+
+!split
+===== Example with two Dirichlet values; cellwise computations =====
+
+ * Element matrices as in the previous example (with $u=0$ on the boundary)
+ * New element vector in the first and last cell
+
+
+From the last cell:
+
+!bt
+\[
+\tilde b_0^{(N_e)} = \int_{-1}^1 \left(f - D\frac{2}{h}
+\frac{d\refphi_1}{dX}\right)
+\refphi_0\frac{h}{2} \dX
+= (\frac{h}{2}(2 - D\frac{2}{h}\half)
+\int_{-1}^1 \refphi_0 \dX =  h - D/2
+\]
+!et
+
+From the first cell:
+
+!bt
+\[
+\tilde b_0^{(0)} = \int_{-1}^1 \left(f - C\frac{2}{h}
+\frac{d\refphi_0}{dX}\right)
+\refphi_1\frac{h}{2} \dX
+= (\frac{h}{2}(2 + C\frac{2}{h}\half)
+\int_{-1}^1 \refphi_1 \dX =  h + C/2\tp
+\]
+!et
+
+!split
+===== Modification of the linear system; ideas =====
+label{fem:deq:1D:fem:essBC:Bfunc:modsys}
+
+ * Method 1: incorporate Dirichlet values through a $B(x)$ function
+   and demand $\baspsi_i=0$ where Dirichlet values apply
+ * Method 2: drop $B(x)$, drop demands to $\baspsi_i$, just assemble
+   as if there were no Dirichlet conditions, and modify the linear
+   system instead
+
+Method 2: always $\baspsi_i = \basphi_i$ and
+
+!bt
+\begin{equation}
+u(x) = \sum_{j\in\If}c_j\basphi_j(x),\quad \If=\{0,\ldots,N=N_n\}
+label{fem:deq:1D:fem:essBC:Bfunc:modsys:uall}
+\end{equation}
+!et
+
+!bnotice Attractive way of incorporating Dirichlet conditions
+$u$ is treated as unknown at all boundaries when computing entires
+in the linear system
+!enotice
+
+!split
+===== Modification of the linear system; original system =====
+
+!bt
+\[ -u''=2,\quad u(0)=0,\ u(L)=D\]
+!et
+
+Assemble as if there were no Dirichlet conditions:
+
+!bt
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+1 & -1 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & -1 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\
+\vdots\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots\\
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+h \\
+2h\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+2h\\
+h
+\end{array}
+\right)
+label{fem:deq:1D:ex1:Ab:glob2}
+\end{equation}
+!et
+
+!split
+===== Modification of the linear system; row replacement =====
+
+ * Dirichlet condition $u(\xno{k})= U_k$ means $c_k=U_k$ (since $c_k=u(\xno{k})$)
+ * Replace first row by $c_0=0$
+ * Replace last row by $c_N=D$
+
+!bt
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+h & 0 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\
+-1 & 2 & -1 & \ddots &   & &  & &  \vdots \\
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\
+\vdots & & & &  &\ddots  & \ddots &\ddots  & -1 \\
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & h
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\
+\vdots\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots\\
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+0 \\
+2h\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+2h\\
+D
+\end{array}
+\right)
+label{fem:deq:1D:ex1:Ab:glob3}
+\end{equation}
+!et
+
+!split
+===== Modification of the linear system; element matrix/vector =====
+
+In cell 0 we know $u$ for local node (degree of freedom) $r=0$.
+Replace the first cell equation by $\tilde c_0 = 0$:
+
+!bt
+\begin{equation}
+\tilde A^{(0)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+h & 0\\
+-1 & 1
+\end{array}\right),\quad
+\tilde b^{(0)} = \left(\begin{array}{c}
+0\\
+h
+\end{array}\right)
+label{fem:deq:1D:ex1:Ab:elm:bc:0}
+\end{equation}
+!et
+
+In cell $N_e$ we know $u$ for local node $r=1$. Replace the last
+equation in the cell system by $\tilde c_1=D$:
+
+!bt
+\begin{equation}
+\tilde A^{(N_e)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & -1\\
+0 & h
+\end{array}\right),\quad
+\tilde b^{(N_e)} = \left(\begin{array}{c}
+h\\
+D
+\end{array}\right)
+label{fem:deq:1D:ex1:Ab:elm:bc:N}
+\end{equation}
+!et
+
+!split
+===== Symmetric modification of the linear system; algorithm =====
+
+ * The modification above destroys symmetry of the matrix:
+   e.g., $A_{0,1}\neq A_{1,0}$
+ * Symmetry is often important in 2D and 3D (faster computations)
+ * A more complex modification can preserve symmetry!
+
+Algorithm for incorporating $c_i=U_i$ in a symmetric way:
+
+ o Subtract column $i$ times $U_i$ from the right-hand side
+ o Zero out column and row no $i$
+ o Place 1 on the diagonal
+ o Set $b_i=U_i$
+
+!split
+===== Symmetric modification of the linear system; example =====
+
+!bt
+\begin{equation}
+\frac{1}{h}\left(
+\begin{array}{ccccccccc}
+1 & 0 & 0
+&\cdots &
+\cdots & \cdots & \cdots &
+\cdots & 0 \\
+0 & 2 & -1 & \ddots &   & &  & &  \vdots \\
+0 & -1 & 2 & -1 &
+\ddots & &  &  & \vdots \\
+\vdots & \ddots &  & \ddots & \ddots & 0 &  & & \vdots \\
+\vdots &  & \ddots & \ddots & \ddots & \ddots & \ddots & & \vdots \\
+\vdots & &  & 0 & -1 & 2 & -1 & \ddots & \vdots \\
+\vdots & & &  & \ddots & \ddots & \ddots &\ddots  & 0 \\
+\vdots & & & &  &\ddots  & \ddots &\ddots  & 0 \\
+0 &\cdots & \cdots &\cdots & \cdots & \cdots  & 0 & 0 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+c_0 \\
+\vdots\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots\\
+c_{N}
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+0 \\
+2h\\
+\vdots\\
+\vdots \\
+\vdots \\
+\vdots \\
+\vdots \\
+2h +D/h\\
+D
+\end{array}
+\right)
+label{fem:deq:1D:ex1:Ab:glob3:symm}
+\end{equation}
+!et
+
+!split
+===== Symmetric modification of the linear system; element level =====
+
+Symmetric modification applied to $\tilde A^{(N_e)}$:
+
+!bt
+\begin{equation}
+\tilde A^{(N_e)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & 0\\
+0 & 1
+\end{array}\right),\quad
+\tilde b^{(N-1)} = \left(\begin{array}{c}
+h + D/h\\
+D
+\end{array}\right)
+label{fem:deq:1D:ex1:Ab:elm:bc:N:symm}
+\end{equation}
+!et
+
+!split
+===== Boundary conditions: specified derivative =====
+label{fem:deq:1D:BC:nat}
+
+!bnotice Neumann conditions
+How can we incorporate $u'(0)=C$ with finite elements?
+!enotice
+
+!bt
+\[ -u''=f,\quad u'(0)=C,\ u(L)=D\]
+!et
+
+ * $\baspsi_i(L)=0$ because of Dirichlet condition $u(L)=D$
+ * No demand to $\baspsi_i(0)$
+
+!split
+===== The variational formulation =====
+
+
+Galerkin's method:
+
+!bt
+\begin{equation*}
+\int_0^L(u''(x)+f(x))\baspsi_i(x) dx = 0,\quad i\in\If
+\end{equation*}
+!et
+
+Integration of $u''\baspsi_i$ by parts:
+
+!bt
+\begin{equation*}
+\int_0^Lu'(x)\baspsi_i'(x) \dx -(u'(L)\baspsi_i(L) - u'(0)\baspsi_i(0)) -
+\int_0^L f(x)\baspsi_i(x) \dx =0, \quad i\in\If
+\end{equation*}
+!et
+
+ * $u'(L){\baspsi_i(L)}=0$ since $\baspsi_i(L)=0$
+ * $u'(0)\baspsi_i(0) = C\baspsi_i(0)$ since $u'(0)=C$
+
+!split
+===== Method 1: Boundary function and exclusion of Dirichlet degrees of freedom =====
+
+ * $\baspsi_i = \basphi_i$, $i\in\If =\{0,\ldots,N=N_n-1\}$
+ * $B(x)=D\basphi_{N_n}(x)$, $u= B + \sum_{j=0}^N c_j\basphi_j$
+
+!bt
+\begin{equation*}
+\int_0^Lu'(x)\basphi_i'(x) dx  =
+\int_0^L f(x)\basphi_i(x) dx - C\basphi_i(0),\quad i\in\If
+\end{equation*}
+!et
+
+!bt
+\begin{equation}
+\sum_{j=0}^{N=N_n-1}\left(
+\int_0^L \basphi_i'(x)\basphi_j'(x) dx \right)c_j =
+\int_0^L\left(f(x)\basphi_i(x) -D\basphi_N'(x)\basphi_i(x)\right) dx
+ - C\basphi_i(0)
+label{fem:deq:1D:natBC}
+\end{equation}
+!et
+for $i=0,\ldots,N=N_n-1$.
+
+!split
+===== Method 2: Use all $\basphi_i$ and insert the Dirichlet condition in the linear system =====
+
+ * Now $\baspsi_i=\basphi_i$, $i=0,\ldots,N=N_n$
+ * $\basphi_N(L)\neq 0$, so $u'(L)\basphi_N(L)\neq 0$
+ * However, the term $u'(L)\basphi_N(L)$ in $b_N$ *will be erased* when
+   we insert the Dirichlet value in $b_N=D$
+
+We can forget about the term $u'(L)\basphi_i(L)$!
+
+!bnotice Result
+Boundary terms $u'\basphi_i$ at points $\xno{i}$ where Dirichlet values apply
+can always be forgotten.
+!enotice
+
+!bt
+\begin{equation*}
+u(x) = \sum_{j=0}^{N=N_n} c_j\basphi_j(x)
+\end{equation*}
+!et
+
+!bt
+\begin{equation}
+\sum_{j=0}^{N=N_n}\left(
+\int_0^L \basphi_i'(x)\basphi_j'(x) dx \right)c_j =
+\int_0^L f(x)\basphi_i(x)\basphi_i(x) dx - C\basphi_i(0)
+label{fem:deq:1D:natBC}
+\end{equation}
+!et
+
+Assemble entries for $i=0,\ldots,N=N_n$ and then
+modify the last equation to $c_N=D$
+
+!split
+===== How the Neumann condition impacts the element matrix and vector =====
+
+The extra term $C\basphi_0(0)$ affects only the element vector from the
+first cells since $\basphi_0=0$ on all other cells.
+
+!bt
+\begin{equation}
+\tilde A^{(0)} =
+A = \frac{1}{h}\left(\begin{array}{rr}
+1 & 1\\
+-1 & 1
+\end{array}\right),\quad
+\tilde b^{(0)} = \left(\begin{array}{c}
+h - C\\
+h
+\end{array}\right)
+label{fem:deq:1D:ex1:Ab:elm:bc:nat}
+\end{equation}
+!et
+
+!split
+======= The finite element algorithm =======
+
+The differential equation problem defines the integrals in the variational
+formulation.
+
+Request these functions from the user:
+
+!bc pycod
+integrand_lhs(phi, r, s, x)
+boundary_lhs(phi, r, s, x)
+integrand_rhs(phi, r, x)
+boundary_rhs(phi, r, x)
+!ec
+
+Must also have a mesh with `vertices`, `cells`, and `dof_map`
+
+!split
+===== Python pseudo code; the element matrix and vector =====
+
+!bc pycod
+<Declare global matrix, global rhs: A, b>
+
+# Loop over all cells
+for e in range(len(cells)):
+
+    # Compute element matrix and vector
+    n = len(dof_map[e])  # no of dofs in this element
+    h = vertices[cells[e][1]] - vertices[cells[e][0]]
+    <Declare element matrix, element vector: A_e, b_e>
+
+    # Integrate over the reference cell
+    points, weights = <numerical integration rule>
+    for X, w in zip(points, weights):
+        phi = <basis functions + derivatives at X>
+        detJ = h/2
+        x = <affine mapping from X>
+        for r in range(n):
+            for s in range(n):
+                A_e[r,s] += integrand_lhs(phi, r, s, x)*detJ*w
+            b_e[r] += integrand_rhs(phi, r, x)*detJ*w
+
+    # Add boundary terms
+    for r in range(n):
+        for s in range(n):
+            A_e[r,s] += boundary_lhs(phi, r, s, x)*detJ*w
+        b_e[r] += boundary_rhs(phi, r, x)*detJ*w
+
+!ec
+
+!split
+===== Python pseudo code; boundary conditions and assembly =====
+
+!bc pycod
+for e in range(len(cells)):
+    ...
+
+    # Incorporate essential boundary conditions
+    for r in range(n):
+        global_dof = dof_map[e][r]
+        if global_dof in essbc_dofs:
+            # dof r is subject to an essential condition
+            value = essbc_docs[global_dof]
+            # Symmetric modification
+            b_e -= value*A_e[:,r]
+            A_e[r,:] = 0
+            A_e[:,r] = 0
+            A_e[r,r] = 1
+            b_e[r] = value
+
+    # Assemble
+    for r in range(n):
+        for s in range(n):
+            A[dof_map[e][r], dof_map[e][r]] += A_e[r,s]
+        b[dof_map[e][r] += b_e[r]
+
+<solve linear system>
+!ec
+
+!split
+======= Variational formulations in 2D and 3D =======
+label{fem:deq:2D:varform}
+
+!bblock
+How to do integration by parts is the major difference when moving to
+2D and 3D.
+!eblock
+
+!split
+===== Integration by parts =====
+
+!bnotice Rule for multi-dimensional integration by parts
+
+!bt
+\begin{equation}
+-\int_{\Omega} \nabla\cdot (a(\x)\nabla u) v\dx =
+\int_{\Omega} a(\x)\nabla u\cdot\nabla v \dx -
+\int_{\partial\Omega} a\frac{\partial u}{\partial n} v \ds
+label{fem:deq:2D:int:by:parts}
+\end{equation}
+!et
+
+ * $\int_\Omega ()\dx$: area (2D) or volume (3D) integral
+ * $\int_{\partial\Omega} ()\ds$: line(2D) or surface (3D) integral
+!enotice
+
+
+ * $\partial\Omega_N$: Neumann conditions
+   $-a\frac{\partial u}{\partial n} = g$
+ * $\partial\Omega_D$: Dirichlet conditions
+   $u = u_0$
+ * $v\in V$ must vanish on $\partial\Omega_D$ (in method 1)
+
+
+!split
+===== Example on integration by parts; problem =====
+
+!bt
+\begin{align}
+\v\cdot\nabla u + \alpha u &= \nabla\cdot\left( a\nabla u\right) + f,
+\quad & \x\in\Omega\\
+u &= u_0,\quad &\x\in\partial\Omega_D\\
+-a\frac{\partial u}{\partial n} &= g,\quad &\x\in\partial\Omega_N
+\end{align}
+!et
+
+ * Known: $a$, $\alpha$, $f$, $u_0$, and $g$.
+ * Second-order PDE: must have *exactly one boundary condition at each
+   point of the boundary*
+
+Method 1 with boundary function and $\baspsi_i=0$ on $\partial\Omega_D$:
+
+!bt
+\[ u(\x) = B(\x) + \sum_{j\in\If} c_j\baspsi_j(\x),\quad B(\x)=u_0(\x)  \]
+!et
+
+!split
+===== Example on integration by parts; details (1) =====
+
+Galerkin's method: multiply by $v\in V$ and integrate over $\Omega$,
+
+!bt
+\[
+\int_{\Omega} (\v\cdot\nabla u + \alpha u)v\dx =
+\int_{\Omega} \nabla\cdot\left( a\nabla u\right)\dx + \int_{\Omega}fv \dx
+\]
+!et
+
+Integrate second-order term by parts:
+
+!bt
+\[
+\int_{\Omega} \nabla\cdot\left( a\nabla u\right) v \dx =
+-\int_{\Omega} a\nabla u\cdot\nabla v\dx
++ \int_{\partial\Omega} a\frac{\partial u}{\partial n} v\ds,
+\]
+!et
+
+Resulting variational form:
+
+!bt
+\[
+\int_{\Omega} (\v\cdot\nabla u + \alpha u)v\dx =
+-\int_{\Omega} a\nabla u\cdot\nabla v\dx
++ \int_{\partial\Omega} a\frac{\partial u}{\partial n} v\ds
++ \int_{\Omega} fv \dx
+\]
+!et
+
+!split
+===== Example on integration by parts; details (2) =====
+
+Note: $v\neq 0$ only on $\partial\Omega_N$:
+
+!bt
+\[ \int_{\partial\Omega} a\frac{\partial u}{\partial n} v\ds
+= \int_{\partial\Omega_N} \underbrace{a\frac{\partial u}{\partial n}}_{-g} v\ds
+= -\int_{\partial\Omega_N} gv\ds
+\]
+!et
+
+The final variational form:
+
+!bt
+\[
+\int_{\Omega} (\v\cdot\nabla u + \alpha u)v\dx =
+-\int_{\Omega} a\nabla u\cdot\nabla v \dx
+- \int_{\partial\Omega_N} g v\ds
++ \int_{\Omega} fv \dx
+\]
+!et
+
+Or with inner product notation:
+
+!bt
+\[
+(\v\cdot\nabla u, v) + (\alpha u,v) =
+- (a\nabla u,\nabla v) - (g,v)_{N} + (f,v)
+\]
+!et
+
+$(g,v)_{N}$: line or surface integral over $\partial\Omega_N$.
+
+!split
+===== Example on integration by parts; linear system =====
+
+!bt
+\[ u = B + \sum_{j\in\If} c_j\baspsi_j,\quad B = u_0  \]
+!et
+
+!bt
+\[
+A_{i,j} = (\v\cdot\nabla \baspsi_j, \baspsi_i) +
+(\alpha \baspsi_j ,\baspsi_i) + (a\nabla \baspsi_j,\nabla \baspsi_i)
+\]
+!et
+
+!bt
+\[
+b_i = (g,\baspsi_i)_{N} + (f,\baspsi_i) -
+(\v\cdot\nabla u_0, \baspsi_i) + (\alpha u_0 ,\baspsi_i) +
+(a\nabla u_0,\nabla \baspsi_i)
+\]
+!et
+
+!split
+===== Transformation to a reference cell in 2D/3D (1) =====
+
+!bblock
+We want to compute an integral in the physical domain
+by integrating over the reference cell.
+!eblock
+
+!bt
+\begin{equation}
+\int_{{\Omega}^{(e)}} a(\x)\nabla\basphi_i\cdot\nabla\basphi_j\dx
+\end{equation}
+!et
+
+Mapping from reference to physical coordinates:
+
+!bt
+\[ \x(\X) \]
+!et
+
+with Jacobian $J$,
+
+!bt
+\[ J_{i,j}=\frac{\partial x_j}{\partial X_i} \]
+!et
+
+ * $\dx \rightarrow \det J\dX$.
+ * Must express $\nabla\basphi_i$ by an expression with $\refphi_r$, $i=q(e,r)$: $\nabla\refphi_r(\X)$
+ * We want $\nabla_{\x}\refphi_r(\X)$ (derivatives wrt $\x$)
+ * What we readily have is $\nabla_{\X}\refphi_r(\X)$ (derivative wrt $\X$)
+ * Need to transform $\nabla_{\X}\refphi_r(\X)$ to $\nabla_{\x}\refphi_r(\X)$
+
+!split
+===== Transformation to a reference cell in 2D/3D (2) =====
+
+Can derive
+
+!bt
+\begin{align*}
+\nabla_{\X}\refphi_r &= J\cdot\nabla_{\x}\basphi_i\\
+\nabla_{\x}\basphi_i &= \nabla_{\x}\refphi_r(\X)
+= J^{-1}\cdot\nabla_{\X}\refphi_r(\X)
+\end{align*}
+!et
+
+Integral transformation from physical to reference coordinates:
+
+!bt
+\begin{equation}
+\int_{\Omega^{(e)}} a(\x)\nabla_{\x}\basphi_i\cdot\nabla_{\x}\basphi_j\dx =
+\int_{\tilde\Omega^r} a(\x(\X))(J^{-1}\cdot\nabla_{\X}\refphi_r)\cdot
+(J^{-1}\cdot\nabla\refphi_s)\det J\dX
+\end{equation}
+!et
+
+!split
+===== Numerical integration =====
+
+Numerical integration over reference cell triangles and tetrahedra:
+
+!bt
+\[ \int_{\tilde\Omega^r} g\dX = \sum_{j=0}^{n-1} w_j g(\bar\X_j)\]
+!et
+
+Module "`numint.py`": "${src_fem}/numint.py" contains different rules:
+
+!bc ipy
+>>> import numint
+>>> x, w = numint.quadrature_for_triangles(num_points=3)
+>>> x
+[(0.16666666666666666, 0.16666666666666666),
+ (0.66666666666666666, 0.16666666666666666),
+ (0.16666666666666666, 0.66666666666666666)]
+>>> w
+[0.16666666666666666, 0.16666666666666666, 0.16666666666666666]
+!ec
+
+ * Triangle: rules with $n=1,3,4,7$ integrate exactly polynomials of degree $1,2,3,4$, resp.
+
+ * Tetrahedron: rules with $n=1,4,5,11$ integrate exactly polynomials of degree $1,2,3,4$, resp.
+
+
+!split
+======= Time-dependent problems =======
+label{fem:deq:timedep}
+
+ * So far: used the finite element framework for discretizing in space
+ * What about $u_t = u_{xx} + f$?
+   o Use finite differences in time to obtain a set of recursive spatial problems
+   o Solve the spatial problems by the finite element method
+
+!split
+===== Example: diffusion problem =====
+
+!bt
+\begin{align}
+\frac{\partial u}{\partial t} &= \dfc\nabla^2 u + f(\x, t),\quad
+&\x\in\Omega, t\in (0,T]
+label{fem:deq:diffu:eq}\\
+u(\x, 0) & = I(\x),\quad &\x\in\Omega
+label{fem:deq:diffu:ic}\\
+\frac{\partial u}{\partial n} &= 0,\quad &\x\in\partial\Omega,\ t\in (0,T]
+label{fem:deq:diffu:bcN}
+\end{align}
+!et
+
+!split
+===== A Forward Euler scheme; ideas =====
+
+!bt
+\begin{equation}
+[D_t^+ u = \dfc\nabla^2 u + f]^n,\quad n=1,2,\ldots,N_t-1
+\end{equation}
+!et
+
+Solving wrt $u^{n+1}$:
+
+!bt
+\begin{equation}
+u^{n+1} = u^n + \Delta t \left( \dfc\nabla^2 u^n + f(\x, t_n)\right)
+label{fem:deq:diffu:FE:eq:unp1}
+\end{equation}
+!et
+
+ * $u^n = \sum_jc_j^n\baspsi_j\, \in V$,
+   $u^{n+1} = \sum_jc_j^{n+1}\baspsi_j\,\in V$
+ * Compute $u^0$ from $I$
+ * Compute $u^{n+1}$ from $u^n$ by solving the PDE for $u^{n+1}$
+   at each time level
+
+!split
+===== A Forward Euler scheme; stages in the discretization =====
+
+ * $\uex(\x,t)$: exact solution of the space-and time-continuous problem
+ * $\uex^n(\x)$: exact solution of time-discrete problem (after applying
+   a finite difference scheme in time)
+ * $\uex^n(\x)\approx u^n = \sum_{j\in\If}c_j^n\baspsi_j =$
+   solution of the time- and space-discrete problem
+   (after applying a Galerkin method in space)
+
+!bt
+\begin{equation}
+\frac{\partial \uex}{\partial t} = \dfc\nabla^2 \uex + f(\x, t)
+label{fem:deq:diffu:eq:uex}
+\end{equation}
+!et
+
+!bt
+\begin{equation}
+\uex^{n+1} = \uex^n + \Delta t \left( \dfc\nabla^2 \uex^n + f(\x, t_n)\right)
+label{fem:deq:diffu:FE:eq:uex:n}
+\end{equation}
+!et
+
+!bt
+\[
+\uex^n \approx u^n = \sum_{j=0}^{N} c_j^{n}\baspsi_j(\x),\quad
+\uex^{n+1} \approx u^{n+1} = \sum_{j=0}^{N} c_j^{n+1}\baspsi_j(\x)
+\]
+!et
+
+!bt
+\[ R = u^{n+1} - u^n - \Delta t \left( \dfc\nabla^2 u^n + f(\x, t_n)\right)\]
+!et
+
+!split
+===== A Forward Euler scheme; weighted residual (or Galerkin) principle =====
+
+!bt
+\[ R = u^{n+1} - u^n - \Delta t \left( \dfc\nabla^2 u^n + f(\x, t_n)\right)\]
+!et
+
+The weighted residual principle:
+
+!bt
+\[ \int_\Omega Rw\dx = 0,\quad \forall w\in W\]
+!et
+
+results in
+
+!bt
+\[
+\int_\Omega
+\left\lbrack
+u^{n+1} - u^n - \Delta t \left( \dfc\nabla^2 u^n + f(\x, t_n)\right)
+\right\rbrack w \dx =0, \quad \forall w \in W
+\]
+!et
+
+Galerkin: $W=V$, $w=v$
+
+!split
+===== A Forward Euler scheme; integration by parts =====
+
+Isolating the unknown $u^{n+1}$ on the left-hand side:
+
+!bt
+\[
+\int_{\Omega} u^{n+1}\baspsi_i\dx = \int_{\Omega}
+\left\lbrack u^n - \Delta t \left( \dfc\nabla^2 u^n + f(\x, t_n)\right)
+\right\rbrack v\dx
+\]
+!et
+
+Integration by parts of $\int\dfc(\nabla^2 u^n) v\dx$:
+
+!bt
+\[ \int_{\Omega}\dfc(\nabla^2 u^n)v \dx =
+-\int_{\Omega}\dfc\nabla u^n\cdot\nabla v\dx +
+\underbrace{\int_{\partial\Omega}\dfc\frac{\partial u^n}{\partial n}v \dx}_{=0\quad\Leftarrow\quad\partial u^n/\partial n=0}
+\]
+!et
+
+Variational form:
+
+!bt
+\begin{equation}
+\int_{\Omega} u^{n+1} v\dx =
+\int_{\Omega} u^n v\dx -
+\Delta t \int_{\Omega}\dfc\nabla u^n\cdot\nabla v\dx +
+\Delta t\int_{\Omega}f^n v\dx,\quad\forall v\in V
+label{fem:deq:diffu:FE:vf:u:np1}
+\end{equation}
+!et
+
+
+!split
+===== New notation for the solution at the most recent time levels =====
+
+ * $u$ and `u`: the spatial unknown function to be computed
+ * $u_1$ and `u_1`: the spatial function at the previous time level $t-\Delta t$
+ * $u_2$ and `u_2`: the spatial function at $t-2\Delta t$
+ * This new notation gives close correspondance between code and math
+
+!bt
+\begin{equation}
+\int_{\Omega} u v\dx =
+\int_{\Omega} u_1 v\dx -
+\Delta t \int_{\Omega}\dfc\nabla u_1\cdot\nabla v\dx +
+\Delta t\int_{\Omega}f^n v\dx
+label{fem:deq:diffu:FE:vf:u}
+\end{equation}
+!et
+
+or shorter
+
+!bt
+\begin{equation}
+(u, \baspsi_i) = (u_1,v) -
+\Delta t (\dfc\nabla u_1,\nabla v) +
+(f^n, v)
+label{fem:deq:diffu:FE:vf:u:short}
+\end{equation}
+!et
+
+!split
+===== Deriving the linear systems =====
+
+ * $u = \sum_{j=0}^{N}c_j\baspsi_j(\x)$
+ * $u_1 = \sum_{j=0}^{N} c_{1,j}\baspsi_j(\x)$
+ * $\forall v\in V$: for $v=\baspsi_i$, $i=0,\ldots,N$
+!et
+
+Insert these in
+
+!bt
+\[
+(u, \baspsi_i) = (u_1,\baspsi_i) -
+\Delta t (\dfc\nabla u_1,\nabla\baspsi_i) +
+(f^n,\baspsi_i)
+\]
+!et
+
+and order terms as matrix-vector products:
+
+!bt
+\begin{equation}
+\sum_{j=0}^{N} \underbrace{(\baspsi_i,\baspsi_j)}_{M_{i,j}} c_j =
+\sum_{j=0}^{N} \underbrace{(\baspsi_i,\baspsi_j)}_{M_{i,j}} c_{1,j}
+-\Delta t \sum_{j=0}^{N}
+\underbrace{(\nabla\baspsi_i,\dfc\nabla\baspsi_j)}_{K_{i,j}} c_{1,j}
++ (f^n,\baspsi_i),\quad i=0,\ldots,N
+\end{equation}
+!et
+
+!split
+===== Structure of the linear systems =====
+
+!bt
+\begin{equation}
+Mc = Mc_1 - \Delta t Kc_1 + f
+\end{equation}
+!et
+
+!bt
+\begin{align*}
+M &= \{M_{i,j}\},\quad M_{i,j}=(\baspsi_i,\baspsi_j),\quad i,j\in\If\\
+K &= \{K_{i,j}\},\quad K_{i,j}=(\nabla\baspsi_i,\dfc\nabla\baspsi_j),\quad i,j\in\If\\
+f &= \{(f(\x,t_n),\baspsi_i)\}_{i\in\If}\\
+c &= \{c_i\}_{i\in\If}\\
+c_1 &= \{c_{1,i}\}_{i\in\If}
+\end{align*}
+!et
+
+!split
+===== Computational algorithm =====
+
+ o Compute $M$ and $K$.
+ o Initialize $u^0$ by either interpolation or projection
+ o For $n=1,2,\ldots,N_t$:
+   o compute $b = Mc_1 - \Delta t Kc_1 + f$
+   o solve $Mc = b$
+   o set $c_1 = c$
+
+
+Initial condition:
+
+ * Either interpolation: $c_{1,j} = I(\x_j)$ (finite elements)
+ * Or projection: solve $\sum_j M_{i,j}c_{1,j} = (I,\baspsi_i)$, $i\in\If$
+
+!split
+===== Comparing P1 elements with the finite difference method; ideas =====
+label{fem:deq:diffu:FE:fdvsP1fe}
+
+ * P1 elements in 1D
+ * Uniform mesh on $[0,L]$ with cell length $h$
+ * No Dirichlet conditions: $\baspsi_i=\basphi_i$, $i=0,\ldots,N=N_n$
+ * Have found formulas for $M$ and $K$ at the element level
+ * Have assembled the global matrices
+ * Have developed corresponding finite difference operator formulas
+ * $M$: $h[D_t^+(u - \frac{1}{6}h^2D_xD_x u)]^n_i$
+ * $K$: $h[\dfc D_xD_x u]^n_i$
+
+!split
+===== Comparing P1 elements with the finite difference method; results =====
+
+Diffusion equation with finite elements is equivalent to
+
+!bt
+\begin{equation}
+[D_t^+(u - \frac{1}{6}h^2D_xD_x u) = \dfc D_xD_x u + f]^n_i
+label{fem:deq:diffu:FE:fdinterp}
+\end{equation}
+!et
+
+Can lump the mass matrix by Trapezoidal integration and get
+the standard finite difference scheme
+
+!bt
+\begin{equation}
+[D_t^+u  = \dfc D_xD_x u + f]^n_i
+\end{equation}
+!et
+
+!split
+===== Discretization in time by a Backward Euler scheme =====
+label{fem:deq:diffu:analysis:FE}
+
+Backward Euler scheme in time:
+
+!bt
+\[
+[D_t^- u = \dfc\nabla^2 u + f(\x, t)]^n
+\tp
+\]
+!et
+
+!bt
+\begin{equation}
+\uex^{n} - \Delta t \left( \dfc\nabla^2 \uex^n + f(\x, t_{n})\right) =
+\uex^{n-1}
+label{fem:deq:diffu:BE:eq:un}
+\end{equation}
+!et
+
+!bt
+\[ \uex^n \approx u^n = \sum_{j=0}^{N} c_j^{n}\baspsi_j(\x),\quad
+\uex^{n+1} \approx u^{n+1} = \sum_{j=0}^{N} c_j^{n+1}\baspsi_j(\x)\]
+!et
+
+!split
+===== The variational form of the time-discrete problem =====
+
+!bt
+\begin{equation}
+\int_{\Omega} \left( u^{n}v
++ \Delta t \dfc\nabla u^n\cdot\nabla v\right)\dx
+= \int_{\Omega} u^{n-1}  v\dx -
+\Delta t\int_{\Omega}f^n v\dx,\quad\forall v\in V
+label{fem:deq:diffu:BE:vf:u:n}
+\end{equation}
+!et
+
+or
+
+!bt
+\begin{equation}
+(u,v)
++ \Delta t (\dfc\nabla u,\nabla v)
+= (u_1,v) +
+\Delta t (f^n,\baspsi_i)
+label{fem:deq:diffu:BE:vf:u:short}
+\end{equation}
+!et
+
+The linear system: insert $u=\sum_j c_j\baspsi_i$ and $u_1=\sum_j c_{1,j}\baspsi_i$,
+
+!bt
+\begin{equation}
+(M + \Delta t \dfc K)c = Mc_1 + f
+label{fem:deq:diffu:BE:vf:linsys}
+\end{equation}
+!et
+
+!split
+===== Calculations with P1 elements in 1D =====
+
+Can interpret the resulting equation system as
+
+!bt
+\begin{equation}
+[D_t^-(u - \frac{1}{6}h^2D_xD_x u) = \dfc D_xD_x u + f]^n_i
+label{fem:deq:diffu:BE:fdinterp}
+\end{equation}
+!et
+
+Lumped mass matrix (by Trapezoidal integration) gives a standard
+finite difference method:
+
+!bt
+\begin{equation}
+[D_t^- u = \dfc D_xD_x u + f]^n_i
+label{fem:deq:diffu:BE:fdinterp:lumped}
+\end{equation}
+!et
+
+!split
+======= Dirichlet boundary conditions =======
+label{fem:deq:diffu:Dirichlet}
+
+Dirichlet condition at $x=0$ and Neumann condition at $x=L$:
+
+!bt
+\begin{align}
+u(\x,t) &= u_0(\x,t),\quad & \x\in\partial\Omega_D\\
+-\dfc\frac{\partial}{\partial n} u(\x,t) &= g(\x,t),\quad
+& \x\in\partial{\Omega}_N
+\end{align}
+!et
+
+Forward Euler in time, Galerkin's method, and integration by parts:
+
+!bt
+\begin{equation}
+\int_\Omega u^{n+1}v\dx =
+\int_\Omega (u^n - \Delta t\dfc\nabla u^n\cdot\nabla v)\dx -
+\Delta t\int_{\partial\Omega_N} gv\ds,\quad \forall v\in V
+\end{equation}
+!et
+
+Requirement: $v=0$ on $\partial\Omega_D$
+
+!split
+===== Boundary function =====
+
+!bt
+\[ u^n(\x) = u_0(\x,t_n) + \sum_{j\in\If}c_j^n\baspsi_j(\x)\]
+!et
+
+!bt
+\begin{align*}
+\sum_{j\in\If} \left(\int_\Omega \baspsi_i\baspsi_j\dx\right)
+c^{n+1}_j &= \sum_{j\in\If}
+\left(\int_\Omega\left( \baspsi_i\baspsi_j -
+\Delta t\dfc\nabla \baspsi_i\cdot\nabla\baspsi_j\right)\dx\right) c_j^n - \\
+&\quad  \int_\Omega\left( u_0(\x,t_{n+1}) - u_0(\x,t_n)
++ \Delta t\dfc\nabla u_0(\x,t_n)\cdot\nabla
+\baspsi_i\right)\dx \\
+& \quad  + \Delta t\int_\Omega f\baspsi_i\dx -
+\Delta t\int_{\partial\Omega_N} g\baspsi_i\ds,
+\quad i\in\If
+\end{align*}
+!et
+
+!split
+===== Finite element basis functions =====
+
+ * $B(\x,t_n)=\sum_{j\in\Ifb} U_j^n\basphi_j$
+ * $\baspsi_i = \basphi_{\nu(j)}$, $j\in\If$
+ * $\nu(j)$, $j\in\If$, are the node numbers corresponding to all
+   nodes without a Dirichlet condition
+
+!bt
+\begin{align*}
+u^n &= \sum_{j\in\Ifb} U_j^n\basphi_j + \sum_{j\in\If}c_{1,j}\basphi_{\nu(j)},\\
+u^{n+1} &= \sum_{j\in\Ifb} U_j^{n+1}\basphi_j +
+\sum_{j\in\If}c_{j}\basphi_{\nu(j)}
+\end{align*}
+!et
+
+!bt
+\begin{align*}
+\sum_{j\in\If} \left(\int_\Omega \basphi_i\basphi_j\dx\right)
+c_j &= \sum_{j\in\If}
+\left(\int_\Omega\left( \basphi_i\basphi_j -
+\Delta t\dfc\nabla \basphi_i\cdot\nabla\basphi_j\right)\dx\right) c_{1,j}
+- \\
+&\quad  \sum_{j\in\Ifb}\int_\Omega\left( \basphi_i\basphi_j(U_j^{n+1} - U_j^n)
++ \Delta t\dfc\nabla \basphi_i\cdot\nabla
+\basphi_jU_j^n\right)\dx \\
+&\quad + \Delta t\int_\Omega f\basphi_i\dx -
+\Delta t\int_{\partial\Omega_N} g\basphi_i\ds,
+\quad i\in\If
+\end{align*}
+!et
+
+!split
+===== Modification of the linear system; the raw system =====
+
+ * Drop boundary function
+ * Compute as if there are not Dirichlet conditions
+ * Modify the linear system to incorporate Dirichlet conditions
+ * $\If$ holds the indices of all nodes $\{0,1,\ldots,N=N_n\}$
+
+!bt
+\begin{align*}
+\sum_{j\in\If}
+\biggl(\underbrace{\int_\Omega \basphi_i\basphi_j\dx}_{M_{i,j}}\biggr)
+c_j &= \sum_{j\in\If}
+\biggl(\underbrace{\int_\Omega \basphi_i\basphi_j \dx}_{M_{i,j}} -
+\Delta t\underbrace{\int_\Omega
+\dfc\nabla \basphi_i\cdot\nabla\basphi_j\dx}_{K_{i,j}}\biggr) c_{1,j}
+\\
+&\quad \underbrace{-\Delta t\int_\Omega f\basphi_i\dx -
+\Delta t\int_{\partial\Omega_N} g\basphi_i\ds}_{f_i},\quad i\in\If
+\end{align*}
+!et
+
+!split
+===== Modification of the linear system; setting Dirichlet conditions =====
+
+!bt
+\begin{equation}
+Mc = b,\quad b = Mc_1 - \Delta t Kc_1 + \Delta t f
+\end{equation}
+!et
+
+For each $k$ where a Dirichlet condition applies,
+$u(\xno{k},t_{n+1})=U_k^{n+1}$,
+
+ * set row $k$ in $M$ to zero and 1 on the diagonal:
+   $M_{k,j}=0$, $j\in\If$, $M_{k,k}=1$
+ * $b_k = U_k^{n+1}$
+
+Or apply the slightly more complicated modification which
+preserves symmetry of $M$
+
+!split
+===== Modification of the linear system; Backward Euler example =====
+
+Backward Euler discretization in time gives a more complicated
+coefficient matrix:
+
+!bt
+\begin{equation}
+Ac=b,\quad A = M + \Delta t K,\quad b = Mc_1 + \Delta t f\tp
+\end{equation}
+!et
+
+ * Set row $k$ to zero and 1 on the diagonal:
+   $M_{k,j}=0$, $j\in\If$, $M_{k,k}=1$
+ * Set row $k$ to zero: $K_{k,j}=0$, $j\in\If$
+ * $b_k = U_k^{n+1}$
+
+Observe: $A_{k,k} = M_{k,k} + \Delta t K_{k,k} = 1 + 0$, so
+$c_k = U_k^{n+1}$
+
+
+!split
+======= Analysis of the discrete equations =======
+label{fem:deq:diffu:anal}
+
+The diffusion equation $u_t = \dfc u_{xx}$ allows a (Fourier)
+wave component
+
+!bt
+\begin{equation}
+u = \Aex^n e^{ikx},\quad \Aex = e^{-\dfc k^2\Delta t}
+label{fem:deq:diffu:analysis:Ae}
+\end{equation}
+!et
+
+Numerical schemes often allow the similar solution
+
+!bt
+\begin{equation}
+u^n_q = A^n e^{ikx}
+label{fem:deq:diffu:analysis:uni0}
+\end{equation}
+!et
+
+ * $A$: amplification factor to be computed
+ * How good is this $A$ compared to the exact one?
+
+!split
+===== Handy formulas =====
+
+!bt
+\begin{align*}
+[D_t^+ A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{A-1}{\Delta t},\\
+[D_t^- A^n e^{ikq\Delta x}]^n &= A^n e^{ikq\Delta x}\frac{1-A^{-1}}{\Delta t},\\
+[D_t A^n e^{ikq\Delta x}]^{n+\half} &= A^{n+\half} e^{ikq\Delta x}\frac{A^{\half}-A^{-\half}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t},\\
+[D_xD_x A^ne^{ikq\Delta x}]_q &= -A^n \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right)\tp
+\end{align*}
+!et
+
+
+!split
+===== Amplification factor for the Forward Euler method; results =====
+
+Introduce $p=k\Delta x/2$ and $C=\dfc\Delta t/\Delta x^2$:
+
+!bt
+\[ A = 1 - 4C\frac{\sin^2 p}{1 + \underbrace{\frac{2}{3}\sin^2 p}_{\hbox{from }M}}\]
+!et
+
+(See notes for details)
+
+Stability: $|A|\leq 1$:
+
+!bt
+\begin{equation}
+C\leq \frac{5}{6}\quad\Rightarrow\quad \Delta t\leq \frac{5\Delta x^2}{6\dfc}
+\end{equation}
+!et
+
+Finite differences: $C\leq {\half}$, so finite elements improves
+stability (for this PDE)
+
+!split
+===== Amplification factor for the Forward Euler method; plot =====
+
+FIGURE: [fig-fem/diffu_A_factors2_FE, width=400 frac=0.8]
+
+
+!split
+===== Amplification factor for the Backward Euler method; results =====
+
+!bt
+\[
+A = \left( 1 + 4C\frac{\sin^2 p}{1 + \frac{2}{3}\sin^2 p}\right)^{-1}
+\hbox{ (unconditionally stable)}
+\]
+!et
+
+FIGURE: [fig-fem/diffu_A_factors2_BE, width=400 frac=0.8]
+
+!split
+===== Amplification factors for smaller time steps; Forward Euler =====
+
+FIGURE: [fig-fem/diffu_A_factors2_fine_FE, width=400 frac=0.8]
+
+!split
+===== Amplification factors for smaller time steps; Backward Euler =====
+
+FIGURE: [fig-fem/diffu_A_factors2_fine_BE, width=400 frac=0.8]
+
+
+# #ifdef NOTREADY
+!split
+======= Systems of differential equations =======
+label{fem:sys}
+
+Consider $m+1$ unknown functions: $u^{(0)},\ldots, u^{(m)}$ governed
+by $m+1$ differential equations:
+
+!bt
+\begin{align*}
+\mathcal{L}_0(u^{(0)},\ldots,u^{(m)}) &= 0\\
+&\vdots\\
+\mathcal{L}_{m}(u^{(0)},\ldots,u^{(m)}) &= 0,
+\end{align*}
+!et
+
+!bnotice Goals
+ * How do we derive variational formulations of systems of differential
+   equations?
+ * How do we apply the finite element method?
+!enotice
+
+!split
+===== Variational forms =====
+label{fem:sys:vform}
+
+ * First approach: treat each equation as a scalar equation
+ * For equation no. $i$, use test function $v^{(i)}\in V^{(i)}$
+
+!bt
+\begin{align}
+\int_\Omega \mathcal{L}^{(0)}(u^{(0)},\ldots,u^{(m)}) v^{(0)}\dx &= 0,
+label{fem:sys:vform:1by1a}\\
+&\vdots\\
+\int_\Omega \mathcal{L}^{(m)}(u^{(0)},\ldots,u^{(m)}) v^{(m)}\dx &= 0
+label{fem:sys:vform:1by1b}
+
+\end{align}
+!et
+Terms with second-order derivatives may be integrated by parts, with
+Neumann conditions inserted in boundary integrals.
+
+!bt
+\[ V^{(i)} = \hbox{span}\{\basphi_0^{(i)},\ldots,\basphi_{N_i}^{(i)}\},\]
+!et
+
+!bt
+\[ u^{(i)} = B^{(i)}(\x) + \sum_{j=0}^{N_i} c_j^{(i)} \basphi_j^{(i)}(\x),
+\]
+!et
+
+Can derive $m$ coupled linear systems for the unknowns
+$c_j^{(i)}$, $j=0,\ldots,N_i$,
+$i=0,\ldots,m$.
+
+ * Second approach: work with vectors (and vector notation)
+ * $\u = (u^{(0)},\ldots,u^{(m)})$
+ * $\v = (u^{(0)},\ldots,u^{(m)})$
+ * $\u, \v \in  \V = V^{(0)}\times \cdots \times V^{(m)}$
+ * Note: if $\bm{B} = (B^{(0)},\ldots,B^{(m)})$ is needed for
+   nonzero Dirichlet conditions, $\u - \bm{B}\in \V$ (not $\u$ in $\V$)
+ * $\bm{\mathcal{L}}(\u ) = 0$
+ * $\bm{\mathcal{L}}(\u ) = (\mathcal{L}^{(0)}(\u),\ldots, \mathcal{L}^{(m)}(\u))$
+
+The variational form is derived by taking the *inner product* of
+$\bm{\mathcal{L}}(\u )$ and $\v$:
+
+!bt
+\begin{equation}
+\int_\Omega \bm{\mathcal{L}}(\u )\cdot\v = 0\quad\forall\v\in\V
+label{fem:sys:vform:inner}
+\end{equation}
+!et
+
+ * Observe: this is a scalar equation (!).
+ * Can derive $m$ independent equation by choosing $m$ independent $\v$
+ * E.g.: $\v = (v^{(0)},0,\ldots,0)$ recovers (ref{fem:sys:vform:1by1a})
+ * E.g.: $\v = (0,\ldots,0,v^{(m)}$ recovers (ref{fem:sys:vform:1by1b})
+
+===== A worked example =====
+label{fem:sys:uT:ex}
+
+!bt
+\begin{align}
+\mu \nabla^2 w &= -\beta,
+label{fem:sys:wT:ex:weq}\\
+\kappa\nabla^2 T &= - \mu ||\nabla w||^2 \quad (= \mu \nabla w\cdot\nabla w)
+
+label{fem:sys:wT:ex:Teq}
+\end{align}
+!et
+
+ * Unknowns: $w(x,y)$, $T(x,y)$
+ * Known constants: $\mu$, $\beta$, $\kappa$
+ * Application: fluid flow in a straight pipe, $w$ is velocity, $T$ is
+   temperature
+ * $\Omega$: cross section of the pipe
+ * Boundary conditions: $w=0$ and $T=T_0$ on $\partial\Omega$
+ * Note: $T$ depends on $w$, but $w$ does not depend on $T$ (one-way coupling)
+
+===== Identical function spaces for the unknowns =====
+
+Let $w, (T-T_0) \in V$ with test functions $v\in V$.
+
+!bt
+\[ V = \hbox{span}\{\basphi_0(x,y),\ldots,\basphi_N(x,y)\}, \]
+!et
+
+!bt
+\begin{equation}
+w = \sum_{j=0}^N c^{(w)}_j \basphi_j,\quad T = T_0 + \sum_{j=0}^N c^{(T)}_j
+\basphi_j
+label{fem:sys:wT:ex:sum}
+\end{equation}
+!et
+
+=== Variational form of each individual PDE ===
+
+Inserting (ref{fem:sys:wT:ex:sum})
+in the PDEs, results in the residuals
+
+!bt
+\begin{align}
+R_w &= \mu \nabla^2 w + \beta,
+label{fem:sys:wT:ex:weq:R}\\
+R_T &= \kappa\nabla^2 T + \mu ||\nabla w||^2
+
+label{fem:sys:wT:ex:Teq:R}
+\end{align}
+!et
+
+Galerkin's method: make residual orthogonal to $V$,
+
+!bt
+\begin{align*}
+\int_\Omega R_w v \dx &=0\quad\forall v\in V\\
+\int_\Omega R_T v \dx &=0\quad\forall v\in V
+\end{align*}
+!et
+
+Integrate by parts and use $v=0$ on $\partial\Omega$ (Dirichlet conditions!):
+
+!bt
+\begin{align}
+\int_\Omega \mu \nabla w\cdot\nabla v \dx &= \int_\Omega \beta v\dx
+\quad\forall v\in V,
+label{fem:sys:wT:ex:w:vf1}\\
+\int_\Omega \kappa \nabla T\cdot\nabla v \dx &= \int_\Omega \mu
+\nabla w\cdot\nabla w\, v\dx \quad\forall v\in V
+label{fem:sys:wT:ex:T:vf1}
+
+\end{align}
+!et
+
+=== Compound scalar variational form ===
+
+ * Test vector function $\v\in\V = V\times V$
+ * Take the inner product of $\v$ and the system of PDEs (and integrate)
+
+!bt
+\[ \int_{\Omega} (R_w, R_T)\cdot\v \dx = 0\quad\forall\v\in\V
+ \]
+!et
+
+With $\v = (v_0,v_1)$:
+
+!bt
+\[ \int_{\Omega} (R_w v_0 + R_T v_1) \dx = 0\quad\forall\v\in\V
+ \]
+!et
+
+!bt
+\begin{equation}
+\int_\Omega (\mu\nabla w\cdot\nabla v_0 + \kappa\nabla T\cdot\nabla v_1)\dx
+= \int_\Omega (\beta v_0 + \mu\nabla w\cdot\nabla w\, v_1)\dx,
+\quad\forall \v\in\V
+label{fem:sys:wT:ex:wT:vf2}
+\end{equation}
+!et
+
+Choosing $v_0=v$ and $v_1=0$ gives the variational form
+(ref{fem:sys:wT:ex:w:vf1}), while $v_0=0$ and $v_1=v$ gives
+(ref{fem:sys:wT:ex:T:vf1}).
+
+Alternative inner product notation:
+
+!bt
+\begin{align}
+\mu (\nabla w,\nabla v) &= (\beta, v)
+\quad\forall v\in V,
+label{fem:sys:wT:ex:w:vf1i}\\
+\kappa(\nabla T,\nabla v) &= \mu(\nabla w\cdot\nabla w, v)\quad\forall v\in V
+label{fem:sys:wT:ex:T:vf1i}
+
+\end{align}
+!et
+
+
+=== Decoupled linear systems ===
+
+!bt
+\begin{align}
+\sum_{j=0}^N A^{(w)}_{i,j} c^{(w)}_j &= b_i^{(w)},\quad i=0,\ldots,N
+label{fem:sys:wT:ex:linsys:w1}\\
+\sum_{j=0}^N A^{(T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N
+label{fem:sys:wT:ex:linsys:T1}\\
+A^{(w)}_{i,j} &= \mu(\nabla \basphi_j,\nabla\basphi_i)\\
+b_i^{(w)} &= (\beta, \basphi_i)\\
+A^{(T)}_{i,j} &= \kappa(\nabla \basphi_j,\nabla\basphi_i)\\
+b_i^{(T)} &= (\mu\nabla w_{-}\cdot (\sum_k
+c^{(w)}_k\nabla\basphi_k), \basphi_i)
+
+\end{align}
+!et
+
+Matrix-vector form (alternative notation):
+
+!bt
+\begin{align}
+\mu K c^{(w)} &= b^{(w)}\\
+\kappa K c^{(T)} &= b^{(T)}
+\end{align}
+!et
+where
+
+!bt
+\begin{align*}
+K_{i,j} &= (\nabla \basphi_j,\nabla \basphi_i)\\
+b^{(w)} &= (b_0^{(w)},\ldots,b_{N}^{(w)})\\
+b^{(T)} &= (b_0^{(T)},\ldots,b_{N}^{(T)})\\
+c^{(w)} &= (c_0^{(w)},\ldots,c_{N}^{(w)})\\
+c^{(T)} &= (c_0^{(T)},\ldots,c_{N}^{(T)})
+\end{align*}
+!et
+
+
+ * First solve the system for $c^{(w)}$
+ * Then solve the system for $c^{(T)}$
+
+=== Coupled linear systems ===
+
+ * Pretend two-way coupling, i.e., need to solve for $w$ and $T$ simultaneously
+ * Want to derive *one system* for $c_j^{(w)}$ and $c_j^{(T)}$, $j=0,\ldots,N$
+ * The system is nonlinear because of $\nabla w\cdot\nabla w$
+ * Linearization: pretend an iteration where $\hat w$ is computed
+   in the previous iteration and set $\nabla w\cdot\nabla w
+   \approx \nabla\hat w\cdot\nabla w$ (so the term becomes linear in $w$)
+
+!bt
+\begin{align}
+\sum_{j=0}^N A^{(w,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(w,T)}_{i,j} c^{(T)}_j
+&= b_i^{(w)},\quad i=0,\ldots,N,
+label{fem:sys:wT:ex:linsys:w2}\\
+\sum_{j=0}^N A^{(T,w)}_{i,j} c^{(w)}_j + \sum_{j=0}^N A^{(T,T)}_{i,j} c^{(T)}_j &= b_i^{(T)},\quad i=0,\ldots,N,
+label{fem:sys:wT:ex:linsys:T2}\\
+A^{(w,w)}_{i,j} &= \mu(\nabla \basphi_j,\basphi_i)\\
+A^{(w,T)}_{i,j} &= 0\\
+b_i^{(w)} &= (\beta, \basphi_i)\\
+A^{(w,T)}_{i,j} &= \mu(\nabla w_{-}\cdot\nabla\basphi_j), \basphi_i)\\
+A^{(T,T)}_{i,j} &= \kappa(\nabla \basphi_j,\basphi_i)\\
+b_i^{(T)} &= 0
+
+\end{align}
+!et
+
+Alternative notation:
+
+!bt
+\begin{align}
+\mu K c^{(w)} &= b^{(w)}\\
+L c^{(w)} + \kappa K c^{(T)} & =0
+\end{align}
+!et
+$L$ is the matrix from the $\nabla w_{-}\cdot\nabla$ operator:
+$L_{i,j} = A^{(w,T)}_{i,j}$.
+
+Corresponding block form:
+
+!bt
+\[
+\left(\begin{array}{cc}
+\mu K & 0\\
+L & \kappa K
+\end{array}\right)
+\left(\begin{array}{c}
+c^{(w)}\\
+c^{(T)}
+\end{array}\right) =
+\left(\begin{array}{c}
+b^{(w)}\\
+0
+\end{array}\right)
+
+\]
+!et
+
+===== Different function spaces for the unknowns =====
+
+idx{mixed finite elements}
+
+ * Generalization: $w\in V^{(w)}$ and $T\in V^{(T)}$,
+   $V^{(w)} \neq V^{(T)}$
+ * This is called a *mixed finite element method*
+
+!bt
+\begin{align*}
+V^{(w)} &= \hbox{span}\{\basphi_0^{(w)},\ldots,\basphi_{N_w}^{(w)}\}\\
+V^{(T)} &= \hbox{span}\{\basphi_0^{(T)},\ldots,\basphi_{N_T}^{(T)}\}
+
+\end{align*}
+!et
+
+!bt
+\begin{align}
+\int_\Omega \mu \nabla w\cdot\nabla v^{(w)} \dx &= \int_\Omega \beta v^{(w)}\dx
+\quad\forall v^{(w)}\in V^{(w)},
+label{fem:sys:wT:ex:w:vf3}\\
+\int_\Omega \kappa \nabla T\cdot\nabla v^{(T)} \dx &= \int_\Omega \mu
+\nabla w\cdot\nabla w\, v^{(T)}\dx \quad\forall v^{(T)}\in V^{(T)}
+label{fem:sys:wT:ex:T:vf3}
+
+\end{align}
+!et
+
+Take the inner product with $\v = (v^{(w)}, v^{(T)})$ and integrate:
+
+!bt
+\begin{equation}
+\int_\Omega (\mu\nabla w\cdot\nabla v^{(w)} +
+\kappa\nabla T\cdot\nabla v^{(T)})\dx
+= \int_\Omega (\beta v^{(w)} + \mu\nabla w\cdot\nabla w\, v^{(T)})\dx,
+label{fem:sys:wT:ex:wT:vf3}
+\end{equation}
+!et
+valid $\forall \v\in\V = V^{(w)}\times V^{(T)}$.
+# #endif
