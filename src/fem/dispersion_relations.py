@@ -1,23 +1,23 @@
 
 
 def A_FE(p, C, lumped=False):
-    f = 1 if lumped else 1 + (2./3)*sin(p)**2
+    f = 1 if lumped else 1 - (2./3)*sin(p)**2
     return 1 - 4*C*sin(p)**2/f
 
 def A_BE(p, C, lumped=False):
-    f = 1 if lumped else 1 + (2./3)*sin(p)**2
+    f = 1 if lumped else 1 - (2./3)*sin(p)**2
     return 1/(1 + 4*C*sin(p)**2/f)  # 1 for sympy
 
 def A_CN(p, C, lumped=False):
-    f = 1 if lumped else 1 + (2./3)*sin(p)**2
+    f = 1 if lumped else 1 - (2./3)*sin(p)**2
     return (1 - 2*C*sin(p)**2/f)/(1 + 2*C*sin(p)**2/f)
 
 def A_exact(p, C):
     return exp(-C*p**2)
 
 methods = {'FE': A_FE, 'BE': A_BE}
-C_values = {'5/6': 5./6, '1/2': 0.5} #, '1/6': 1./6}
-C_values = {'1/4': 0.25, '1/8': 1./8} #, '1/6': 1./6}
+C_values = {'2': 2, '1/2': 0.5}       # coarse mesh
+#C_values = {'1/6': 1./6, '1/12': 1./12}  # fine mesh
 from scitools.std import *
 n = 16
 p = linspace(0, pi/2, n)
