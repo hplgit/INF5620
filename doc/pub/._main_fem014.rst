@@ -302,6 +302,17 @@ The idea is to compute the entries in the linear system as if no
 Dirichlet values are prescribed. Afterwards, we modify the linear system
 to ensure that the known :math:`c_j` values are incorporated.
 
+A potential problem arises for the boundary term :math:`[u'v]_0^L` from the
+integration by parts: imagining no Dirichlet conditions means that we
+no longer require :math:`v=0` at Dirichlet points, and the boundary term is
+then nonzero at these points. However, when we modify the linear
+system, we will erase whatever the contribution from :math:`[u'v]_0^L`
+should be at the Dirichlet points in the right-hand side of the linear
+system. We can therefore safely forget :math:`[u'v]_0^L` at any point where
+a Dirichlet condition applies.
+
+
+
 Computations in the physical system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -315,7 +326,7 @@ unknowns and nodes now coincide:
 .. math::
         
         A_{i,j} = \int_0^L {\varphi}_i'(x){\varphi}_j'(x) {\, \mathrm{d}x},\quad
-        b_{i} = \int_0^L (f(x) - D{\varphi}_{N_n}'(x)){\varphi}_i(x) {\, \mathrm{d}x},
+        b_{i} = \int_0^L f(x){\varphi}_i(x) {\, \mathrm{d}x},
         
 
 for :math:`i,j = 0,\ldots,N=N_n`.
@@ -330,7 +341,7 @@ from :math:`{\varphi}_0` and :math:`{\varphi}_{N_n}`:
         A_{0,0} &= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x} = \int_{0}^{x_{1}}
         = ({\varphi}_0')^2{\, \mathrm{d}x} \frac{1}{h},\\ 
         A_{0,1} &= \int_0^L {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x}
-        = \int_{0}^{x_{1}} {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x} = -\frac{1}{h},
+        = \int_{0}^{x_{1}} {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x} = -\frac{1}{h},\\ 
         A_{N,N} &= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x}
         = \int_{x_{N_n-1}}^{x_{N_n}} ({\varphi}_0')^2{\, \mathrm{d}x} = \frac{1}{h},\\ 
         A_{N,N-1} &= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x}
@@ -465,6 +476,16 @@ the first and last equation by
         
 
 
+Note that because we do not require :math:`{\varphi}_i(0)=0` and
+:math:`{\varphi}_i(L)`, :math:`i\in{\mathcal{I}_s}`, the boundary term :math:`[u'v]_0^L` gives in
+principle contributions :math:`u'(0){\varphi}_0(0)` to :math:`b_0` and
+:math:`u'(L){\varphi}_N(L)` to :math:`b_N` (:math:`u'{\varphi}_i` vanishes for :math:`x=0` or
+:math:`x=L` for :math:`i=1,\ldots,N-1`).  Nevertheless, we erase these
+contributions in :math:`b_0` and :math:`b_N` and insert boundary values instead. This
+argument shows why we can drop computing :math:`[u'v]_0^L` at Dirichlet
+nodes when we implement the Dirichlet values by modifying the linear
+system.
+
 
 .. _fem:deq:1D:fem:essBC:Bfunc:modsys:symm:
 
@@ -579,7 +600,12 @@ right-hand side and hence cancel out.)
 We have, in the present computational example, the element matrix and vector
 :ref:`(14.6) <Eq:fem:deq:1D:ex1:Ab:elm>`. The modifications are needed in
 cells where one of the degrees of freedom is known. Here, this means
-the first and last cell. In the first cell, local degree of freedom number 0
+the first and last cell. We compute the element matrix
+and vector as there are no Dirichlet conditions. The boundary term
+:math:`[u'v]_0^L` is simply forgotten at nodes that have Dirichlet conditions
+because the modification of the element vector will anyway erase the
+contribution from the boundary term. In the first cell,
+local degree of freedom number 0
 is known and the modification becomes
 
 

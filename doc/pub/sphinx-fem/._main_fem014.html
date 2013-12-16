@@ -265,6 +265,14 @@ the nodes (<span class="math">\(N=N_n\)</span>).</p>
 <p>The idea is to compute the entries in the linear system as if no
 Dirichlet values are prescribed. Afterwards, we modify the linear system
 to ensure that the known <span class="math">\(c_j\)</span> values are incorporated.</p>
+<p>A potential problem arises for the boundary term <span class="math">\([u'v]_0^L\)</span> from the
+integration by parts: imagining no Dirichlet conditions means that we
+no longer require <span class="math">\(v=0\)</span> at Dirichlet points, and the boundary term is
+then nonzero at these points. However, when we modify the linear
+system, we will erase whatever the contribution from <span class="math">\([u'v]_0^L\)</span>
+should be at the Dirichlet points in the right-hand side of the linear
+system. We can therefore safely forget <span class="math">\([u'v]_0^L\)</span> at any point where
+a Dirichlet condition applies.</p>
 <div class="section" id="computations-in-the-physical-system">
 <h3>Computations in the physical system<a class="headerlink" href="#computations-in-the-physical-system" title="Permalink to this headline">¶</a></h3>
 <p>Let us redo the computations in the example in
@@ -274,7 +282,7 @@ are the same, but the numbering is different as the numbering of
 unknowns and nodes now coincide:</p>
 <div class="math">
 \[A_{i,j} = \int_0^L {\varphi}_i'(x){\varphi}_j'(x) {\, \mathrm{d}x},\quad
-b_{i} = \int_0^L (f(x) - D{\varphi}_{N_n}'(x)){\varphi}_i(x) {\, \mathrm{d}x},\]</div>
+b_{i} = \int_0^L f(x){\varphi}_i(x) {\, \mathrm{d}x},\]</div>
 <p>for <span class="math">\(i,j = 0,\ldots,N=N_n\)</span>.
 The integrals involving basis functions
 corresponding to interior mesh nodes, <span class="math">\(i,j=1,\ldots,N_n-1\)</span>, are
@@ -284,7 +292,7 @@ from <span class="math">\({\varphi}_0\)</span> and <span class="math">\({\varphi
 \[\begin{split}A_{0,0} &amp;= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x} = \int_{0}^{x_{1}}
 = ({\varphi}_0')^2{\, \mathrm{d}x} \frac{1}{h},\\
 A_{0,1} &amp;= \int_0^L {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x}
-= \int_{0}^{x_{1}} {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x} = -\frac{1}{h},
+= \int_{0}^{x_{1}} {\varphi}_0'{\varphi}_1'{\, \mathrm{d}x} = -\frac{1}{h},\\
 A_{N,N} &amp;= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x}
 = \int_{x_{N_n-1}}^{x_{N_n}} ({\varphi}_0')^2{\, \mathrm{d}x} = \frac{1}{h},\\
 A_{N,N-1} &amp;= \int_0^L ({\varphi}_0')^2{\, \mathrm{d}x}
@@ -389,6 +397,15 @@ the first and last equation by
      D
      \end{array}
      \right)\end{split}\]</div>
+<p>Note that because we do not require <span class="math">\({\varphi}_i(0)=0\)</span> and
+<span class="math">\({\varphi}_i(L)\)</span>, <span class="math">\(i\in{\mathcal{I}_s}\)</span>, the boundary term <span class="math">\([u'v]_0^L\)</span> gives in
+principle contributions <span class="math">\(u'(0){\varphi}_0(0)\)</span> to <span class="math">\(b_0\)</span> and
+<span class="math">\(u'(L){\varphi}_N(L)\)</span> to <span class="math">\(b_N\)</span> (<span class="math">\(u'{\varphi}_i\)</span> vanishes for <span class="math">\(x=0\)</span> or
+<span class="math">\(x=L\)</span> for <span class="math">\(i=1,\ldots,N-1\)</span>).  Nevertheless, we erase these
+contributions in <span class="math">\(b_0\)</span> and <span class="math">\(b_N\)</span> and insert boundary values instead. This
+argument shows why we can drop computing <span class="math">\([u'v]_0^L\)</span> at Dirichlet
+nodes when we implement the Dirichlet values by modifying the linear
+system.</p>
 </div>
 </div>
 <div class="section" id="symmetric-modification-of-the-linear-system">
@@ -488,7 +505,12 @@ right-hand side and hence cancel out.)</p>
 <p>We have, in the present computational example, the element matrix and vector
 <a class="reference internal" href="._main_fem013.html#eq-fem-deq-1d-ex1-ab-elm"><em>(14.6)</em></a>. The modifications are needed in
 cells where one of the degrees of freedom is known. Here, this means
-the first and last cell. In the first cell, local degree of freedom number 0
+the first and last cell. We compute the element matrix
+and vector as there are no Dirichlet conditions. The boundary term
+<span class="math">\([u'v]_0^L\)</span> is simply forgotten at nodes that have Dirichlet conditions
+because the modification of the element vector will anyway erase the
+contribution from the boundary term. In the first cell,
+local degree of freedom number 0
 is known and the modification becomes</p>
 <div class="math" id="equation-fem:deq:1D:ex1:Ab:elm:bc:0">
 <span id="eq-fem-deq-1d-ex1-ab-elm-bc-0"></span><span class="eqno">(6)</span>\[\begin{split}     \tilde A^{(0)} =
