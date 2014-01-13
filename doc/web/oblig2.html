@@ -1,20 +1,22 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html>
 <!--
 Automatically generated HTML file from Doconce source
-(http://code.google.com/p/doconce/)
+(https://github.com/hplgit/doconce/)
 -->
-
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Doconce: http://code.google.com/p/doconce/" />
+<meta name="generator" content="Doconce: https://github.com/hplgit/doconce/" />
+<meta name="description" content="Second compulsory project: 2D wave equation">
 
-<!--
-Color definitions:  http://www.december.com/html/spec/color0.html
-CSS examples:       http://www.w3schools.com/css/css_examples.asp
--->
+
 
 <style type="text/css">
+    /* blueish style */
+
+    /* Color definitions:  http://www.december.com/html/spec/color0.html
+       CSS examples:       http://www.w3schools.com/css/css_examples.asp */
+
     body {
       margin-top: 1.0em;
       background-color: #ffffff;
@@ -22,34 +24,52 @@ CSS examples:       http://www.w3schools.com/css/css_examples.asp
       color: #000000;
     }
     h1 { font-size: 1.8em; color: #1e36ce; }
-    h2 { font-size: 1.5em; color: #1e36ce; }
-    h3 { color: #1e36ce; }
+    h2 { font-size: 1.6em; color: #1e36ce; }
+    h3 { font-size: 1.4em; color: #1e36ce; }
     a { color: #1e36ce; text-decoration:none; }
     tt { font-family: "Courier New", Courier; }
-    pre { background: #ededed; color: #000; padding: 15px;}
+    
     p { text-indent: 0px; }
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
     p.caption { width: 80%; font-style: normal; text-align: left; }
     hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
 
-    .notice, .summary, .warning, .hint, .question {
-    border: 1px solid; margin: 10px 0px; padding:15px 10px 15px 50px;
-    background-repeat: no-repeat; background-position: 10px center;
-    }
-    .notice   { color: #00529B; background-color: #BDE5F8;
-                background-image: url('https://doconce.googlecode.com/hg/lib/doconce/misc_software/html_images/Knob_Message.png'); }
-    .summary  { color: #4F8A10; background-color: #DFF2BF;
-                background-image:url('https://doconce.googlecode.com/hg/lib/doconce/misc_software/html_images/Knob_Valid_Green.png'); }
-    .warning  { color: #9F6000; background-color: #FEEFB3;
-                background-image: url('https://doconce.googlecode.com/hg/lib/doconce/misc_software/html_images/Knob_Attention.png'); }
-    .hint     { color: #00529B; background-color: #BDE5F8;
-                background-image: url('https://doconce.googlecode.com/hg/lib/doconce/misc_software/html_images/Knob_Info.png'); }
-    .question { color: #4F8A10; background-color: #DFF2BF;
-                background-image:url('https://doconce.googlecode.com/hg/lib/doconce/misc_software/html_images/Knob_Forward.png'); }
-
 </style>
 
-<!-- Use MathJax to render mathematics -->
+</head>
+
+<!-- tocinfo
+{'highest level': 1,
+ 'sections': [(' Mathematical problem ', 1, None, '___sec0'),
+              (' Discretization ', 1, None, '___sec1'),
+              (' Truncation error ', 1, None, '___sec2'),
+              (' Implementation ', 1, None, '___sec3'),
+              (' Verification: constant solution ', 1, None, '___sec4'),
+              (' Verification: cubic solution ', 1, None, '___sec5'),
+              (' Exact 1D plug-wave solution in 2D ', 1, None, '___sec6'),
+              (' Verification: standing, undamped waves ',
+               1,
+               None,
+               '___sec7'),
+              (' Verification: standing, damped waves ', 1, None, '___sec8'),
+              (' Verification: manufactured solution ', 1, None, '___sec9'),
+              (' Investigate a physical problem ', 1, None, '___sec10'),
+              (' Additional tasks ', 1, None, '___sec11'),
+              (' Harmonic averaging ', 2, None, '___sec12'),
+              (' Visualization ', 2, None, '___sec13'),
+              (' Open outlet boundary: 1D condition ', 2, None, '___sec14'),
+              (' Open outlet boundary: absorbing layer ',
+               2,
+               None,
+               '___sec15'),
+              (' Compiled loops ', 2, None, '___sec16'),
+              (' Parallel computing ', 2, None, '___sec17')]}
+end of tocinfo -->
+
+<body>
+
+
+
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: {
@@ -64,161 +84,620 @@ MathJax.Hub.Config({
 <!-- Fix slow MathJax rendering in IE8 -->
 <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
 
-</head>
 
-<body>
+<!-- newcommands_keep.tex -->
+$$
+\newcommand{\uex}{{u_{\small\mbox{e}}}}
+\newcommand{\uexd}[1]{{u_{\small\mbox{e}, #1}}}
+\newcommand{\vex}{{v_{\small\mbox{e}}}}
+\newcommand{\vexd}[1]{{v_{\small\mbox{e}, #1}}}
+\newcommand{\Aex}{{A_{\small\mbox{e}}}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halfi}{{1/2}}
+\newcommand{\tp}{\thinspace .}
+
+\newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+\newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+\newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+\newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+\newcommand{\xpoint}{\boldsymbol{x}}
+\newcommand{\normalvec}{\boldsymbol{n}}
+\newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\renewcommand{\u}{\boldsymbol{u}}
+\renewcommand{\v}{\boldsymbol{v}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\V}{\boldsymbol{V}}
+\newcommand{\e}{\boldsymbol{e}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\F}{\boldsymbol{F}}
+\newcommand{\stress}{\boldsymbol{\sigma}}
+\newcommand{\strain}{\boldsymbol{\varepsilon}}
+\newcommand{\stressc}{{\sigma}}
+\newcommand{\strainc}{{\varepsilon}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\T}{\boldsymbol{T}}
+
+\newcommand{\dfc}{\alpha}  % diffusion coefficient
+\newcommand{\ii}{\boldsymbol{i}}
+\newcommand{\jj}{\boldsymbol{j}}
+\newcommand{\kk}{\boldsymbol{k}}
+\newcommand{\ir}{\boldsymbol{i}_r}
+\newcommand{\ith}{\boldsymbol{i}_{\theta}}
+\newcommand{\iz}{\boldsymbol{i}_z}
+
+\newcommand{\Ix}{{I_x}}
+\newcommand{\Iy}{{I_y}}
+\newcommand{\Iz}{{I_z}}
+\newcommand{\It}{{I_t}}
+\newcommand{\If}{{I}}     % for FEM
+\newcommand{\Ifd}{{I_d}}  % for FEM
+\newcommand{\Ifb}{{I_b}}  % for FEM
+\newcommand{\setb}[1]{#1^0}    % set begin
+\newcommand{\sete}[1]{#1^{-1}} % set end
+\newcommand{\setl}[1]{#1^-}
+\newcommand{\setr}[1]{#1^+}
+\newcommand{\seti}[1]{#1^i}
+\newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
+
+\newcommand{\basphi}{\varphi}
+\newcommand{\baspsi}{\psi}
+\newcommand{\refphi}{\tilde\basphi}
+\newcommand{\psib}{\boldsymbol{\psi}}
+\newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+\newcommand{\xno}[1]{x_{#1}}
+\newcommand{\Xno}[1]{X_{(#1)}}
+\newcommand{\yno}[1]{y_{#1}}
+\newcommand{\Yno}[1]{Y_{(#1)}}
+\newcommand{\xdno}[1]{\boldsymbol{x}_{#1}}
+
+\newcommand{\dX}{\, \mathrm{d}X}
+\newcommand{\dx}{\, \mathrm{d}x}
+\newcommand{\ds}{\, \mathrm{d}s}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Integerp}{\mathbb{N}}
+\newcommand{\Integer}{\mathbb{Z}}
+$$
+
+
+
+
     
+<!-- ------------------- main content ---------------------- -->
 
-<!-- ------------------- main content ------------------------>
 
-<title>Highly recommended finite element project in INF5620</title>
+<title>Second compulsory project: 2D wave equation</title>
 
-<center><h1>Highly recommended finite element project in INF5620</h1></center>  <! -- document title -->
+<center><h1>Second compulsory project: 2D wave equation</h1></center>  <!-- document title -->
+
+<p>
+<!-- author(s): INF5620 -->
+
+<center>
+<b>INF5620</b> 
+</center>
+
+
+<p>
+<!-- institution(s) -->
+<p>
+<center><h4>2013</h4></center> <!-- date -->
+<p>
+<a href="oblig2.pdf">PDF version</a>
 
 <p>
 
-<!-- --- begin exercise -->
+<ul>
+ <li> Deadline: Oct 15</li>
+ <li> We recommend to work in groups of two (or three if the amount of work
+   is suitably extended). It is possible to work alone too.</li>
+ <li> Make a directory <code>oblig2</code> in the top directory of your INF5620
+   repo on GitHub or
+   Bitbucket to hold the various files of the project. Include a <code>README</code>
+   file with a short overview of the different files and the full names
+   of the students who did the project.</li>
+ <li> Make reusable, flexible code.</li>
+ <li> Write a short report summarizing the main results. LaTeX is
+   probably the preferred format, but there are several
+   <a href="http://hplgit.github.io/teamods/writing_reports/index.html">other options</a> too.</li>
+ <li> Note that the last part of this compulsory exericse allows different
+   groups to go in different directions (visualization, high-performance
+   computing, more advanced numerics).</li>
+</ul>
+
+<h2>Mathematical problem  <a name="___sec0"></a></h2>
+
+<p>
+The project addresses the two-dimensional, standard, linear wave equation,
+with damping,
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
+\frac{\partial}{\partial x}\left( q (x,y)
+\frac{\partial u}{\partial x}\right) +
+\frac{\partial}{\partial y}\left( q (x,y)
+\frac{\partial u}{\partial y}\right) + f(x,y,t),
+\end{equation}
+$$
+
+with boundary condition
+$$
+\begin{equation}
+ \frac{\partial u}{\partial n} = 0,
+\end{equation}
+$$
+
+in a rectangular spatial domain \( \Omega = [0,L_x]\times [0,L_y] \).
+The initial conditions are
+
+<p>
+$$
+\begin{align}
+u(x,y,0)&=I(x,y),\\
+u_t(x,y,0)&=V(x,y).
+\end{align}
+$$
+
+<h2>Discretization  <a name="___sec1"></a></h2>
+
+<p>
+Derive the discrete set of equations to be implemented in a program:
 
 <p>
 
-<h3>Project 1: 1D wave equation with finite elements  <a name="___sec0"></a></h3>
-<p>
-The purpose of this project is to derive and analyze a finite element
-method for the 1D wave equation
+<ul>
+  <li> the general scheme for computing \( u_{i,j}^{n+1} \) at interior
+    spatial mesh points,</li>
+  <li> the modified scheme for the first step,</li>
+  <li> the modified scheme at boundary points (first step and subsequent
+    steps), unless you use the interior
+    scheme also at the boundary with extra ghost cells.</li>
+</ul>
+
+<h2>Truncation error  <a name="___sec2"></a></h2>
 
 <p>
-$$ u_{tt} = c^2 u_{xx},\quad x\in [0,L],\ t\in (0,T],$$
-with boundary and initial conditions
+Compute the truncation error of the scheme at an arbitrary interior mesh point.
+(It easier to start with \( q=\hbox{const} \) and then generalize to variable \( q \)).
+
+<h2>Implementation  <a name="___sec3"></a></h2>
 
 <p>
-$$ u(0,t) = U_0(t),\quad u_x(L,t)=0,\quad u(x,0)=I(0),\quad u_t(x,0)=V(x)
-\thinspace .$$
+Implement the numerical scheme in a program. You may use
+<a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave2D_u0/wave2D_u0.py"><tt>wave2D_u0.py</tt></a>
+as a starting point (this program solves the 2D wave equation
+with constant wave velocity and \( u=0 \) on the boundary).
+You will need to include both scalar (pointwise)
+computation of the scheme for debugging and reference as well as a
+vectorized version for speed.
+
+<h2>Verification: constant solution  <a name="___sec4"></a></h2>
 
 <p>
-The analysis will give insight on how to adjust the default behavior
-of the finite element method such that its properties are as good as
-those for the finite difference method. With the necessary adjustments
-discovered in 2D, one gets an accurate
-finite element method for simulating 2D and
-3D waves in complex geometries.
+Construct a test case with constant solution (not 0 or 1).
+Make a corresponding nose test.
+
+<p>
+Invent five types of possible bugs in the implementation of the mathematical
+formulas. See how many of them that lead to a wrong non-constant solution.
+
+<h2>Verification: cubic solution  <a name="___sec5"></a></h2>
+
+<p>
+Assume an exact solution on the form \( \uex(x,y,t)=X(x)Y(y)T(t) \) where
+\( X \), \( Y \), and \( T \) are polynomials of degree three or less.
+Construct \( X \) and \( Y \) such that the normal derivative vanishes at the
+four boundaries. Fit a corresponding source term \( f(x,y,t) \) in the wave
+equation.
+
+<p>
+It would be great if this exact solution also were an exact solution
+of the discrete equations when \( q \) is constant and \( b=0 \),
+which is often the case with lower-order
+polynomials because the truncation errors involve higher-order derivatives.
+The exact cubic solution fits the discrete equations at all inner
+mesh points, but not on the boundary. Add a term in the boundary
+equation for testing such that the exact solution also fulfills the
+boundary equation. Implement a corresponding nose test.
+
+<p>
+<b>Hint.</b>
+We outline some ideas in 1D.
+For constant \( q \) and \( b=0 \) we have the scheme
+\( [D_tD_t u - qD_xD_x = f]^n_{i} \) at inner points.
+Because \( [D_xD_x x^3]_i = 6x_i \),
+\( [D_xD_x x^2]_i = 2 \), \( [D_xD_x x]_i = 0 \) all are exact, the suggested
+\( u \) also fits the discrete equation. On the boundary we get a modified
+scheme, which in operator notation can be written as
+
+<p>
+$$ [D_tD_t u= qD_xD_x u + q\frac{2}{\Delta x}D_{2x} u + f]^n_i,\quad i=0,$$
+
+and
+
+<p>
+$$ [D_tD_t u= qD_xD_x - q\frac{2}{\Delta x}D_{2x} u + f]^n_i,\quad i=N_x\tp$$
+
+We have the results
+\( [D_{2x} x^3]_i =  3x_i^2 + \Delta x^2 \),
+and \( [D_{2x} x^2]_i = 2x_i \), \( [D_{2x} x]_i=1 \).
+Consider now
+\( [D_tD_t u= qD_xD_x u - q\frac{2}{\Delta x}D_{2x}u + f]^n_i \).
+Inserting \( u=X(x)T(t) \) requires the same \( f \) as for the PDE, but with
+an additional term \( T(t)2q\Delta x \) because of the \( D_{2x} \) operator acting
+on a cubic polynomial in \( x \).
+
+<p>
+This test requires the \( f \) that fits the PDE to be modified on the
+boundary. A possible implementation is to modify the array of
+\( f \) values at the boundary mesh points directly, or perform
+tests on the coordinates if a pointwise
+evaluation of \( f \) is requested:
 
 <p>
 
-<b>a)</b> Use a finite difference method in time to formulate a sequence of
-spatial problems for \( u^n(x) \), \( n=0,1,\ldots,N \).
+<!-- code=python (from !bc pycod) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">f</span>(x, y, t):
+    <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">isinstance</span>(x, np<span style="color: #666666">.</span>ndarray) <span style="color: #AA22FF; font-weight: bold">and</span> <span style="color: #008000">isinstance</span>(y, np<span style="color: #666666">.</span>ndarray):
+        <span style="color: #408080; font-style: italic"># Array evaluation</span>
+        f_a <span style="color: #666666">=</span> <span style="color: #666666">....</span> <span style="color: #408080; font-style: italic"># evaluate the f that fits the PDE</span>
+        <span style="color: #408080; font-style: italic"># Modify boundary values</span>
+        f_a[<span style="color: #666666">0</span>,:]  <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=0</span>
+        f_a[<span style="color: #666666">-1</span>,:] <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=Lx</span>
+        f_a[:,<span style="color: #666666">0</span>]  <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># y=0</span>
+        f_a[:,<span style="color: #666666">-1</span>] <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># x=Ly</span>
+    <span style="color: #008000; font-weight: bold">else</span>:
+        <span style="color: #408080; font-style: italic"># Assume pointwise evaluation</span>
+        tol <span style="color: #666666">=</span> <span style="color: #666666">1E-14</span>  <span style="color: #408080; font-style: italic"># tolerance for float comparison</span>
+        f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span> <span style="color: #408080; font-style: italic"># evaluate the f that fits the PDE</span>
+        <span style="color: #408080; font-style: italic"># Modify boundary values</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(x) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># x=0</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(x<span style="color: #666666">-</span>Lx) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># x=Lx</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(y) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># y=0</span>
+        <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">abs</span>(y<span style="color: #666666">-</span>Ly) <span style="color: #666666">&lt;</span> tol:
+            f_v <span style="color: #666666">=</span> <span style="color: #666666">...</span>   <span style="color: #408080; font-style: italic"># y=Ly</span>
+</pre></div>
+
+<h2>Exact 1D plug-wave solution in 2D  <a name="___sec6"></a></h2>
 
 <p>
-<b>b)</b> Use a Galerkin method to derive a variational form of each of the
-spatial problems. Integrate the \( u_{xx} \) term by parts.
+The program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/wave1D/wave1D_dn_vc.py"><tt>wave1D_dn_vc.py</tt></a> has a <code>pulse</code> function for simulating the propagation of a plug wave,
+where \( I(x) \) is constant in some region of the domain and zero elsewhere.
+With unit Courant number, the plug is split into two identical waves,
+moving in opposite direction, exactly one cell per time
+step. The discrete solution is then equal to the exact solution.
 
 <p>
-<b>c)</b> Derive the linear system to be solved at each time level and express
-it in the form
+Set \( b=0 \) and \( q \) to a constant.
+Test the 2D program using a one-dimensional plug wave in \( x \) direction with
+\( c\Delta t/\Delta x=1 \) (the plug is constant in \( y \) direction and hence
+compatible with the \( \partial/\partial y=0 \) boundary condition).
+Also propagate a one-dimensional plug wave in the \( y \)
+direction with \( c\Delta t/\Delta y=1 \). Both test cases are essentially
+1D test cases, and the results should as in the 1D case.
+Implement a corresponding nose test.
+
+<h2>Verification: standing, undamped waves  <a name="___sec7"></a></h2>
 
 <p>
-$$ Mc^{n+1} = 2Mc^{n} - Mc^{n-1} + C^2Kc^{n},$$
-where \( M \) and \( K \) are matrices, \( C \) is the Courant number,
-\( c^n=(c_0^n,c_1^n,\ldots,c^n_{N_x}) \),
-\( c_j^n \) being the coefficients in the expansion \( u^n = \sum_{j=0}^{N_x}
-c_j\varphi_j(x) \).
-
-<p>
-
-<b>Remark.</b> Unless \( M \) is diagonal, a (tridiagonal) <em>linear system</em>
-must be solved at each time step, whereas the finite difference method
-leads to an explicit formula for \( u^{n+1}_i \) at each spatial point at
-a new time level.
-
-<p>
-<b>Hint.</b> Group the general expressions
-for the linear system according to the above equation and then compute
-the actual matrix entries by assembling element matrices for \( M \) and \( K \).
-
-<p>
-<b>d)</b> Interpret equation number \( i \) in the linear system as a finite
-difference approximation of \( u_{tt}=c^2u_{xx} \) using the following scheme:
+With no damping and constant wave velocity,
+our wave equation problem without any source
+term admits
+a standing wave solution:
 
 <p>
 $$
 \begin{equation}
-[D_tD_t( u + \frac{1}{6}\Delta x^2 D_xD_x u ) = c^2 D_xD_x u]_{i}^{n}
-\label{oblig2:fdm:fem:discrete}
-\thinspace .
+\uex(x,y,t)=A\cos(k_xx)\cos(k_yy)\cos (\omega t),\quad
+k_x = \frac{m_x\pi}{L_x}, \ k_y = \frac{m_y\pi}{L_y},
+\label{wave:app:exer:standing:waves}
 \end{equation}
 $$
 
-<p>
-<b>Hint.</b> Write out equation number \( i \) and substitute \( c_j \) by \( u_j \) to help
-interpreting finite element equations as finite difference schemes.
-Study the material on <a href="http://hplgit.github.com/INF5620/doc/notes/fem-sphinx/main_fem.html#comparison-of-finite-element-and-finite-difference-approximation">interpreting the mass matrix as a finite difference
-operator</a>.
-The similarity of finite differences and elements regarding the \( u_{xx} \) term
-is evident from a <a href="http://hplgit.github.com/INF5620/doc/notes/fem-sphinx/main_fem.html#computing-with-finite-elements">detailed example</a> in the course
-material on solving \( -u_{xx}=f \) by finite elements.
+for arbitrary amplitude \( A \), arbitrary integers \( m_x \) and \( m_y \),
+and a suitable choice of \( \omega \). This solution can be used to test
+the convergence rate of the numerical method.
 
 <p>
-<b>e)</b> Perform an analysis of the scheme \eqref{oblig2:fdm:fem:discrete}
-in the same way as is done for the corresponding finite difference
-scheme in the <a href="http://hplgit.github.com/INF5620/doc/notes/wave-sphinx/main_wave.html#analysis-of-the-continuous-and-discrete-solutions">course notes</a>.
-That is, investigate a Fourier component \( u^n_p = \exp{(i(kp\Delta x - \tilde
-\omega n\Delta t))} \). Show that the stability criterion is
-$$ C \leq \frac{1}{\sqrt{3}},$$
-and therefore that any hope for recovering the exact solution for \( C=1 \)
-becomes impossible.
+Use the
+truncation error analysis to
+set up a model for the error in terms of the discretization parameters.
+Note that the truncation error is not the true error
+\( e^n_{i,j}=\uex(x_i,y_j,t_n) - u^n_{i,j} \), but we assume
+that \( e^n_{i,j} \) depends on the discretization parameters in the same way.
+We also assume that a norm of \( e^n_{i,j} \), e.g.,
 
 <p>
-<b>f)</b> Find the numerical dispersion relation
-(\( \tilde\omega \) expressed by other parameters) and plot the
-error in wave velocity \( \tilde c/c \) (\( \tilde c = \tilde \omega/k \), \( c=\omega/c \))
-as a function of \( k\Delta x \) for various Courant numbers.
-Compare with <a href="http://hplgit.github.com/INF5620/doc/notes/wave-sphinx/main_wave.html#wave-pde1-fig-disprel">the corresponding plot for the finite difference method</a> for \( u_{tt}=c^2u_{xx} \) (computed with the aid of the
-program <a href="https://github.com/hplgit/INF5620/blob/gh-pages/src/wave/dispersion_relation_1D.py">dispersion_relation_1D.py</a>).
+$$ E = ||e^n_{i,j}||_{\ell^\infty} = \max_{i}\max_{j}\max_{t}
+|e^n_{i,j}|,$$
+
+also depends on the discretization parameters in the same way.
+Introduce a common discretization parameter \( h \) such that
+\( \Delta t \), \( \Delta x \), and \( \Delta y \) are proportional to \( h \).
+Show that \( E=Ch^2 \) for some \( C \) is the expected behavior of the error.
+Perform experiments with decreasing \( h \), compute \( E \), and verify that
+\( E/h^2 \) is approximately constant.
+
+<h2>Verification: standing, damped waves  <a name="___sec8"></a></h2>
 
 <p>
-<b>g)</b> Use the Trapezoidal rule to compute the \( M \) matrix. Show that the finite
-element method with P1 elements now produces the same scheme at the
-interior mesh points as the standard finite difference method for
-\( u_{tt}=c^2u_{xx} \). Also show that the equations for \( i=1 \) and
-\( i=N_x \) are identical in the two methods.
+Try to find an analytical solution of damped waves using an ansatz
+of the type
 
 <p>
-<b>h)</b> Instead of using the Trapezoidal rule to produce a diagonal \( M \) matrix,
-one can replace \( M \) by \( \mbox{diag}(Me) \), where \( e=(1,1,\ldots,1) \)
-and \( \mbox{diag}(w) \) means a diagonal matrix with the vector \( w \)
-on the diagonal. The interpretation of this approach is that we
-sum each row in \( M \) and place the sum on the diagonal.
-Show that this method produces the same results as Trapezoidal integration
-(in a 1D problem). Also show that if you replace each row in the element
-matrices associated with \( M \) by the row sum on the diagonal, the same
-result arises.
+$$
+\begin{equation}
+\uex(x,y,t)=\left(A\cos (\omega t)
++ B\sin (\omega t)\right)
+e^{-ct}\cos(k_xx)\cos(k_yym_yy\pi/L_y),\quad
+k_x = \frac{m_x\pi}{L_x}, \ k_y = \frac{m_y\pi}{L_y}\tp
+\label{wave:app:exer:standing:waves:damped}
+\end{equation}
+$$
+
+That is, find \( A \), \( B \), \( \omega \), and \( c \) such that
+\eqref{wave:app:exer:standing:waves:damped} solves the PDE with
+constant \( q \), no
+source term, and initial condition \( u_t(x,y,0)=0 \) (as for the
+undamped standing waves). Make a corresponding convergence test.
 
 <p>
-Filenames: <tt>wave1D_fem.py</tt>, <tt>wave1D_fem.pdf</tt>.
+<b>Hint.</b>
+The algebra can quickly be quite involved. Getting an
+overview of the algebra in a 1D version of this problem might be
+helpful.  Start with relating \( A \) and \( B \) through the initial
+conditions (\( u=A\cos k_xx\cos k_yy \) and \( u_t=0 \) as implied by
+\eqref{wave:app:exer:standing:waves}) and eliminate \( B \).  After having
+inserted \( u \) in the PDE, two equations for \( \omega \) and \( c \) arise from
+factoring the sine and cosine terms in time. One equation can be
+solved for \( \omega = \sqrt{k_x^2q + k_y^2q - c^2} \), while the other
+can be solved for \( c=b/2 \) by inserting the found \( \omega \) expression.
+
+<h2>Verification: manufactured solution  <a name="___sec9"></a></h2>
 
 <p>
-<!-- Closing remarks for this Project -->
+Choose some \( q(x,y)\neq 0 \) and find \( f(x,y,t) \) such that
+({wave:app:exer:standing:waves:damped}) is a solution to the general
+2D wave equation problem with damping and variable wave velocity.
+Find corresponding \( I \) and \( V \), and make a convergence test that
+recovers the expected convergence rate. Make a corresponding nose test.
+
+<p>
+<b>Hint.</b>
+You may explore <code>sympy</code> for automating the analytical work:
 
 <p>
 
-<h4>Remarks  <a name="___sec1"></a></h4>
-<p>
-Say we want to solve the 3D wave equation \( u_{tt}=c^2\nabla^2u \) with
-finite elements and get the same stability as in the finite difference
-method. We can then compute \( M \) and \( K \) in the usual way and thereafter
-just replace \( M \) by \( \mbox{diag}(Me) \). When the mass matrix is lumped
-this way and becomes diagonal, we get the same representation of
-of the terms
-\( u^{n-1} \), \( u^n \), and \( u^{n+1} \) as in the finite difference method.
-The \( K \) matrix also resembles finite differences for P1 elements.
-With Q1 elements the \( K \) matrix has more nonzero entries per row, but
-this does not change the numerical properties of the scheme significantly.
-The key issue is to use a lumped mass matrix.
+<!-- code=text (from !bc ipy) typeset with pygments style "default" -->
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%">&gt;&gt;&gt; from sympy import *
+&gt;&gt;&gt; x = Symbol(&#39;x&#39;)
+&gt;&gt;&gt; q=x**2
+&gt;&gt;&gt; u=sin(x)
+&gt;&gt;&gt; r = diff(q*diff(u, x), x)   # Derivative: (q*u_x)_x
+&gt;&gt;&gt; simplify(r)
+x*(-x*sin(x) + 2*cos(x))
+</pre></div>
+
+<h2>Investigate a physical problem  <a name="___sec10"></a></h2>
 
 <p>
+The purpose of this part is to explore what happens to a wave that
+enters a medium with different wave velocity. A particular physical
+interpretation can be wave propagation of a tsunami over a subsea
+hill. The unknown \( u(x,y,t) \) is then the elevation of the ocean
+surface, and the boundary condition \( \partial u/\partial n=0 \) means
+that the waves are perfectly reflected, because of a steep hill at the
+shore, or the condition expresses symmetry in the solution.  The wave
+velocity is in this case
+given by \( q = gH(x,y) \), where \( g \) is the acceleration of
+gravity and \( H(x,y) \) is the stillwater depth.
 
-<!-- --- end of exercise -->
+<p>
+It can be wise to do <a href="../pub/sphinx_wave/._part0010_main_wave.html#problem-21-earthquake-generated-tsunami-over-a-subsea-hill">Problem 21</a>, because a 1D program corresponding to the present
+2D problem allows much faster experimentation with parameters and
+effects.
 
-<!-- ------------------- end of main content ----------------->
+<p>
+The initial surface is taken as a smooth Gaussian function
+
+<p>
+$$
+\begin{equation}
+I(x;I_0,I_a,I_m,I_s) =
+I_0 + I_a\exp{\left(-\left(\frac{x-I_m}{I_s}\right)^2\right)},
+\end{equation}
+$$
+
+with \( I_m=0 \) reflecting the location of the peak of \( I(x) \) and
+\( I_s \) being a measure of the width of the function \( I(x) \)
+(\( I_s \) is \( \sqrt{2} \) times the standard deviation of the familiar
+normal distribution curve).
+
+<p>
+Three different bottom shapes can be investigated.
+A 2D Gaussian hill can be modeled by
+
+<p>
+$$
+\begin{equation}
+B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b) =
+B_0 + B_a\exp{\left(-\left(\frac{x-B_{mx}}{B_s}\right)^2
+-\left(\frac{y-B_{my}}{bB_s}\right)^2\right)},
+\label{wave:app:exer:tsunami2D:hill:Gauss}
+\end{equation}
+$$
+
+where \( b \) is a scaling parameter: \( b=1 \) gives a circular Gaussian
+function with circular contour lines, while \( b\neq 1 \) gives an elliptic
+shape with elliptic contour lines.
+
+<p>
+A less smooth hill is modeled by the "cosine hat" function
+
+<p>
+$$
+\begin{equation}
+B(x; B_0, B_a, B_{mx}, B_{my}, B_s) =
+B_0 + B_a\cos{\left( \pi\frac{x-B_{mx}}{2B_s}\right)}
+\cos{\left( \pi\frac{y-B_{my}}{2B_s}\right)},
+\label{wave:app:exer:tsunami2D:hill:cohat}
+\end{equation}
+$$
+
+when \( 0 \leq \sqrt{x^2+y^2} \leq B_s \) and \( B=B_0 \) outside this circle.
+
+<p>
+A more dramatic hill shape is a box:
+
+<p>
+$$
+\begin{equation}
+B(x; B_0, B_a, B_m, B_s, b) = B_0 + B_a
+\label{wave:app:exer:tsunami2D:hill:box}
+\end{equation}
+$$
+
+for \( x \) and \( y \) inside a rectangle
+$$ B_{mx}-B_s \leq  x \leq B_{mx} + B_s,\quad
+B_{my}-bB_s \leq  y \leq B_{my} + bB_s,
+$$
+
+and \( B=B_0 \) outside this rectangle.
+The \( b \) parameter controls the rectangular shape of the cross section of
+the box.
+
+<p>
+Note that the initial condition and the listed bottom shapes are
+symmetric around the line \( y=B_{my} \). We therefore expect the surface
+elevation also to be symmetric with respect to this line.  This means
+that we can halve the computational domain by working with
+\( [0,L_x]\times [0, B_{my}] \). Along the upper boundary, \( y=B_{my} \), we
+must impose the symmetry condition \( \partial \eta/\partial n=0 \).  Such
+a symmetry condition (\( -\eta_x=0 \)) is also needed at the \( x=0 \)
+boundary because the initial condition has a symmetry here. At the
+lower boundary \( y=0 \) we also set a Neumann condition (which becomes
+\( -\eta_y=0 \)).  The wave motion is to be simulated until the wave hits
+the reflecting boundaries where \( \partial\eta/\partial n =\eta_x =0 \).
+
+<p>
+Investigate how different hill shapes, different sizes of the water
+gap above the hill, and different resolutions \( \Delta x = \Delta y =
+h \) and \( \Delta t \) influence the numerical quality of the solution. One
+anticipates that the less smooth hill shapes will introduce more
+numerical noise.  Presenting the results as movies of the surface
+elevation is effective.
+
+<h2>Additional tasks  <a name="___sec11"></a></h2>
+
+<p>
+The groups can select between one or more of the following tasks.
+
+<h3>Harmonic averaging  <a name="___sec12"></a></h3>
+
+<p>
+Harmonic means are often used if the coefficient \( q \) is
+non-smooth or discontinuous. Investigate if harmonic averaging of \( q \)
+works better than the arithmetic averging for the box-shaped subsea hill.
+The effect might not be big unless the water gap at the top of the
+hill is small. It can be wise to test the effect of harmonic averaging in
+1D first.
+
+<p>
+<b>Remark.</b>
+With a small gap between the obstruction and the free surface,
+and with abrupt changes in the bottom shape, the model PDE does not
+necessarily describe the wave motion in an accurate or qualitatively correct
+way.
+
+<h3>Visualization  <a name="___sec13"></a></h3>
+
+<p>
+Create some fancy 3D visualization of the water waves <em>and</em> the subsea hill.
+Try to make the hill transparent. Suitable tools are
+
+<p>
+
+<ul>
+  <li> <a href="http://code.enthought.com/projects/mayavi/">Mayavi</a></li>
+  <li> <a href="http://www.paraview.org/">Paraview</a></li>
+  <li> <a href="http://www.opendx.org/">OpenDX</a></li>
+  <li> <a href="http://matplotlib.org/">Matplotlib</a></li>
+</ul>
+
+<h3>Open outlet boundary: 1D condition  <a name="___sec14"></a></h3>
+
+<p>
+Implement an open boundary condition at \( x=L_x \), \( u_t + \sqrt{q}u_x=0 \),
+as suggested
+in <a href="../pub/sphinx_wave/._part0010_main_wave.html#problem-20-implement-open-boundary-conditions">Problem 20</a>.
+This condition is only correct in 1D, but might work satisfactorily in 2D if
+the wave is approximately one-dimensional when it hits the boundary.
+See how well this condition works in letting the tsunami pass out of
+the domain. The distance from the subsea hill (which disturbes the wave)
+and the outlet boundary \( x=L_x \) is an important parameter.
+
+<h3>Open outlet boundary: absorbing layer  <a name="___sec15"></a></h3>
+
+<p>
+Instead of using a condition \( u_t + \sqrt{q}u_x=0 \), which is exact only
+for plane waves propagating in \( x \) direction, one can add an
+artificial domain \( [L_x,L_x+\delta]\times [0,L_y] \) where waves are
+sufficiently damped and absorbed. The goal of an open boundary condition
+is to avoid waves being reflected back into the domain. Turn on
+the damping parameter \( b \) in \( [L_x,L_x+\delta]\times [0,L_y] \),
+and test if it is wise to vary \( b \), say in a linear or exponential
+fashion to have a smooth transition from \( b=0 \) in the physical
+domain and to some significant (efficient) \( b \) value towards the
+artificial boundary \( x=L_x+\delta \).
+
+<h3>Compiled loops  <a name="___sec16"></a></h3>
+
+<p>
+Extend the program with compiled loops using one or more of the
+following techniques:
+
+<p>
+
+<ul>
+ <li> Cython code</li>
+ <li> Fortran code interfaced via <code>f2py</code></li>
+ <li> C code interfaced via Cython or <code>f2py</code></li>
+ <li> C/C++ code interfaced via <code>scipy.weave</code></li>
+ <li> C/C++ code interfaced via <a href="https://launchpad.net/instant">Instant</a></li>
+</ul>
+
+Note that Instant comes with FEniCS (<code>sudo apt-get install fenics</code> on
+Ubuntu will install Instant) and it is described in the
+<a href="https://launchpad.net/fenics-book">FEniCS book</a>.
+
+<h3>Parallel computing  <a name="___sec17"></a></h3>
+
+<p>
+Make a parallel version of the program using different approaches:
+
+<p>
+
+<ul>
+ <li> Automatic OpenMP code in migrated Cython loops using
+   <a href="http://docs.cython.org/src/userguide/parallelism.html"><tt>cython.parallel</tt></a></li>
+ <li> OpenMP in migrated C or Fortran loops</li>
+ <li> MPI in migrated C or Fortran loops</li>
+ <li> mpi4py MPI programming from Python (distribute vectorized code)</li>
+ <li> Automatic parallelization of vectorized NumPy code via
+   <a href="http://docs.continuum.io/numbapro/">NumbaPro</a> (a license can be
+   made available)</li>
+</ul>
+
+
+<!-- ------------------- end of main content --------------- -->
+
+
 </body>
 </html>
     

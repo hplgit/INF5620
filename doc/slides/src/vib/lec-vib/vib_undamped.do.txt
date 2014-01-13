@@ -1,0 +1,1048 @@
+
+!split
+======= A simple vibration problem =======
+
+idx{period (of oscillations)}
+idx{frequency (of oscillations)}
+idx{Hz (unit)}
+
+!bt
+\begin{equation}
+u''t + \omega^2u = 0,\quad u(0)=I,\ u'(0)=0,\ t\in (0,T]
+\tp
+label{vib:model1}
+\end{equation}
+!et
+
+Exact solution:
+
+!bt
+\begin{equation}
+u(t) = I\cos (\omega t)
+\tp
+label{vib:model1:uex}
+\end{equation}
+!et
+$u(t)$ oscillates with constant amplitude $I$ and
+(angular) frequency $\omega$.
+Period: $P=2\pi/\omega$.
+
+!split
+===== A centered finite difference scheme; step 1 and 2 =====
+label{vib:model1:fdm}
+
+ * Strategy: follow the "four steps": "${doc_notes}/decay-sphinx/main_decay.html#the-forward-euler-scheme" of the finite difference method.
+
+ * Step 1: Introduce a time mesh, here uniform on $[0,T]$: $t_n=n\Delta t$
+
+ * Step 2: Let the ODE be satisfied at each mesh point:
+
+!bt
+\begin{equation}
+u''(t_n) + \omega^2u(t_n) = 0,\quad n=1,\ldots,N_t
+\tp
+label{vib:model1:step2}
+\end{equation}
+!et
+
+!split
+===== A centered finite difference scheme; step 3 =====
+
+Step 3: Approximate derivative(s) by finite
+difference approximation(s).
+Very common (standard!) formula for $u''$:
+
+!bt
+\begin{equation}
+u''(t_n) \approx \frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
+\tp
+label{vib:model1:step3}
+\end{equation}
+!et
+
+Use this discrete initial condition together with the ODE at $t=0$ to
+eliminate $u^{-1}$ (insert (ref{vib:model1:step3}) in (ref{vib:model1:step2})):
+
+!bt
+\begin{equation}
+\frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2} = -\omega^2 u^n
+\tp
+label{vib:model1:step4a}
+\end{equation}
+!et
+
+!split
+===== A centered finite difference scheme; step 4 =====
+
+Step 4: Formulate the computational algorithm.
+Assume $u^{n-1}$ and $u^n$ are known, solve for unknown $u^{n+1}$:
+
+!bt
+\begin{equation}
+u^{n+1} = 2u^n - u^{n-1} - \Delta t^2\omega^2 u^n
+\tp
+label{vib:model1:step4}
+\end{equation}
+!et
+
+Nick names for this scheme:
+# #if FORMAT in ("pdflatex", "latex")
+St\"{o}rmer's
+# #else
+Stormer's
+# #endif
+method or "Verlet integration":
+"http://en.wikipedia.org/wiki/Velocity_Verlet".
+
+!split
+===== Computing the first step =====
+
+  * The formula breaks down for $u^1$ because $u^{-1}$ is unknown and
+    outside the mesh!
+  * And: we have not used the initial condition $u'(0)=0$.
+
+Discretize $u'(0)=0$ by a centered difference
+!bt
+\begin{equation}
+\frac{u^1-u^{-1}}{2\Delta t} = 0\quad\Rightarrow\quad u^{-1} = u^1
+\tp
+\end{equation}
+!et
+
+Inserted in (ref{vib:model1:step4}) for $n=0$ gives
+
+!bt
+\begin{equation}
+u^1 = u^0 - \half \Delta t^2 \omega^2 u^0
+\tp
+label{vib:model1:step4b}
+\end{equation}
+!et
+
+!split
+===== The computational algorithm =====
+
+  o $u^0=I$
+  o compute $u^1$ from (ref{vib:model1:step4b})
+  o for $n=1,2,\ldots,N_t-1$:
+    o compute $u^{n+1}$ from (ref{vib:model1:step4})
+
+More precisly expressed in Python:
+
+!bc pycod
+t = linspace(0, T, Nt+1)  # mesh points in time
+dt = t[1] - t[0]          # constant time step.
+u = zeros(Nt+1)           # solution
+
+u[0] = I
+u[1] = u[0] - 0.5*dt**2*w**2*u[0]
+for n in range(1, Nt):
+    u[n+1] = 2*u[n] - u[n-1] - dt**2*w**2*u[n]
+!ec
+
+Note: `w` is consistently used for $\omega$ in my code.
+
+!split
+===== Operator notation; ODE =====
+
+With $[D_tD_t u]^n$ as the finite difference approximation to
+$u''(t_n)$ we can write
+
+!bt
+\begin{equation}
+[D_tD_t u  + \omega^2 u = 0]^n
+\tp
+label{vib:model1:step4:op}
+\end{equation}
+!et
+
+$[D_tD_t u]^n$ means applying a central difference with step $\Delta t/2$ twice:
+
+!bt
+\[ [D_t(D_t u)]^n = \frac{[D_t u]^{n+\half} - [D_t u]^{n-\half}}{\Delta t}\]
+!et
+which is written out as
+!bt
+\[
+\frac{1}{\Delta t}\left(\frac{u^{n+1}-u^n}{\Delta t} - \frac{u^{n}-u^{n-1}}{\Delta t}\right) = \frac{u^{n+1}-2u^n + u^{n-1}}{\Delta t^2}
+\tp
+\]
+!et
+
+!split
+===== Operator notation; initial condition =====
+
+!bt
+\begin{equation}
+[u = I]^0,\quad [D_{2t} u = 0]^0,
+\end{equation}
+!et
+where $[D_{2t} u]^n$ is defined as
+!bt
+\begin{equation}
+[D_{2t} u]^n = \frac{u^{n+1} - u^{n-1}}{2\Delta t}
+\tp
+\end{equation}
+!et
+
+!split
+===== Computing $u'$ =====
+
+$u$ is often displacement/position, $u'$ is velocity and can be computed by
+
+!bt
+\begin{equation}
+u'(t_n) \approx \frac{u^{n+1}-u^{n-1}}{2\Delta t} = [D_{2t}u]^n
+\tp
+\end{equation}
+!et
+
+
+!split
+======= Implementation =======
+
+!split
+===== Core algorithm =====
+
+@@@CODE src-vib/vib_undamped.py fromto: from numpy@def exact
+
+!split
+===== Plotting =====
+
+@@@CODE src-vib/vib_undamped.py fromto: def exact@import nose
+
+!split
+===== Main program =====
+
+!bc pycod
+I = 1
+w = 2*pi
+dt = 0.05
+num_periods = 5
+P = 2*pi/w    #  one period
+T = P*num_periods
+u, t = solver(I, w, dt, T)
+visualize(u, t, I, w, dt)
+!ec
+
+!split
+===== User interface: command line =====
+
+!bc pycod
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--I', type=float, default=1.0)
+parser.add_argument('--w', type=float, default=2*pi)
+parser.add_argument('--dt', type=float, default=0.05)
+parser.add_argument('--num_periods', type=int, default=5)
+a = parser.parse_args()
+I, w, dt, num_periods = a.I, a.w, a.dt, a.num_periods
+!ec
+
+!split
+===== Running the program =====
+
+"`vib_undamped.py`": "${src_vib}/vib_undamped.py":
+
+!bc sys
+Terminal> python vib_undamped.py --dt 0.05 --num_periods 40
+!ec
+
+Generates frames `tmp_vib%04d.png` in files. Can make movie:
+
+!bc sys
+Terminal> avconv -r 12 -i tmp_vib%04d.png -vcodec flv movie.flv
+!ec
+Can use `ffmpeg` instead of `avconv`.
+
+|---------------------------------------|
+| Format | Codec and filename           |
+|----l-----------l----------------------|
+|  Flash | `-vcodec flv movie.flv`      |
+|  MP4   | `-vcodec libx64 movie.mp4`   |
+|  Webm  | `-vcodec libvpx movie.webm`  |
+|  Ogg   | `-vcodec libtheora movie.ogg`|
+|---------------------------------------|
+
+
+!split
+======= Verification =======
+
+
+!split
+===== First steps for testing and debugging =====
+
+ * _Testing very simple solutions_:
+   $u=\hbox{const}$ or $u=ct + d$ do not apply here (without a force
+   term in the equation: $u'' + \omega^2u = f$).
+
+ * _Hand calculations_: calculate $u^1$ and $u^2$ and compare with program.
+
+!split
+===== Checking convergence rates =====
+
+The next function estimates convergence rates, i.e., it
+
+ * performs $m$ simulations with halved time steps: $2^{-k}\Delta t$, $k=0,\ldots,m-1$,
+ * computes the $L_2$ norm of the error,
+   $E = \sqrt{\Delta t_i\sum_{n=0}^{N_t-1}(u^n-\uex(t_n))^2}$ in each case,
+ * estimates the rates $r_i$ from two consecutive
+   experiments $(\Delta t_{i-1}, E_{i-1})$ and $(\Delta t_{i}, E_{i})$,
+   assuming $E_i=C\Delta t_i^{r_i}$ and $E_{i-1}=C\Delta t_{i-1}^{r_i}$:
+
+!split
+===== Implementational details =====
+
+@@@CODE src-vib/vib_undamped.py fromto: def convergence_rates@def test_convergence
+
+Result: `r` contains values equal to 2.00 - as expected!
+
+!split
+===== Nose test =====
+
+Use final `r[-1]` in a unit test:
+
+@@@CODE src-vib/vib_undamped.py fromto: def test_convergence@def main
+
+Complete code in "`vib_undamped.py`": "${src_vib}/vib_undamped.py".
+
+!split
+======= Long time simulations =======
+label{vib:model1:longseries}
+
+!split
+===== Effect of the time step on long simulations =====
+
+FIGURE: [fig-vib/vib_phase_err1, width=800, frac=1.0]
+
+
+ * The numerical solution seems to have right amplitude.
+ * There is a phase error (reduced by reducing the time step).
+ * The total phase error seems to grow with time.
+
+
+!split
+===== Using a moving plot window =====
+
+ * In long time simulations we need a plot window that follows
+   the solution.
+ * Method 1: `scitools.MovingPlotWindow`.
+ * Method 2: `scitools.avplotter` (ASCII vertical plotter).
+
+Example:
+!bc sys
+Terminal> python vib_undamped.py --dt 0.05 --num_periods 40
+!ec
+
+"Movie of the moving plot window": "${doc_notes}/mov-vib/vib_undamped_dt0.05/index.html".
+
+
+!split
+======= Analysis of the numerical scheme =======
+label{vib:model1:analysis}
+
+!split
+===== Deriving an exact numerical solution; ideas =====
+
+  * Linear, homogeneous, difference equation for $u^n$.
+  * Has solutions $u^n \sim IA^n$, where $A$ is unknown (number).
+  * Here: $\uex(t) =I\cos(\omega t) \sim I\exp{(i\omega t)} = I(e^{i\omega\Delta t})^n$
+  * Trick for simplifying the algebra: $u^n = IA^n$, with $A=\exp{(i\tilde\omega\Delta t)}$, then find $\tilde\omega$
+  * $\tilde\omega$: unknown *numerical frequency* (easier to calculate than $A$)
+  * $\omega - \tilde\omega$ is the *phase error*
+  * Use the real part as the physical relevant part of a complex expression
+
+!split
+===== Deriving an exact numerical solution; calculations (1) =====
+
+!bt
+\[
+u^n = IA^n = I\exp{(\tilde\omega \Delta t\, n)}=I\exp{(\tilde\omega t)} =
+I\cos (\tilde\omega t) + iI\sin(\tilde \omega t)
+\tp
+\]
+!et
+
+!bt
+\begin{align*}
+[D_tD_t u]^n &= \frac{u^{n+1} - 2u^n + u^{n-1}}{\Delta t^2}\\
+&= I\frac{A^{n+1} - 2A^n + A^{n-1}}{\Delta t^2}\\
+&= I\frac{\exp{(i\tilde\omega(t+\Delta t))} - 2\exp{(i\tilde\omega t)} + \exp{(i\tilde\omega(t-\Delta t))}}{\Delta t^2}\\
+&= I\exp{(i\tilde\omega t)}\frac{1}{\Delta t^2}\left(\exp{(i\tilde\omega(\Delta t))} + \exp{(i\tilde\omega(-\Delta t))} - 2\right)\\
+&= I\exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cosh(i\tilde\omega\Delta t) -1 \right)\\
+&= I\exp{(i\tilde\omega t)}\frac{2}{\Delta t^2}\left(\cos(\tilde\omega\Delta t) -1 \right)\\
+&= -I\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
+\end{align*}
+!et
+
+!split
+===== Deriving an exact numerical; calculations (2) =====
+
+The scheme (ref{vib:model1:step4})
+with $u^n=I\exp{(i\omega\tilde\Delta t\, n)}$ inserted gives
+
+!bt
+\begin{equation}
+-I\exp{(i\tilde\omega t)}\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2})
++ \omega^2 I\exp{(i\tilde\omega t)} = 0,
+\end{equation}
+!et
+which after dividing by $Io\exp{(i\tilde\omega t)}$ results in
+!bt
+\begin{equation}
+\frac{4}{\Delta t^2}\sin^2(\frac{\tilde\omega\Delta t}{2}) = \omega^2
+\tp
+\end{equation}
+!et
+Solve for $\tilde\omega$:
+!bt
+\begin{equation}
+\tilde\omega = \pm \frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+\tp
+label{vib:model1:tildeomega}
+\end{equation}
+!et
+
+ * Phase error because $\tilde\omega \neq \omega$.
+ * But how good is the approximation $\tilde\omega$ to $\omega$?
+
+!split
+===== Polynomial approximation of the phase error =====
+
+Taylor series expansion
+for small $\Delta t$ gives a formula that is easier to understand:
+
+!bc ipy
+>>> from sympy import *
+>>> dt, w = symbols('dt w')
+>>> w_tilde = asin(w*dt/2).series(dt, 0, 4)*2/dt
+>>> print w_tilde
+(dt*w + dt**3*w**3/24 + O(dt**4))/dt  # observe final /dt
+!ec
+
+!bt
+\begin{equation}
+\tilde\omega = \omega\left( 1 + \frac{1}{24}\omega^2\Delta t^2\right) + {\cal O}(\Delta t^3)
+\tp
+label{vib:model1:tildeomega:series}
+\end{equation}
+!et
+The numerical frequency is too large (to fast oscillations).
+
+!split
+===== Plot of the phase error =====
+
+FIGURE: [fig-vib/discrete_freq, width=600 frac=0.9]
+
+Recommendation: 25-30 points per period.
+
+
+!split
+===== Exact discrete solution =====
+
+!bt
+\begin{equation}
+u^n = I\cos\left(\tilde\omega n\Delta t\right),\quad
+\tilde\omega = \frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+\tp
+label{vib:model1:un:exact}
+\end{equation}
+!et
+
+The error mesh function,
+
+!bt
+\[ e^n = \uex(t_n) - u^n =
+I\cos\left(\omega n\Delta t\right)
+- I\cos\left(\tilde\omega n\Delta t\right)
+\]
+!et
+is ideal for verification and analysis.
+
+!split
+===== Convergence of the numerical scheme =====
+
+Can easily show *convergence*:
+
+!bt
+\[ e^n\rightarrow 0 \hbox{ as }\Delta t\rightarrow 0,\]
+!et
+because
+
+!bt
+\[
+\lim_{\Delta t\rightarrow 0}
+\tilde\omega = \lim_{\Delta t\rightarrow 0}
+\frac{2}{\Delta t}\sin^{-1}\left(\frac{\omega\Delta t}{2}\right)
+= \omega,
+\]
+!et
+by L'Hopital's rule or simply asking
+`(2/x)*asin(w*x/2) as x->0` in "WolframAlpha": "http://www.wolframalpha.com/input/?i=%282%2Fx%29*asin%28w*x%2F2%29+as+x-%3E0".
+
+
+!split
+===== Stability =====
+
+Observations:
+
+ * Numerical solution has constant amplitude (desired!), but phase error.
+ * Constant amplitude requires $\sin^{-1}(\omega\Delta t/2)$ to be
+   real-valued $\Rightarrow$ $|\omega\Delta t/2| \leq 1$.
+ * $\sin^{-1}(x)$ is complex if $|x|>1$, and then $\tilde\omega$ becomes
+   complex.
+
+What is the consequence of complex $\tilde\omega$?
+
+ * Set $\tilde\omega = \tilde\omega_r + i\tilde\omega_i$.
+ * Since $\sin^{-1}(x)$ has a "negative* imaginary part": "http://www.wolframalpha.com/input/?i=arcsin%28x%29%2C+x+in+%280%2C3%29" for
+   $x>1$, $\exp{(i\omega\tilde t)}=\exp{(-\tilde\omega_i t)}\exp{(i\tilde\omega_r t)}$
+   leads to exponential growth $e^{-\tilde\omega_it}$
+   when $-\tilde\omega_i t > 0$.
+ * This is *instability* because the qualitative behavior is wrong.
+
+!split
+===== The stability criterion =====
+
+idx{stability criterion}
+
+Cannot tolerate growth and must therefore demand a *stability criterion*
+!bt
+\begin{equation}
+\frac{\omega\Delta t}{2} \leq 1\quad\Rightarrow\quad
+\Delta t \leq \frac{2}{\omega}
+\tp
+\end{equation}
+!et
+
+Try $\Delta t = \frac{2}{\omega} + 9.01\cdot 10^{-5}$ (slightly too big!):
+
+FIGURE: [fig-vib/vib_unstable, width=400 frac=0.8]
+
+!split
+===== Summary of the analysis =====
+
+We can draw three important conclusions:
+
+ o The key parameter in the formulas is $p=\omega\Delta t$.
+
+   o Period of oscillations: $P=2\pi/\omega$
+   o Number of time steps per period: $N_P=P/\Delta t$
+   o $\Rightarrow\ p=\omega\Delta t = 2\pi/ N_P \sim 1/N_P$
+   o The smallest possible $N_P$ is 2 $\Rightarrow$ $p\in (0,\pi]$
+ o For $p\leq 2$ the amplitude of $u^n$ is constant (stable solution)
+ o $u^n$ has a relative phase error
+   $\tilde\omega/\omega \approx 1 + \frac{1}{24}p^2$, making numerical
+   peaks occur too early
+
+
+!split
+======= Alternative schemes based on 1st-order equations =======
+label{vib:model2x2}
+
+!split
+===== Rewriting 2nd-order ODE as system of two 1st-order ODEs =====
+
+The vast collection of ODE solvers (e.g., in "Odespy": "https://github.com/hplgit/odespy") cannot be applied to
+!bt
+\[ u'' + \omega^2 u = 0\]
+!et
+unless we write this higher-order ODE as a system of 1st-order ODEs.
+
+Introduce an auxiliary variable $v=u'$:
+
+!bt
+\begin{align}
+u' &= v,
+label{vib:model2x2:ueq}\\
+v' &= -\omega^2 u
+label{vib:model2x2:veq}
+\tp
+\end{align}
+!et
+
+Initial conditions: $u(0)=I$ and $v(0)=0$.
+
+!split
+===== The Forward Euler scheme =====
+
+We apply the Forward Euler scheme to each component equation:
+
+# #if FORMAT in ("latex", "pdflatex")
+!bt
+\begin{align*}
+[D_t^+ u &= v]^n,\\
+[D_t^+ v &= -\omega^2 u]^n,
+\end{align*}
+!et
+# #else
+!bt
+\[ [D_t^+ u = v]^n,\]
+!et
+
+!bt
+\[ [D_t^+ v = -\omega^2 u]^n,\]
+!et
+# #endif
+or written out,
+
+!bt
+\begin{align}
+u^{n+1} &= u^n + \Delta t v^n,\\
+v^{n+1} &= v^n -\Delta t \omega^2 u^n
+\tp
+\end{align}
+!et
+
+!split
+===== The Backward Euler scheme =====
+
+We apply the Backward Euler scheme to each component equation:
+
+# #if FORMAT in ("latex", "pdflatex")
+!bt
+\begin{align}
+ [D_t^- u &= v]^{n+1},\\
+ [D_t^- v &= -\omega u]^{n+1} \tp
+\end{align}
+!et
+# #else
+!bt
+\[ [D_t^- u = v]^{n+1},\]
+!et
+
+!bt
+\[ [D_t^- v = -\omega u]^{n+1} \tp  \]
+!et
+# #endif
+Written out:
+!bt
+\begin{align}
+u^{n+1} - \Delta t v^{n+1} = u^{n},\\
+v^{n+1} + \Delta t \omega^2 u^{n+1} = v^{n}
+\tp
+\end{align}
+!et
+This is a *coupled* $2\times 2$ system for the new values at $t=t_{n+1}$!
+
+!split
+===== The Crank-Nicolson scheme =====
+
+# #if FORMAT in ("latex", "pdflatex")
+!bt
+\begin{align}
+[D_t u &= \overline{v}^t]^{n+\half},\\
+[D_t v &= -\omega \overline{u}^t]^{n+\half}
+\tp
+\end{align}
+!et
+# #else
+!bt
+[D_t u = \overline{v}^t]^{n+\half},\]
+!et
+
+!bt
+[D_t v = -\omega \overline{u}^t]^{n+\half}\]
+!et
+# #endif
+The result is also a coupled system:
+
+!bt
+\begin{align}
+u^{n+1} - \half\Delta t v^{n+1} &= u^{n} + \half\Delta t v^{n},\\
+v^{n+1} + \half\Delta t \omega^2 u^{n+1} &= v^{n}
+- \half\Delta t \omega^2 u^{n}
+\tp
+\end{align}
+!et
+
+!split
+===== Comparison of schemes via Odespy =====
+
+Can use
+"Odespy": "https://github.com/hplgit/odespy" to compare many methods
+for first-order schemes:
+
+@@@CODE src-vib/vib_undamped_odespy.py fromto: import odespy@# Compute energy
+
+!split
+===== Forward and Backward Euler and Crank-Nicolson =====
+
+!bc pycod
+solvers = [
+    odespy.ForwardEuler(f),
+    # Implicit methods must use Newton solver to converge
+    odespy.BackwardEuler(f, nonlinear_solver='Newton'),
+    odespy.CrankNicolson(f, nonlinear_solver='Newton'),
+    ]
+!ec
+
+Two plot types:
+
+  * $u(t)$ vs $t$
+  * Parameterized curve $(u(t), v(t))$ in *phase space*
+  * Exact curve is an ellipse: $(I\cos\omega t, -\omega I\sin\omega t)$,
+    closed and periodic
+
+!split
+===== Phase plane plot of the numerical solutions =====
+
+FIGURE: [fig-vib/vib_theta_1_pp, width=800, frac=1.0]
+
+Note: CrankNicolson in Odespy leads to the name MidpointImplicit in plots.
+
+!split
+===== Plain solution curves =====
+
+FIGURE: [fig-vib/vib_theta_1_u, width=800, frac=1.0] Comparison of classical schemes. label{vib:model1:1st:odespy:theta}
+
+!split
+===== Observations from the figures =====
+
+  * Forward Euler has growing amplitude and outward $(u,v)$ spiral - pumps
+    energy into the system.
+  * Backward Euler is opposite: decreasing amplitude, inward sprial,
+    extracts energy.
+  * _Forward and Backward Euler are useless for vibrations._
+  * Crank-Nicolson (MidpointImplicit) looks much better.
+
+!split
+===== Runge-Kutta methods of order 2 and 4; short time series =====
+
+FIGURE: [fig-vib/vib_RK_1_pp, width=800, frac=1.0]
+
+FIGURE: [fig-vib/vib_RK_1_u, width=800, frac=1.0]
+
+!split
+===== Runge-Kutta methods of order 2 and 4; longer time series =====
+
+FIGURE: [fig-vib/vib_RK_10_pp, width=800, frac=1.0]
+
+FIGURE: [fig-vib/vib_RK_10_u, width=800, frac=1.0]
+
+!split
+===== Crank-Nicolson; longer time series =====
+
+FIGURE: [fig-vib/vib_CN_10_pp, width=800, frac=1.0]
+
+FIGURE: [fig-vib/vib_CN_10_u, width=800, frac=1.0]
+
+(MidpointImplicit means CrankNicolson in Odespy)
+
+!split
+===== Observations of RK and CN methods =====
+
+  * 4th-order Runge-Kutta is very accurate, also for large $\Delta t$.
+  * 2th-order Runge-Kutta is almost as bad as Forward and Backward
+    Euler.
+  * Crank-Nicolson is accurate, but the amplitude is not as accurate
+    as the difference scheme for $u''+\omega^2u=0$.
+
+!split
+===== Energy conservation property =====
+
+The model
+
+!bt
+\[ u'' + \omega^2 u = 0,\quad u(0)=I,\ u'(0)=V,\]
+!et
+has the nice *energy conservation property* that
+
+!bt
+\[ E(t) = \half(u')^2 + \half\omega^2u^2 = \hbox{const}\tp\]
+!et
+This can be used to check solutions.
+
+!split
+===== Derivation of the energy conservation property =====
+
+Multiply $u''+\omega^2u=0$ by $u'$ and integrate:
+
+!bt
+\[ \int_0^T u''u' dt + \int_0^T\omega^2 u u' dt = 0\tp\]
+!et
+Observing that
+
+!bt
+\[ u''u' = \frac{d}{dt}\half(u')^2,\quad uu' = \frac{d}{dt} {\half}u^2,\]
+!et
+we get
+
+!bt
+\[
+\int_0^T (\frac{d}{dt}\half(u')^2 + \frac{d}{dt} \half\omega^2u^2)dt = E(T) - E(0),
+\]
+!et
+where
+
+!bt
+\begin{equation}
+E(t) = \half(u')^2 + \half\omega^2u^2\tp
+label{vib:model1:energy:balance1}
+\end{equation}
+!et
+
+!split
+===== Remark about $E(t)$ =====
+
+$E(t)$ does not measure energy, energy per mass unit.
+
+Starting with an ODE coming directly from Newton's 2nd law $F=ma$ with
+a spring force $F=-ku$ and $ma=mu''$ ($a$: acceleration, $u$: displacement),
+we have
+
+!bt
+\[ mu'' + ku = 0\]
+!et
+Integrating this equation gives a physical energy balance:
+
+!bt
+\[
+E(t) = \underbrace{{\half}mv^2}_{\hbox{kinetic energy} }
++ \underbrace{{\half}ku^2}_{\hbox{potential energy}} = E(0),\quad v=u'
+\]
+!et
+Note: the balance is not valid if we add other terms to the ODE.
+
+
+!split
+===== The Euler-Cromer method; idea =====
+label{vib:model2x2:EulerCromer}
+
+Forward-backward discretization of the 2x2 system:
+
+  * Update $u$ with Forward Euler
+  * Update $v$ with Backward Euler, using latest $u$
+
+# #if FORMAT in ("latex", "pdflatex")
+!bt
+\begin{align}
+[D_t^+u &= v]^n,\\
+[D_t^-v &= -\omega u]^{n+1}
+\tp
+\end{align}
+!et
+# #else
+!bt
+\[ [D_t^+u = v]^n,\]
+!et
+
+!bt
+\[ [D_t^-v = -\omega u]^{n+1}
+\tp
+\]
+!et
+# #endif
+
+!split
+===== The Euler-Cromer method; complete formulas =====
+
+Written out:
+
+!bt
+\begin{align}
+u^0 &= I,\\
+v^0 &= 0,\\
+u^{n+1} &= u^n + \Delta t v^n,
+label{vib:model2x2:EulerCromer:ueq1}\\
+v^{n+1} &= v^n -\Delta t \omega^2u^{n+1}
+label{vib:model2x2:EulerCromer:veq1}
+\tp
+\end{align}
+!et
+
+Names: Forward-backward scheme, "Semi-implicit Euler method":
+"http://en.wikipedia.org/wiki/Semi-implicit_Euler_method", symplectic
+Euler, semi-explicit Euler, Newton-Stormer-Verlet, and Euler-Cromer.
+
+ * Forward Euler and Backward Euler have error $\Oof{\Delta t}$
+ * What about the overall scheme? Expect $\Oof{\Delta t}$...
+
+!split
+===== Equivalence with the scheme for the second-order ODE =====
+
+Goal: eliminate $v^n$. We have
+!bt
+\[ v^n = v^{n-1} - \Delta t \omega^2u^{n},
+\]
+!et
+which can be inserted in (ref{vib:model2x2:EulerCromer:ueq1}) to yield
+!bt
+\begin{equation}
+u^{n+1} = u^n + \Delta t v^{n-1} - \Delta t^2 \omega^2u^{n} .
+label{vib:model2x2:EulerCromer:elim1}
+\end{equation}
+!et
+Using (ref{vib:model2x2:EulerCromer:ueq1}),
+!bt
+\[ v^{n-1} = \frac{u^n - u^{n-1}}{\Delta t},
+\]
+!et
+and when this is inserted in (ref{vib:model2x2:EulerCromer:elim1}) we get
+!bt
+\begin{equation}
+u^{n+1} = 2u^n - u^{n-1} - \Delta t^2 \omega^2u^{n}
+\end{equation}
+!et
+
+!split
+===== Comparison of the treatment of initial conditions =====
+
+ * The Euler-Cromer scheme is nothing but the centered scheme
+   for $u''+\omega^2u=0$ (ref{vib:model1:step4})!
+ * The previous analysis of this scheme then also applies to the Euler-Cromer
+   method!
+ * What about the initial conditions?
+
+!bt
+\[ u'=v=0\quad\Rightarrow\quad v^0=0,\]
+!et
+and
+(ref{vib:model2x2:EulerCromer:ueq1}) implies $u^1=u^0$, while
+(ref{vib:model2x2:EulerCromer:veq1}) says $v^1=-\omega^2 u^0$.
+
+This $u^1=u^0$ approximation
+corresponds to a first-order Forward Euler discretization
+of $u'(0)=0$: $[D_t^+ u = 0]^0$.
+
+!split
+===== A method utilizing a staggered mesh =====
+label{vib:model2x2:staggered}
+
+idx{staggered mesh}
+idx{staggered Euler-Cromer scheme}
+
+ * The Euler-Cromer scheme uses two unsymmetric differences
+   in a symmetric way...
+ * We can derive the method from a more pedagogical point of view
+   where we use a *staggered mesh* and only centered differences
+
+Staggered mesh:
+
+ * $u$ is unknown at mesh points $t_0,t_1,\ldots,t_n,\ldots$
+ * $v$ is unknown at mesh points $t_{1/2}, t_{3/2},\ldots, t_{n+1/2},\ldots$
+   (between the $u$ points)
+
+!split
+===== Centered differences on a staggered mesh =====
+
+!bt
+\begin{align}
+\lbrack D_t u &= v\rbrack^{n+\half},\\
+\lbrack D_t v &= -\omega u\rbrack^{n+1}
+\tp
+\end{align}
+!et
+Written out:
+
+!bt
+\begin{align}
+u^{n+1} &= u^{n} + \Delta t v^{n+\half},
+label{vib:model2x2:EulerCromer:ueq1s}\\
+v^{n+\frac{3}{2}} &= v^{n+\half} -\Delta t \omega^2u^{n+1}
+label{vib:model2x2:EulerCromer:veq1s}
+\tp
+\end{align}
+!et
+or shift one time level back (purely of esthetic reasons):
+
+!bt
+\begin{align}
+u^{n} &= u^{n-1} + \Delta t v^{n-\half},
+label{vib:model2x2:EulerCromer:ueq1s2}\\
+v^{n+\half} &= v^{n-\half} -\Delta t \omega^2u^{n}
+label{vib:model2x2:EulerCromer:veq1s2}
+\tp
+\end{align}
+!et
+
+!split
+===== Comparison with the scheme for the 2nd-order ODE =====
+
+ * Can eliminate $v^{n\pm 1/2}$ and get the centered scheme
+   for $u''+\omega^2 u = 0$
+ * What about the initial conditions? Their equivalent too!
+
+$u(0)=0$ and $u'(0)=v(0)=0$ give $u^0=I$ and
+
+!bt
+\[ v(0)\approx \half(v^{-\half} + v^{\half}) = 0,
+\quad\Rightarrow\quad v^{-\half} =- v^\half\tp\]
+!et
+Combined with the scheme on the staggered mesh we get
+
+!bt
+\[ u^1 = u^0 - \half\Delta t^2\omega^2 I,\]
+!et
+
+!split
+===== Implementation of a staggered mesh; integer indices =====
+
+ * How to write $v^{n+\half}$ in the code? `v[i+0.5]` does not work...
+ * Need a storage convention:
+  * $v^{1+\half}$ $\rightarrow$ `v[n]`
+  * $v^{1-\half}$ $\rightarrow$ `v[n-1]`
+ * $v^{n+\half} = v^{n-\half} -\Delta t \omega^2u^{n}$ becomes
+   `v[n] = v[n-1] - dt*w**2*u[n]`
+
+!bc pycod
+!bc pycod
+def solver(I, w, dt, T):
+    # set up variables...
+
+    u[0] = I
+    v[0] = 0 - 0.5*dt*w**2*u[0]
+    for n in range(1, Nt+1):
+        u[n] = u[n-1] + dt*v[n-1]
+        v[n] = v[n-1] - dt*w**2*u[n]
+    return u, t, v, t_v
+!ec
+
+!split
+===== Implementation of a staggered mesh; half-integer indices (1) =====
+
+It would be nice to write
+
+!bt
+\begin{align*}
+u^{n} &= u^{n-1} + \Delta t v^{n-\half},\\
+v^{n+\half} &= v^{n-\half} -\Delta t \omega^2u^{n},
+\end{align*}
+!et
+as
+
+!bc pycod
+u[n] = u[n-1] + dt*v[n-half]
+v[n+half] = v[n-half] - dt*w**2*u[n]
+!ec
+(Implying that `n+half` is `n` and `n-half` is `n-1`.)
+
+!split
+===== Implementation of a staggered mesh; half-integer indices (2) =====
+
+This class ensures that `n+half` is `n` and `n-half` is `n-1`:
+
+!bc pycod
+class HalfInt:
+    def __radd__(self, other):
+        return other
+
+    def __rsub__(self, other):
+        return other - 1
+
+half = HalfInt()
+!ec
+
+Now
+
+!bc pycod
+u[n] = u[n-1] + dt*v[n-half]
+v[n+half] = v[n-half] - dt*w**2*u[n]
+!ec
+is equivalent to
+
+!bc pycod
+u[n] = u[n-1] + dt*v[n-1]
+v[n] = v[n-1] - dt*w**2*u[n]
+!ec
+

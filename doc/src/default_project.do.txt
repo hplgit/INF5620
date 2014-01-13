@@ -1,0 +1,202 @@
+#TITLE: Default choice of the final project in INF5620
+
+##"PDF version": "default_project.pdf"
+
+===== Project: Nonlinear diffusion equation =====
+
+Project size: approximately 40 h. This particular project will have
+significant overlap with topics for the final exam.
+
+The goal of this project is to discuss various numerical aspects of
+a nonlinear diffusion model:
+
+!bt
+\[ \varrho u_t = \nabla\cdot (\alpha (u)\nabla u) + f(\pmb{x}, t),\]
+!et
+with initial condition $u(\pmb{x},0)=I(x)$ and boundary condition
+$\partial u/\partial n=0$. The coefficiet $\varrho$ is constant
+and $\alpha(u)$ is a known function of $u$.
+
+!bsubex
+Introduce some finite difference approximation in time that leads
+to an implicit scheme (say a Backward Euler, Crank-Nicolson, or 2-step
+backward scheme).
+Derive a variational formulation of the initial condition
+and the spatial problem to be solved at each time step (and at
+the first time step in case of a 2-step backward scheme).
+!esubex
+
+!bsubex
+Formulate a Picard iteration method at the PDE level, using
+the most recently computed $u$ function in the $\alpha(u)$
+coefficient. Derive general formulas for the entries in the linear system to be
+solved in each Picard iteration.
+Use the solution at the previous time step as initial guess for the
+Picard iteration.
+!esubex
+
+!bsubex
+Restrict the Picard iteration to a single iteration. That is,
+simply use a $u$ value from the previous time step in the $\alpha(u)$
+coefficient. Implement this method with the aid of
+the FEniCS software (in a dimension-independent
+way).
+!esubex
+
+!bsubex
+The first verification of the FEniCS implementation may assmue
+$\alpha (u)=1$, $f=0$, $\Omega = [0,1]\times [0,1]$, P1 elements, and
+$I(x,y)= \cos (\pi x)$. The exact solution is then
+$u(x,y,t)=e^{-\pi^2 t}\cos (\pi x)$. The error
+in space is then ${\cal O}(\Delta x^2) + {\cal O}(\Delta y^2)$,
+while the error in time is ${\cal O}(\Delta t^p)$, with $p=1$ for
+the Backward Euler scheme and $p=2$ for the Crank-Nicolson or the 2-step
+backward schemes. Set $h=\Delta t^p = \Delta x^2$ and perform a
+convergence rate study as $h$ is decreased. A measure of the error $E$ can be
+computed by
+
+!bc pycod
+e = u_e.vector().array() - u.vector().array()
+E = numpy.sqrt(numpy.sum(e**2)/u.vector().array().size)
+!ec
+for some fixed point of time, say $t=0.05$.
+Here, `u_e` is a projection of the exact solution onto the function
+space used for `u`.
+
+Show that $E/h$
+remains approximately constant as the mesh in space and time is
+simultaneously refined.
+!esubex
+
+!bsubex
+To get an indication whether the implementation of the nonlinear
+diffusion PDE is correct or not,
+we can use the *method of manufactured solutions*. Say we restrict
+the problem to one space dimension, $\Omega=[0,1]$, and choose
+!bt
+\[ u(x,t) = t\int_0^x q(1-q)dq = tx^2\left(\frac{1}{2} - \frac{x}{3}\right)\]
+!et
+and $\alpha(u) = 1+u^2$.
+The following `sympy` session computes an $f(x,t)$ such that the above $u$
+is a solution of the PDE problem:
+
+!bc pycod
+>>> from sympy import *
+>>> x, t, rho, dt = symbols('x t rho dt')
+>>>
+>>> def a(u):
+...     return 1 + u**2
+...
+>>> def u_simple(x, t):
+...     return x**2*(Rational(1,2) - x/3)*t
+...
+>>> # Show that u_simple satisfies the BCs
+>>> for x_point in 0, 1:
+...     print 'u_x(%s,t):' % x_point,
+...     print diff(u_simple(x, t), x).subs(x, x_point).simplify()
+...
+u_x(0,t): 0
+u_x(1,t): 0
+>>> print 'Initial condition:', u_simple(x, 0)
+Initial condition: 0
+>>>
+>>> # MMS: full nonlinear problem
+>>> u = u_simple(x, t)
+>>> f = rho*diff(u, t) - diff(a(u)*diff(u, x), x)
+>>> print f.simplify()
+-rho*x**3/3 + rho*x**2/2 + 8*t**3*x**7/9 - 28*t**3*x**6/9 +
+7*t**3*x**5/2 - 5*t**3*x**4/4 + 2*t*x - t
+!ec
+Compare the FEniCS solution and the $u$ given above as a function of $x$
+for a couple of $t$.
+
+!bwarning Remark
+A convergence rate test with the manufactured solution above meets
+fundamental problems, because in convergence tests we assume that
+the temporal and spatial discretization errors are the only errors.
+For a not very small $\Delta t$, the single Picard iteration contributes
+with an error that will pollute the error model assumed in convergence
+tests. However, as $\Delta t\rightarrow 0$, the error associated with
+a single Picard iteration may get significantly less than the
+(also small) discretization errors such that correct convergence rate
+can be obtained.
+!ewarning
+!esubex
+
+!bsubex
+List the difference sources of numerical errors in the FEniCS program.
+!esubex
+
+!bsubex
+Imagine or perform a
+in e). Explain why , the convergence rates will not become correct (at least not
+if not $\Delta t$ is very small). Why?
+
+## Picard iteration error pollutes the pure discretization error
+## that the test aims at revealing.
+!esubex
+
+!bsubex
+(Can be postponed.)
+To verify the nonlinear PDE implementation in FEniCS, we can eliminate
+the error due to a single Picard iteration by computing
+a manufactured solution corresponding to $\alpha (u_1)$, where
+$u_1$ is the finite element function representation of the solution
+at the previous time step.
+
+!bc pycod
+>>> u_1 = u_simple(x, t-dt)
+>>> f = rho*diff(u, t) - diff(a(u_1)*diff(u, x), x)
+>>> print f.simplify()
+rho*x**2*(-2*x + 3)/6 -
+(-12*t*x + 3*t*(-2*x + 3))*(x**4*(-dt + t)**2*(-2*x + 3)**2 + 36)/324
+- (-6*t*x**2 + 6*t*x*(-2*x + 3))*(36*x**4*(-dt + t)**2*(2*x - 3)
++ 36*x**3*(-dt + t)**2*(-2*x + 3)**2)/5832
+!ec
+Perform a convergence rate test by decreasing $h=\Delta t^p = \Delta x^2$.
+!esubex
+
+!bsubex
+Simulate the nonlinear diffusion of Gaussian function. Due to symmetry,
+it suffices to simulate one quarter of the domain:
+
+!bt
+\[
+I(x,y) = \exp{\left(-\frac{1}{2\sigma^2}\left( x^2 + y^2 \right)\right)},
+\quad (x,y)\in\Omega = [0,1]\times [0,1],
+\]
+!et
+where $\sigma$ measures the width of the Gaussian function.
+Choose $\alpha(u) = 1+\beta u^2$, where $\beta$ is a constant one can
+play around with.
+
+The rest of the exercise is theoretical and not directly related to
+the FEniCS implementation. In 2013 several of these questions coincide
+with the exam and it is therefore not necessary to address them in this
+compulsory project.
+!esubex
+
+!bsubex
+Formulate a *group finite element method* for the $\alpha (u)$
+coefficient and derive formulas for eqution number $i$ in
+the nonlinear algebraic system to be solved.
+!esubex
+
+!bsubex
+Derive expressions for the entries in the Jacobian matrix and the
+right-hand side to be used
+in a Newton method.
+!esubex
+
+!bsubex
+Reduce the problem to one space dimension.
+Derive formulas for the entries in the Jacobian matrix and the
+right-hand side in Newton's method using
+P1 elements and the Trapezoidal rule for integration.
+!esubex
+
+!bsubex
+Compare the expressions in the previous subexercise with the
+expressions arising from a finite difference method applied to
+PDE problem (using the same time discretization).
+!esubex
