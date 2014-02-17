@@ -14,6 +14,10 @@ name=exam_candidates
 doconce format html $name $template --encoding=utf-8
 cp $name.html $dest/
 
+name=improvements13
+doconce format html $name
+cp $name.html $dest/
+
 # These require full math
 names="oblig2 oblig3"
 names="oblig3"

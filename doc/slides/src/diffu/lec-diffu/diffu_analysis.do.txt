@@ -1,0 +1,328 @@
+======= Analysis of schemes for the diffusion equation =======
+
+!split
+===== Properties of the solution =====
+label{diffu:pde1:analysis:uex}
+
+The PDE
+
+!bt
+\begin{equation}
+u_t = \dfc u_{xx}
+label{diffu:pde1:eq}
+\end{equation}
+!et
+admits solutions
+
+!bt
+\begin{equation}
+u(x,t) = Qe^{-\dfc k^2 t}\sin\left( kx\right)
+label{diffu:pde1:sol1}
+\end{equation}
+!et
+
+Observations from this solution:
+
+ * The initial shape $I(x)=Q\sin kx$
+   undergoes a damping $\exp{(-\dfc k^2t)}$
+ * The damping is very strong for short waves (large $k$)
+ * The damping is weak for long waves (small $k$)
+ * Consequence: $u$ is smoothened with time
+
+!split
+===== Example =====
+
+Test problem:
+
+!bt
+\begin{align*}
+u_t &= u_{xx},\quad &x\in (0,1),\ t\in (0,T]\\
+u(0,t) &= u(1,t) = 0,\quad &t\in (0,T]\\
+u(x,0) & = \sin (\pi x) + 0.1\sin(100\pi x)
+\end{align*}
+!et
+
+Exact solution:
+
+!bt
+\begin{equation}
+u(x,t) = e^{-\pi^2 t}\sin (\pi x) + 0.1e^{-\pi^2 10^4 t}\sin (100\pi x)
+label{diffu:pde1:sol2}
+\end{equation}
+!et
+
+!split
+===== Visualization of the damping in the diffusion equation =====
+
+FIGURE: [fig-diffu/diffusion_damping, width=800]
+
+!split
+===== Damping of a discontinuity; problem and model =====
+
+!bnotice Problem
+Two pieces of a material, at different temperatures, are brought
+in contact at $t=0$. Assume the end points of the pieces are
+kept at the initial temperature. How does the heat flow from
+the hot to the cold piece?
+!enotice
+
+!bnotice Solution
+
+Assume a 1D model is sufficient (insulated rod):
+
+!bt
+\[
+u(x,0)=\left\lbrace
+\begin{array}{ll}
+U_L, & x < L/2\\
+U_R,& x\geq L/2
+\end{array}\right.
+\]
+!et
+
+!bt
+\[ \frac{\partial u}{\partial t} = \dfc
+\frac{\partial^2 u}{\partial x^2},\quad u(0,t)=U_L,\ u(L,t)=U_R\]
+!et
+!enotice
+
+# #ifdef PPP
+!bt
+\begin{align*}
+u_t &= \dfc u_{xx}\\
+u(x,0)&=\left\lbrace
+\begin{array}{ll}
+U_L, & x<L/2\\
+U_R,& x\geq L/2
+\end{array}\right.\\
+u(0,t)&=U_L\\
+u(L,t)&=U_R
+\end{align*}
+!et
+# #endif
+
+!split
+===== Damping of a discontinuity; Backward Euler simulation =====
+
+# #if FORMAT not in ("latex", "pdflatex")
+MOVIE: [mov-diffu/BE_C0.5/movie.ogg, width=500]
+# #else
+"Movie": "${doc_notes}/mov-diffu/BE_C0.5/index.html"
+# #endif
+
+!split
+===== Damping of a discontinuity; Forward Euler simulation =====
+
+# #if FORMAT not in ("latex", "pdflatex")
+MOVIE: [mov-diffu/FE_C0.5/movie.ogg, width=500]
+# #else
+"Movie": "${doc_notes}/mov-diffu/FE_C0.5/index.html"
+# #endif
+
+!split
+===== Damping of a discontinuity; Crank-Nicolson simulation =====
+
+# #if FORMAT not in ("latex", "pdflatex")
+MOVIE: [mov-diffu/CN_C5/movie.ogg, width=500]
+# #else
+"Movie": "${doc_notes}/mov-diffu/CN_C5/index.html"
+# #endif
+
+
+!split
+===== Fourier representation =====
+
+Represent $I(x)$ as a Fourier series
+
+!bt
+\begin{equation}
+I(x) \approx \sum_{k\in K} b_k e^{ikx}
+\end{equation}
+!et
+
+The corresponding sum for $u$ is
+
+!bt
+\begin{equation}
+u(x,t) \approx \sum_{k\in K} b_k e^{-\dfc k^2t}e^{ikx}
+label{diffu:pde1:u:Fourier}
+\tp
+\end{equation}
+!et
+
+Such solutions are also accepted by the numerical schemes, but
+with an amplification factor $A$ different from $\exp{({-\dfc k^2t})}$:
+
+!bt
+\begin{equation}
+u^n_q = A^n e^{ikq\Delta x} = A^ne^{ikx}
+label{diffu:pde1:analysis:uni}
+\end{equation}
+!et
+
+!split
+===== Analysis of the finite difference schemes =====
+label{diffu:pde1:analysis}
+
+Stability:
+
+  * $|A|< 1$: decaying numerical solutions (as we want)
+  * $A<0$: *oscillating* numerical solutions (as we do not want)
+
+Accuracy:
+
+  * Compare numerical and exact amplification factor: $A$ vs $\Aex = \exp{(-\dfc k^2 \Delta t)}$
+
+!et
+
+!split
+===== Analysis of the Forward Euler scheme =====
+label{diffu:pde1:analysis:FE}
+
+!bt
+\begin{equation*} [D_t^+ u = \dfc D_xD_x u]^n_q \end{equation*}
+!et
+
+Inserting
+
+!bt
+\[ u^n_q = A^n e^{ikq\Delta x}\]
+!et
+leads to
+
+!bt
+\begin{equation}
+A = 1 -4C\sin^2\left(
+\frac{k\Delta x}{2}\right),\quad
+C = \frac{\dfc\Delta t}{\Delta x^2}
+\end{equation}
+!et
+
+The complete numerical solution is
+
+!bt
+\begin{equation}
+u^n_q = (1 -4C\sin^2 p)^ne^{ikq\Delta x},\quad
+p = k\Delta x/2
+\end{equation}
+!et
+
+!split
+===== Results for stability =====
+
+We always have $A\leq 1$. The condition $A\geq -1$ implies
+
+!bt
+\[ 4C\sin^2p\leq 2 \]
+!et
+The worst case is when $\sin^2 p=1$, so a sufficient criterion for
+stability is
+
+!bt
+\begin{equation}
+C\leq {\half}
+\end{equation}
+!et
+or:
+
+!bt
+\begin{equation}
+\Delta t\leq \frac{\Delta x^2}{2\dfc}
+\end{equation}
+!et
+
+!bnotice Implications of the stability result
+Less favorable criterion than for $u_{tt}=c^2u_{xx}$: halving $\Delta x$
+implies time step $\frac{1}{4}\Delta t$ (not just $\half\Delta t$
+as in a wave equation). Need very small time steps for fine spatial
+meshes!
+!enotice
+
+!split
+===== Analysis of the Backward Euler scheme =====
+label{diffu:pde1:analysis:BE}
+
+!bt
+\begin{equation*} [D_t^- u = \dfc D_xD_x u]^n_q\end{equation*}
+!et
+
+!bt
+\[ u^n_q = A^n e^{ikq\Delta x}\]
+!et
+
+!bt
+\begin{equation}
+A = (1  + 4C\sin^2p)^{-1}
+label{diffu:pde1:analysis:BE:A}
+\end{equation}
+!et
+
+!bt
+\begin{equation}
+u^n_q = (1  + 4C\sin^2p)^{-n}e^{ikq\Delta x}
+\end{equation}
+!et
+
+!split
+===== Stability =====
+
+We see from (ref{diffu:pde1:analysis:BE:A}) that $|A|<1$ for all $\Delta t>0$
+and that $A>0$ (no oscillations).
+
+!split
+===== Analysis of the Crank-Nicolson scheme =====
+label{diffu:pde1:analysis:CN}
+
+The scheme
+
+!bt
+\[ [D_t u = \dfc D_xD_x \overline{u}^x]^{n+\half}_q\]
+!et
+leads to
+
+!bt
+\begin{equation}
+A = \frac{ 1 - 2C\sin^2p}{1 + 2C\sin^2p}
+\end{equation}
+!et
+
+!bt
+\begin{equation}
+u^n_q = \left(\frac{ 1 - 2C\sin^2p}{1 + 2C\sin^2p}\right)^ne^{ikp\Delta x}
+\end{equation}
+!et
+
+!split
+===== Stability =====
+
+The criteria $A>-1$ and $A<1$ are fulfilled for any $\Delta t >0$.
+
+!split
+===== Summary of accuracy of amplification factors; large time steps =====
+
+FIGURE: [fig-diffu/diffusion_A_C20_C2_FDM, width=800, frac=1.2]
+
+!split
+===== Summary of accuracy of amplification factors; time steps around the Forward Euler stability limit =====
+
+FIGURE: [fig-diffu/diffusion_A_C05_C025_FDM, width=800, frac=1.2]
+
+!split
+===== Summary of accuracy of amplification factors; small time steps =====
+
+FIGURE: [fig-diffu/diffusion_A_C01_C001_FDM, width=800, frac=1.2]
+
+!split
+===== Observations =====
+
+ * Crank-Nicolson gives oscillations and not much damping of short waves
+   for increasing $C$.
+ * These waves will manifest themselves as high frequency
+   oscillatory noise in the solution.
+ * All schemes fail to dampen short waves enough
+
+The problems of correct damping for $u_t = u_{xx}$ is partially
+manifested in the similar time discretization schemes for $u'(t)=-\dfc u(t)$.
+
+
+
