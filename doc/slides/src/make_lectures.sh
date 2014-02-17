@@ -13,11 +13,11 @@ filename=`echo $dofile | sed 's/\.do\.txt//'`
 # gives far less errors and warnings)
 rm -f *.aux
 preprocess -DFORMAT=pdflatex ../newcommands_keep.p.tex > newcommands_keep.tex
-doconce format pdflatex $filename --device=paper -DWITH_TOC
+doconce format pdflatex $filename --device=paper -DWITH_TOC --latex_papersize=a4
 if [ $? -ne 0 ]; then echo "doconce could not compile document $filename.do.txt - abort"; exit 1; fi
 
 # Use A4 paper to make output more compact
-ptex2tex -DA4PAPER $filename
+ptex2tex $filename
 pdflatex $filename
 makeindex $filename
 pdflatex $filename
@@ -57,8 +57,8 @@ doconce split_html ${filename}.html
 rm -f *.aux
 preprocess -DFORMAT=pdflatex ../newcommands_keep.p.tex > newcommands_keep.tex
 if [ $? -ne 0 ]; then echo "doconce could not compile document $filename.do.txt - abort"; exit 1; fi
-doconce format pdflatex $filename
-doconce ptex2tex $filename -DLATEX_HEADING=beamer envir=minted
+doconce format pdflatex $filename --latex_title_layout=beamer
+doconce ptex2tex $filename envir=minted
 doconce slides_beamer $filename --beamer_slide_theme=red_shadow
 pdflatex -shell-escape $filename
 if [ $? -ne 0 ]; then echo "pdflatex could not compile document $filename.do.txt- abort"; exit 1; fi
