@@ -1,1345 +1,905 @@
 .. !split
 
-Software engineering
-====================
+.. _decay:analysis:
 
+Analysis of finite difference equations
+=======================================
+
+We address the ODE for exponential decay,
+
+.. math::
+        
+        u'(t) = -au(t),\quad u(0)=I,
+        
+
+where :math:`a` and :math:`I` are given constants. This problem is solved
+by the :math:`\theta`-rule finite difference scheme, resulting in
+the recursive equations
+
+.. _Eq:decay:analysis:scheme:
+
+.. math::
+   :label: decay:analysis:scheme
+        
+        u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n
+        
+        
+
+for the numerical solution :math:`u^{n+1}`, which approximates the exact
+solution :math:`{u_{\small\mbox{e}}}` at time point :math:`t_{n+1}`. For constant mesh spacing,
+which we assume here, :math:`t_{n+1}=(n+1)\Delta t`.
+
+.. Cannot use === because it fools sphinx
+
+**Discouraging numerical solutions.**
+Choosing :math:`I=1`, :math:`a=2`, and running experiments with :math:`\theta =1,0.5, 0`
+for :math:`\Delta t=1.25, 0.75, 0.5, 0.1`, gives the results in
+Figures :ref:`decay:analysis:BE4c`, :ref:`decay:analysis:CN4c`, and
+:ref:`decay:analysis:FE4c`.
+
+.. _decay:analysis:BE4c:
+
+.. figure:: fig-decay/BE4c.png
+   :width: 600
+
+   *Backward Euler*
+
+.. _decay:analysis:CN4c:
+
+.. figure:: fig-decay/CN4c.png
+   :width: 600
+
+   *Crank-Nicolson*
+
+.. _decay:analysis:FE4c:
+
+.. figure:: fig-decay/FE4c.png
+   :width: 600
+
+   *Forward Euler*
+
+The characteristics of the displayed curves can be summarized as follows:
+
+  * The Backward Euler scheme always gives a monotone solution, lying above
+    the exact curve.
+
+  * The Crank-Nicolson scheme gives the most accurate results, but for
+    :math:`\Delta t=1.25` the solution oscillates.
+
+  * The Forward Euler scheme gives a growing, oscillating solution for
+    :math:`\Delta t=1.25`; a decaying, oscillating solution for :math:`\Delta t=0.75`;
+    a strange solution :math:`u^n=0` for :math:`n\geq 1` when :math:`\Delta t=0.5`; and
+    a solution seemingly as accurate as the one by the Backward Euler
+    scheme for :math:`\Delta t = 0.1`, but the curve lies below the exact
+    solution.
+
+Since the exact solution of our model problem is a monotone function,
+:math:`u(t)=Ie^{-at}`, some of these qualitatively wrong results are indeed alarming!
 
 
 .. admonition:: Goal
 
-   Efficient use of differential equation models requires software that is easy to
-   test and flexible for setting up extensive numerical experiments.
-   This section introduces three important concepts:
+   We ask the question
    
-     * Modules
+     * Under what circumstances, i.e., values of
+       the input data :math:`I`, :math:`a`, and :math:`\Delta t` will the Forward Euler and
+       Crank-Nicolson schemes result in undesired oscillatory solutions?
    
-     * Testing frameworks
+   The question will be investigated both by numerical experiments and
+   by precise mathematical theory. The latter will help establish
+   general criteria on :math:`\Delta t` for avoiding non-physical oscillatory
+   or growing solutions.
    
-     * Implementation with classes
+   Another question to be raised is
    
-   The concepts are introduced using the differential equation
-   problem :math:`u'=-au`, :math:`u(0)=I`, as example.
+    * How does :math:`\Delta t` impact the error in the numerical solution?
+   
+   For our simple model problem we can answer this question very precisely, but
+   we will also look at simplified formulas for small :math:`\Delta t`
+   and touch upon important concepts such as *convergence rate* and
+   *the order of a scheme*. Other fundamental concepts mentioned are
+   stability, consistency, and convergence.
 
 
 
 
+Experimental investigation of oscillatory solutions
+---------------------------------------------------
 
+To address the first question above,
+we may set up an experiment where we loop over values of :math:`I`, :math:`a`,
+and :math:`\Delta t`. For each experiment, we flag the solution as
+oscillatory if
 
+.. math::
+         u^{n} > u^{n-1},
 
-.. _decay:prog:se:module:
+for some value of :math:`n`,
+since we expect :math:`u^n` to decay with :math:`n`, but oscillations make
+:math:`u` increase over a time step. We will quickly see that
+oscillations are independent of :math:`I`, but do depend on :math:`a` and
+:math:`\Delta t`. Therefore, we introduce a two-dimensional
+function :math:`B(a,\Delta t)` which is 1 if oscillations occur
+and 0 otherwise. We can visualize :math:`B` as a contour plot
+(lines for which :math:`B=\hbox{const}`). The contour :math:`B=0.5`
+corresponds to the borderline between oscillatory regions with :math:`B=1`
+and monotone regions with :math:`B=0` in the :math:`a,\Delta t` plane.
 
-Making a module
----------------
-
-
-.. index:: modules
-
-
-
-
-.. admonition:: The DRY principle
-
-   The previous sections have outlined numerous different programs, all of
-   them having their own copy of the ``solver`` function.  Such copies
-   of the same piece of code is against the important *Don't Repeat
-   Yourself* (DRY) principle in programming.  If we want to change the
-   ``solver`` function there should be *one and only one* place where the
-   change needs to be performed.
-
-
-
-
-
-
-To clean up the repetitive code snippets scattered among the
-``decay_*.py`` files, we start by collecting the
-various functions we want to keep for the future in one file,
-now called `decay_mod.py <http://tinyurl.com/jvzzcfn/decay/decay_mod.py>`_ (``mod`` stands for "module").
-The following functions are copied to this file:
-
- * ``solver`` for computing the numerical solution
-
- * ``verify_three_steps`` for verifying the first three solution
-   points against hand calculations
-
- * ``verify_discrete_solution`` for verifying the entire computed solution
-   against an exact formula for the numerical solution
-
- * ``explore`` for computing and plotting the solution
-
- * ``define_command_line_options`` for defining option-value pairs
-   on the command line
-
- * ``read_command_line`` for reading input from the command line,
-   now extended to work both with ``sys.argv`` directly
-   and with an ``ArgumentParser`` object
-
- * ``main`` for running experiments with :math:`\theta=0,0.5,1` and a series of
-   :math:`\Delta t` values, and computing convergence rates
-
- * ``main_GUI`` for doing the same as the ``main`` function, but modified
-   for automatic GUI generation
-
- * ``verify_convergence_rate`` for verifying the computed convergence
-   rates against the theoretically expected values
-
-We use Matplotlib for plotting. A sketch of the ``decay_mod.py``
-file, with complete versions of the modified functions, looks as follows:
-
-
-.. code-block:: python
-
-        from numpy import *
-        from matplotlib.pyplot import *
-        import sys
-        
-        def solver(I, a, T, dt, theta):
-            ...
-        
-        def verify_three_steps():
-            ...
-        
-        def verify_exact_discrete_solution():
-            ...
-        
-        def exact_solution(t, I, a):
-            ...
-        
-        def explore(I, a, T, dt, theta=0.5, makeplot=True):
-            ...
-        
-        def define_command_line_options():
-            ...
-        
-        def read_command_line(use_argparse=True):
-            if use_argparse:
-                parser = define_command_line_options()
-                args = parser.parse_args()
-                print 'I={}, a={}, makeplot={}, dt_values={}'.format(
-                    args.I, args.a, args.makeplot, args.dt_values)
-                return args.I, args.a, args.makeplot, args.dt_values
-            else:
-                if len(sys.argv) < 6:
-                    print 'Usage: %s I a on/off dt1 dt2 dt3 ...' % \ 
-                          sys.argv[0]; sys.exit(1)
-        
-                I = float(sys.argv[1])
-                a = float(sys.argv[2])
-                T = float(sys.argv[3])
-                makeplot = sys.argv[4] in ('on', 'True')
-                dt_values = [float(arg) for arg in sys.argv[5:]]
-        
-                return I, a, makeplot, dt_values
-        
-        def main():
-            ...
-
-
-This ``decay_mod.py`` file is already a module such that we can import
-desired functions in other programs. For example, we can in a file do
-
+The :math:`B` function is defined at discrete :math:`a` and :math:`\Delta t` values.
+Say we have given :math:`P` $a$ values, :math:`a_0,\ldots,a_{P-1}`, and
+:math:`Q` $\Delta t$ values, :math:`\Delta t_0,\ldots,\Delta t_{Q-1}`.
+These :math:`a_i` and :math:`\Delta t_j` values, :math:`i=0,\ldots,P-1`,
+:math:`j=0,\ldots,Q-1`, form a rectangular mesh of :math:`P\times Q` points
+in the plane. At each point :math:`(a_i, \Delta t_j)`, we associate
+the corresponding value of :math:`B(a_i,\Delta t_j)`, denoted :math:`B_{ij}`.
+The :math:`B_{ij}` values are naturally stored in a two-dimensional
+array. We can thereafter create a plot of the
+contour line :math:`B_{ij}=0.5` dividing the oscillatory and monotone
+regions. The file `decay_osc_regions.py <http://tinyurl.com/jvzzcfn/decay/decay_osc_regions.py>`_  ``osc_regions`` stands for "oscillatory regions") contains all nuts and
+bolts to produce the :math:`B=0.5` line in Figures :ref:`decay:analysis:B:FE`
+and :ref:`decay:analysis:B:CN`. The oscillatory region is above this line.
 
 .. code-block:: python
 
         from decay_mod import solver
-        u, t = solver(I=1.0, a=3.0, T=3, dt=0.01, theta=0.5)
-
-
-
-.. index:: test block (in Python modules)
-
-
-However, it should also be possible to both use ``decay_mod.py`` as
-a module *and* execute the file as a program that runs ``main()``. This is
-accomplished by ending the file with a *test block*:
-
-
-.. code-block:: python
-
-        if __name__ == '__main__':
-            main()
-
-When ``decay_mod.py`` is used as a module, ``__name__`` equals the module
-name ``decay_mod``, while ``__name__`` equals ``'__main__'`` when the
-file is run as a program.
-Optionally, we could run the verification tests if the word ``verify``
-is present on the command line and ``verify_convergence_rate`` could
-be tested if ``verify_rates`` is found on the command line. The
-``verify_rates`` argument must be removed before we read parameter values from
-the command line, otherwise the ``read_command_line`` function (called by ``main``)
-will not work properly.
-
-
-.. code-block:: python
-
-        if __name__ == '__main__':
-            if 'verify' in sys.argv:
-                if verify_three_steps() and verify_discrete_solution():
-                    pass # ok
-                else:
-                    print 'Bug in the implementation!'
-            elif 'verify_rates' in sys.argv:
-                sys.argv.remove('verify_rates')
-                if not '--dt' in sys.argv:
-                    print 'Must assign several dt values'
-                    sys.exit(1)  # abort
-                if verify_convergence_rate():
-                    pass
-                else:
-                    print 'Bug in the implementation!'
-            else:
-                # Perform simulations
-                main()
-
-
-.. _decay:prog:se:import:
-
-Prefixing imported functions by the module name
------------------------------------------------
-
-
-.. index:: importing modules
-
-
-Import statements of the form ``from module import *`` import
-functions and variables in ``module.py`` into the current file.
-For example, when doing
-
-
-.. code-block:: python
-
-        from numpy import *
-        from matplotlib.pyplot import *
-
-we get mathematical functions like ``sin`` and ``exp``
-as well as MATLAB-style functions like ``linspace`` and ``plot``,
-which can be called by these well-known names.
-Unfortunately, it sometimes becomes confusing to
-know where a particular function comes from. Is it from ``numpy``? Or
-``matplotlib.pyplot``?
-Or is it our own function?
-
-An alternative import is
-
-
-.. code-block:: python
-
-        import numpy
-        import matplotlib.pyplot
-
-and such imports require functions to be prefixed by the module name, e.g.,
-
-
-.. code-block:: python
-
-        t = numpy.linspace(0, T, Nt+1)
-        u_e = I*numpy.exp(-a*t)
-        matplotlib.pyplot.plot(t, u_e)
-
-This is normally regarded as a better habit because it is explicitly stated
-from which module a function comes from.
-
-The modules ``numpy`` and ``matplotlib.pyplot`` are so frequently used,
-and their full names quite tedious to write, so two standard abbreviations
-have evolved in the Python scientific computing community:
-
-
-.. code-block:: python
-
         import numpy as np
-        import matplotlib.pyplot as plt
+        import scitools.std as st
         
-        t = np.linspace(0, T, Nt+1)
-        u_e = I*np.exp(-a*t)
-        plt.plot(t, u_e)
+        def non_physical_behavior(I, a, T, dt, theta):
+            """
+            Given lists/arrays a and dt, and numbers I, dt, and theta,
+            make a two-dimensional contour line B=0.5, where B=1>0.5
+            means oscillatory (unstable) solution, and B=0<0.5 means
+            monotone solution of u'=-au.
+            """
+            a = np.asarray(a); dt = np.asarray(dt)  # must be arrays
+            B = np.zeros((len(a), len(dt)))         # results
+            for i in range(len(a)):
+                for j in range(len(dt)):
+                    u, t = solver(I, a[i], T, dt[j], theta)
+                    # Does u have the right monotone decay properties?
+                    correct_qualitative_behavior = True
+                    for n in range(1, len(u)):
+                        if u[n] > u[n-1]:  # Not decaying?
+                            correct_qualitative_behavior = False
+                            break  # Jump out of loop
+                    B[i,j] = float(correct_qualitative_behavior)
+            a_, dt_ = st.ndgrid(a, dt)  # make mesh of a and dt values
+            st.contour(a_, dt_, B, 1)
+            st.grid('on')
+            st.title('theta=%g' % theta)
+            st.xlabel('a'); st.ylabel('dt')
+            st.savefig('osc_region_theta_%s.png' % theta)
+            st.savefig('osc_region_theta_%s.pdf' % theta)
+        
+        non_physical_behavior(
+            I=1,
+            a=np.linspace(0.01, 4, 22),
+            dt=np.linspace(0.01, 4, 22),
+            T=6,
+            theta=0.5)
 
-A version of the ``decay_mod`` module where we use the ``np`` and ``plt``
-prefixes is found in the file
-`decay_mod_prefix.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_prefix.py>`_.
+.. _decay:analysis:B:FE:
 
-The downside of prefixing functions by the module name is that
-mathematical expressions like :math:`e^{-at}\sin(2\pi t)` get
-cluttered with module names,
+.. figure:: fig-decay/osc_region_FE.png
+   :width: 500
+
+   *Forward Euler scheme: oscillatory solutions occur for points above the curve*
+
+.. _decay:analysis:B:CN:
+
+.. figure:: fig-decay/osc_region_CN.png
+   :width: 500
+
+   *Crank-Nicolson scheme: oscillatory solutions occur for points above the curve*
+
+By looking at the curves in the figures one may guess that :math:`a\Delta t`
+must be less than a critical limit to avoid the undesired
+oscillations.  This limit seems to be about 2 for Crank-Nicolson and 1
+for Forward Euler.  We shall now establish a precise mathematical
+analysis of the discrete model that can explain the observations in
+our numerical experiments.
+
+Exact numerical solution
+------------------------
+
+Starting with :math:`u^0=I`, the simple recursion :eq:`decay:analysis:scheme`
+can be applied repeatedly :math:`n` times, with the result that
+
+.. _Eq:decay:analysis:unex:
+
+.. math::
+   :label: decay:analysis:unex
+        
+        u^{n} = IA^n,\quad A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}{\thinspace .}
+        
+        
+
+
+.. admonition:: Solving difference equations
+
+   Difference equations where all terms are linear in
+   :math:`u^{n+1}`, :math:`u^n`, and maybe :math:`u^{n-1}`, :math:`u^{n-2}`, etc., are
+   called *homogeneous, linear* difference equations, and their solutions
+   are generally of the form :math:`u^n=A^n`. Inserting this expression
+   and dividing by :math:`A^{n+1}` gives
+   a polynomial equation in :math:`A`. In the present case we get
+   
+   .. math::
+            A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}{\thinspace .} 
+   
+   This is a solution technique of wider applicability than repeated use of
+   the recursion :eq:`decay:analysis:scheme`.
+
+
+
+
+Regardless of the solution approach, we have obtained a formula for
+:math:`u^n`.  This formula can explain everything what we see in the figures
+above, but it also gives us a more general insight into accuracy and
+stability properties of the three schemes.
+
+Stability
+---------
+
+.. index:: stability
+
+Since :math:`u^n` is a factor :math:`A`
+raised to an integer power :math:`n`, we realize that :math:`A<0`
+will for odd powers imply :math:`u^n<0` and for even power result in :math:`u^n>0`.
+That is, the solution oscillates between the mesh points.
+We have oscillations due to :math:`A<0` when
+
+.. _Eq:decay:th:stability:
+
+.. math::
+   :label: decay:th:stability
+        
+        (1-\theta)a\Delta t > 1 {\thinspace .}
+        
+        
+
+Since :math:`A>0` is a requirement for having a numerical solution with the
+same basic property (monotonicity) as the exact solution, we may say
+that :math:`A>0` is a *stability criterion*. Expressed in terms of :math:`\Delta t`
+the stability criterion reads
+
+.. math::
+        
+        \Delta t < \frac{1}{(1-\theta)a}{\thinspace .}
+        
+
+The Backward
+Euler scheme is always stable since :math:`A<0` is impossible for :math:`\theta=1`, while
+non-oscillating solutions for Forward Euler and Crank-Nicolson
+demand :math:`\Delta t\leq 1/a` and :math:`\Delta t\leq 2/a`, respectively.
+The relation between :math:`\Delta t` and :math:`a` look reasonable: a larger
+:math:`a` means faster decay and hence a need for smaller time steps.
+
+Looking at Figure :ref:`decay:analysis:FE4c`, we see that with :math:`a\Delta
+t= 2\cdot 1.25=2.5`, :math:`A=-1.5`, and the solution :math:`u^n=(-1.5)^n`
+oscillates *and* grows. With :math:`a\Delta t = 2\cdot 0.75=1.5`, :math:`A=-0.5`,
+:math:`u^n=(-0.5)^n` decays but oscillates. The peculiar case :math:`\Delta t =
+0.5`, where the Forward Euler scheme produces a solution that is stuck
+on the :math:`t` axis, corresponds to :math:`A=0` and therefore :math:`u^0=I=1` and
+:math:`u^n=0` for :math:`n\geq 1`.  The decaying oscillations in the Crank-Nicolson scheme
+for :math:`\Delta t=1.25` are easily explained by the fact that :math:`A\approx -0.11<0`.
+
+.. index:: amplification factor
+
+The factor :math:`A` is called the *amplification factor* since the solution
+at a new time level is :math:`A` times the solution at the previous time
+level. For a decay process, we must obviously have :math:`|A|\leq 1`, which
+is fulfilled for all :math:`\Delta t` if :math:`\theta \geq 1/2`. Arbitrarily
+large values of :math:`u` can be generated when :math:`|A|>1` and :math:`n` is large
+enough. The numerical solution is in such cases totally irrelevant to
+an ODE modeling decay processes! To avoid this situation, we must
+for :math:`\theta < 1/2` have
+
+.. math::
+        
+        \Delta t \leq \frac{2}{(1-2\theta)a},
+        
+
+which means :math:`\Delta t < 2/a` for the Forward Euler scheme.
+
+.. index:: A-stable methods
+
+.. index:: L-stable methods
+
+
+.. admonition:: Stability properties
+
+   We may summarize the stability investigations as follows:
+   
+   1. The Forward Euler method is a *conditionally stable* scheme because
+      it requires :math:`\Delta t < 2/a` for avoiding growing solutions
+      and :math:`\Delta t < 1/a` for avoiding oscillatory solutions.
+   
+   2. The Crank-Nicolson is *unconditionally stable* with respect to
+      growing solutions, while it is conditionally stable with
+      the criterion :math:`\Delta t < 2/a` for avoiding oscillatory solutions.
+   
+   3. The Backward Euler method is unconditionally stable with respect
+      to growing and oscillatory solutions - any :math:`\Delta t` will work.
+   
+   Much literature on ODEs speaks about L-stable and A-stable methods.
+   In our case A-stable methods ensures non-growing solutions, while
+   L-stable methods also avoids oscillatory solutions.
+
+
+
+
+Comparing amplification factors
+-------------------------------
+
+After establishing how :math:`A` impacts the qualitative features of the
+solution, we shall now look more into how well the numerical amplification
+factor approximates the exact one. The exact solution reads
+:math:`u(t)=Ie^{-at}`, which can be rewritten as
+
+.. math::
+        
+        {{u_{\small\mbox{e}}}}(t_n) = Ie^{-a n\Delta t} = I(e^{-a\Delta t})^n {\thinspace .}
+        
+
+From this formula we see that the exact amplification factor is
+
+.. math::
+        
+        {A_{\small\mbox{e}}} = e^{-a\Delta t} {\thinspace .}
+        
+
+We realize that the exact and numerical amplification factors depend
+on :math:`a` and :math:`\Delta t` through the product :math:`a\Delta t`. Therefore, it
+is convenient to introduce a symbol for this product, :math:`p=a\Delta t`,
+and view :math:`A` and :math:`{A_{\small\mbox{e}}}` as functions of :math:`p`. Figure
+:ref:`decay:analysis:fig:A` shows these functions. Crank-Nicolson is
+clearly closest to the exact amplification factor, but that method has
+the unfortunate oscillatory behavior when :math:`p>2`.
+
+.. _decay:analysis:fig:A:
+
+.. figure:: fig-decay/A_factors.png
+   :width: 500
+
+   *Comparison of amplification factors*
+
+Series expansion of amplification factors
+-----------------------------------------
+
+As an alternative to the visual understanding inherent in Figure
+:ref:`decay:analysis:fig:A`, there is a strong tradition in numerical
+analysis to establish formulas for the approximation errors when the
+discretization parameter, here :math:`\Delta t`, becomes small. In the
+present case we let :math:`p` be our small discretization parameter, and it
+makes sense to simplify the expressions for :math:`A` and :math:`{A_{\small\mbox{e}}}` by using
+Taylor polynomials around :math:`p=0`.  The Taylor polynomials are accurate
+for small :math:`p` and greatly simplifies the comparison of the analytical
+expressions since we then can compare polynomials, term by term.
+
+Calculating the Taylor series for :math:`{A_{\small\mbox{e}}}` is easily done by hand, but
+the three versions of :math:`A` for :math:`\theta=0,1,{\frac{1}{2}}` lead to more
+cumbersome calculations.
+Nowadays, analytical computations can benefit greatly by
+symbolic computer algebra software. The Python package ``sympy``
+represents a powerful computer algebra system, not yet as sophisticated as
+the famous Maple and Mathematica systems, but free and
+very easy to integrate with our numerical computations in Python.
+
+When using ``sympy``, it is convenient to enter the interactive Python
+mode where we can write expressions and statements and immediately see
+the results.  Here is a simple example. We strongly recommend to use
+``isympy`` (or ``ipython``) for such interactive sessions.
+
+Let us illustrate ``sympy`` with a standard Python shell syntax
+(``>>>`` prompt) to compute a Taylor polynomial approximation to :math:`e^{-p}`:
 
 .. code-block:: python
 
-        numpy.exp(-a*t)*numpy.sin(2(numpy.pi*t)
-        # or
-        np.exp(-a*t)*np.sin(2*np.pi*t)
+        >>> from sympy import *
+        >>> # Create p as a mathematical symbol with name 'p'
+        >>> p = Symbol('p')
+        >>> # Create a mathematical expression with p
+        >>> A_e = exp(-p)
+        >>>
+        >>> # Find the first 6 terms of the Taylor series of A_e
+        >>> A_e.series(p, 0, 6)
+        1 + (1/2)*p**2 - p - 1/6*p**3 - 1/120*p**5 + (1/24)*p**4 + O(p**6)
 
-Such an expression looks like ``exp(-a*t)*sin(2*pi*t)`` in most
-other programming languages. Similarly,
-``np.linspace`` and ``plt.plot`` look less familiar to people who are
-used to MATLAB and who have not adopted Python's prefix style.
-Whether to do ``from module import *`` or ``import module`` depends
-on personal taste and the problem at hand. In these writings we use
-``from module import`` in shorter programs where similarity with
-MATLAB could be an advantage, and where a one-to-one correspondence between
-mathematical formulas and Python expressions is important.
-The style ``import module`` is preferred inside Python modules (see
-:ref:`decay:exer:module1` for a demonstration).
+Lines with ``>>>`` represent input lines and lines without
+this prompt represents the result of computations (note that
+``isympy`` and ``ipython`` apply other prompts, but in this text
+we always apply ``>>>`` for interactive Python computing).
+Apart from the order of the powers, the computed formula is easily
+recognized as the beginning of the Taylor series for :math:`e^{-p}`.
 
+Let us define the numerical amplification factor where :math:`p` and :math:`\theta`
+enter the formula as symbols:
 
-.. _decay:prog:se:doctest:
+.. code-block:: python
 
-Doctests
---------
+        >>> theta = Symbol('theta')
+        >>> A = (1-(1-theta)*p)/(1+theta*p)
 
+To work with the factor for the Backward Euler scheme we
+can substitute the value 1 for ``theta``:
 
-.. index:: doctests
+.. code-block:: python
 
+        >>> A.subs(theta, 1)
+        1/(1 + p)
+
+Similarly, we can replace ``theta`` by 1/2 for Crank-Nicolson,
+preferably using an exact rational representation of 1/2 in ``sympy``:
+
+.. code-block:: python
+
+        >>> half = Rational(1,2)
+        >>> A.subs(theta, half)
+        1/(1 + (1/2)*p)*(1 - 1/2*p)
+
+The Taylor series of the amplification factor for the Crank-Nicolson
+scheme can be computed as
+
+.. code-block:: python
+
+        >>> A.subs(theta, half).series(p, 0, 4)
+        1 + (1/2)*p**2 - p - 1/4*p**3 + O(p**4)
+
+We are now in a position to compare Taylor series:
+
+.. code-block:: python
+
+        >>> FE = A_e.series(p, 0, 4) - A.subs(theta, 0).series(p, 0, 4)
+        >>> BE = A_e.series(p, 0, 4) - A.subs(theta, 1).series(p, 0, 4)
+        >>> CN = A_e.series(p, 0, 4) - A.subs(theta, half).series(p, 0, 4 )
+        >>> FE
+        (1/2)*p**2 - 1/6*p**3 + O(p**4)
+        >>> BE
+        -1/2*p**2 + (5/6)*p**3 + O(p**4)
+        >>> CN
+        (1/12)*p**3 + O(p**4)
+
+From these expressions we see that the error :math:`A-{A_{\small\mbox{e}}}\sim {\mathcal{O}(p^2)}`
+for the Forward and Backward Euler schemes, while
+:math:`A-{A_{\small\mbox{e}}}\sim {\mathcal{O}(p^3)}` for the Crank-Nicolson scheme.
+It is the *leading order term*,
+i.e., the term of the lowest order (polynomial degree),
+that is of interest, because as :math:`p\rightarrow 0`, this term is
+(much) bigger than the higher-order terms (think of :math:`p=0.01`:
+:math:`p` is a hundred times larger than :math:`p^2`).
+
+Now, :math:`a` is a given parameter in the problem, while :math:`\Delta t` is
+what we can vary. One therefore usually writes the error expressions in
+terms :math:`\Delta t`. When then have
+
+.. math::
+        
+        A-{A_{\small\mbox{e}}} = \left\lbrace\begin{array}{ll}
+        {\mathcal{O}(\Delta t^2)}, & \hbox{Forward and Backward Euler},\\ 
+        {\mathcal{O}(\Delta t^3)}, & \hbox{Crank-Nicolson}
+        \end{array}\right.
+        
+
+We say that the Crank-Nicolson scheme has an error in the amplification
+factor of order :math:`\Delta t^3`, while the two other schemes are
+of order :math:`\Delta t^2` in the same quantity.
+What is the significance of the order expression? If we halve :math:`\Delta t`,
+the error in amplification factor at a time level will be reduced
+by a factor of 4 in the Forward and Backward Euler schemes, and by
+a factor of 8 in the Crank-Nicolson scheme. That is, as we
+reduce :math:`\Delta t` to obtain more accurate results, the Crank-Nicolson
+scheme reduces the error more efficiently than the other schemes.
+
+The fraction of numerical and exact amplification factors
+---------------------------------------------------------
 
 .. index::
-   single: software testing; doctests
+   single: error; amplification factor
 
-
-We have emphasized how important it is to be able to run tests in the
-program at any time. This was solved by calling various ``verify*``
-functions in the previous examples. However, there exists
-well-established procedures and corresponding tools for automating
-the execution of tests. We shall briefly demonstrate two important
-techniques: *doctest* and *unit testing*. The corresponding files are
-the modules `decay_mod_doctest.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_doctest.py>`_
-and `decay_mod_nosetest.py <http://tinyurl.com/jvzzcfn/decay/decay_mod_nosetest.py>`_.
-
-
-A doc string (the first string after the function header) is used to
-document the purpose of functions and their arguments. Very often it
-is instructive to include an example on how to use the function.
-Interactive examples in the Python shell are most illustrative as
-we can see the output resulting from function calls. For example,
-we can in the ``solver`` function include an example on calling
-this function and printing the computed ``u`` and ``t`` arrays:
-
+An alternative comparison of the schemes is to look at the
+ratio :math:`A/{A_{\small\mbox{e}}}`, or the error :math:`1-A/{A_{\small\mbox{e}}}` in this ratio:
 
 .. code-block:: python
 
-        def solver(I, a, T, dt, theta):
-            """
-            Solve u'=-a*u, u(0)=I, for t in (0,T] with steps of dt.
-        
-        
-            >>> u, t = solver(I=0.8, a=1.2, T=4, dt=0.5, theta=0.5)
-            >>> for t_n, u_n in zip(t, u):
-            ...     print 't=%.1f, u=%.14f' % (t_n, u_n)
-            t=0.0, u=0.80000000000000
-            t=0.5, u=0.43076923076923
-            t=1.0, u=0.23195266272189
-            t=1.5, u=0.12489758761948
-            t=2.0, u=0.06725254717972
-            t=2.5, u=0.03621291001985
-            t=3.0, u=0.01949925924146
-            t=3.5, u=0.01049960113002
-            t=4.0, u=0.00565363137770
-            """
-            ...
+        >>> FE = 1 - (A.subs(theta, 0)/A_e).series(p, 0, 4)
+        >>> BE = 1 - (A.subs(theta, 1)/A_e).series(p, 0, 4)
+        >>> CN = 1 - (A.subs(theta, half)/A_e).series(p, 0, 4)
+        >>> FE
+        (1/2)*p**2 + (1/3)*p**3 + O(p**4)
+        >>> BE
+        -1/2*p**2 + (1/3)*p**3 + O(p**4)
+        >>> CN
+        (1/12)*p**3 + O(p**4)
 
+The leading-order terms have the same powers as
+in the analysis of :math:`A-{A_{\small\mbox{e}}}`.
 
-When such interactive demonstrations are inserted in doc strings,
-Python's `doctest <http://docs.python.org/library/doctest.html>`_
-module can be used to automate running all commands
-in interactive sessions and compare new output with the output
-appearing in the doc string.  All we have to do in the current example
-is to write
+.. _decay:analysis:gobal:error:
 
-
-.. code-block:: python
-
-        Terminal> python -m doctest decay_mod_doctest.py
-
-This command imports the ``doctest`` module, which runs all tests.
-No additional command-line argument is allowed when running doctests.
-If any test fails, the problem is reported, e.g.,
-
-
-.. code-block:: console
-
-        Terminal> python -m doctest decay_mod_doctest.py
-        ********************************************************
-        File "decay_mod_doctest.py", line 12, in decay_mod_doctest....
-        Failed example:
-            for t_n, u_n in zip(t, u):
-                print 't=%.1f, u=%.14f' % (t_n, u_n)
-        Expected:
-            t=0.0, u=0.80000000000000
-            t=0.5, u=0.43076923076923
-            t=1.0, u=0.23195266272189
-            t=1.5, u=0.12489758761948
-            t=2.0, u=0.06725254717972
-        Got:
-            t=0.0, u=0.80000000000000
-            t=0.5, u=0.43076923076923
-            t=1.0, u=0.23195266272189
-            t=1.5, u=0.12489758761948
-            t=2.0, u=0.06725254718756
-        ********************************************************
-        1 items had failures:
-           1 of   2 in decay_mod_doctest.solver
-        ***Test Failed*** 1 failures.
-
-
-Note that in the output of ``t`` and ``u`` we write ``u`` with 14 digits.
-Writing all 16 digits is not a good idea: if the tests are run on
-different hardware, round-off errors might be different, and
-the ``doctest`` module detects that the numbers are not precisely the same
-and reports failures. In the present application, where :math:`0 < u(t) \leq 0.8`,
-we expect round-off errors to be of size :math:`10^{-16}`, so comparing 15
-digits would probably be reliable, but we compare 14 to be on the
-safe side.
-
-Doctests are highly encouraged as they do two things: 1) demonstrate
-how a function is used and 2) test that the function works.
-
-Here is an example on a doctest in the ``explore`` function:
-
-
-.. code-block:: python
-
-        def explore(I, a, T, dt, theta=0.5, makeplot=True):
-            """
-            Run a case with the solver, compute error measure,
-            and plot the numerical and exact solutions (if makeplot=True).
-        
-            >>> for theta in 0, 0.5, 1:
-            ...    E = explore(I=1.9, a=2.1, T=5, dt=0.1, theta=theta,
-            ...                makeplot=False)
-            ...    print '%.10E' % E
-            ...
-            7.3565079236E-02
-            2.4183893110E-03
-            6.5013039886E-02
-            """
-            ...
-
-This time we limit the output to 10 digits.
-
-
-
-.. admonition:: Caution
-
-   Doctests requires careful coding if they use command-line input or
-   print results to the terminal window. Command-line input must
-   be simulated by filling ``sys.argv`` correctly, e.g.,
-   ``sys.argv = '--I 1.0 --a 5'.split``.
-   The output lines of print statements must be copied exactly as they
-   appear when running the statements in an interactive Python shell.
-
-
-
-
-
-
-.. _decay:prog:se:nose:
-
-Unit testing with nose
-----------------------
-
-
-.. index:: nose tests
-
-
-.. index:: unit testing
-
+The global error at a point
+---------------------------
 
 .. index::
-   single: software testing; nose
+   single: error; global
 
-
-The unit testing technique consists of identifying small units
-of code, usually functions (or classes), and write one or more tests for
-each unit. One test should, ideally, not depend on the outcome of
-other tests. For example, the doctest in function ``solver`` is a
-unit test, and the doctest in function ``explore`` as well, but the
-latter depends on a working ``solver``. Putting the error computation
-and plotting in ``explore`` in two separate functions would allow
-independent unit tests. In this way, the design of unit tests impacts
-the design of functions. The recommended practice is actually to
-design and write the unit tests first and *then* implement the functions!
-
-In scientific computing it is not always obvious how to best perform
-unit testing. The units is naturally larger than in non-scientific
-software. Very often the solution procedure of a mathematical problem
-identifies a unit.
-
-Basic use of nose
-~~~~~~~~~~~~~~~~~
-
-The ``nose`` package is a versatile tool for implementing unit tests
-in Python. Here is a short explanation of the usage of nose:
-
- 1. Implement tests in functions with names starting with ``test_``.
-    Such functions cannot have any arguments.
-
- 2. The test functions perform assertions on computed results
-    using ``assert`` functions from the ``nose.tools`` module.
-
- 3. The test functions can be in the source code files or be
-    collected in separate files with names ``test*.py``.
-
-Here comes a very simple illustration of the three points.
-Assume that we have this function in a module ``mymod``:
-
+The error in the amplification factor reflects the error when
+progressing from time level :math:`t_n` to :math:`t_{n-1}`.
+To investigate the real error at a point, known as the *global error*,
+we look at :math:`e^n = u^n-{u_{\small\mbox{e}}}(t_n)` for some :math:`n` and Taylor expand the
+mathematical expressions as functions of :math:`p=a\Delta t`:
 
 .. code-block:: python
 
-        def double(n):
-            return 2*n
+        >>> n = Symbol('n')
+        >>> u_e = exp(-p*n)
+        >>> u_n = A**n
+        >>> FE = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+        >>> BE = u_e.series(p, 0, 4) - u_n.subs(theta, 1).series(p, 0, 4)
+        >>> CN = u_e.series(p, 0, 4) - u_n.subs(theta, half).series(p, 0, 4)
+        >>> FE
+        (1/2)*n*p**2 - 1/2*n**2*p**3 + (1/3)*n*p**3 + O(p**4)
+        >>> BE
+        (1/2)*n**2*p**3 - 1/2*n*p**2 + (1/3)*n*p**3 + O(p**4)
+        >>> CN
+        (1/12)*n*p**3 + O(p**4)
 
+For a fixed time :math:`t`, the parameter :math:`n` in these expressions increases
+as :math:`p\rightarrow 0` since :math:`t=n\Delta t =\mbox{const}` and hence
+:math:`n` must increase like :math:`\Delta t^{-1}`. With :math:`n` substituted by
+:math:`t/\Delta t` in
+the leading-order error terms, these become :math:`\frac{1}{2} na^2\Delta
+t^2 = {\frac{1}{2}}ta^2\Delta t` for the Forward and Backward Euler
+scheme, and :math:`\frac{1}{12}na^3\Delta t^3 = \frac{1}{12}ta^3\Delta t^2`
+for the Crank-Nicolson scheme.  The global error is therefore of
+second order (in :math:`\Delta t`) for the latter scheme and of first order for
+the former schemes.
 
-Either in this file, or in a separate file ``test_mymod.py``, we
-implement a test function whose purpose is
-to test that the function ``double`` works as intended:
+When the global error :math:`e^n\rightarrow 0` as :math:`\Delta t\rightarrow 0`,
+we say that the scheme is *convergent*. It means that the numerical
+solution approaches the exact solution as the mesh is refined, and
+this is a much desired property of a numerical method.
 
+Integrated errors
+-----------------
 
-.. code-block:: python
-
-        import nose.tools as nt
-        
-        def test_double():
-            result = double(4)
-            nt.assert_equal(result, 8)
-
-Notice that ``test_double`` has no arguments.
-We need to do an ``import mymod`` or ``from mymod import double``
-if this test resides in a separate file.
-Running
-
-
-.. code-block:: console
-
-        Terminal> nosetests -s mymod
-
-makes the ``nose`` tool run all functions with names matching ``test_*()``
-in ``mymod.py``.
-Alternatively, if the test functions are in some ``test_mymod.py`` file,
-we can just write ``nosetests -s``. The nose tool will then look
-for all files with names mathching ``test*.py`` and run all
-functions ``test_*()`` in these files.
-
-When you have nose tests in separate test
-files with names ``test*.py`` it is common to collect
-these files in a subdirectory ``tests``, or ``*_tests`` if
-you have several test subdirectories. Running ``nosetests -s`` will
-then recursively look for all ``tests`` and ``*_tests`` subdirectories
-and run all functions ``test_*()`` in all files ``test_*.py`` in these
-directories. Just one command can then launch a series of tests in
-a directory tree!
-
-An example of a ``tests`` directory with different types of ``test*.py``
-files are found in `src/decay/tests <http://tinyurl.com/jvzzcfn/decay/tests>`_.
-Note that these perform imports of modules in the parent directory.
-These imports works well because the tests are supposed to be
-run by ``nosetests -s`` executed in the parent directory (``decay``).
-
-
-
-.. admonition:: Tip
-
-   The ``-s`` option to ``nosetests`` assures that any print statement
-   in the ``test_*`` functions appears in the output. Without this
-   option, ``nosetests`` suppressed whatever the tests writes to
-   the terminal window (standard output). Such behavior is annoying,
-   especially when developing and testing tests.
-
-
-
-
-
-
-
-The number of failed tests and their details are
-reported, or an ``OK`` is printed if all tests passed.
-
-The advantage with the ``nose`` package is two-fold:
-
-1. tests are written and collected
-   in a structured way, and
-
-2. large collections of tests, scattered
-   throughout a tree of directories,
-   can be executed with one command ``nosetests -s``.
-
-Alternative assert statements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In case the ``nt.assert_equal`` function
-finds that the two arguments are equal, the test is a success, otherwise
-it is a failure and an exception of type ``AssertionError`` is raised.
-The particular exception is the indicator that a test has failed.
-
-Instead of calling the convenience function ``nt.assert_equal``, we
-can use Python's plain ``assert`` statement, which tests if a boolean
-expression is true and raises an ``AssertionError`` otherwise.
-Here, the statement is ``assert result == 8``.
-
-A completely manual alternative is to explicitly raise an ``AssertionError``
-exception if the computed result is wrong:
-
+It is common to study the norm of the numerical error, as
+explained in detail in the section :ref:`decay:computing:error:norm`.
+The :math:`L^2` norm can be computed by treating :math:`e^n` as a function
+of :math:`t` in ``sympy`` and performing symbolic integration. For
+the Forward Euler scheme we have
 
 .. code-block:: python
 
-        if result != 8:
-            raise AssertionError()
+        p, n, a, dt, t, T, theta = symbols('p n a dt t T 'theta')
+        A = (1-(1-theta)*p)/(1+theta*p)
+        u_e = exp(-p*n)
+        u_n = A**n
+        error = u_e.series(p, 0, 4) - u_n.subs(theta, 0).series(p, 0, 4)
+        # Introduce t and dt instead of n and p
+        error = error.subs('n', 't/dt').subs(p, 'a*dt')
+        error = error.as_leading_term(dt) # study only the first term
+        print error
+        error_L2 = sqrt(integrate(error**2, (t, 0, T)))
+        print error_L2
+
+The output reads
+
+.. code-block:: text
+
+        sqrt(30)*sqrt(T**3*a**4*dt**2*(6*T**2*a**2 - 15*T*a + 10))/60
+
+which means that the :math:`L^2` error behaves like :math:`a^2\Delta t`.
+
+Strictly speaking, the numerical error is only defined at the
+mesh points so it makes most sense to compute the
+:math:`\ell^2` error
+
+.. math::
+         ||e^n||_{\ell^2} = \sqrt{\Delta t\sum_{n=0}^{N_t} ({{u_{\small\mbox{e}}}}(t_n) - u^n)^2}
+        {\thinspace .} 
+
+We have obtained an exact analytical expressions for the error at :math:`t=t_n`,
+but here we use the leading-order error term only since we are mostly
+interested in how the error behaves as a polynomial in :math:`\Delta t`, and then
+the leading order term will dominate.
+For the Forward Euler scheme,
+:math:`{u_{\small\mbox{e}}}(t_n) - u^n \approx {\frac{1}{2}}np^2`, and we have
+
+.. math::
+         ||e^n||_{\ell^2}^2 = \Delta t\sum_{n=0}^{N_t} \frac{1}{4}n^2p^4
+        =\Delta t\frac{1}{4}p^4 \sum_{n=0}^{N_t} n^2{\thinspace .}
+
+Now, :math:`\sum_{n=0}^{N_t} n^2\approx \frac{1}{3}N_t^3`. Using this approximation,
+setting :math:`N_t =T/\Delta t`, and taking the square root gives the expression
+
+.. math::
+         ||e^n||_{\ell^2} = \frac{1}{2}\sqrt{\frac{T^3}{3}} a^2\Delta t{\thinspace .}
+
+Calculations for the Backward Euler scheme are very similar and provide
+the same result, while the Crank-Nicolson scheme leads to
+
+.. math::
+         ||e^n||_{\ell^2} = \frac{1}{12}\sqrt{\frac{T^3}{3}}a^3\Delta t^2{\thinspace .}
+
+
+.. admonition:: Summary of errors
+
+   Both the point-wise and the time-integrated true errors are of
+   second order in :math:`\Delta t` for the Crank-Nicolson scheme and of
+   first order in :math:`\Delta t` for the Forward Euler and Backward Euler schemes.
 
 
 
-Applying nose
-~~~~~~~~~~~~~
 
-Let us illustrate how to use the ``nose`` tool for testing key functions
-in the ``decay_mod`` module. Or more precisely, the module is called
-``decay_mod_unittest`` with all the ``verify*`` functions removed
-as these now are outdated by the unit tests.
+Truncation error
+----------------
 
-We design three unit tests:
+The truncation error is a very frequently used error measure for
+finite difference methods. It is defined as *the error
+in the difference equation that arises when inserting the exact
+solution*. Contrary to many other error measures, e.g., the
+true error :math:`e^n={u_{\small\mbox{e}}}(t_n)-u^n`, the truncation error is a quantity that
+is easily computable.
 
- 1. A comparison between the computed :math:`u^n` values and the
-    exact discrete solution.
+Let us illustrate the calculation of the truncation error
+for the Forward Euler scheme.
+We start with the difference equation on operator form,
 
- 2. A comparison between the computed :math:`u^n` values and precomputed,
-    verified reference values.
+.. math::
+         \lbrack D_t u = -au\rbrack^n,
 
- 3. A comparison between observed and expected convergence rates.
+i.e.,
 
-These tests follow very closely the code in the previously shown
-``verify*`` functions. We start with comparing :math:`u^n`, as computed by
-the function ``solver``, to the formula
-for the exact discrete solution:
+.. math::
+         \frac{u^{n+1}-u^n}{\Delta t} = -au^n{\thinspace .}
 
+The idea is to see how well the exact solution :math:`{u_{\small\mbox{e}}}(t)` fulfills
+this equation. Since :math:`{u_{\small\mbox{e}}}(t)` in general will not obey the
+discrete equation, error in the discrete equation, called
+a *residual*, denoted here by :math:`R^n`:
+
+.. _Eq:decay:analysis:trunc:Req:
+
+.. math::
+   :label: decay:analysis:trunc:Req
+        
+        R^n = \frac{{u_{\small\mbox{e}}}(t_{n+1})-{u_{\small\mbox{e}}}(t_n)}{\Delta t} + a{u_{\small\mbox{e}}}(t_n)
+        {\thinspace .}
+        
+        
+
+The residual is defined at each mesh point and is therefore a mesh
+function with a superscript :math:`n`.
+
+The interesting feature of :math:`R^n` is to see how it
+depends on the discretization parameter :math:`\Delta t`.
+The tool for reaching
+this goal is to Taylor expand :math:`{u_{\small\mbox{e}}}` around the point where the
+difference equation is supposed to hold, here :math:`t=t_n`.
+We have that
+
+.. math::
+         {u_{\small\mbox{e}}}(t_{n+1}) = {u_{\small\mbox{e}}}(t_n) + {u_{\small\mbox{e}}}'(t_n)\Delta t + \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)
+        \Delta t^2 + \cdots 
+
+Inserting this Taylor series in :eq:`decay:analysis:trunc:Req` gives
+
+.. math::
+         R^n = {u_{\small\mbox{e}}}'(t_n) + \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t + \ldots + a{u_{\small\mbox{e}}}(t_n){\thinspace .}
+
+Now, :math:`{u_{\small\mbox{e}}}` fulfills the ODE :math:`{u_{\small\mbox{e}}}'=-a{u_{\small\mbox{e}}}` such that the first and last
+term cancels and we have
+
+.. math::
+         R^n \approx \frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t {\thinspace .} 
+
+This :math:`R^n` is the *truncation error*, which for the Forward Euler is seen
+to be of first order in :math:`\Delta t`.
+
+The above procedure can be repeated for the Backward Euler and the
+Crank-Nicolson schemes. We start with the scheme in operator notation,
+write it out in detail, Taylor expand :math:`{u_{\small\mbox{e}}}` around the point :math:`\tilde t`
+at which the difference equation is defined, collect terms that
+correspond to the ODE (here :math:`{u_{\small\mbox{e}}}' + a{u_{\small\mbox{e}}}`), and identify the remaining
+terms as the residual :math:`R`, which is the truncation error.
+The Backward Euler scheme leads to
+
+.. math::
+         R^n \approx -\frac{1}{2}{u_{\small\mbox{e}}}''(t_n)\Delta t, 
+
+while the Crank-Nicolson scheme gives
+
+.. math::
+         R^{n+\frac{1}{2}} \approx \frac{1}{24}{u_{\small\mbox{e}}}'''(t_{n+\frac{1}{2}})\Delta t^2{\thinspace .}
+
+The *order* :math:`r` of a finite difference scheme is often defined through
+the leading term :math:`\Delta t^r` in the truncation error. The above
+expressions point out that the Forward and Backward Euler schemes are
+of first order, while Crank-Nicolson is of second order.  We have
+looked at other error measures in other sections, like the error in
+amplification factor and the error :math:`e^n={u_{\small\mbox{e}}}(t_n)-u^n`, and expressed
+these error measures in terms of :math:`\Delta t` to see the order of the
+method. Normally, calculating the truncation error is more
+straightforward than deriving the expressions for other error measures
+and therefore the easiest way to establish the order of a scheme.
+
+Consistency, stability, and convergence
+---------------------------------------
+
+.. index:: consistency
+
+.. index:: stability
+
+.. index:: convergence
+
+Three fundamental concepts when solving differential equations by
+numerical methods are consistency, stability, and convergence.  We
+shall briefly touch these concepts below in the context of the present
+model problem.
+
+Consistency means that the error in the difference equation, measured
+through the truncation error, goes to zero as :math:`\Delta t\rightarrow
+0`. Since the truncation error tells how well the exact solution
+fulfills the difference equation, and the exact solution fulfills the
+differential equation, consistency ensures that the difference
+equation approaches the differential equation in the limit. The
+expressions for the truncation errors in the previous section are all
+proportional to :math:`\Delta t` or :math:`\Delta t^2`, hence they vanish as
+:math:`\Delta t\rightarrow 0`, and all the schemes are consistent.  Lack of
+consistency implies that we actually solve a different differential
+equation in the limit :math:`\Delta t\rightarrow 0` than we aim at.
+
+Stability means that the numerical solution exhibits the same
+qualitative properties as the exact solution. This is obviously a
+feature we want the numerical solution to have. In the present
+exponential decay model, the exact solution is monotone and
+decaying. An increasing numerical solution is not in accordance with
+the decaying nature of the exact solution and hence unstable. We can
+also say that an oscillating numerical solution lacks the property of
+monotonicity of the exact solution and is also unstable. We have seen
+that the Backward Euler scheme always leads to monotone and decaying
+solutions, regardless of :math:`\Delta t`, and is hence stable. The Forward
+Euler scheme can lead to increasing solutions and oscillating
+solutions if :math:`\Delta t` is too large and is therefore unstable unless
+:math:`\Delta t` is sufficiently small.  The Crank-Nicolson can never lead
+to increasing solutions and has no problem to fulfill that stability
+property, but it can produce oscillating solutions and is unstable in
+that sense, unless :math:`\Delta t` is sufficiently small.
+
+Convergence implies that the global (true) error mesh function :math:`e^n =
+{u_{\small\mbox{e}}}(t_n)-u^n\rightarrow 0` as :math:`\Delta t\rightarrow 0`. This is really
+what we want: the numerical solution gets as close to the exact
+solution as we request by having a sufficiently fine mesh.
+
+Convergence is hard to establish theoretically, except in quite simple
+problems like the present one. Stability and consistency are much
+easier to calculate. A major breakthrough in the understanding of
+numerical methods for differential equations came in 1956 when Lax and
+Richtmeyer established equivalence between convergence on one hand and
+consistency and stability on the other (the `Lax equivalence theorem <http://en.wikipedia.org/wiki/Lax_equivalence_theorem>`_).  In practice
+it meant that one can first establish that a method is stable and
+consistent, and then it is automatically convergent (which is much
+harder to establish).  The result holds for linear problems only, and
+in the world of nonlinear differential equations the relations between
+consistency, stability, and convergence are much more complicated.
+
+We have seen in the previous analysis that the Forward Euler,
+Backward Euler, and Crank-Nicolson schemes are convergent (:math:`e^n\rightarrow 0`),
+that they are consistent (:math:`R^n\rightarrow 0`, and that they are
+stable under certain conditions on the size of :math:`\Delta t`.
+We have also derived explicit mathematical expressions for :math:`e^n`,
+the truncation error, and the stability criteria.
+
+.. Look in Asher and Petzold, p 40
+
+Exercises  (1)
+==============
+
+.. --- begin exercise ---
+
+.. _decay:analysis:exer:fd:exp:plot:
+
+Exercise 1: Visualize the accuracy of finite differences :math:`u=e^{-at}`
+--------------------------------------------------------------------------
+
+The purpose of this exercise is to visualize the accuracy of finite difference
+approximations of the derivative of a given function.
+For any finite difference approximation, take the Forward Euler difference
+as an example, and any specific function, take  :math:`u=e^{-at}`,
+we may introduce an error fraction
+specific
+
+.. math::
+         E = \frac{[D_t^+ u]^n}{u'(t_n)} = \frac{\exp{(-a(t_n+\Delta t))} - \exp{(-at_n)}}{-a\exp{(-at_n)}} = -\frac{1}{a\Delta t}\left(\exp{(-a\Delta t)}  - 1\right),
+        
+
+and view :math:`E` as a function of :math:`\Delta t`. We expect that
+:math:`\lim_{\Delta t\rightarrow 0}E=1`, while :math:`E` may deviate significantly from
+unit for large :math:`\Delta t`. How the error depends on :math:`\Delta t` is best
+visualized in a graph where we use a logarithmic scale on for :math:`\Delta t`,
+so we can cover many orders of magnitude of that quantity. Here is
+a code segment creating an array of 100 intervals, on the logarithmic
+scale, ranging from :math:`10^{-6}` to :math:`1` and then plotting :math:`E` versus
+:math:`p=a\Delta t` with logarithmic scale on the :math:`\Delta t` axis:
 
 .. code-block:: python
 
-        import nose.tools as nt
-        import decay_mod_unittest as decay_mod
-        import numpy as np
-        
-        def exact_discrete_solution(n, I, a, theta, dt):
-            """Return exact discrete solution of the theta scheme."""
-            dt = float(dt)  # avoid integer division
-            factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
-            return I*factor**n
-        
-        def test_exact_discrete_solution():
-            """
-            Compare result from solver against
-            formula for the discrete solution.
-            """
-            theta = 0.8; a = 2; I = 0.1; dt = 0.8
-            N = int(8/dt)  # no of steps
-            u, t = decay_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
-            u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
-                             for n in range(N+1)])
-            diff = np.abs(u_de - u).max()
-            nt.assert_almost_equal(diff, 0, delta=1E-14)
+        from numpy import logspace, exp
+        from matplotlib.pyplot import plot
+        p = logspace(-6, 1, 101)
+        y = -(exp(-p)-1)/p
+        semilog(p, y)
 
+Illustrate such errors for the finite difference operators :math:`[D_t^+u]^n`
+(forward), :math:`[D_t^-u]^n` (backward), and :math:`[D_t u]^n` (centered).
 
-The ``nt.assert_almost_equal`` is the relevant function for comparing two
-real numbers. The ``delta`` argument specifies a tolerance for the
-comparison. Alternatively, one can specify a ``places`` argument
-for the number of decimal places to be used in the comparison.
+Perform a Taylor series expansions of the error fractions and find
+the leading order :math:`r` in the expressions of type
+:math:`1 + C\Delta t^r + {\mathcal{O}(\Delta t^{r+1)}}`, where :math:`C` is some constant.
+Filename: ``decay_plot_fd_exp_error.py``.
 
-After having carefully verified the implementation, we may
-store correctly computed numbers in the test program or in files for
-use in future tests. Here is an example on how the outcome from the
-``solver`` function can be compared to what is considered to be
-correct results:
+.. --- end exercise ---
 
+.. --- begin exercise ---
 
-.. code-block:: python
+.. _decay:analysis:exer:growth:
 
-        def test_solver():
-            """
-            Compare result from solver against
-            precomputed arrays for theta=0, 0.5, 1.
-            """
-            I=0.8; a=1.2; T=4; dt=0.5  # fixed parameters
-            precomputed = {
-                't': np.array([ 0. ,  0.5,  1. ,  1.5,  2. ,  2.5,
-                                3. ,  3.5,  4. ]),
-                0.5: np.array(
-                    [ 0.8       ,  0.43076923,  0.23195266, 0.12489759,
-                      0.06725255,  0.03621291,  0.01949926, 0.0104996 ,
-                      0.00565363]),
-                0: np.array(
-                    [  8.00000000e-01,   3.20000000e-01,
-                       1.28000000e-01,   5.12000000e-02,
-                       2.04800000e-02,   8.19200000e-03,
-                       3.27680000e-03,   1.31072000e-03,
-                       5.24288000e-04]),
-                1: np.array(
-                    [ 0.8       ,  0.5       ,  0.3125    ,  0.1953125 ,
-                      0.12207031,  0.07629395,  0.04768372,  0.02980232,
-                      0.01862645]),
-                }
-            for theta in 0, 0.5, 1:
-                u, t = decay_mod.solver(I, a, T, dt, theta=theta)
-                diff = np.abs(u - precomputed[theta]).max()
-                # Precomputed numbers are known to 8 decimal places
-                nt.assert_almost_equal(diff, 0, places=8,
-                                       msg='theta=%s' % theta)
+Exercise 2: Explore the :math:`\theta`-rule for exponential growth
+------------------------------------------------------------------
 
-The ``precomputed`` object is a dictionary with four keys: ``'t'`` for the
-time mesh, and three :math:`\theta` values for :math:`u^n` solutions corresponding
-to :math:`\theta=0,0.5,1`.
+This exercise asks you to solve the ODE :math:`u'=-au` with :math:`a<0` such that
+the ODE models exponential growth instead of exponential decay.  A
+central theme is to investigate numerical artifacts and non-physical
+solution behavior.
 
-Testing for special type of input data that may cause trouble constitutes
-a common way of constructing unit tests.
-For example, the updating formula for
-:math:`u^{n+1}` may be incorrectly evaluated because of unintended integer
-divisions. With
+**a)**
+Run experiments with :math:`\theta=0, 0.5, 1` for various values of :math:`\Delta
+t` to uncover numerical artifacts. Recall that the exact solution is a
+monotone, growing function when :math:`a<0`. Oscillations or significantly
+wrong growth are signs of wrong qualitative behavior, which can be
+taken as a stability criterion.
 
-.. code-block:: python
+Use the insight to select a few values of :math:`\Delta t` and :math:`a` fixed that
+demonstrate all types of numerical artifacts for the three different schemes
+(:math:`\theta=0,0.5,1`).
 
-        theta = 1; a = 1; I = 1; dt = 2
+.. --- begin hint in exercise ---
 
-the nominator and denominator in the updating expression,
+**Hint.**
+Modify the ``decay_exper1.py`` code to suit your needs.
 
-.. code-block:: python
+.. --- end hint in exercise ---
 
-        (1 - (1-theta)*a*dt)
-        (1 + theta*dt*a)
+Filename: ``growth_exper.py``.
 
-evaluate to 1 and 3, respectively, and the fraction ``1/3`` will
-call up integer division and consequently lead to ``u[n+1]=0``.
-We construct a unit test to make sure ``solver`` is smart
-enough to avoid this problem:
+**b)**
+Write up the amplification factor and plot it for :math:`\theta=0,0.5,1`
+together with the exact one for :math:`a\Delta t <0`. Use the plot to
+explain the observations made in the experiments.
 
+.. --- begin hint in exercise ---
 
-.. code-block:: python
+**Hint.**
+Modify the `decay_ampf_plot.py <http://tinyurl.com/jvzzcfn/decay/decay_ampf_plot.py>`_ code.
 
-        def test_potential_integer_division():
-            """Choose variables that can trigger integer division."""
-            theta = 1; a = 1; I = 1; dt = 2
-            N = 4
-            u, t = decay_mod.solver(I=I, a=a, T=N*dt, dt=dt, theta=theta)
-            u_de = np.array([exact_discrete_solution(n, I, a, theta, dt)
-                             for n in range(N+1)])
-            diff = np.abs(u_de - u).max()
-            nt.assert_almost_equal(diff, 0, delta=1E-14)
+.. --- end hint in exercise ---
 
+Filename: ``growth_ampf.py``.
 
-The final test is to see that the convergence rates corresponding to
-:math:`\theta=0,0.5, 1` are 1, 2, and 1, respectively:
+**c)**
+Write a scientific report about the findings.
 
+.. --- begin hint in exercise ---
 
-.. code-block:: python
+**Hint.**
+Use examples from the section :ref:`decay:exper:report` to
+see how scientific reports can be written.
 
-        def test_convergence_rates():
-            """Compare empirical convergence rates to exact ones."""
-            # Set command-line arguments directly in sys.argv
-            import sys
-            sys.argv[1:] = '--I 0.8 --a 2.1 --T 5 '\ 
-                           '--dt 0.4 0.2 0.1 0.05 0.025'.split()
-            r = decay_mod.main()
-            for theta in r:
-                nt.assert_true(r[theta])  # check for non-empty list
-        
-            expected_rates = {0: 1, 1: 1, 0.5: 2}
-            for theta in r:
-                r_final = r[theta][-1]
-                # Compare to 1 decimal place
-                nt.assert_almost_equal(expected_rates[theta], r_final,
-                                       places=1, msg='theta=%s' % theta)
+.. --- end hint in exercise ---
 
+Filenames: ``growth_exper.pdf``, ``growth_exper.html``.
 
-Nothing more is needed in the `test_decay_nose.py <http://tinyurl.com/jvzzcfn/decay/tests/test_decay_nose.py>`_
-file where the tests reside.
-Running ``nosetests -s`` will report ``Ran 3 tests`` and an ``OK`` for
-success.  Everytime we modify the ``decay_mod_unittest`` module we can
-run ``nosetests`` to quickly see if the edits have any impact on the
-verification tests.
-
-Installation of nose
-~~~~~~~~~~~~~~~~~~~~
-
-The ``nose`` package does not come with a standard Python distribution and must
-therefore be installed separately. The procedure is standard and
-described on `Nose's web pages <http://nose.readthedocs.org/en/latest/>`_.  On Debian-based Linux
-systems the command is ``sudo apt-get install python-nose``, and
-with MacPorts you run ``sudo port install py27-nose``.
-
-
-.. index:: nose testing of doctests
-
-
-.. index::
-   single: software testing; nose w/doctests
-
-
-Using nose to test modules with doctests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Assume that ``mod`` is the name of some module that contains doctests.
-We may let ``nose`` run these doctests and report errors in the
-standard way using the code set-up
-
-
-.. code-block:: python
-
-        import doctest
-        import mod
-        
-        def test_mod():
-            failure_count, test_count = doctest.testmod(m=mod)
-            nt.assert_equal(failure_count, 0,
-                            msg='%d tests out of %d failed' %
-                            (failure_count, test_count))
-
-The call to ``doctest.testmod`` runs all doctests in the module file
-``mod.py`` and returns the number of failures (``failure_count``)
-and the total number of tests (``test_count``). A real example is
-found in the file
-`test_decay_doctest.py <http://tinyurl.com/jvzzcfn/decay/tests/test_decay_doctest.py>`_.
-
-
-.. _decay:prog:se:unittest:
-
-Classical class-based unit testing
-----------------------------------
-
-
-.. index:: unit testing
-
-
-.. index:: unittest
-
-
-.. index::
-   single: software testing; unit testing (class-based)
-
-
-The classical way of implementing unit tests derives from the JUnit
-tool in Java where all tests are methods in a class for testing.
-Python comes with a module ``unittest`` for doing this type of unit tests.
-While ``nose`` allows simple functions for unit tests, ``unittest``
-requires deriving a class ``Test*`` from ``unittest.TestCase`` and
-implementing each test as methods with names ``test_*`` in that class.
-I strongly recommend to use ``nose`` over ``unittest``, because it is
-much simpler and more convenient, but class-based unit testing
-is a very classical subject that computational scientists should
-have some knowledge about. That is why a short introduction
-to ``unittest`` is included below.
-
-Basic use of unittest
-~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: unittest
-
-.. index:: TestCase (class in unittest)
-
-
-We apply the ``double`` function in the ``mymod`` module introduced in the
-previous section as example.
-Unit testing with the aid of the ``unittest`` module
-consists of writing a file ``test_mymod.py`` with the content
-
-
-.. code-block:: python
-
-        import unittest
-        import mymod
-        
-        class TestMyCode(unittest.TestCase):
-            def test_double(self):
-                result = mymod.double(4)
-                self.assertEqual(result, 8)
-        
-        if __name__ == '__main__':
-            unittest.main()
-
-The test is run by executing the test file ``test_mymod.py`` as a standard
-Python program. There is no support in ``unittest`` for automatically
-locating and running all tests in all test files in a directory tree.
-
-Those who have experience with object-oriented programming will see that
-the difference between using ``unittest`` and ``nose`` is minor.
-
-Demonstration of unittest
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The same tests as shown for the nose framework are reimplemented
-with the ``TestCase`` classes in the file `test_decay_unittest.py <http://tinyurl.com/jvzzcfn/decay/tests/test_decay_nose.py>`_.
-The tests are identical, the only difference being that with
-``unittest`` we must write the tests as methods in
-a class and the assert functions have
-slightly different names.
-
-
-.. code-block:: python
-
-        import unittest
-        import decay_mod_unittest as decay
-        import numpy as np
-        
-        def exact_discrete_solution(n, I, a, theta, dt):
-            factor = (1 - (1-theta)*a*dt)/(1 + theta*dt*a)
-            return I*factor**n
-        
-        class TestDecay(unittest.TestCase):
-        
-            def test_exact_discrete_solution(self):
-                ...
-                diff = np.abs(u_de - u).max()
-                self.assertAlmostEqual(diff, 0, delta=1E-14)
-        
-            def test_solver(self):
-                ...
-                for theta in 0, 0.5, 1:
-                    ...
-                    self.assertAlmostEqual(diff, 0, places=8,
-                                           msg='theta=%s' % theta)
-        
-            def test_potential_integer_division():
-                ...
-                self.assertAlmostEqual(diff, 0, delta=1E-14)
-        
-            def test_convergence_rates(self):
-                ...
-                for theta in r:
-                    ...
-                    self.assertAlmostEqual(...)
-        
-        if __name__ == '__main__':
-            unittest.main()
-
-
-.. @@@CODE src-decay/tests/test_decay_unittest.py fromto: def test_conv@
-
-
-
-
-.. _decay:prog:se:class:
-
-Implementing simple problem and solver classes
-----------------------------------------------
-
-The :math:`\theta`-rule was compactly and conveniently implemented in
-a function ``solver`` in the section :ref:`decay:py1`.
-In more complicated problems it might
-be beneficial to use classes and introduce a class ``Problem`` to
-hold the definition of the physical problem, a class ``Solver``
-to hold the data and methods needed to numerically solve the problem,
-and a class ``Visualizer`` to make plots.
-This idea will now be illustrated, resulting in code that represents
-an alternative to the ``solver`` and ``explore`` functions found
-in the ``decay_mod`` module.
-
-Explaining the details of class programming in Python is considered
-beyond the scope of this text.  Readers who are unfamiliar with Python
-class programming should first consult one of the many electronic
-Python tutorials or textbooks to come up to speed with concepts and
-syntax of Python classes before reading on. The author has a gentle
-introduction to class programming for scientific applications
-in [Ref1]_, see Chapter 7 and 9 and Appendix E.
-Other useful resources are
-
- * The Python Tutorial: `<http://docs.python.org/2/tutorial/classes.html>`_
-
- * Wiki book on Python Programming: `<http://en.wikibooks.org/wiki/Python_Programming/Classes>`_
-
- * tutorialspoint.com: `<http://www.tutorialspoint.com/python/python_classes_objects.htm>`_
-
-The problem class  (1)
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: problem class
-
-
-The purpose of the problem class is to store all information about
-the mathematical model. This usually means all the physical parameters
-in the problem. In the current example with exponential decay we may
-also add the exact solution of the ODE to the problem class.
-The simplest form of a problem class is therefore
-
-
-.. code-block:: python
-
-        from numpy import exp
-        
-        class Problem:
-            def __init__(self, I=1, a=1, T=10):
-                self.T, self.I, self.a = I, float(a), T
-        
-            def exact_solution(self, t):
-                I, a = self.I, self.a
-                return I*exp(-a*t)
-
-We could in the ``exact_solution`` method have written
-``self.I*exp(-self.a*t)``, but using local variables ``I`` and ``a`` allows
-the formula ``I*exp(-a*t)`` which looks closer to the mathematical
-expression :math:`Ie^{-at}`.  This is not an important issue with the
-current compact formula, but is beneficial in more complicated
-problems with longer formulas to obtain the closest possible
-relationship between code and mathematics. My coding style is to strip
-off the ``self`` prefix when the code expresses mathematical formulas.
-
-The class data can be set either as arguments in the constructor or
-at any time later, e.g.,
-
-
-.. code-block:: python
-
-        problem = Problem(T=5)
-        problem.T = 8
-        problem.dt = 1.5
-
-(Some programmers prefer ``set`` and ``get`` functions for setting and getting
-data in classes, often implemented via *properties* in Python, but
-I consider that overkill when we just have a few data items in a class.)
-
-It would be convenient if class ``Problem`` could also initialize
-the data from the command line. To this end, we add a method for
-defining a set of command-line options and a method that sets the
-local attributes equal to what was found on the command line.
-The default values associated with the command-line options are taken
-as the values provided to the constructor. Class ``Problem`` now becomes
-
-
-.. code-block:: python
-
-        class Problem:
-            def __init__(self, I=1, a=1, T=10):
-                self.T, self.I, self.a = I, float(a), T
-        
-            def define_command_line_options(self, parser=None):
-                if parser is None:
-                    import argparse
-                    parser = argparse.ArgumentParser()
-        
-                parser.add_argument(
-                    '--I', '--initial_condition', type=float,
-                    default=self.I, help='initial condition, u(0)',
-                    metavar='I')
-                parser.add_argument(
-                    '--a', type=float, default=self.a,
-                    help='coefficient in ODE', metavar='a')
-                parser.add_argument(
-                    '--T', '--stop_time', type=float, default=self.T,
-                    help='end time of simulation', metavar='T')
-                return parser
-        
-            def init_from_command_line(self, args):
-                self.I, self.a, self.T = args.I, args.a, args.T
-        
-            def exact_solution(self, t):
-                I, a = self.I, self.a
-                return I*exp(-a*t)
-
-Observe that if the user already has an ``ArgumentParser`` object it can be
-supplied, but if she does not have any, class ``Problem`` makes one.
-Python's ``None`` object is used to indicate that a variable is not
-initialized with a proper value.
-
-The solver class  (1)
-~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: solver class
-
-
-.. index:: wrapper (code)
-
-
-The solver class stores data related to the numerical solution method
-and provides a function ``solve`` for solving the problem.
-A problem object must be given to the constructor so that the solver
-can easily look up physical data. In the present example, the
-data related to the numerical solution method consists of :math:`\Delta t`
-and :math:`\theta`. We add, as in the problem class, functionality for
-reading :math:`\Delta t` and :math:`\theta` from the command line:
-
-
-.. code-block:: python
-
-        class Solver:
-            def __init__(self, problem, dt=0.1, theta=0.5):
-                self.problem = problem
-                self.dt, self.theta = float(dt), theta
-        
-            def define_command_line_options(self, parser):
-                parser.add_argument(
-                    '--dt', '--time_step_value', type=float,
-                    default=0.5, help='time step value', metavar='dt')
-                parser.add_argument(
-                    '--theta', type=float, default=0.5,
-                    help='time discretization parameter', metavar='dt')
-                return parser
-        
-            def init_from_command_line(self, args):
-                self.dt, self.theta = args.dt, args.theta
-        
-            def solve(self):
-                from decay_mod import solver
-                self.u, self.t = solver(
-                    self.problem.I, self.problem.a, self.problem.T,
-                    self.dt, self.theta)
-        
-            def error(self):
-                u_e = self.problem.exact_solution(self.t)
-                e = u_e - self.u
-                E = sqrt(self.dt*sum(e**2))
-                return E
-
-Note that we here simply reuse the implementation of the numerical method
-from the ``decay_mod`` module. The ``solve`` function is just a *wrapper*
-of the previously developed stand-alone ``solver`` function.
-
-The visualizer class  (1)
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: visualizer class
-
-
-The purpose of the visualizer class is to plot the numerical solution
-stored in class ``Solver``. We also add the possibility to plot the
-exact solution. Access to the problem and solver objects is required
-when making plots so the constructor must hold references to these objects:
-
-
-.. code-block:: python
-
-        class Visualizer:
-            def __init__(self, problem, solver):
-                self.problem, self.solver = problem, solver
-        
-            def plot(self, include_exact=True, plt=None):
-                """
-                Add solver.u curve to the plotting object plt,
-                and include the exact solution if include_exact is True.
-                This plot function can be called several times (if
-                the solver object has computed new solutions).
-                """
-                if plt is None:
-                    import scitools.std  as plt # can use matplotlib as well
-        
-                plt.plot(self.solver.t, self.solver.u, '--o')
-                plt.hold('on')
-                theta2name = {0: 'FE', 1: 'BE', 0.5: 'CN'}
-                name = theta2name.get(self.solver.theta, '')
-                legends = ['numerical %s' % name]
-                if include_exact:
-                    t_e = linspace(0, self.problem.T, 1001)
-                    u_e = self.problem.exact_solution(t_e)
-                    plt.plot(t_e, u_e, 'b-')
-                    legends.append('exact')
-                plt.legend(legends)
-                plt.xlabel('t')
-                plt.ylabel('u')
-                plt.title('theta=%g, dt=%g' %
-                          (self.solver.theta, self.solver.dt))
-                plt.savefig('%s_%g.png' % (name, self.solver.dt))
-                return plt
-
-
-The ``plt`` object in the ``plot`` method is worth a comment. The idea is
-that ``plot`` can add a numerical solution curve to an existing
-plot. Calling ``plot`` with a ``plt`` object (which has to be a
-``matplotlib.pyplot`` or ``scitools.std`` object in this implementation),
-will just add the curve
-``self.solver.u`` as a dashed line with circles at the mesh points
-(leaving the color of the curve up to the plotting tool). This
-functionality allows plots with several solutions: just make a loop
-where new data is set in the problem and/or solver classes, the
-solver's ``solve()`` method is called, and the most recent numerical
-solution is plotted by the ``plot(plt)`` method in the visualizer object
-:ref:`decay:exer:decay_class:exper` describes a problem setting
-where this functionality is explored.
-
-Combining the objects
-~~~~~~~~~~~~~~~~~~~~~
-
-Eventually we need to show how the classes ``Problem``, ``Solver``, and
-``Visualizer`` play together:
-
-
-.. code-block:: python
-
-        def main():
-            problem = Problem()
-            solver = Solver(problem)
-            viz = Visualizer(problem, solver)
-        
-            # Read input from the command line
-            parser = problem.define_command_line_options()
-            parser = solver. define_command_line_options(parser)
-            args = parser.parse_args()
-            problem.init_from_command_line(args)
-            solver. init_from_command_line(args)
-        
-            # Solve and plot
-            solver.solve()
-            import matplotlib.pyplot as plt
-            #import scitools.std as plt
-            plt = viz.plot(plt=plt)
-            E = solver.error()
-            if E is not None:
-                print 'Error: %.4E' % E
-            plt.show()
-
-
-The file `decay_class.py <http://tinyurl.com/jvzzcfn/decay/decay_class.py>`_
-constitutes a module with the three classes and the ``main`` function.
-
-
-
-.. admonition:: Test the understanding
-
-   Implement the problem in
-   :ref:`decay:app:exer:drag:prog` in terms of problem, solver,
-   and visualizer classes. Equip the classes and their methods with
-   doc strings with tests. Also include nose tests.
-
-
-
-
-
-
-.. _decay:prog:se:class2:
-
-Improving the problem and solver classes
-----------------------------------------
-
-The previous ``Problem`` and ``Solver`` classes containing parameters
-soon get much repetitive code when the number of parameters increases.
-Much of this code can be parameterized and be made more compact.
-For this purpose, we decide to collect all parameters in a dictionary,
-``self.prms``, with two associated dictionaries ``self.types`` and
-``self.help`` for holding associated object types and help strings.
-Provided a problem, solver, or visualizer class defines these three
-dictionaries in the constructor, using default or user-supplied values
-of the parameters, we can create a super class ``Parameters`` with general code
-for defining command-line options and reading them as well as
-methods for setting and getting a parameter. A ``Problem`` or ``Solver`` class will
-then inherit command-line functionality and the set/get methods from
-the ``Parameters`` class.
-
-A generic class for parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-A simplified version of the parameter class looks as follows:
-
-
-.. code-block:: python
-
-        class Parameters:
-            def set(self, **parameters):
-                for name in parameters:
-                    self.prms[name] = parameters[name]
-        
-            def get(self, name):
-                return self.prms[name]
-        
-            def define_command_line_options(self, parser=None):
-                if parser is None:
-                    import argparse
-                    parser = argparse.ArgumentParser()
-        
-                for name in self.prms:
-                    tp = self.types[name] if name in self.types else str
-                    help = self.help[name] if name in self.help else None
-                    parser.add_argument(
-                        '--' + name, default=self.get(name), metavar=name,
-                        type=tp, help=help)
-        
-                return parser
-        
-            def init_from_command_line(self, args):
-                for name in self.prms:
-                    self.prms[name] = getattr(args, name)
-
-The file `class_decay_oo.py <http://tinyurl.com/jvzzcfn/decay/class_decay_oo.py>`_ contains
-a slightly more advanced version of class ``Parameters`` where we
-in the ``set`` and ``get`` functions test for valid parameter names and
-raise exceptions with informative messages if any name is not registered.
-
-The problem class  (2)
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: problem class
-
-
-A class ``Problem`` for the problem :math:`u'=-au`, :math:`u(0)=I`, :math:`t\in (0,T]`, with
-parameters input :math:`a`, :math:`I`, and :math:`T` can now be coded as
-
-
-.. code-block:: python
-
-        class Problem(Parameters):
-            """
-            Physical parameters for the problem u'=-a*u, u(0)=I,
-            with t in [0,T].
-            """
-            def __init__(self):
-                self.prms = dict(I=1, a=1, T=10)
-                self.types = dict(I=float, a=float, T=float)
-                self.help = dict(I='initial condition, u(0)',
-                                 a='coefficient in ODE',
-                                 T='end time of simulation')
-        
-            def exact_solution(self, t):
-                I, a = self.get('I'), self.get('a')
-                return I*np.exp(-a*t)
-
-
-The solver class  (2)
-~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: solver class
-
-
-Also the solver class is derived from class ``Parameters`` and works with
-the ``prms``, ``types``, and ``help`` dictionaries in the same way as class
-``Problem``. Otherwise, the code is very similar to class ``Solver`` in
-the ``decay_class.py`` file:
-
-
-.. code-block:: python
-
-        class Solver(Parameters):
-            def __init__(self, problem):
-                self.problem = problem
-                self.prms = dict(dt=0.5, theta=0.5)
-                self.types = dict(dt=float, theta=float)
-                self.help = dict(dt='time step value',
-                                 theta='time discretization parameter')
-        
-            def solve(self):
-                from decay_mod import solver
-                self.u, self.t = solver(
-                    self.problem.get('I'),
-                    self.problem.get('a'),
-                    self.problem.get('T'),
-                    self.get('dt'),
-                    self.get('theta'))
-        
-            def error(self):
-                try:
-                    u_e = self.problem.exact_solution(self.t)
-                    e = u_e - self.u
-                    E = np.sqrt(self.get('dt')*np.sum(e**2))
-                except AttributeError:
-                    E = None
-                return E
-
-
-The visualizer class  (2)
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. index:: visualizer class
-
-
-Class ``Visualizer`` can be identical to the one in the ``decay_class.py`` file
-since the class does not need any parameters. However, a few
-adjustments in the ``plot`` method is necessary since parameters are
-accessed as, e.g., ``problem.get('T')`` rather than ``problem.T``.
-The details are found in the file ``class_decay_oo.py``.
-
-Finally, we need a function that solves a real problem using the
-classes ``Problem``, ``Solver``, and ``Visualizer``. This function can
-be just like ``main`` in the ``decay_class.py`` file.
-
-The advantage with the ``Parameters`` class is that it scales to problems
-with a large number of physical and numerical parameters:
-as long as the parameters are defined once via a dictionary,
-the compact code in class ``Parameters`` can handle any collection of
-parameters of any size.
+.. --- end exercise ---
 

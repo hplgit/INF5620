@@ -1,11 +1,9 @@
 .. !split
 
-
 .. _decay:basics:
 
 Finite difference methods
 =========================
-
 
 
 .. admonition:: Goal
@@ -16,10 +14,7 @@ Finite difference methods
    Emphasis is put on the reasoning when discretizing the problem and
    introduction of key concepts such as mesh, mesh function,
    finite difference approximations, averaging in a mesh,
-   deriation of algorithms, and discrete operator notation.
-
-
-
+   derivation of algorithms, and discrete operator notation.
 
 
 
@@ -29,15 +24,12 @@ Finite difference methods
 A basic model for exponential decay
 -----------------------------------
 
-
 .. index:: decay ODE
 
 .. index:: exponential decay
 
-
 Our model problem is perhaps the simplest ordinary differential
 equation (ODE):
-
 
 .. math::
         
@@ -60,7 +52,6 @@ when solving diffusion-type partial differential equations.
 The analytical solution of the ODE is found by the method of
 separation of variables, which results in
 
-
 .. math::
          u(t) = Ce^{-at},
 
@@ -77,7 +68,6 @@ included since we know :math:`u` here and assume that the equation governs
 :math:`u` for :math:`t>0`. The complete ODE problem then reads: find :math:`u(t)`
 such that
 
-
 .. _Eq:decay:problem:
 
 .. math::
@@ -92,8 +82,6 @@ varies continuously from :math:`0` to :math:`T`. For each :math:`t` we have a co
 The purpose of a numerical method is to formulate a corresponding
 *discrete* problem whose solution is characterized by a finite number of values,
 which can be computed in a finite number of steps on a computer.
-
-
 
 .. _decay:schemes:FE:
 
@@ -115,13 +103,11 @@ consists of the following four steps:
 
 .. index:: grid
 
-
 Step 1: Discretizing the domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The time domain :math:`[0,T]` is represented by a finite number of
 :math:`N_t+1` points
-
 
 .. math::
         
@@ -134,9 +120,7 @@ the domain :math:`[0,T]`, which means that the spacing :math:`t_{n+1}-t_n` is
 the same for all :math:`n`. This spacing is often denoted by :math:`\Delta t`,
 in this case :math:`t_n=n\Delta t`.
 
-
 .. index:: mesh function
-
 
 We seek the solution :math:`u` at the mesh points:
 :math:`u(t_n)`, :math:`n=1,2,\ldots,N_t`. Note that :math:`u^0` is already known as :math:`I`.
@@ -153,14 +137,12 @@ as the dashed line. The goal of a numerical method for ODEs is
 to compute the mesh function by solving a finite set of
 *algebraic equations* derived from the original ODE problem.
 
-
 .. _decay:fdu:e:
 
 .. figure:: fdm_u_ue.png
    :width: 600
 
    *Time mesh with discrete solution values*
-
 
 Since finite difference methods produce solutions at the mesh
 points only, it is an open question what the solution is between
@@ -172,22 +154,17 @@ Figure :ref:`decay:fdu:ei`. Given :math:`u^{n}`
 and :math:`u^{n+1}`, the value of :math:`u` at some :math:`t\in [t_{n}, t_{n+1}]`
 is by linear interpolation
 
-
 .. math::
         
         u(t) \approx u^n + \frac{u^{n+1}-u^n}{t_{n+1}-t_n}(t - t_n){\thinspace .}
         
 
-
-
 .. _decay:fdu:ei:
 
-.. figure:: fdm_u_uei.png
+.. figure:: fdm_u_ui.png
    :width: 600
 
    *Linear interpolation between the discrete solution values (dashed curve is exact solution)*
-
-
 
 Step 2: Fulfilling the equation at discrete time points
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -195,23 +172,20 @@ Step 2: Fulfilling the equation at discrete time points
 The ODE is supposed to hold for all :math:`t\in (0,T]`, i.e., at an infinite
 number of points. Now we relax that requirement and require that
 the ODE is fulfilled at a finite set of discrete points in time.
-The mesh points :math:`t_1,t_2,\ldots,t_{N_t}` are a natural choice of points.
+The mesh points :math:`t_0,t_1,\ldots,t_{N_t}` are a natural
+(but not the only) choice of points.
 The original ODE is then reduced to  the following :math:`N_t` equations:
-
 
 .. _Eq:decay:step2:
 
 .. math::
    :label: decay:step2
         
-        u'(t_n) = -au(t_n),\quad n=1,\ldots,N_t{\thinspace .}
+        u'(t_n) = -au(t_n),\quad n=0,\ldots,N_t{\thinspace .}
         
         
-
-
 
 .. index:: finite differences
-
 
 Step 3: Replacing derivatives by finite differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -220,13 +194,10 @@ The next and most essential step of the method is to replace the
 derivative :math:`u'` by a finite difference approximation. Let us first
 try a one-sided difference approximation (see Figure :ref:`decay:sketch:FE`),
 
-
 .. index:: forward difference
 
 .. index::
    single: finite differences; forward
-
-
 
 .. _Eq:decay:FEdiff:
 
@@ -239,7 +210,6 @@ try a one-sided difference approximation (see Figure :ref:`decay:sketch:FE`),
 
 Inserting this approximation in :eq:`decay:step2` results in
 
-
 .. _Eq:decay:step3:
 
 .. math::
@@ -249,14 +219,20 @@ Inserting this approximation in :eq:`decay:step2` results in
         
         
 
-This equation is the discrete counterpart to the original ODE problem
+Later it will be absolutely clear that if we want to compute the solution
+up to time level :math:`N_t`,
+we only need :eq:`decay:step2` to hold for :math:`n=0,\ldots,N_t-1` since
+:eq:`decay:step3` for :math:`n=N_t-1` creates an equation for the final
+value :math:`u^{N_t}`.
+
+Equation :eq:`decay:step3`
+is the discrete counterpart to the original ODE problem
 :eq:`decay:problem`, and often referred to as *finite difference scheme*
 or more generally as the *discrete equations* of the problem.
 The fundamental feature of these equations is that they are *algebraic*
 and can hence be straightforwardly solved to produce the mesh function, i.e.,
 the values of :math:`u` at
 the mesh points (:math:`u^n`, :math:`n=1,2,\ldots,N_t`).
-
 
 .. _decay:sketch:FE:
 
@@ -265,22 +241,15 @@ the mesh points (:math:`u^n`, :math:`n=1,2,\ldots,N_t`).
 
    *Illustration of a forward difference*
 
-
-
 .. index:: difference equation
-
 
 .. index:: discrete equation
 
-
 .. index:: algebraic equation
-
 
 .. index:: finite difference scheme
 
-
 .. index:: Forward Euler scheme
-
 
 Step 4: Formulating a recursive algorithm
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,7 +262,6 @@ Starting with :math:`n=0`, :math:`u^0` is known since :math:`u^0=u(0)=I`, and
 :math:`u^2` can be found from :eq:`decay:step3`. In general, :math:`u^n`
 in :eq:`decay:step3` can be assumed known, and then we can easily solve for
 the unknown :math:`u^{n+1}`:
-
 
 .. _Eq:decay:FE:
 
@@ -314,7 +282,6 @@ a differential equation into a difference equation.
 
 Computation with :eq:`decay:FE` is straightforward:
 
-
 .. math::
         
         u_0 &= I,\\ 
@@ -328,7 +295,6 @@ Very often, :math:`t_{n+1}-t_n` is constant for all :math:`n`, so we can introdu
 the common symbol :math:`\Delta t` for the time step:
 :math:`\Delta t = t_{n+1}-t_n`, :math:`n=0,1,\ldots,N_t-1`.
 Using a constant time step :math:`\Delta t` in the above calculations gives
-
 
 .. math::
         
@@ -355,17 +321,14 @@ the model problem :eq:`decay:problem`.
 The Backward Euler scheme
 -------------------------
 
-
 .. index:: backward difference
 
 .. index::
    single: finite differences; backward
 
-
 There are several choices of difference approximations in step 3 of
 the finite difference method as presented in the previous section.
 Another alternative is
-
 
 .. _Eq:decay:BEdiff:
 
@@ -380,7 +343,6 @@ Since this difference is based on going backward in time (:math:`t_{n-1}`)
 for information, it is known as the Backward Euler difference.
 Figure :ref:`decay:sketch:BE` explains the idea.
 
-
 .. _decay:sketch:BE:
 
 .. figure:: fd_backward.png
@@ -388,18 +350,13 @@ Figure :ref:`decay:sketch:BE` explains the idea.
 
    *Illustration of a backward difference*
 
-
-
 .. index::
    single: backward scheme, 1-step
 
-
 .. index:: Backward Euler scheme
-
 
 Inserting :eq:`decay:BEdiff` in :eq:`decay:step2` yields
 the Backward Euler (BE) scheme:
-
 
 .. _Eq:decay:BE0:
 
@@ -417,7 +374,6 @@ For direct similarity with the Forward Euler scheme :eq:`decay:FE`
 we replace :math:`n` by :math:`n+1` in :eq:`decay:BE0` and solve for the
 unknown value :math:`u^{n+1}`:
 
-
 .. _Eq:decay:BE:
 
 .. math::
@@ -427,22 +383,17 @@ unknown value :math:`u^{n+1}`:
         
         
 
-
 .. _decay:schemes:CN:
 
 The Crank-Nicolson scheme
 -------------------------
 
-
 .. index:: Crank-Nicolson scheme
-
 
 .. index:: centered difference
 
 .. index::
    single: finite differences; centered
-
-
 
 The finite difference approximations used to derive the schemes
 :eq:`decay:FE` and :eq:`decay:BE` are both one-sided differences,
@@ -451,7 +402,6 @@ differences. We shall now construct
 a central difference at :math:`t_{n+1/2}=\frac{1}{2} (t_n + t_{n+1})`, or
 :math:`t_{n+1/2}=(n+\frac{1}{2})\Delta t` if the mesh spacing is uniform in time.
 The approximation reads
-
 
 .. _Eq:decay:CNdiff:
 
@@ -471,8 +421,7 @@ in the center of the interval :math:`[t_{n},t_{n+1}]` or at the end points.
 
 With the formula :eq:`decay:CNdiff`, where :math:`u'` is evaluated at
 :math:`t_{n+1/2}`, it is natural to demand the
-ODE to be fulfilled at the time points between the mesh points:
-
+ODE to be fulfilled at the time points *between* the mesh points:
 
 .. _Eq:decay:step2m:
 
@@ -485,7 +434,6 @@ ODE to be fulfilled at the time points between the mesh points:
         
 
 Using :eq:`decay:CNdiff` in :eq:`decay:step2m` results in
-
 
 .. _Eq:decay:CN0:
 
@@ -505,11 +453,8 @@ the numerical solution at the
 mesh points. One possibility is to approximate :math:`u^{n+\frac{1}{2}}`
 as an arithmetic mean of the :math:`u` values at the neighboring mesh points:
 
-
 .. index::
    single: averaging; arithmetic
-
-
 
 .. _Eq:decay:uhalfavg:
 
@@ -521,7 +466,6 @@ as an arithmetic mean of the :math:`u` values at the neighboring mesh points:
         
 
 Using :eq:`decay:uhalfavg` in :eq:`decay:CN0` results in
-
 
 .. _Eq:decay:CN1:
 
@@ -535,18 +479,15 @@ Using :eq:`decay:uhalfavg` in :eq:`decay:CN0` results in
 Figure :ref:`decay:sketch:CN` sketches the geometric interpretation of
 such a centered difference.
 
-
 .. _decay:sketch:CN:
 
-.. figure:: fd_centered.png
+.. figure:: fd_centered_CN.png
    :width: 400
 
    *Illustration of a centered difference*
 
-
 We assume that :math:`u^n` is already computed so that :math:`u^{n+1}` is the
 unknown, which we can solve for:
-
 
 .. _Eq:decay:CN:
 
@@ -560,12 +501,10 @@ unknown, which we can solve for:
 The finite difference scheme :eq:`decay:CN` is often called
 the Crank-Nicolson (CN) scheme or a midpoint or centered scheme.
 
-
 .. _decay:schemes:theta:
 
 The unifying :math:`\theta`-rule
 --------------------------------
-
 
 .. index:: weighted average
 
@@ -573,10 +512,8 @@ The unifying :math:`\theta`-rule
 
 .. index:: theta-rule
 
-
 The Forward Euler, Backward Euler, and Crank-Nicolson schemes can be
 formulated as one scheme with a varying parameter :math:`\theta`:
-
 
 .. _Eq:decay:th0:
 
@@ -587,7 +524,6 @@ formulated as one scheme with a varying parameter :math:`\theta`:
         
         {\thinspace .}
         
-
 
 Observe:
 
@@ -601,7 +537,6 @@ Observe:
 
 As before, :math:`u^n` is considered known and :math:`u^{n+1}` unknown, so
 we solve for the latter:
-
 
 .. _Eq:decay:th:
 
@@ -619,7 +554,6 @@ the "theta-rule".
 .. admonition:: Derivation
 
    We start with replacing :math:`u'` by the fraction
-   
    
    .. math::
             \frac{u^{n+1}-u^{n}}{t_{n+1}-t_n},
@@ -648,7 +582,6 @@ the "theta-rule".
    
    where :math:`\theta\in [0,1]` is the weighting factor, we can write
    
-   
    .. _Eq:decay:thetaavg:
 
 .. math::
@@ -659,10 +592,7 @@ the "theta-rule".
            
            
    
-   
-   
    .. index:: theta-rule
-   
    
    We can now let the ODE hold at the point
    :math:`\tilde t\in [t_n,t_{n+1}]`, approximate :math:`u'` by the fraction
@@ -692,7 +622,6 @@ The resulting formulas look simpler and are perhaps more
 well known.
 
 
-
 .. admonition:: Summary of schemes for constant time step
 
    
@@ -705,8 +634,6 @@ well known.
            
            
    
-   
-   
    .. _Eq:decay:BE:u:
 
 .. math::
@@ -716,8 +643,6 @@ well known.
            
            
    
-   
-   
    .. _Eq:decay:CN:u:
 
 .. math::
@@ -726,8 +651,6 @@ well known.
            u^{n+1} = \frac{1-\frac{1}{2} a\Delta t}{1 + \frac{1}{2} a\Delta t} u^n \quad (\hbox{CN})
            
            
-   
-   
    
    .. _Eq:decay:th:u:
 
@@ -739,13 +662,10 @@ well known.
 
 
 
-
-
 Not surprisingly, we present these three alternative schemes
 because they have different pros and cons, both for the simple ODE
 in question (which can easily be solved as accurately as desired), and for
 more advanced differential equation problems.
-
 
 
 .. admonition:: Test the understanding
@@ -759,20 +679,15 @@ more advanced differential equation problems.
 
 
 
-
-
-
 .. _decay:fd:op:
 
 Compact operator notation for finite differences
 ------------------------------------------------
 
-
 .. index:: finite difference operator notation
 
 .. index::
    single: operator notation, finite differences
-
 
 Finite difference formulas can be tedious to write and read,
 especially for differential equations with many terms and many
@@ -780,7 +695,6 @@ derivatives. To save space and help the reader of the scheme to quickly
 see the nature of the difference approximations, we introduce a
 compact notation. A forward difference approximation is denoted
 by the :math:`D_t^+` operator:
-
 
 .. _Eq:fd:D:f:
 
@@ -803,7 +717,6 @@ a superscript.
 
 The corresponding operator notation for a centered difference and
 a backward difference reads
-
 
 .. _Eq:fd:D:c:
 
@@ -831,7 +744,6 @@ difference, while no superscript implies a central difference.
 
 An averaging operator is also convenient to have:
 
-
 .. _Eq:fd:mean:a:
 
 .. math::
@@ -847,10 +759,8 @@ expressed as :math:`[\overline{u}^{t}]^{n+\frac{1}{2}}`. (When also spatial coor
 enter the problem, we need the explicit specification of the coordinate
 after the bar.)
 
-
 The Backward Euler finite difference approximation to :math:`u'=-au` can be written
 as follows utilizing the compact notation:
-
 
 .. math::
         
@@ -861,7 +771,6 @@ In difference equations we often place the square brackets around
 the whole equation, to indicate at which mesh point the equation applies,
 since each term is supposed to be approximated at the same point:
 
-
 .. math::
         
         [D_t^- u  = -au]^n {\thinspace .}
@@ -869,14 +778,12 @@ since each term is supposed to be approximated at the same point:
 
 The Forward Euler scheme takes the form
 
-
 .. math::
         
         [D_t^+ u  = -au]^n,
         
 
 while the Crank-Nicolson scheme is written as
-
 
 .. _Eq:fd:compact:ex:CN:
 
@@ -888,8 +795,6 @@ while the Crank-Nicolson scheme is written as
         
 
 
-
-
 .. admonition:: Question
 
    Apply :eq:`fd:D:c` and :eq:`fd:mean:a` and write out the
@@ -899,11 +804,7 @@ while the Crank-Nicolson scheme is written as
 
 
 
-
-
-
 The :math:`\theta`-rule can be specified by
-
 
 .. _Eq:decay:fd1:op:theta:
 
@@ -915,7 +816,6 @@ The :math:`\theta`-rule can be specified by
         
 
 if we define a new time difference and a *weighted averaging operator*:
-
 
 .. math::
         
@@ -938,12 +838,10 @@ An alternative notation is
 .. math::
          [D_t u]^{n+\frac{1}{2}} = \theta [-au]^{n+1} + (1-\theta)[-au]^{n}{\thinspace .} 
 
-
 Looking at the various examples above and comparing them with the
 underlying differential equations, we see immediately which difference
 approximations that have been used and at which point they
 apply. Therefore, the compact notation effectively communicates the
 reasoning behind turning a differential equation into a difference
 equation.
-
 
