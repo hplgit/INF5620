@@ -1,0 +1,813 @@
+
+!split
+======= Implementation =======
+label{decay:impl1}
+
+Model:
+!bt
+\[
+u'(t) = -au(t),\quad t\in (0,T], \quad u(0)=I,
+\]
+!et
+
+Numerical method:
+
+!bt
+\[
+u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n,
+\]
+!et
+for $\theta\in [0,1]$. Note
+
+ * $\theta=0$ gives Forward Euler
+ * $\theta=1$ gives Backward Euler
+ * $\theta=1/2$ gives Crank-Nicolson
+
+!split
+===== Requirements of a program =====
+
+  * Compute the numerical solution $u^n$, $n=1,2,\ldots,N_t$
+  * Display the numerical and exact solution $\uex(t)=e^{-at}$
+  * Bring evidence to a correct implementation (*verification*)
+  * Compare the numerical and the exact solution in a plot
+  * computes the error $\uex (t_n) - u^n$
+  * computes the convergence rate of the numerical scheme
+  * reads its input data from the command line
+
+!split
+===== Tools to learn =====
+
+  * Basic "Python": "http://python.org" programming
+  * Array computing with "`numpy`": "http://numpy.org/"
+  * Plotting with "`matplotlib.pyplot`": "http://matplotlib.sourceforge.net/" and "`scitools`": "http://code.google.com/p/scitools/"
+  * File writing and reading
+  * Making command-line user interface via `argparse.ArgumentParser`
+  * Making graphical user interfaces via "Parampool": "https://github.com/hplgit/parampool"
+
+!bnotice
+All programs are in the directory
+"`src/decay`": "${src_decay}".
+!enotice
+
+!split
+===== Why implement in Python? =====
+
+  * Python has a very clean, readable syntax (often known as
+    "executable pseudo-code").
+  * Python code is very similar to MATLAB code (and MATLAB has a
+    particularly widespread use for scientific computing).
+  * Python is a full-fledged, very powerful programming language.
+  * Python is similar to, but much simpler to work with and
+    results in more reliable code than C++.
+
+!split
+===== Why implement in Python? =====
+
+  * Python has a rich set of modules for scientific computing, and its
+    popularity in scientific computing is rapidly growing.
+  * Python was made for being combined with compiled languages
+    (C, C++, Fortran) to reuse existing numerical software and to
+    reach high computational performance of new implementations.
+  * Python has extensive support for administrative task
+    needed when doing large-scale computational investigations.
+  * Python has extensive support for graphics (visualization,
+    user interfaces, web applications).
+  * FEniCS, a very powerful tool for solving PDEs by
+    the finite element method, is most human-efficient to operate
+    from Python.
+
+!split
+===== Algorithm =====
+label{decay:py1}
+
+ * Store $u^n$, $n=0,1,\ldots,N_t$ in an array `u`.
+ * Algorithm:
+   o initialize $u^0$
+   o for $t=t_n$, $n=1,2,\ldots,N_t$: compute $u_n$ using
+     the $\theta$-rule formula
+
+!split
+===== Translation to Python function =====
+
+@@@CODE src-decay/decay_v1.py  fromto: from numpy import@u, t =
+
+Note about the `for` loop: `range(0, Nt, s)` generates all integers
+from `0` to `Nt` in steps of `s` (default 1), *but not including* `Nt` (!).
+
+Sample call:
+!bc pycod
+u, t = solver(I=1, a=2, T=8, dt=0.8, theta=1)
+!ec
+
+!split
+===== Integer division =====
+
+Python applies integer division: `1/2` is 0, while `1./2` or `1.0/2` or
+`1/2.` or `1/2.0` or `1.0/2.0` all give 0.5.
+
+A safer `solver` function (`dt = float(dt)` - guarantee float):
+
+@@@CODE src-decay/decay_verf1.py  fromto: from numpy import@def verify_three
+
+
+!split
+===== Doc strings =====
+
+ * First string after the function heading
+ * Used for documenting the function
+ * Automatic documentation tools can make fancy manuals for you
+ * Can be used for automatic testing
+
+!bc pycod
+def solver(I, a, T, dt, theta):
+    """
+    Solve
+
+        u'(t) = -a*u(t),
+
+    with initial condition u(0)=I, for t in the time interval
+    (0,T]. The time interval is divided into time steps of
+    length dt.
+
+    theta=1 corresponds to the Backward Euler scheme, theta=0
+    to the Forward Euler scheme, and theta=0.5 to the Crank-
+    Nicolson method.
+    """
+    ...
+!ec
+
+!split
+===== Formatting of numbers =====
+
+Can control formatting of reals and integers through the *printf* format:
+
+!bc pycod
+print 't=%6.3f u=%g' % (t[i], u[i])
+!ec
+
+Or the alternative *format string syntax*:
+!bc pycod
+print 't={t:6.3f} u={u:g}'.format(t=t[i], u=u[i])
+!ec
+
+!split
+===== Running the program =====
+
+How to run the program "`decay_v1.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_v1.py":
+
+!bc sys
+Terminal> python decay_v1.py
+!ec
+
+Can also run it as "normal" Unix programs: `./decay_v1.py` if the
+first line is
+
+!bc pycod
+`#!/usr/bin/env python`
+!ec
+
+Then
+!bc sys
+Terminal> chmod a+rx decay_v1.py
+Terminal> ./decay_v1.py
+!ec
+
+!split
+======= Verifying the implementation =======
+label{decay:verification}
+
+
+ * Verification = bring evidence that the program works
+ * Find suitable test problems
+ * Make function for each test problem
+ * Later: put the verification tests in a professional testing framework
+
+!split
+===== Simplest method: run a few algorithmic steps by hand =====
+
+Use a calculator ($I=0.1$, $\theta=0.8$, $\Delta t =0.8$):
+
+!bt
+\[ A\equiv \frac{1 - (1-\theta) a\Delta t}{1 + \theta a \Delta t} = 0.298245614035\]
+!et
+
+!bt
+\begin{align*}
+u^1 &= AI=0.0298245614035,\\
+u^2 &= Au^1= 0.00889504462912,\\
+u^3 &=Au^2= 0.00265290804728
+\end{align*}
+!et
+
+See the function `verify_three_steps` in "`decay_verf1.py`": "${src_decay}/decay_verf1.py".
+
+!split
+===== Comparison with an exact discrete solution =====
+
+!bnotice Best verification
+Compare computed numerical solution
+with a closed-form *exact discrete solution* (if possible).
+!enotice
+
+Define
+!bt
+\[ A = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a \Delta t}\tp  \]
+!et
+Repeated use of the $\theta$-rule:
+!bt
+\begin{align*}
+u^0 &= I,\\
+u^1 &= Au^0 = AI,\\
+u^n &= A^nu^{n-1} = A^nI \tp 
+\end{align*}
+!et
+
+!split
+===== Making a test based on an exact discrete solution =====
+
+The exact discrete solution as
+!bt
+\begin{equation}
+u^n = IA^n
+label{decay:un:exact}
+\tp 
+\end{equation}
+!et
+
+!bquestion
+Understand what $n$ in $u^n$ and in $A^n$ means!
+!equestion
+
+Test if
+
+!bt
+\[ \max_n |u^n - \uex(t_n)| < \epsilon\sim 10^{-15}\]
+!et
+
+Implementation in "`decay_verf2.py`": "${src_decay}/decay_verf2.py".
+
+!split
+===== Test the understanding! =====
+
+Make a program for solving
+Newton's law of cooling
+
+!bt
+\[ T' = -k(T-T_s),\quad T(0)=T_0,\ t\in (0,t_{\mbox{end}}]\tp\]
+!et
+with the Forward Euler, Backward Euler, and Crank-Nicolson schemes
+(or a $\theta$ scheme). Verify the implementation.
+
+
+!split
+===== Computing the numerical error as a mesh function =====
+label{decay:computing:error}
+
+Task: compute the numerical error $e^n = \uex(t_n) - u^n$
+
+Exact solution: $\uex(t)=Ie^{-at}$, implemented as
+
+@@@CODE src-decay/decay_plot_mpl.py fromto: def exact_solution@def explore
+
+Compute $e^n$ by
+
+!bc pycod
+u, t = solver(I, a, T, dt, theta)  # Numerical solution
+u_e = exact_solution(t, I, a)
+e = u_e - u
+!ec
+
+!bnotice Array arithmetics - we compute on entire arrays!
+
+ * `exact_solution(t, I, a)` works with `t` as array
+ * Must have `exp` from `numpy` (not `math`)
+ * `e = u_e - u`: array subtraction
+ * Array arithmetics gives shorter and much faster code
+!enotice
+
+!split
+===== Computing the norm of the error =====
+label{decay:computing:error:norm}
+
+ * $e^n$ is a mesh function
+ * Usually we want one number for the error
+ * Use a norm of $e^n$
+
+Norms of a function $f(t)$:
+
+!bt
+\begin{align}
+||f||_{L^2} &= \left( \int_0^T f(t)^2 dt\right)^{1/2}
+label{decay:norms:L2}\\
+||f||_{L^1} &= \int_0^T |f(t)| dt
+label{decay:norms:L1}\\
+||f||_{L^\infty} &= \max_{t\in [0,T]}|f(t)|
+label{decay:norms:Linf}
+\end{align}
+!et
+
+!split
+===== Norms of mesh functions =====
+
+ * Problem: $f^n =f(t_n)$ is a mesh function and hence not defined for all $t$.
+   How to integrate $f^n$?
+ * Idea: Apply a numerical integration rule, using only
+   the mesh points of the mesh function.
+
+The Trapezoidal rule:
+
+!bt
+\[ ||f^n|| = \left(\Delta t\left(\half(f^0)^2 + \half(f^{N_t})^2
++ \sum_{n=1}^{N_t-1} (f^n)^2\right)\right)^{1/2} \]
+!et
+
+Common simplification yields the $L^2$ norm of a mesh function:
+
+!bt
+\[ ||f^n||_{\ell^2} = \left(\Delta t\sum_{n=0}^{N_t} (f^n)^2\right)^{1/2} \tp\]
+!et
+
+
+!split
+===== Implementation of the norm of the error =====
+
+!bt
+\[ E = ||e^n||_{\ell^2}  = \sqrt{\Delta t\sum_{n=0}^{N_t} (e^n)^2}\]
+!et
+
+Python w/array arithmetics:
+
+!bc pycod
+e = u_exact(t) - u
+E = sqrt(dt*sum(e**2))
+!ec
+
+!split
+===== Comment on array vs scalar computation =====
+
+
+
+Scalar computing of `E = sqrt(dt*sum(e**2))`:
+!bc pycod
+m = len(u)     # length of u array (alt: u.size)
+u_e = zeros(m)
+t = 0
+for i in range(m):
+    u_e[i] = exact_solution(t, a, I)
+    t = t + dt
+e = zeros(m)
+for i in range(m):
+    e[i] = u_e[i] - u[i]
+s = 0  # summation variable
+for i in range(m):
+    s = s + e[i]**2
+error = sqrt(dt*s)
+!ec
+Obviously, scalar computing
+
+ * takes more code
+ * is less readable
+ * runs much slower
+
+!bnotice Rule
+Compute on entire arrays (when possible)!
+!enotice
+
+!split
+======= Plotting solutions =======
+label{decay:plotting}
+
+Basic plotting with Matplotlib is much like MATLAB plotting
+
+!bc pycod
+from matplotlib.pyplot import *
+plot(t, u)
+show()
+!ec
+
+Compare `u` curve with $\uex(t)$:
+
+!bc pycod
+t_e = linspace(0, T, 1001)      # fine mesh
+u_e = exact_solution(t_e, I, a)
+plot(t_e, u_e, 'b-')            # blue line for u_e
+plot(t,   u,   'r--o')          # red dashes w/circles
+!ec
+
+FIGURE: [fig-decay/FE1, width=800, frac=1.1]
+
+!split
+===== Decorating a plot =====
+
+ * Use different line types
+ * Add axis labels
+ * Add curve legends
+ * Add plot title
+ * Save plot to file
+
+!bc pycod
+from matplotlib.pyplot import *
+
+figure()                          # create new plot
+t_e = linspace(0, T, 1001)        # fine mesh for u_e
+u_e = exact_solution(t_e, I, a)
+plot(t,   u,   'r--o')            # red dashes w/circles
+plot(t_e, u_e, 'b-')              # blue line for exact sol.
+legend(['numerical', 'exact'])
+xlabel('t')
+ylabel('u')
+title('theta=%g, dt=%g' % (theta, dt))
+savefig('%s_%g.png' % (theta, dt))
+show()
+!ec
+
+See complete code in "`decay_plot_mpl.py`": "${src_decay}/decay_plot_mpl.py".
+
+!split
+===== How the plots look like =====
+
+FIGURE: [fig-decay/BE1, width=800 frac=1.1]
+
+
+!split
+===== Plotting with SciTools =====
+
+"SciTools": "http://code.google.com/p/scitools" provides a
+unified plotting interface (Easyviz) to many different plotting
+packages: Matplotlib, Gnuplot, Grace, VTK, OpenDX, ...
+
+Can use Matplotlib (MATLAB-like) syntax,
+or a more compact `plot` function syntax:
+
+!bc pycod
+from scitools.std import *
+
+plot(t,   u,   'r--o',           # red dashes w/circles
+     t_e, u_e, 'b-',             # blue line for exact sol.
+     legend=['numerical', 'exact'],
+     xlabel='t',
+     ylabel='u',
+     title='theta=%g, dt=%g' % (theta, dt),
+     savefig='%s_%g.png' % (theta2name[theta], dt),
+     show=True)
+!ec
+
+Complete code in "`decay_plot_st.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_plot_st.py".
+
+Change backend (plotting engine, Matplotlib by default):
+
+!bc sys
+Terminal> python decay_plot_st.py --SCITOOLS_easyviz_backend gnuplot
+Terminal> python decay_plot_st.py --SCITOOLS_easyviz_backend grace
+!ec
+
+!split
+======= Creating user interfaces =======
+label{decay:GUI}
+
+ * Never edit the program to change input!
+ * Set input data on the command line or in a graphical user interface
+ * How is explained next
+
+!split
+===== Accessing command-line arguments =====
+
+ * All command-line arguments are available in `sys.argv`
+ * `sys.argv[0]` is the program
+ * `sys.argv[1:]` holds the command-line arguments
+ * Method 1: fixed sequence of parameters on the command line
+ * Method 2: `--option value` pairs on the command line (with default values)
+
+!bc sys
+Terminal> python myprog.py 1.5 2 0.5 0.8 0.4
+Terminal> python myprog.py --I 1.5 --a 2 --dt 0.8 0.4
+!ec
+
+!split
+===== Reading a sequence of command-line arguments =====
+
+The program "`decay_plot_mpl.py`": "${src_decay}/decay_plot_mpl.py"
+needs this input:
+
+ * $I$
+ * $a$
+ * $T$
+ * an option to turn the plot on or off (`makeplot`)
+ * a list of $\Delta t$ values
+
+Give these on the command line in correct sequence
+
+!bc sys
+Terminal> python decay_cml.py 1.5 2 0.5 0.8 0.4
+!ec
+
+!split
+===== Implementation =====
+
+@@@CODE src-decay/decay_cml.py def fromto: import sys@def main
+
+Note:
+
+  * `sys.argv[i]` is *always a string*
+  * Must explicitly convert to (e.g.) `float` for computations
+  * List comprehensions make lists: `[expression for e in somelist]`
+
+Complete program: "`decay_cml.py`": "${src_decay}/decay_cml.py".
+
+!split
+===== Working with an argument parser =====
+
+Set option-value pairs on the command line if the default value is not
+suitable:
+!bc sys
+Terminal> python decay_argparse.py --I 1.5 --a 2 --dt 0.8 0.4
+!ec
+
+Code:
+
+@@@CODE src-decay/decay_argparse.py fromto: def define_command_line_options@def read
+
+(`metavar` is the symbol used in help output)
+
+!split
+===== Reading option-values pairs =====
+
+`argparse.ArgumentParser` parses the command-line arguments:
+
+@@@CODE src-decay/decay_argparse.py def read@def main
+
+Complete program: "`decay_argparse.py`": "${src_decay}/decay_argparse.py".
+
+!split
+===== A graphical user interface =====
+
+FIGURE: [fig-decay/decay_GUI, width=800 frac=1]
+
+Normally very much programming required - and much competence on
+graphical user interfaces.
+
+Here: use a tool to automatically create it in a few minutes (!)
+
+!split
+===== The Parampool package =====
+
+ * "Parampool": "https://github.com/hplgit/parampool" is a package
+   for handling a large pool of input parameters in simulation programs
+ * Parampool can automatically create a sophisticated web-based
+   graphical user interface (GUI) to set parameters and view solutions
+
+!bwarning Remark
+The forthcoming material aims at those with particular interest in
+equipping their programs with a GUI - others can safely skip it.
+!ewarning
+
+!split
+===== Making a compute function =====
+
+ * Key concept: a *compute function* that takes all input data as arguments
+   and returning HTML code for viewing the results (e.g., plots and numbers)
+ * What we have: "`decay_plot_mpl.py`": "${src_decay}/decay_plot_mpl.py"
+ * `main` function carries out simulations and plotting for a
+   series of $\Delta t$ values
+ * Goal: steer and view these experiments from a web GUI
+ * What to do:
+   * create a compute function
+   * call `parampool` functionality
+
+The compute function `main_GUI`:
+
+@@@CODE src-decay/decay_GUI.py def main_GUI@# Build HTML
+
+!split
+===== The hard part of the compute function: the HTML code =====
+
+ * The results are to be displayed in a web page
+ * Only you know what to display in your problem
+ * Therefore, you need to specify the HTML code
+
+Suppose `explore` solves the problem, makes a plot, computes the
+error *and* returns appropriate HTML code with the plot. Embed
+error and plots in a table:
+
+@@@CODE src-decay/decay_GUI.py def main_GUI@if __name
+
+!split
+===== How to embed a PNG plot in HTML code =====
+
+In `explore`:
+
+!bc pycod
+import matplotlib.pyplot as plt
+...
+# plot
+plt.plot(t, u, r-')
+plt.xlabel('t')
+plt.ylabel('u')
+...
+from parampool.utils import save_png_to_str
+html_text = save_png_to_str(plt, plotwidth=400)
+!ec
+
+If you know HTML, you can return more sophisticated layout etc.
+
+
+!split
+===== Generating the user interface =====
+
+Make a file `decay_GUI_generate.py`:
+
+@@@CODE src-decay/decay_GUI_generate.py
+
+Running `decay_GUI_generate.py` results in
+
+  o `decay_GUI_model.py` defines HTML widgets to be used to set
+    input data in the web interface,
+  o `templates/decay_GUI_views.py` defines the layout of the web page,
+  o `decay_GUI_controller.py` runs the web application.
+
+Good news: we only need to run `decay_GUI_controller.py`
+and there is no need to look into any of these files!
+
+!split
+===== Running the web application =====
+
+Start the GUI
+
+!bc sys
+Terminal> python decay_GUI_controller.py
+!ec
+Open a web browser at `127.0.0.1:5000`
+
+FIGURE: [fig-decay/decay_GUI, width=800 frac=1]
+
+!split
+===== More advanced use =====
+
+ * The compute function can have arguments of type float, int, string,
+   list, dict, numpy array, filename (file upload)
+ * Alternative: specify a hierarchy of input parameters with name,
+   default value, data type, widget type, unit (m, kg, s), validity check
+ * The generated web GUI can have user accounts with login and storage
+   of results in a database
+
+
+!split
+======= Computing convergence rates =======
+label{decay:convrates}
+
+Frequent assumption on the relation between the numerical error $E$ and
+some discretization parameter $\Delta t$:
+
+!bt
+\begin{equation}
+E = C\Delta t^r,
+label{decay:E:dt}
+\end{equation}
+!et
+
+ * Unknown: $C$ and $r$.
+ * Goal: estimate $r$ (and $C$) from numerical experiments
+
+!split
+===== Estimating the convergence rate $r$ =====
+
+Perform numerical experiments: $(\Delta t_i, E_i)$, $i=0,\ldots,m-1$.
+Two methods for finding $r$ (and $C$):
+
+  o Take the logarithm of (ref{decay:E:dt}), $\ln E = r\ln \Delta t + \ln C$,
+    and fit a straight line to the data points $(\Delta t_i, E_i)$,
+    $i=0,\ldots,m-1$.
+  o Consider two consecutive experiments, $(\Delta t_i, E_i)$ and
+    $(\Delta t_{i-1}, E_{i-1})$. Dividing the equation
+    $E_{i-1}=C\Delta t_{i-1}^r$ by $E_{i}=C\Delta t_{i}^r$ and solving
+    for $r$ yields
+!bt
+\begin{equation}
+r_{i-1} = \frac{\ln (E_{i-1}/E_i)}{\ln (\Delta t_{i-1}/\Delta t_i)}
+label{decay:conv:rate}
+\end{equation}
+!et
+for $i=1,=\ldots,m-1$.
+
+Method 2 is best.
+
+!split
+===== Implementation =====
+
+Compute $r_0, r_1, \ldots, r_{m-2}$:
+
+@@@CODE src-decay/decay_convrate.py fromto: from math import log@def verify
+
+Complete program: "`decay_convrate.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_convrate.py".
+
+!split
+===== Execution =====
+
+!bc sys
+Terminal> python decay_convrate.py --dt 0.5 0.25 0.1 0.05 0.025 0.01
+...
+Pairwise convergence rates for theta=0:
+1.33 1.15 1.07 1.03 1.02
+
+Pairwise convergence rates for theta=0.5:
+2.14 2.07 2.03 2.01 2.01
+
+Pairwise convergence rates for theta=1:
+0.98 0.99 0.99 1.00 1.00
+!ec
+
+!bnotice Strong verification method
+Verify that $r$ has the expected value!
+!enotice
+
+!split
+===== Debugging via convergence rates =====
+
+Potential bug: missing `a` in the denominator,
+
+!bc pycod
+u[n+1] = (1 - (1-theta)*a*dt)/(1 + theta*dt)*u[n]
+!ec
+Running `decay_convrate.py` gives same rates.
+
+Why? The value of $a$... ($a=1$)
+
+0 and 1 are *bad values* in tests!
+
+Better:
+!bc sys
+Terminal> python decay_convrate.py --a 2.1 --I 0.1  \
+          --dt 0.5 0.25 0.1 0.05 0.025 0.01
+...
+Pairwise convergence rates for theta=0:
+1.49 1.18 1.07 1.04 1.02
+
+Pairwise convergence rates for theta=0.5:
+-1.42 -0.22 -0.07 -0.03 -0.01
+
+Pairwise convergence rates for theta=1:
+0.21 0.12 0.06 0.03 0.01
+!ec
+
+Forward Euler works...because $\theta=0$ hides the bug.
+
+This bug gives $r\approx 0$:
+
+!bc pycod
+u[n+1] = ((1-theta)*a*dt)/(1 + theta*dt*a)*u[n]
+!ec
+
+
+!split
+===== Memory-saving implementation =====
+
+ * Note 1: we store the entire array `u`, i.e., $u^n$ for $n=0,1,\ldots,N_t$
+ * Note 2: the formula for $u^{n+1}$ needs $u^n$ only, not $u^{n-1}$, $u^{n-2}$, ...
+ * No need to store more than $u^{n+1}$ and $u^{n}$
+ * Extremely important when solving PDEs
+ * No practical importance here (much memory available)
+ * But let's illustrate how to do save memory!
+ * Idea 1: store $u^{n+1}$ in `u`, $u^n$ in `u_1` (`float`)
+ * Idea 2: store `u` in a file, read file later for plotting
+
+
+!split
+===== Memory-saving solver function =====
+
+@@@CODE src-decay/decay_memsave.py  fromto: def solver_mem@def read_file\(
+
+!split
+===== Reading computed data from file =====
+
+@@@CODE src-decay/decay_memsave.py  fromto: def read_file\(@def read_file_numpy
+
+Simpler code with `numpy` functionality for reading/writing tabular data:
+
+@@@CODE src-decay/decay_memsave.py  fromto: def read_file_numpy@def exact_solution
+
+Similar function `np.savetxt`, but then we need all $u^n$ and $t^n$ values
+in a two-dimensional array (which we try to prevent now!).
+
+!split
+===== Usage of memory-saving code =====
+
+!bc pycod
+def explore(I, a, T, dt, theta=0.5, makeplot=True):
+    filename = 'u.dat'
+    u, t = solver_memsave(I, a, T, dt, theta, filename)
+
+    t, u = read_file(filename)
+    u_e = exact_solution(t, I, a)
+    e = u_e - u
+    E = np.sqrt(dt*np.sum(e**2))
+    if makeplot:
+        plt.figure()
+        ...
+!ec
+
+Complete program: "`decay_memsave.py`":
+"https://github.com/hplgit/INF5620/blob/gh-pages/src/decay/decay_memsave.py".
+

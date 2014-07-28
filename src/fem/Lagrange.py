@@ -1,5 +1,5 @@
 """Lagrange interpolating polynomials in 1D."""
-import sympy as sm
+import sympy as sp
 
 def Lagrange_polynomial(x, i, points):
     """
@@ -26,20 +26,21 @@ def Lagrange_polynomials_01(x, N):
     expressions are made with rational expressions for the
     points, otherwise floating-point numbers are used).
     """
-    if isinstance(x, sm.Symbol):
-        h = sm.Rational(1, N)
+    if isinstance(x, sp.Symbol):
+        h = sp.Rational(1, N)
     else:
         h = 1.0/(N-1)
     points = [i*h for i in range(N+1)]
-    phi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
-    return phi, points
+    psi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
+    return psi, points
 
 def Chebyshev_nodes(a, b, N):
     """Return N+1 Chebyshev nodes (for interpolation) on [a, b]."""
     from math import cos, pi
     half = 0.5
-    return [half*(a+b) + half*(b-a)*cos(float(2*i+1)/(2*(N+1))*pi) \
-            for i in range(N+1)]
+    nodes = [0.5*(a+b) + 0.5*(b-a)*cos(float(2*i+1)/(2*(N+1))*pi)
+             for i in range(N+1)]
+    return nodes
 
 def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
     """
@@ -54,15 +55,15 @@ def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
     Lagrange polynomials.
     """
     if point_distribution == 'uniform':
-        if isinstance(x, sm.Symbol):
-            h = sm.Rational(Omega[1] - Omega[0], N)
+        if isinstance(x, sp.Symbol):
+            h = sp.Rational(Omega[1] - Omega[0], N)
         else:
             h = (Omega[1] - Omega[0])/float(N)  # float value
         points = [Omega[0] + i*h for i in range(N+1)]
     elif point_distribution == 'Chebyshev':
-        points = Chebyshev_nodes(Omega[0], Omega[1], N+1)
+        points = Chebyshev_nodes(Omega[0], Omega[1], N)
     else:
         raise ValueError('point_distribution="%s": illegal value' %
                          point_distribution)
-    phi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
-    return phi, points
+    psi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
+    return psi, points

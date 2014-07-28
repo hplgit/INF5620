@@ -1,50 +1,57 @@
 from fe_approx1D import *
 import sys
+"""
+This module extends and replaces functions in the module fe_approx1D.
+Two major changes are implemented:
 
-# Extended versions with numerical integration (Midpoint, Trap., Simpson)
-# (note that these functions overwrite those imported above!)
+ * an element is defined in terms of a reference cell,
+   a set of vertices, a set of degrees of freedom,
+   with a dof map and a geometric mapping onto the physical
+   space
+ * numerical integration (Midpoint, Trapezoidal, Simpson
+   rules) can be used in the reference cell
+"""
+import scitools.std as plt
 
-def mesh_uniform(n_e, d, Omega=[0,1]):
+def mesh_uniform(N_e, d, Omega=[0,1], symbolic=False):
     """
-    Return a 1D finite element mesh on Omega with n_e elements of
-    the polynomial degree d. The nodes are uniformly spaced.
+    Return a 1D finite element mesh on Omega with N_e elements of
+    the polynomial degree d. The elements have uniform length.
     Return vertices (vertices), local vertex to global
     vertex mapping (cells), and local to global degree of freedom
     mapping (dof_map).
+    If symbolic is True, the vertices are expressed as rational
+    sympy expressions with the symbol h as element length.
     """
-    vertices = np.linspace(Omega[0], Omega[1], n_e + 1).tolist()
-    dof_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
-    cells = [[e, e+1] for e in range(n_e)]
-    return vertices, cells, dof_map
-
-def mesh_uniform_symbolic(n_e, d, Omega=[0,1]):
-    """
-    As mesh, but use using symbols for the coordinates
-    (rational expressions with h as the uniform element length).
-    """
-    h = sm.Symbol('h')  # element length
-    dx = h*sm.Rational(1, d)  # node spacing
-    vertices = [Omega[0] + i*dx for i in range(n_e + 1)]
-    dof_map = [[e*d + i for i in range(d+1)] for e in range(n_e)]
-    cells = [[e, e+1] for e in range(n_e)]
+    if symbolic:
+        h = sp.Symbol('h')  # element length
+        dx = h*sp.Rational(1, d)  # node spacing
+        vertices = [Omega[0] + i*dx for i in range(N_e + 1)]
+    else:
+        vertices = np.linspace(Omega[0], Omega[1], N_e + 1).tolist()
+    if d == 0:
+        dof_map = [[e] for e in range(N_e)]
+    else:
+        dof_map = [[e*d + i for i in range(d+1)] for e in range(N_e)]
+    cells = [[e, e+1] for e in range(N_e)]
     return vertices, cells, dof_map
 
 def element_matrix(phi, Omega_e, symbolic=True, numint=None):
     n = len(phi)
-    A_e = sm.zeros((n, n))
-    X = sm.Symbol('X')
+    A_e = sp.zeros((n, n))
+    X = sp.Symbol('X')
     if symbolic:
-        h = sm.Symbol('h')
+        h = sp.Symbol('h')
     else:
         h = Omega_e[1] - Omega_e[0]
     detJ = h/2  # dx/dX
     if numint is None:
         for r in range(n):
             for s in range(r, n):
-                A_e[r,s] = sm.integrate(phi[r]*phi[s]*detJ, (X, -1, 1))
+                A_e[r,s] = sp.integrate(phi[r]*phi[s]*detJ, (X, -1, 1))
                 A_e[s,r] = A_e[r,s]
     else:
-        #phi = [sm.lambdify([X], phi[r]) for r in range(n)]
+        #phi = [sp.lambdify([X], phi[r]) for r in range(n)]
         # Do instead a phi_rj = phi[r].subs(X, Xj) to avoid real numbers
         for r in range(n):
             for s in range(r, n):
@@ -58,11 +65,11 @@ def element_matrix(phi, Omega_e, symbolic=True, numint=None):
 
 def element_vector(f, phi, Omega_e, symbolic=True, numint=None):
     n = len(phi)
-    b_e = sm.zeros((n, 1))
+    b_e = sp.zeros((n, 1))
     # Make f a function of X (via f.subs to avoid real numbers from lambdify)
-    X = sm.Symbol('X')
+    X = sp.Symbol('X')
     if symbolic:
-        h = sm.Symbol('h')
+        h = sp.Symbol('h')
     else:
         h = Omega_e[1] - Omega_e[0]
     x = (Omega_e[0] + Omega_e[1])/2 + h/2*X  # mapping
@@ -71,27 +78,27 @@ def element_vector(f, phi, Omega_e, symbolic=True, numint=None):
     if numint is None:
         for r in range(n):
             if symbolic:
-                I = sm.integrate(f*phi[r]*detJ, (X, -1, 1))
-            if not symbolic or isinstance(I, sm.Integral):
+                I = sp.integrate(f*phi[r]*detJ, (X, -1, 1))
+            if not symbolic or isinstance(I, sp.Integral):
                 # Ensure h is numerical
                 h = Omega_e[1] - Omega_e[0]
                 detJ = h/2
-                #integrand = sm.lambdify([X], f*phi[r]*detJ, modules='sympy')
-                integrand = sm.lambdify([X], f*phi[r]*detJ)
-                #integrand = integrand.subs(sm.pi, np.pi)
-                # integrand may still contain symbols like sm.pi that
+                #integrand = sp.lambdify([X], f*phi[r]*detJ, modules='sympy')
+                integrand = sp.lambdify([X], f*phi[r]*detJ)
+                #integrand = integrand.subs(sp.pi, np.pi)
+                # integrand may still contain symbols like sp.pi that
                 # prevents numerical evaluation...
                 try:
-                    I = sm.mpmath.quad(integrand, [-1, 1])
+                    I = sp.mpmath.quad(integrand, [-1, 1])
                 except Exception as e:
                     print 'Could not integrate f*phi[r] numerically:'
                     print e
                     sys.exit(0)
             b_e[r] = I
     else:
-        #phi = [sm.lambdify([X], phi[r]) for r in range(n)]
+        #phi = [sp.lambdify([X], phi[r]) for r in range(n)]
         # f contains h from the mapping, substitute X with Xj
-        # instead of f = sm.lambdify([X], f)
+        # instead of f = sp.lambdify([X], f)
         for r in range(n):
             for j in range(len(numint[0])):
                 Xj, wj = numint[0][j], numint[1][j]
@@ -109,7 +116,7 @@ def exemplify_element_matrix_vector(f, d, symbolic=True, numint=False):
     encountered an undefined symbol (because of the symbolic expressions):
     %s"""
     if symbolic:
-        h = sm.Symbol('h')
+        h = sp.Symbol('h')
         Omega_e=[1*h, 2*h]
     try:
         b_e = element_vector(f, phi, Omega_e=Omega_e,
@@ -123,15 +130,15 @@ def exemplify_element_matrix_vector(f, d, symbolic=True, numint=False):
 def assemble(vertices, cells, dof_map, phi, f,
              symbolic=True, numint=None):
     import sets
-    n_n = len(list(set(np.array(dof_map).ravel())))
-    n_e = len(cells)
+    N_n = len(list(set(np.array(dof_map).ravel())))
+    N_e = len(cells)
     if symbolic:
-        A = sm.zeros((n_n, n_n))
-        b = sm.zeros((n_n, 1))    # note: (n_n, 1) matrix
+        A = sp.zeros((N_n, N_n))
+        b = sp.zeros((N_n, 1))    # note: (N_n, 1) matrix
     else:
-        A = np.zeros((n_n, n_n))
-        b = np.zeros(n_n)
-    for e in range(n_e):
+        A = np.zeros((N_n, N_n))
+        b = np.zeros(N_n)
+    for e in range(N_e):
         Omega_e = [vertices[cells[e][0]], vertices[cells[e][1]]]
         A_e = element_matrix(phi[e], Omega_e, symbolic, numint)
         b_e = element_vector(f, phi[e], Omega_e, symbolic, numint)
@@ -143,24 +150,24 @@ def assemble(vertices, cells, dof_map, phi, f,
             b[dof_map[e][r]] += b_e[r]
     return A, b
 
-def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
-                Omega=[0, 1], filename='tmp.pdf'):
+def approximate(f, symbolic=False, d=1, N_e=4, numint=None,
+                Omega=[0, 1], filename='tmp'):
     if symbolic:
         if numint == 'Trapezoidal':
-            numint = [[sm.S(-1), sm.S(1)], [sm.S(1), sm.S(1)]]  # sympy integers
+            numint = [[sp.S(-1), sp.S(1)], [sp.S(1), sp.S(1)]]  # sympy integers
         elif numint == 'Simpson':
-            numint = [[sm.S(-1), sm.S(0), sm.S(1)],
-                      [sm.Rational(1,3), sm.Rational(4,3), sm.Rational(1,3)]]
+            numint = [[sp.S(-1), sp.S(0), sp.S(1)],
+                      [sp.Rational(1,3), sp.Rational(4,3), sp.Rational(1,3)]]
         elif numint == 'Midpoint':
-            numint = [[sm.S(0)],  [sm.S(2)]]
+            numint = [[sp.S(0)],  [sp.S(2)]]
         elif numint == 'GaussLegendre2':
-            numint = [[-1/sm.sqrt(3), 1/sm.sqrt(3)], [sm.S(1), sm.S(1)]]
+            numint = [[-1/sp.sqrt(3), 1/sp.sqrt(3)], [sp.S(1), sp.S(1)]]
         elif numint == 'GaussLegendre3':
-            numint = [[-sm.sqrt(sm.Rational(3,5)), 0,
-                       sm.sqrt(sm.Rational(3,5))],
-                      [sm.Rational(5,9), sm.Rational(8,9),
-                       sm.Rational(5,9)]]
-        else:
+            numint = [[-sp.sqrt(sp.Rational(3,5)), 0,
+                       sp.sqrt(sp.Rational(3,5))],
+                      [sp.Rational(5,9), sp.Rational(8,9),
+                       sp.Rational(5,9)]]
+        elif numint is not None:
             print 'Numerical rule %s is not supported' % numint
             numint = None
     else:
@@ -175,22 +182,19 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
         elif numint == 'GaussLegendre3':
             numint = [[-sqrt(3./5), 0, sqrt(3./5)],
                       [5./9, 8./9, 5./9]]
-        else:
+        elif numint is not None:
             print 'Numerical rule %s is not supported' % numint
             numint = None
 
 
-    if symbolic:
-        vertices, cells, dof_map = mesh_uniform_symbolic(n_e, d, Omega)
-    else:
-        vertices, cells, dof_map = mesh_uniform(n_e, d, Omega)
+    vertices, cells, dof_map = mesh_uniform(N_e, d, Omega, symbolic)
 
     # phi is a list where phi[e] holds the basis in cell no e
     # (this is required by assemble, which can work with
     # meshes with different types of elements).
     # len(dof_map[e]) is the number of nodes in cell e,
     # and the degree of the polynomial is len(dof_map[e])-1
-    phi = [basis(len(dof_map[e])-1) for e in range(n_e)]
+    phi = [basis(len(dof_map[e])-1) for e in range(N_e)]
 
     print 'phi basis (reference element):\n', phi
     A, b = assemble(vertices, cells, dof_map, phi, f,
@@ -201,8 +205,8 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
     print 'dof_map:', dof_map
     print 'A:\n', A
     print 'b:\n', b
-    #print sm.latex(A, mode='plain')
-    #print sm.latex(b, mode='plain')
+    #print sp.latex(A, mode='plain')
+    #print sp.latex(b, mode='plain')
 
     if symbolic:
         c = A.LUsolve(b)
@@ -213,8 +217,8 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
 
     if not symbolic:
         print 'Plain interpolation/collocation:'
-        x = sm.Symbol('x')
-        f = sm.lambdify([x], f, modules='numpy')
+        x = sp.Symbol('x')
+        f = sp.lambdify([x], f, modules='numpy')
         try:
             f_at_vertices = [f(xc) for xc in vertices]
             print f_at_vertices
@@ -225,21 +229,20 @@ def approximate(f, symbolic=False, d=1, n_e=4, numint=None,
     # in the non-symbolic case
 
     if not symbolic and filename is not None:
-        title = 'P%d, n_e=%d' % (d, n_e)
+        title = 'P%d, N_e=%d' % (d, N_e)
         if numint is None:
             title += ', exact integration'
         else:
             title += ', integration: %s' % numint
-        xf = np.linspace(Omega[0], Omega[1], 10001)
-        U = np.asarray(c)
-        xu, u = u_glob(U, vertices, cells, dof_map, 51)
-        from scitools.std import plot
-        plot(xu, u, 'r-',
-             xf, f(xf), 'b-',
-             legend=('u', 'f'),
-             title=title)
-        savefig(filename + '.pdf')
-        savefig(filename + '.png')
+        x_u, u = u_glob(np.asarray(c), vertices, cells, dof_map,
+                        resolution_per_element=51)
+        x_f = np.linspace(Omega[0], Omega[1], 10001) # mesh for f
+        plt.plot(x_u, u, '-',
+                 x_f, f(x_f), '--')
+        plt.legend(['u', 'f'])
+        plt.title(title)
+        plt.savefig(filename + '.pdf')
+        plt.savefig(filename + '.png')
     return c
 
 def u_glob(U, vertices, cells, dof_map,
@@ -275,5 +278,5 @@ if __name__ == '__main__':
         [phi_r, u_glob, element_matrix, element_vector,
          exemplify_element_matrix_vector, assemble, approximate],
         sys.argv)
-    x = sm.Symbol('x')  # needed in eval when expression f contains x
+    x = sp.Symbol('x')  # needed in eval when expression f contains x
     eval(cmd)

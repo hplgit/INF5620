@@ -2,7 +2,7 @@
 
 from scitools.std import plot, savefig, hold, axis, legend
 import numpy as np
-import sympy as sm
+import sympy as sp
 
 def mesh(nx, ny, x=[0,1], y=[0,1], diagonal='right'):
     """
