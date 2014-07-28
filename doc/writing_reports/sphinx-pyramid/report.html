@@ -1,0 +1,211 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Experiments with Schemes for Exponential Decay &mdash; Experiments with Schemes for Exponential Decay 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Experiments with Schemes for Exponential Decay 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Experiments with Schemes for Exponential Decay" href="index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Experiments with Schemes for Exponential Decay"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Experiments with Schemes for Exponential Decay 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="experiments-with-schemes-for-exponential-decay">
+<h1>Experiments with Schemes for Exponential Decay<a class="headerlink" href="#experiments-with-schemes-for-exponential-decay" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Hans Petter Langtangen (hpl at simula.no)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">August 20, 2012</td>
+</tr>
+</tbody>
+</table>
+<p><em>Summary.</em> This report investigates the accuracy of three finite difference
+schemes for the ordinary differential equation <span class="math">\(u'=-au\)</span> with the
+aid of numerical experiments. Numerical artifacts are in particular
+demonstrated.</p>
+</div>
+<div class="section" id="mathematical-problem">
+<span id="math-problem"></span><h1>Mathematical problem<a class="headerlink" href="#mathematical-problem" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><p id="index-1">We address the initial-value problem</p>
+<div class="math">
+\[\begin{split}u'(t) &amp;= -au(t), \quad t \in (0,T], \\
+u(0)  &amp;= I,\end{split}\]</div>
+<p>where <span class="math">\(a\)</span>, <span class="math">\(I\)</span>, and <span class="math">\(T\)</span> are prescribed parameters, and <span class="math">\(u(t)\)</span> is
+the unknown function to be estimated. This mathematical model
+is relevant for physical phenomena featuring exponential decay
+in time.</p>
+</div>
+<div class="section" id="numerical-solution-method">
+<span id="numerical-problem"></span><h1>Numerical solution method<a class="headerlink" href="#numerical-solution-method" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-2"></span><span class="target" id="index-3"></span><span class="target" id="index-4"></span><p id="index-5">We introduce a mesh in time with points <span class="math">\(0= t_0&lt; t_1 \cdots &lt; t_N=T\)</span>.
+For simplicity, we assume constant spacing <span class="math">\(\Delta t\)</span> between the
+mesh points: <span class="math">\(\Delta t = t_{n}-t_{n-1}\)</span>, <span class="math">\(n=1,\ldots,N\)</span>. Let
+<span class="math">\(u^n\)</span> be the numerical approximation to the exact solution at <span class="math">\(t_n\)</span>.</p>
+<p>The <span class="math">\(\theta\)</span>-rule is used to solve (<em class="xref std std-ref">ode</em>) numerically:</p>
+<div class="math">
+\[u^{n+1} = \frac{1 - (1-\theta) a\Delta t}{1 + \theta a\Delta t}u^n,\]</div>
+<p>for <span class="math">\(n=0,1,\ldots,N-1\)</span>. This scheme corresponds to</p>
+<blockquote>
+<div><ul class="simple">
+<li>The Forward Euler scheme when <span class="math">\(\theta=0\)</span></li>
+<li>The Backward Euler scheme when <span class="math">\(\theta=1\)</span></li>
+<li>The Crank-Nicolson scheme when <span class="math">\(\theta=1/2\)</span></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="implementation">
+<h1>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h1>
+<p>The numerical method is implemented in a Python function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">theta_rule</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Solve u&#39;=-a*u, u(0)=I, for t in (0,T] with steps of dt.&quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>  <span class="c"># no of intervals</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="n">dt</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">theta</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="numerical-experiments">
+<h1>Numerical experiments<a class="headerlink" href="#numerical-experiments" title="Permalink to this headline">¶</a></h1>
+<p id="index-6">We define a set of numerical experiments where <span class="math">\(I\)</span>, <span class="math">\(a\)</span>, and <span class="math">\(T\)</span> are
+fixed, while <span class="math">\(\Delta t\)</span> and <span class="math">\(\theta\)</span> are varied.
+In particular, <span class="math">\(I=1\)</span>, <span class="math">\(a=2\)</span>, <span class="math">\(\Delta t = 1.25, 0.75, 0.5, 0.1\)</span>.</p>
+<div class="section" id="the-backward-euler-method">
+<h2>The Backward Euler method<a class="headerlink" href="#the-backward-euler-method" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="index-7">
+<img alt="_images/BE.png" src="_images/BE.png" style="width: 800px;" />
+</div>
+</div>
+<div class="section" id="the-crank-nicolson-method">
+<h2>The Crank-Nicolson method<a class="headerlink" href="#the-crank-nicolson-method" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="index-8">
+<img alt="_images/CN.png" src="_images/CN.png" style="width: 800px;" />
+</div>
+</div>
+<div class="section" id="the-forward-euler-method">
+<h2>The Forward Euler method<a class="headerlink" href="#the-forward-euler-method" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="index-9">
+<img alt="_images/FE.png" src="_images/FE.png" style="width: 800px;" />
+</div>
+</div>
+<div class="section" id="error-vs">
+<h2>Error vs <span class="math">\(\Delta t\)</span><a class="headerlink" href="#error-vs" title="Permalink to this headline">¶</a></h2>
+<p id="index-10">How <span class="math">\(E\)</span> varies with <span class="math">\(\Delta t\)</span> for <span class="math">\(\theta=0,0.5,1\)</span>
+is shown in Figure <a class="reference internal" href="#fig-e"><em>Error versus time step</em></a>.</p>
+<div class="figure" id="fig-e">
+<img alt="_images/error.png" src="_images/error.png" style="width: 400px;" />
+<p class="caption"><em>Error versus time step</em></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Experiments with Schemes for Exponential Decay</a></li>
+<li><a class="reference internal" href="#mathematical-problem">Mathematical problem</a></li>
+<li><a class="reference internal" href="#numerical-solution-method">Numerical solution method</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#numerical-experiments">Numerical experiments</a><ul>
+<li><a class="reference internal" href="#the-backward-euler-method">The Backward Euler method</a></li>
+<li><a class="reference internal" href="#the-crank-nicolson-method">The Crank-Nicolson method</a></li>
+<li><a class="reference internal" href="#the-forward-euler-method">The Forward Euler method</a></li>
+<li><a class="reference internal" href="#error-vs">Error vs <span class="math">\(\Delta t\)</span></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Experiments with Schemes for Exponential Decay</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Experiments with Schemes for Exponential Decay"
+             >previous</a> |</li>
+        <li><a href="index.html">Experiments with Schemes for Exponential Decay 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hans Petter Langtangen.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

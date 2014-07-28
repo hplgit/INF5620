@@ -1,5 +1,5 @@
 from varform1D import *
-import sympy as sp
+import sympy as sm
 import numpy as np
 
 def phi_factory(name, N, highest_derivative=2):
@@ -8,7 +8,7 @@ def phi_factory(name, N, highest_derivative=2):
     on the boundary. Differentiate the functions up to
     (and including) highest_derivative.
     """
-    x = sp.Symbol('x')
+    x = sm.Symbol('x')
     from sympy import sin, cos, pi
     if name == 'sines':
         phi = {0: [sin(pi*(i+1)*x) for i in range(N+1)]}
@@ -29,17 +29,17 @@ def phi_factory(name, N, highest_derivative=2):
 
     # Compute derivatives of the basis functions
     for d in range(1, highest_derivative+1):
-        phi[d] = [sp.diff(phi[0][i], x, d) for i in range(len(phi[0]))]
+        phi[d] = [sm.diff(phi[0][i], x, d) for i in range(len(phi[0]))]
     return phi
 
 
 def case0(f, N=3):
     B = 1 - x**3
-    dBdx = sp.diff(B, x)
+    dBdx = sm.diff(B, x)
 
     # Compute basis functions and their derivatives
     phi = {0: [x**(i+1)*(1-x) for i in range(N+1)]}
-    phi[1] = [sp.diff(phi_i, x) for phi_i in phi[0]]
+    phi[1] = [sm.diff(phi_i, x) for phi_i in phi[0]]
 
     def integrand_lhs(phi, i, j):
         return phi[1][i]*phi[1][j]
@@ -50,25 +50,25 @@ def case0(f, N=3):
     Omega = [0, 1]
 
     u_bar = solve(integrand_lhs, integrand_rhs, phi, Omega,
-                  verbose=True, symbolic=True)
+                  verbose=True, numint=False)
     u = B + u_bar
-    print 'solution u:', sp.simplify(sp.expand(u))
+    print 'solution u:', sm.simplify(sm.expand(u))
 
     # Calculate analytical solution
 
     # Solve -u''=f by integrating f twice
-    f1 = sp.integrate(f, x)
-    f2 = sp.integrate(f1, x)
+    f1 = sm.integrate(f, x)
+    f2 = sm.integrate(f1, x)
     # Add integration constants
-    C1, C2 = sp.symbols('C1 C2')
+    C1, C2 = sm.symbols('C1 C2')
     u_e = -f2 + C1*x + C2
     # Find C1 and C2 from the boundary conditions u(0)=0, u(1)=1
-    s = sp.solve([u_e.subs(x,0) - 1, u_e.subs(x,1) - 0], [C1, C2])
+    s = sm.solve([u_e.subs(x,0) - 1, u_e.subs(x,1) - 0], [C1, C2])
     # Form the exact solution
     u_e = -f2 + s[C1]*x + s[C2]
     print 'analytical solution:', u_e
     #print 'error:', u - u_e  # many terms - which cancel
-    print 'error:', sp.expand(u - u_e)
+    print 'error:', sm.expand(u - u_e)
 
 
 def case1(N, basis='sines'):
@@ -114,7 +114,7 @@ def case1(N, basis='sines'):
     # Test different collocation points
     points = []
     if N == 0:
-        points.extend([sp.Rational(1,2), 0.1, 0.9])
+        points.extend([sm.Rational(1,2), 0.1, 0.9])
     else:
         points.append(np.linspace(0.1, 0.9, N+1))  # uniformly distributed
         for seed in 2, 10:
@@ -130,29 +130,27 @@ def case2(N):
     Solve -u''=f(x) on [0,1], u'(0)=C, u(1)=D.
     Method: Galerkin only.
     """
-    x = sp.Symbol('x')
+    x = sm.Symbol('x')
     f = 2
     D = 2; E = 3;
     L = 1  # basis function factory restricted to [0,1]
-    D = sp.Symbol('D')
-    C = sp.Symbol('C')
+    D = sm.Symbol('D')
+    C = sm.Symbol('C')
 
     # u exact
-    f1 = sp.integrate(f, x)
-    f2 = sp.integrate(f1, x)
-    C1, C2 = sp.symbols('C1 C2')
+    f1 = sm.integrate(f, x)
+    f2 = sm.integrate(f1, x)
+    C1, C2 = sm.symbols('C1 C2')
     u = -f2 + C1*x + C2
-    BC1 = sp.diff(u,x).subs(x, 0) - C
+    BC1 = sm.diff(u,x).subs(x, 0) - C
     BC2 = u.subs(x,1) - D
-    s = sp.solve([BC1, BC2], [C1, C2])
+    s = sm.solve([BC1, BC2], [C1, C2])
     u_e = -f2 + s[C1]*x + s[C2]
 
     def diff_eq(u, x):
-        eqs =  {'diff': -sp.diff(u, x, x) - f,
-                'BC1': sp.diff(u, x).subs(x, 0) - C,
+        return {'eq': sm.simplify(-sm.diff(u, x, x) - f),
+                'BC1': sm.diff(u, x).subs(x, 0) - C,
                 'BC2': u.subs(x, L) - D}
-        for eq in eqs:
-            eqs[eq] = sp.simplify(eqs[eq])
 
     print 'Check of exact solution:', diff_eq(u_e, x)
 
@@ -160,7 +158,7 @@ def case2(N):
         return phi[1][i]*phi[1][j]
 
     B = D*x/L
-    dBdx = sp.diff(B, x)
+    dBdx = sm.diff(B, x)
 
     def integrand_rhs(phi, i):
         return f*phi[0][i] - dBdx*phi[1][i]
@@ -178,7 +176,7 @@ def case2(N):
                      boundary_lhs, boundary_rhs, verbose=True) + B,
          'exact': u_e}
     print 'numerical solution:', u['G1']
-    print 'simplified:', sp.simplify(u['G1'])
+    print 'simplified:', sm.simplify(u['G1'])
     print 'u exact', u['exact']
     # Change from symblic to numerical computing for plotting.
     # That is, replace C and D symbols by numbers
@@ -191,7 +189,7 @@ def case2(N):
     comparison_plot(u, [0, 1])
 
 def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
-          basis='poly', symbolic=True, B_type='linear'):
+          basis='poly', numint=False, B_type='linear'):
     """
     Solve -(a(x)u)'=0 on [0,1], u(0)=1, u(1)=0.
     Method: Galerkin.
@@ -200,12 +198,12 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
     the solution and is of little value).
     """
     # Note: a(x) with symbols
-    #f = sp.Rational(10,7)  # for a=1, corresponds to f=0 when a=1/(2+10x)
+    #f = sm.Rational(10,7)  # for a=1, corresponds to f=0 when a=1/(2+10x)
 
     """
     def a(x):  # very slow
-        return sp.Piecewise((a1, x < sp.Rational(1,2)),
-                            (a2, x >= sp.Rational(1,2)))
+        return sm.Piecewise((a1, x < sm.Rational(1,2)),
+                            (a2, x >= sm.Rational(1,2)))
 
     def a(x):  # cannot be treated by sympy or wolframalpha.com
         return 1./(a1 + a2*x)
@@ -219,24 +217,24 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
     def a(x):
         return 1/(2 + 10*x)
 
-    b = sp.Symbol('b')
+    b = sm.Symbol('b')
     def a(x):
-        return sp.exp(b*x)
+        return sm.exp(b*x)
     """
     if f == 0:
-        h = sp.integrate(1/a, x)
+        h = sm.integrate(1/a, x)
         h1 = h.subs(x, 1)
         h0 = h.subs(x, 0)
         u_exact = 1 - (h-h0)/(h1-h0)
     else:
         # Assume a=1
-        f1 = sp.integrate(f, x)
-        f2 = sp.integrate(f1, x)
-        C1, C2 = sp.symbols('C1 C2')
+        f1 = sm.integrate(f, x)
+        f2 = sm.integrate(f1, x)
+        C1, C2 = sm.symbols('C1 C2')
         u = -f2 + C1*x + C2
         BC1 = u.subs(x,0) - 1
         BC2 = u.subs(x,1) - 0
-        s = sp.solve([BC1, BC2], [C1, C2])
+        s = sm.solve([BC1, BC2], [C1, C2])
         u_exact = -f2 + s[C1]*x + s[C2]
     print 'u_exact:', u_exact
 
@@ -254,7 +252,7 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
     elif B_type == 'cubic':
         B = 1 - x**3
     elif B_type == 'sqrt':
-        B = 1 - sp.sqrt(x)
+        B = 1 - sm.sqrt(x)
     else:
         B = 1 - x
     if basis == 'poly':
@@ -271,19 +269,19 @@ def case3(N, a=1, a_symbols={}, f=0, f_symbols={},
         raise ValueError('basis=%s must be poly, Lagrange or sines' % basis)
     print 'Basis functions:', phi[0]
 
-    dBdx = sp.diff(B, x)
+    dBdx = sm.diff(B, x)
 
-    verbose = True if symbolic else False
+    verbose = False if numint else True
     phi_sum = solve(integrand_lhs, integrand_rhs, phi, Omega,
                     boundary_lhs, boundary_rhs, verbose=verbose,
-                    symbolic=symbolic)
+                    numint=numint)
     print 'sum c_j*phi_j:', phi_sum
     name = 'numerical, N=%d' % N
-    u = {name: phi_sum + B, 'exact': sp.simplify(u_exact)}
+    u = {name: phi_sum + B, 'exact': sm.simplify(u_exact)}
     print 'Numerical solution:', u[name]
     if verbose:
-        print '...simplified to', sp.simplify(u[name])
-        print '...exact solution:', sp.simplify(u['exact'])
+        print '...simplified to', sm.simplify(u[name])
+        print '...exact solution:', sm.simplify(u['exact'])
 
     f_str = str(f).replace(' ', '')
     a_str = str(a).replace(' ', '')
@@ -310,11 +308,11 @@ def comparison_plot(u, Omega, filename='tmp.eps'):
     take an array x and return the values of the exact solution).
     Omega is a 2-tuple/list with the domain's lower and upper limit.
     """
-    x = sp.Symbol('x')
+    x = sm.Symbol('x')
     resolution = 401
     xcoor = np.linspace(Omega[0], Omega[1], resolution)
     for name in u:
-        u[name] = sp.lambdify([x], u[name], modules="numpy")
+        u[name] = sm.lambdify([x], u[name], modules="numpy")
         u[name] = u[name](xcoor)
     legends = []
     for name in u:
@@ -324,14 +322,18 @@ def comparison_plot(u, Omega, filename='tmp.eps'):
     legend(legends)
     savefig(filename)
 
-x, b = sp.symbols('x b')
+x, b = sm.symbols('x b')
 
 #case1(8, 'sines')
 #case2(1)
 #case3(4)
-#case3(N=3, a=sp.exp(b*x), f=0, basis='poly',
+"""
+case3(N=3, a=sm.exp(b*x), f=0, basis='Lagrange', numint=False,
+      a_symbols={'b': 8}, f_symbols={})
+"""
+#case3(N=3, a=sm.exp(b*x), f=0, basis='poly', numint=False,
 #      a_symbols={b: 8}, f_symbols={})
-#case3(N=2, a=1, f=b, basis='poly', f_symbols={b: 10}, B_type='cubic')
+#case3(N=2, a=1, f=b, basis='poly', numint=False, f_symbols={b: 10}, B_type='cubic')
 
 #case0(f=b, N=1)
 #case0(f=x**6, N=7)

@@ -9,12 +9,12 @@ def finite_element1D(
     integrand_rhs, boundary_rhs,
     intrule='GaussLegendre'):
     import sets
-    N_n = len(list(set(np.array(dof_map).ravel())))
-    N_e = len(cells)
-    A = np.zeros((N_n, N_n))
-    b = np.zeros(N_n)
+    n_n = len(list(set(np.array(dof_map).ravel())))
+    n_e = len(cells)
+    A = np.zeros((n_n, n_n))
+    b = np.zeros(n_n)
 
-    for e in range(N_e):
+    for e in range(n_e):
         Omega_e = [vertices[cells[e][0]], vertices[cells[e][1]]]
         n = len(dof_map[e])
         h = Omega_e[1] - Omega_e[0]

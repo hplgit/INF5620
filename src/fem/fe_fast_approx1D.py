@@ -1,17 +1,17 @@
 from scitools.std import plot, savefig, hold, axis, legend
 import numpy as np
 
-def mesh(N_e, d, Omega=[0,1]):
+def mesh(n_e, d, Omega=[0,1]):
     """
-    Return a 1D finite element mesh on Omega with N_e elements of
+    Return a 1D finite element mesh on Omega with n_e elements of
     the polynomial degree d. The nodes are uniformly spaced.
     Return nodes (coordinates) and elements (connectivity) arrays.
     """
     # or should we just have end-nodes and leave it up to info
     # elsewhere to have internal nodes and other dofs?
-    nodes = np.linspace(Omega[0], Omega[1], N_e*d + 1)
+    nodes = np.linspace(Omega[0], Omega[1], n_e*d + 1)
     elements = np.asarray([[e*d + i for i in range(d+1)] \
-                           for e in range(N_e)], int)
+                           for e in range(n_e)], int)
     return nodes, elements
 
 
@@ -98,10 +98,10 @@ def element_vector(f, d, Omega_e, intrule):
     return b_e
 
 def assemble(nodes, elements, d, f, numint):
-    N_n, N_e = len(nodes), len(elements)
-    A = np.zeros((N_n, N_n))
-    b = np.zeros((N_n, 1))
-    for e in range(N_e):
+    n_n, n_e = len(nodes), len(elements)
+    A = np.zeros((n_n, n_n))
+    b = np.zeros((n_n, 1))
+    for e in range(n_e):
         Omega_e = [nodes[elements[e,0]], nodes[elements[e,-1]]]
         A_e = element_matrix(d, Omega_e, numint)
         b_e = element_vector(f, d, Omega_e, numint)
@@ -114,9 +114,9 @@ def assemble(nodes, elements, d, f, numint):
     return A, b
 
 
-def approximate(f, d=1, N_e=4, numint='Gauss-Legendre2',
+def approximate(f, d=1, n_e=4, numint='Gauss-Legendre2',
                 filename='tmp.eps'):
-    nodes, elements = mesh(N_e, d, [0, 1])
+    nodes, elements = mesh(n_e, d, [0, 1])
     A, b = assemble(nodes, elements, d, f, numint)
         
     c = A.LUsolve(b)
@@ -125,14 +125,14 @@ def approximate(f, d=1, N_e=4, numint='Gauss-Legendre2',
     print 'elements:', elements
     print 'A:\n', A
     print 'b:\n', b
-    print sp.latex(A, mode='plain')
-    #print sp.latex(b, mode='plain')
+    print sm.latex(A, mode='plain')
+    #print sm.latex(b, mode='plain')
 
     c = A.LUsolve(b)
     print 'c:\n', c
     print 'Plain interpolation:'
-    x = sp.Symbol('x')
-    f = sp.lambdify([x], f, modules='numpy')
+    x = sm.Symbol('x')
+    f = sm.lambdify([x], f, modules='numpy')
     f_at_nodes = [f(xc) for xc in nodes]
     print f_at_nodes
     if not symbolic:

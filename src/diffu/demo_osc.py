@@ -1,7 +1,7 @@
 from scipy.sparse import spdiags
 from scipy.sparse.linalg import spsolve, use_solver
 from numpy import linspace, zeros
-import time, os, sys, shutil
+import time
 
 def solver(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
            user_action=None):
@@ -30,12 +30,12 @@ def solver(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
     import time
     t0 = time.clock()
 
-    x = linspace(0, L, Nx+1)    # mesh points in space
+    x = linspace(0, L, Nx+1)   # mesh points in space
     dx = x[1] - x[0]
     dt = C*dx**2/a
-    Nt = int(round(T/float(dt)))
-    print 'Number of time steps:', Nt
-    t = linspace(0, T, Nt+1)    # mesh points in time
+    N = int(round(T/float(dt)))
+    print 'N:', N
+    t = linspace(0, T, N+1)    # mesh points in time
 
     u   = zeros(Nx+1)   # solution array at t[n+1]
     u_1 = zeros(Nx+1)   # solution at t[n]
@@ -71,7 +71,7 @@ def solver(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
         user_action(u_1, x, t, 0)
 
     # Time loop
-    for n in range(0, Nt):
+    for n in range(0, N):
         b[1:-1] = u_1[1:-1] + Cr*(u_1[:-2] - 2*u_1[1:-1] + u_1[2:])
         b[0] = u_L; b[-1] = u_R  # boundary conditions
         u[:] = spsolve(A, b)
@@ -88,79 +88,40 @@ def solver(I, a, L, Nx, C, T, theta=0.5, u_L=0, u_R=0,
 
 # Case: initial discontinuity
 
-theta2name = {1: 'BE', 0: 'FE', 0.5: 'CN'}
+
+def plot_u(u, x, t, n):
+    from scitools.std import plot
+    umin = -0.1; umax = 1.1  # axis limits for plotting
+    plot(x, u, 'r-', axis=[0, L, umin, umax], title='t=%f' % t[n])
+
+    # Pause the animation initially, otherwise 0.2 s between frames
+    if t[n] == 0:
+        time.sleep(2)
+    else:
+        time.sleep(0.2)
 
 
-class PlotU:
-    def __init__(self, theta, C, Nx, L):
-        self.theta, self.C, self.Nx, self.L  = theta, C, Nx, L
-        self._make_plotdir()
-
-    def __call__(self, u, x, t, n):
-        from scitools.std import plot, savefig
-        umin = -0.1; umax = 1.1  # axis limits for plotting
-        title = 'Method: %s, C=%g, t=%f' % \
-                (theta2name[self.theta], self.C, t[n])
-        plot(x, u, 'r-',
-             axis=[0, self.L, umin, umax],
-             title=title)
-        savefig(os.path.join(self.plotdir, 'frame_%04d.png' % n))
-
-        # Pause the animation initially, otherwise 0.2 s between frames
-        if n == 0:
-            time.sleep(2)
-        else:
-            time.sleep(0.2)
-
-    def _make_plotdir(self):
-        self.plotdir = '%s_C%g' % (theta2name[self.theta], self.C)
-        if os.path.isdir(self.plotdir):
-            shutil.rmtree(self.plotdir)
-        os.mkdir(self.plotdir)
-
-    def make_movie(self):
-        """Go to plot directory and make movie files."""
-        orig_dir = os.getcwd()
-        os.chdir(self.plotdir)
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec libvpx movie.webm'
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec flv movie.flv'
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec libtheora movie.ogg'
-        os.system(cmd)
-        cmd = 'scitools movie output_file=index.html frame*.png'
-        os.system(cmd)
-        os.chdir(orig_dir)
+L = 1
+a = 1
 
 def I(x):
-    return 0 if x > 0.5 else 1
+    return 0 if x > L/2. else 1
 
+# Command-line arguments: Nx C theta
+import sys
+Nx = 15
+C = 0.5
+theta = 0
+T = 3
+#theta = 1
+#Nx = int(sys.argv[1])
+#C = float(sys.argv[2])
+#theta = float(sys.argv[3])
 
-def run_command_line_args():
-    # Command-line arguments: Nx C theta
-    Nx = int(sys.argv[1])
-    C = float(sys.argv[2])
-    theta = float(sys.argv[3])
-    plot_u = PlotU(theta, C, Nx, L=1)
-    u, x, t, cpu = solver(I, a=1, L=1, Nx=Nx, C=C, T=T,
+cases = [(15, 0.5, 1, 0.12), (7, 5, 0.5, 3), (15, 0.5, 0, 0.25)]
+for Nx, C, theta, T in cases:
+    print 'theta=%g, C=%g, Nx=%d' % (theta, C, Nx)
+    u, x, t, cpu = solver(I, a, L, Nx, C, T,
                           theta=theta, u_L=1, u_R=0,
                           user_action=plot_u)
-    plot_u.make_movie()
-
-def run_BE_CN_FE():
-    # cases: list of (Nx, C, theta, T) values
-    cases = [(7, 5, 0.5, 3), (15, 0.5, 0, 0.25),
-             (15, 0.5, 1, 0.12),]
-    for Nx, C, theta, T in cases:
-        print 'theta=%g, C=%g, Nx=%d' % (theta, C, Nx)
-        plot_u = PlotU(theta, C, Nx, L=1)
-        u, x, t, cpu = solver(I, a=1, L=1, Nx=Nx, C=C, T=T,
-                              theta=theta, u_L=1, u_R=0,
-                              user_action=plot_u)
-        plot_u.make_movie()
-        raw_input('Type Return to proceed with next case: ')
-
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        # No command-line arguments: run predefined cases
-        run_BE_CN_FE()
-    elif len(sys.argv) == 4:
-        run_command_line_args()
+    raw_input('CR: ')

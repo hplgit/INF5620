@@ -1,6 +1,5 @@
 import scitools.std as plt
 from fe_approx1D import mesh_uniform, phi_glob
-import numpy as np
 
 def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     """Illustrate elements and nodes in a finite element mesh."""
@@ -8,18 +7,18 @@ def plot_fe_mesh(nodes, elements, element_marker=[0, 0.1]):
     all_x_L = [nodes[elements[e][0]] for e in range(len(elements))]
     element_boundaries = all_x_L + [nodes[-1]]
     for x in element_boundaries:
-        plt.plot([x, x], element_marker, 'm--')  # m gives dotted lines
+        plt.plot([x, x], element_marker, 'm--')  # m gives dotted eps/pdf lines
     plt.plot(nodes, [0]*len(nodes), 'ro2')
 
-def fe_basis_function_figure(d, target_elm=[1], N_e=3,
+def fe_basis_function_figure(d, target_elm=[1], n_e=3,
                              derivative=0, filename='tmp.pdf',
                              labels=False):
     """
     Draw all basis functions (or their derivative), of degree d,
     associated with element target_elm (may be list of elements).
-    Add a mesh with N_e elements.
+    Add a mesh with n_e elements.
     """
-    nodes, elements = mesh_uniform(N_e, d)
+    nodes, elements = mesh_uniform(n_e, d)
     """
     x = 1.1
     print locate_element_vectorized(x, elements, nodes)
@@ -47,9 +46,9 @@ def fe_basis_function_figure(d, target_elm=[1], N_e=3,
                 if labels:
                     if plt.backend == 'gnuplot':
                         if derivative == 0:
-                            plt.legend(r'basis func. %d' % i)
+                            plt.legend(r'basis function no. %d' % i)
                         else:
-                            plt.legend(r'derivative of basis func. %d' % i)
+                            plt.legend(r'derivative of basis function no. %d' % i)
                     elif plt.backend == 'matplotlib':
                         if derivative == 0:
                             plt.legend(r'\varphi_%d' % i)
@@ -71,27 +70,27 @@ def draw_basis_functions():
                 philab = '' if not labels else '_lab'
 
                 fe_basis_function_figure(
-                    d=1, target_elm=1, N_e=4, derivative=derivative,
+                    d=1, target_elm=1, n_e=4, derivative=derivative,
                     filename='fe_%sbasis_p1_4e%s.%s' % (deriv, philab, ext),
                     labels=labels)
                 plt.figure()
                 fe_basis_function_figure(
-                    d=2, target_elm=1, N_e=4, derivative=derivative,
+                    d=2, target_elm=1, n_e=4, derivative=derivative,
                     filename='fe_%sbasis_p2_4e%s.%s' % (deriv, philab, ext),
                     labels=labels)
                 plt.figure()
                 fe_basis_function_figure(
-                    d=1, target_elm=1, N_e=5, derivative=derivative,
+                    d=1, target_elm=1, n_e=5, derivative=derivative,
                     filename='fe_%sbasis_p1_5e%s.%s' % (deriv, philab, ext),
                     labels=labels)
                 plt.figure()
                 fe_basis_function_figure(
-                    d=3, target_elm=1, N_e=4, derivative=derivative,
+                    d=3, target_elm=1, n_e=4, derivative=derivative,
                     filename='fe_%sbasis_p3_4e%s.%s' % (deriv, philab, ext),
                     labels=labels)
                 plt.figure()
                 fe_basis_function_figure(
-                    d=3, target_elm=2, N_e=5, derivative=derivative,
+                    d=3, target_elm=2, n_e=5, derivative=derivative,
                     filename='fe_%sbasis_p3_5e%s.%s' % (deriv, philab, ext),
                     labels=labels)
 
@@ -123,18 +122,17 @@ def u_sines():
     """
     import matplotlib.pyplot as plt
     x = np.linspace(0, 4, 1001)
-    psi0 = np.sin(2*np.pi/4*x)
-    psi1 = np.sin(2*np.pi*x)
-    psi2 = np.sin(2*np.pi*4*x)
-    #u = 4*psi0 - 0.5*psi1 - 0*psi2
-    u = 4*psi0 - 0.5*psi1
-    plt.plot(x, psi0, 'r-', label=r"$\psi_0$")
-    plt.plot(x, psi1, 'g-', label=r"$\psi_1$")
-    #plt.plot(x, psi2, label=r"$\psi_2$")
-    plt.plot(x, u, 'b-', label=r"$u=4\psi_0 - \frac{1}{2}\psi_1$")
+    phi0 = np.sin(2*np.pi/4*x)
+    phi1 = np.sin(2*np.pi*x)
+    phi2 = np.sin(2*np.pi*4*x)
+    u = 4*phi0 - 0.5*phi1 - 0*phi2
+    plt.plot(x, phi0, 'r-', label=r"$\varphi_0$")
+    plt.plot(x, phi1, 'g-', label=r"$\varphi_1$")
+    #plt.plot(x, phi2, label=r"$\varphi_2$")
+    plt.plot(x, u, 'b-', label=r"u")
     plt.legend()
-    plt.savefig('u_example_sin.pdf')
-    plt.savefig('u_example_sin.png')
+    plt.savefig('tmp_u_sines.pdf')
+    plt.savefig('tmp_u_sines.png')
     plt.show()
 
 def u_P1():
@@ -155,15 +153,15 @@ def u_P1():
     plt.plot(x, u, 'b-', label='$u$')
     plt.legend(loc='upper left')
     plt.axis([0, x[-1], 0, 9])
-    plt.savefig('u_example_P1.png')
-    plt.savefig('u_example_P1.pdf')
+    plt.savefig('tmp_u_P1.png')
+    plt.savefig('tmp_u_P1.pdf')
     # Mark elements
     for xi in x[1:-1]:
         plt.plot([xi, xi], [0, 9], 'm--')
     # Mark nodes
     #plt.plot(x, np.zeros(len(x)), 'ro', markersize=4)
-    plt.savefig('u_example_P1_welms.png')
-    plt.savefig('u_example_P1_welms.pdf')
+    plt.savefig('tmp_u_P1_welms.png')
+    plt.savefig('tmp_u_P1_welms.pdf')
     plt.show()
 
 
